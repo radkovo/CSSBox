@@ -1,0 +1,16 @@
+CSSBox
+An XHTML/CSS rendering engine library
+(c) 2005-2007 Radek Burget (burgetr@fit.vutbr.cz)
+
+http://cssbox.sourceforge.net/
+
+All the source code of the CSSBox itself is licensed under the GNU Lesser General
+Public License (LGPL), version 2.1. A copy of the LGPL can be found in the LICENSE file.
+
+A part of CSSBox relies on the CSS Parser open source project
+(http://cssparser.sourceforge.net/). An unmodified snaphsot from its CVS which is tested
+with CSSBox is provided in the distribution as a jar file.
+
+In the demo applications, the jTidy parser (http://jtidy.sourceforge.net/)
+is used for creating the HTML DOM tree. An official snapshot is included in this distribution
+as a jar file.
