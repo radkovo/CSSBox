@@ -1,0 +1,38 @@
+Running the Examples
+--------------------
+The examples are implemented in the org.fit.cssbox.demo package. For running the
+examples, following jar files must be in the classpath:
+- CSSBox.jar -- the CSSBox library
+- lib/CSSParser_SNAPSHOT.jar -- the CSS parser used
+- lib/jtidy-r8-SNAPSHOT.jar -- the jTidy HTML parser used for creating the DOM tree
+
+For convenience, scripts are provided for running the examples. For Unix, example.sh
+should be used, for Windows, there is the example.bat batch file. The example
+name must be specified as the first argument, other arguments depend on the example.
+E.g.:
+
+./example.sh SimpleBrowser http://www.cnn.com/
+
+
+Available Examples
+------------------
+
+ComputeStyles <url> <output_file>
+This example computes the effective style of each element and encodes it into the
+"style" attribute of this element. The modified HTML document is then saved
+to the output file.
+
+TextBoxes <url>
+Shows how the rendered box tree can be accessed. It renders the document 
+and prints the list of text boxes together with their positions on the page.
+
+SimpleBrowser <url>
+An example of using CSSBox for the HTML page rendering and display. It parses 
+the style sheets and creates, box tree describing the final layout and displays
+the resulting document.
+
+BoxBrowser
+Implements a browser that displays the rendered box tree and the corresponding 
+page. Each box corresponds to an HTML element or a text node and it can be
+interactiveli highlighted documents either by selecting a tree node or by clicking
+the appropriate position in the page.

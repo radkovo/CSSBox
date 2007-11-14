@@ -14,3 +14,12 @@ with CSSBox is provided in the distribution as a jar file.
 In the demo applications, the jTidy parser (http://jtidy.sourceforge.net/)
 is used for creating the HTML DOM tree. An official snapshot is included in this distribution
 as a jar file.
+
+Package contents:
+src/ - CSSBox source files
+doc/ - Documentation
+	api/ - CSSBox API documentation
+	examples/ - Description of the provided examples 
+lib/ - The above mentioned third-party libraries
+CSSBox.jar - the compiled library
+ 

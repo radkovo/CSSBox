@@ -1,0 +1,28 @@
+#! /bin/bash
+if [ $# -ne 1 ]; then
+	echo "dist <version>"
+	exit
+fi
+
+NAME="CSSBox"
+VERSION="$1"
+FNAME="$NAME-$VERSION"
+TMPDIR="/tmp/cssbox-dist"
+FDIR="$TMPDIR/$FNAME"
+
+echo "Creating $HOME/$FNAME"
+rm -rf $TMPDIR
+mkdir $TMPDIR
+mkdir $FDIR
+
+cp -r src $FDIR
+cp -r lib $FDIR
+cp -r doc $FDIR
+cp LICENSE README $FDIR
+(cd bin; jar cvf $FDIR/CSSBox.jar *)
+
+find $TMPDIR -name '.svn' -exec rm -rf {} \;
+
+(cd $TMPDIR; zip -r $HOME/$FNAME.zip $FNAME)
+
+#rm -rf $TMPDIR
