@@ -74,6 +74,12 @@ abstract public class Box
      * Coordinates of the whole box including margin. */
     protected Rectangle bounds;
     
+    /** Absolute box position (on the whole page) */
+    protected Rectangle absbounds;
+    
+    /** The viewport */
+    protected Viewport viewport;
+    
     /** Parent box */
     protected ElementBox parent;
     
@@ -81,7 +87,7 @@ abstract public class Box
     protected BlockBox cblock;
     
     /** Maximal total width for the layout (obtained from the owner box) */
-    protected int maxwidth;
+    protected int availwidth;
     
     /** Graphics context */
     protected Graphics g;
@@ -116,6 +122,7 @@ abstract public class Box
         isempty = true;
 
         bounds = new Rectangle();
+        absbounds = new Rectangle();
         displayed = true;
         visible = true;
         splitted = false;
@@ -132,11 +139,13 @@ abstract public class Box
         order = src.order;
         style = src.style;
         isempty = src.isempty;
-        maxwidth = src.maxwidth;
+        availwidth = src.availwidth;
+        viewport = src.viewport;
         parent = src.parent;
         cblock = src.cblock;
 
         bounds = new Rectangle(src.bounds);
+        absbounds = new Rectangle(src.absbounds);
         displayed = src.displayed;
         visible = src.visible;
         splitted = src.splitted;
@@ -152,13 +161,17 @@ abstract public class Box
      * @param g graphics context to render on
      * @param ctx visual context to render on
      * @param decoder a CSS style decoder
+     * @param baseurl the base URL of the document
+     * @param viewport current viewport
      * @param contbox the containing box of the new box when not absolutly positioned
      * @param absbox the containing box of the new box when absolutly positioned
      * @return the root node of the created tree of boxes
      */
     public static Box createBoxTree(Node n, Graphics g, VisualContext ctx,
                                     DOMAnalyzer decoder, URL baseurl,
-                                    BlockBox contbox, BlockBox absbox, ElementBox parent)
+                                    Viewport viewport,
+                                    BlockBox contbox, BlockBox absbox,
+                                    ElementBox parent)
     {
         //-- Text nodes --
         if (n.getNodeType() == Node.TEXT_NODE)
@@ -172,7 +185,9 @@ abstract public class Box
         else
         {
             //Create the new box
-            ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, parent);
+            ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent);
+            if (root.getElement().getAttribute("id").equals("webstats"))
+            	System.out.println("jo!");
             
             //Determine the containing boxes
             BlockBox newcont = contbox;
@@ -193,17 +208,23 @@ abstract public class Box
                     block.position == BlockBox.POS_FIXED)
                     newabs = block;
                 //Any block box forms a containing box for not positioned elements
-                //except of some in the table
-                //if (root.getDisplay() != ElementBox.DISPLAY_TABLE_ROW)
-                    newcont = block;
+                newcont = block;
             }
             else    
                 root.setContainingBlock(contbox);
-
+            
+            //process the subtree
             if (root.isDisplayed())
             {
-                //Create child boxes
                 NodeList children = n.getChildNodes();
+                
+                //Check if anonymous inline boxes should be created
+                boolean textonly = true;
+                for (int i = 0; i < children.getLength(); i++)
+                    if (children.item(i).getNodeType() == Node.ELEMENT_NODE)
+                        textonly = false;
+                
+                //Create child boxes
                 for (int i = 0; i < children.getLength(); i++)
                 {
                     Node cn = children.item(i);
@@ -213,7 +234,7 @@ abstract public class Box
                     {
                         //Create a new subtree
                         Box newbox = createBoxTree(cn, g.create(), ctx.create(), 
-                                                    decoder, baseurl, 
+                                                    decoder, baseurl, viewport,
                                                     newcont, newabs, root);
                         //If the new box is block, it's parent box must be block too
                         //This is not true for positioned boxes (the're moved to their containing block)
@@ -222,6 +243,7 @@ abstract public class Box
                         {
                             BlockBox newblock = (BlockBox) newbox;
                             //if the box contains in-flow block boxes, it must be a block box
+                            //this should happen by error only (a block inside of inline element)
                             if (newblock.isInFlow())
                             {
                                 if (!root.isBlock())
@@ -240,9 +262,27 @@ abstract public class Box
                             	root.isempty = false;
                             if (root.isBlock() && newbox.isInFlow())
                             	((BlockBox) root).anyinflow = true;
-                            newbox.setParent(root);
-                            root.addSubBox(newbox);
-                            root.endChild++;
+                            if (cn.getNodeType() == Node.TEXT_NODE && !textonly)
+                            {
+                                //create anonymous inline box for the text
+                                Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "Xspan", "inline");
+                                ElementBox anbox = createBox(anelem, g, ctx, decoder, baseurl, viewport, root);
+                                newbox.setParent(anbox);
+                                anbox.addSubBox(newbox);
+                                anbox.isempty = false;
+                                anbox.endChild++;
+                                anbox.setParent(root);
+                                anbox.setContainingBlock(newcont);
+                                root.addSubBox(anbox);
+                                root.endChild++;
+                            }
+                            else
+                            {
+                                //insert directly
+                                newbox.setParent(root);
+                                root.addSubBox(newbox);
+                                root.endChild++;
+                            }
                         }
                         else //positioned or floating (block only) - add it to its containing block
                         {
@@ -252,56 +292,148 @@ abstract public class Box
                             newbox.setParent(newcblock);
                             newcblock.addSubBox(newbox);
                             newcblock.endChild++;
-                            //newcblock.contblock = true; //don't do this - positioned box shouldn't influence it
                         }
                     }
                 }
             }
             
-            //create anonymous block boxes
-            if (root.isBlock() && ((BlockBox) root).containsBlocks())
-            {
-                Vector<Box> nest = new Vector<Box>();
-                BlockBox adiv = null;
-                for (int i = 0; i < root.getSubBoxNumber(); i++)
-                {
-                    Box sub = root.getSubBox(i);
-                    if (sub.isblock)
-                    {
-                        adiv = null;
-                        nest.add(sub);
-                    }
-                    else if (!sub.isWhitespace()) //omit whitespace boxes
-                    {
-                        if (adiv == null)
-                        {
-                            adiv = new BlockBox(createAnonymousDiv(n.getOwnerDocument()), g, ctx);
-                            adiv.setStyle(DOMAnalyzer.getStyleDeclaration(adiv.getElement()));
-                            computeInheritedStyle(adiv, root);
-                            adiv.isblock = true;
-                            adiv.contblock = false;
-                            adiv.isempty = true;
-                            adiv.setParent(root);
-                            adiv.setContainingBlock(sub.getContainingBlock());
-                            nest.add(adiv);
-                        }
-                        if (sub.isDisplayed() && !sub.isEmpty()) 
-                        { 
-                            adiv.isempty = false;
-                            adiv.displayed = true;
-                        }
-                        sub.setParent(adiv);
-                        adiv.addSubBox(sub);
-                        adiv.endChild++;
-                    }
-                }
-                root.nested = nest;
-                root.endChild = nest.size();
-            }
+            createAnonymousBlocks(root);
+            createAnonymousBoxes(root, decoder,
+                                 ElementBox.DISPLAY_TABLE_CELL,
+                                 ElementBox.DISPLAY_TABLE_ROW, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY, 
+                                 "tr", "table-row");
+            createAnonymousBoxes(root, decoder,
+                                 ElementBox.DISPLAY_TABLE_ROW,
+                                 ElementBox.DISPLAY_TABLE_ROW_GROUP, ElementBox.DISPLAY_TABLE_HEADER_GROUP, ElementBox.DISPLAY_TABLE_FOOTER_GROUP, 
+                                 "tbody", "table-row-group");
+            createAnonymousBoxes(root, decoder,
+                                 ElementBox.DISPLAY_TABLE_ROW_GROUP,
+                                 ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY,
+                                 "table", "table");
+            
             return root;
         }
     }
 
+    /**
+     * Creates anonymous block boxes as the a block box contains both the inline
+     * and the block child boxes. The child boxes of the specified root
+     * are processed and the inline boxes are grouped in a newly created
+     * anonymous <code>div</code> boxes.
+     * @param root the root box
+     */
+    private static void createAnonymousBlocks(ElementBox root)
+    {
+        if (root.isBlock() && ((BlockBox) root).containsBlocks())
+        {
+            Vector<Box> nest = new Vector<Box>();
+            BlockBox adiv = null;
+            for (int i = 0; i < root.getSubBoxNumber(); i++)
+            {
+                Box sub = root.getSubBox(i);
+                if (sub.isblock)
+                {
+                    adiv = null;
+                    nest.add(sub);
+                }
+                else if (!sub.isWhitespace()) //omit whitespace boxes
+                {
+                    if (adiv == null)
+                    {
+                        Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "div", "block");
+                        adiv = new BlockBox(anelem, root.getGraphics(), root.getVisualContext());
+                        adiv.setStyle(DOMAnalyzer.getStyleDeclaration(adiv.getElement()));
+                        computeInheritedStyle(adiv, root);
+                        adiv.isblock = true;
+                        adiv.contblock = false;
+                        adiv.isempty = true;
+                        adiv.setViewport(root.getViewport());
+                        adiv.setParent(root);
+                        adiv.setContainingBlock(sub.getContainingBlock());
+                        nest.add(adiv);
+                    }
+                    if (sub.isDisplayed() && !sub.isEmpty()) 
+                    { 
+                        adiv.isempty = false;
+                        adiv.displayed = true;
+                    }
+                    sub.setParent(adiv);
+                    adiv.addSubBox(sub);
+                    adiv.endChild++;
+                }
+            }
+            root.nested = nest;
+            root.endChild = nest.size();
+        }
+    }
+    
+    /**
+     * Checks the child boxes of the specified root box wheter they require creating an anonymous
+     * parent box.
+     * @param root the box whose child boxes are checked
+     * @param decoder DOM style decoder used for obtaining the efficient node styles
+     * @param type the required display type of the child boxes. The remaining child boxes are skipped.
+     * @param reqtype1 the first required display type of the root. If the root type doesn't correspond
+     * 		to any of the required types the anonymous parent is created for the selected children.
+     * @param reqtype3 the second required display type of the root.
+     * @param reqtype4 the third required display type of the root.
+     * @param the element name of the created anonymous box
+     * @param the display type of the created anonymous box
+     */
+    private static void createAnonymousBoxes(ElementBox root, DOMAnalyzer decoder, 
+                                             short type,
+                                             short reqtype1, 
+                                             short reqtype2, 
+                                             short reqtype3, 
+    		                                 String name, String display)
+    {
+    	if (root.getDisplay() != reqtype1 && root.getDisplay() != reqtype2 && root.getDisplay() != reqtype3)
+    	{
+	        Vector<Box> nest = new Vector<Box>();
+	        ElementBox adiv = null;
+	        for (int i = 0; i < root.getSubBoxNumber(); i++)
+	        {
+	            Box sub = root.getSubBox(i);
+	            if (sub instanceof ElementBox)
+	            {
+	            	ElementBox subel = (ElementBox) sub;
+		            if (subel.getDisplay() != type)
+		            {
+		                adiv = null;
+		                nest.add(sub);
+		            }
+		            else if (!sub.isWhitespace()) //omit whitespace boxes
+		            {
+		                if (adiv == null)
+		                {
+		                	Element elem = createAnonymousBox(root.getElement().getOwnerDocument(), name, display);
+		                	adiv = createBox(elem, root.getGraphics(), root.getVisualContext(), decoder, root.getBase(), root.getViewport(), root);
+		                    adiv.isblock = true;
+		                    adiv.isempty = true;
+		                    adiv.setViewport(root.getViewport());
+		                    adiv.setParent(root);
+		                    adiv.setContainingBlock(sub.getContainingBlock());
+		                    nest.add(adiv);
+		                }
+		                if (sub.isDisplayed() && !sub.isEmpty()) 
+		                { 
+		                    adiv.isempty = false;
+		                    adiv.displayed = true;
+		                }
+		                sub.setParent(adiv);
+		                sub.setContainingBlock((BlockBox) adiv);
+		                adiv.addSubBox(sub);
+		                adiv.endChild++;
+		            }
+	            }
+	            else
+	            	return; //first box is TextBox => all the boxes are TextBox, nothing to do. 
+	        }
+	        root.nested = nest;
+	        root.endChild = nest.size();
+    	}
+    }
+    
     /**
      * Creates a new box from an element.
      * @param n The source DOM element
@@ -309,10 +441,12 @@ abstract public class Box
      * @param ctx Visual context
      * @param decoder The CSS style analyzer
      * @param baseurl The base URL of the document
+     * @param viewport The used viewport
+     * @param parent the root element from which the style will be inherited
      * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
      */
     public static ElementBox createBox(Element n, Graphics g, VisualContext ctx, 
-                                       DOMAnalyzer decoder, URL baseurl,
+                                       DOMAnalyzer decoder, URL baseurl, Viewport viewport,
                                        ElementBox parent)
     {
 	    ElementBox root;
@@ -331,7 +465,7 @@ abstract public class Box
         	if (root.isBlock())
         		root = new BlockReplacedBox(rbox);
         }
-        //General tag names
+        //Convert the box type according to the <code>display</code> value
         else
         {
     	    root = new InlineBox((Element) n, g, ctx);
@@ -358,51 +492,23 @@ abstract public class Box
     	        root = new BlockBox((InlineBox) root);
         }
         root.setBase(baseurl);
+        root.setViewport(viewport);
         root.setOrder(next_order++);
     	return root;
     }
     
-    /*public static ElementBox a1(Element el, Graphics g, VisualContext ctx)
-    {
-        return new InlineBox(el, g, ctx);
-    }
-    
-    public static ElementBox a2(ElementBox src)
-    {
-        ElementBox root = src;
-        if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
-            root = new ListItemBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
-            root = new TableBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
-            root = new TableCaptionBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP
-                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP
-                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
-            root = new TableBodyBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
-            root = new TableRowBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CELL)
-            root = new TableCellBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
-            root = new TableColumn((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
-            root = new TableColumnGroup((InlineBox) root);
-        else if (root.isBlock())
-            root = new BlockBox((InlineBox) root);
-        return root;
-    }*/
-    
     /**
      * Creates a new <div> element that represents an anonymous box in a document.
      * @param doc the document
+     * @param name the anonymous element name (generally arbitrary)
+     * @param display the display style value for the block
      * @return the new element
      */
-    private static Element createAnonymousDiv(Document doc)
+    private static Element createAnonymousBox(Document doc, String name, String display)
     {
-        Element div = doc.createElement("div");
+        Element div = doc.createElement(name);
         div.setAttribute("class", "Xanonymous");
-        div.setAttribute("style", "display:block;");
+        div.setAttribute("style", "display:" + display);
         return div;
     }
     
@@ -460,7 +566,6 @@ abstract public class Box
                     sub.setContainingBlock(contbox);
         }        
     }
-    
     
     //========================================================================
         
@@ -650,11 +755,35 @@ abstract public class Box
     }
     
     /**
+     * Returns the absolute box position on the page
+     * @return Absolute box bounds
+     */
+    public Rectangle getAbsoluteBounds()
+    {
+    	return absbounds;
+    }
+    
+
+    /**
+     * Adjusts the absolute bounds width and height in order to fit into the clip.
+     * If the box doesn't fit at all, it is marked as invisible.
+     */
+    public void clipAbsoluteBounds(Rectangle clip)
+    {
+        Rectangle inter = absbounds.intersection(clip);
+        if (inter.isEmpty())
+            displayed = false;
+        else
+            absbounds = inter;
+    }
+    
+    
+    /**
      * @return maximal width that was available for the box placement during the layout processing
      */
     public int getAvailableWidth()
     {
-        return maxwidth;
+        return availwidth;
     }
     
     /**
@@ -663,7 +792,7 @@ abstract public class Box
      */
     public void setAvailableWidth(int availw)
     {
-        maxwidth = availw;
+        availwidth = availw;
     }
     
     /**
@@ -703,17 +832,27 @@ abstract public class Box
     /**
      * @return maximal available width of the content during the layout
      */
-    abstract public int getMaxContentWidth();
+    abstract public int getAvailableContentWidth();
     
     /**
-     * @return the X coordinate of the content box top left cornet
+     * @return the X coordinate of the content box top left corner
      */
     abstract public int getContentX();
+    
+    /**
+     * @return the absolute X coordinate of the content box top left corner
+     */
+    abstract public int getAbsoluteContentX();
     
     /**
      * @return the Y coordinate of the content box top left corner
      */
     abstract public int getContentY();
+
+    /**
+     * @return the Y coordinate of the content box top left corner
+     */
+    abstract public int getAbsoluteContentY();
     
     /**
      * @return the width of the content without any margins and borders
@@ -734,13 +873,14 @@ abstract public class Box
     }
     
     /**
-     * Determines the minimal width in which the element can fit
+     * Determines the minimal width in which the element can fit.
      * @return the minimal width
      */
     abstract public int getMinimalWidth();
+    
     /**
      * 
-     * Determines the maximal width of the element according to its contents
+     * Determines the maximal width of the element according to its contents.
      * @return the maximal width
      */
     abstract public int getMaximalWidth();
@@ -780,6 +920,22 @@ abstract public class Box
     abstract public boolean affectsDisplay();
 
     /**
+	 * @return the viewport
+	 */
+	public Viewport getViewport()
+	{
+		return viewport;
+	}
+
+	/**
+	 * @param viewport the viewport to set
+	 */
+	public void setViewport(Viewport viewport)
+	{
+		this.viewport = viewport;
+	}
+
+	/**
 	 * @return Returns the parent.
 	 */
 	public ElementBox getParent()
@@ -849,9 +1005,9 @@ abstract public class Box
 
     /** 
      * Calculate absolute positions of all the subboxes.
-     * @param parent Parent element box.
+     * @param clip clipping area
      */
-    abstract public void absolutePositions(ElementBox parent);
+    abstract public void absolutePositions(Rectangle clip);
     
     
     //=======================================================================

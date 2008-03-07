@@ -94,7 +94,7 @@ public class InlineBox extends ElementBox
 
         setAvailableWidth(availw);
         
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         int x = 0; //current x
         int maxh = 0;
         boolean ret = true;
@@ -126,6 +126,7 @@ public class InlineBox extends ElementBox
                     rbox.splitted = true;
                     rbox.setStartChild(i); //next starts with me...
                     rbox.nested.setElementAt(subbox.getRest(), i); //..but only with the rest
+                    rbox.adoptChildren();
                     setEndChild(i+1); //...and this box stops with this element
                     rest = rbox;
                     break;
@@ -143,6 +144,7 @@ public class InlineBox extends ElementBox
                     InlineBox rbox = copyInlineBox();
                     rbox.splitted = true;
                     rbox.setStartChild(lastbreak); //next time start from the last break
+                    rbox.adoptChildren();
                     setEndChild(lastbreak); //this box stops here
                     rest = rbox;
                     break;
@@ -165,20 +167,27 @@ public class InlineBox extends ElementBox
         return ret;
     }
     
-    /** Calculate absolute positions of all the subboxes.
-     * @param parent Parent element box.
-     */
-    public void absolutePositions(ElementBox parent)
+    @Override
+    public void absolutePositions(Rectangle clip)
     {
-        if (displayed)
+        if (isDisplayed())
         {
             //my top left corner
-            bounds.x = parent.getContentX() + bounds.x;
-            bounds.y = parent.getContentY() + bounds.y;
+            absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
+            absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
 
+            //update the width and height according to overflow of the parent
+            absbounds.width = bounds.width;
+            absbounds.height = bounds.height;
+            if (clip != null)
+                clipAbsoluteBounds(clip);
+            
             //repeat for all valid subboxes
-            for (int i = startChild; i < endChild; i++)
-                getSubBox(i).absolutePositions(this);
+            if (isDisplayed())
+            {
+                for (int i = startChild; i < endChild; i++)
+                    getSubBox(i).absolutePositions(clip);
+            }
         }
     }
 
@@ -262,6 +271,9 @@ public class InlineBox extends ElementBox
     protected void loadSizes()
     {
         CSSDecoder dec = new CSSDecoder(ctx);
+        
+        if (cblock == null)
+            System.err.println(this + " has no cblock");
         
         //containing box sizes
         int contw = cblock.getContentWidth();

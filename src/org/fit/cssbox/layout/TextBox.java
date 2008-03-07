@@ -41,6 +41,12 @@ public class TextBox extends Box
     /** The end index of the text substring to be displayed (excl) */
     protected int textEnd;
 
+    /** Maximal total width */
+    protected int maxwidth;
+    
+    /** Minimal total width */
+    protected int minwidth;
+    
     //===================================================================
     
     /**
@@ -58,6 +64,9 @@ public class TextBox extends Box
         textEnd = node.getNodeValue().length();
         isempty = (node.getNodeValue().length() == 0); //not trimming, space cannot be omited
         ctx.updateForGraphics(null, g);
+
+        minwidth = computeMinimalWidth();
+        maxwidth = computeMaximalWidth();
     }
 
     /**
@@ -150,9 +159,21 @@ public class TextBox extends Box
     }
     
 	@Override
+    public int getAbsoluteContentX() 
+    {
+        return absbounds.x;
+    }
+    
+	@Override
     public int getContentY() 
     {
         return bounds.y;
+    }
+
+	@Override
+    public int getAbsoluteContentY() 
+    {
+        return absbounds.y;
     }
 
 	@Override
@@ -168,9 +189,9 @@ public class TextBox extends Box
     }
 
 	@Override
-    public int getMaxContentWidth() 
+    public int getAvailableContentWidth() 
     {
-        return maxwidth;
+        return availwidth;
     }
     
     @Override
@@ -268,10 +289,10 @@ public class TextBox extends Box
             return true;
         }
         
-        this.maxwidth = widthlimit;
+        setAvailableWidth(widthlimit);
         
         boolean split = false;
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         String text = node.getNodeValue();
         boolean empty = (text.trim().length() == 0);
         int end = text.length();
@@ -340,23 +361,28 @@ public class TextBox extends Box
         return ((textEnd > textStart) || empty);
     }
     
-    /**
-     * Calculate absolute positions of all the subboxes.
-     * @param parent Parent element box.
-     */
 	@Override
-    public void absolutePositions(ElementBox parent)
+    public void absolutePositions(Rectangle clip)
     {
         if (displayed)
         {
             //my top left corner
-            bounds.x = parent.getContentX() + bounds.x;
-            bounds.y = parent.getContentY() + bounds.y;
+            absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
+            absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+	        absbounds.width = bounds.width;
+	        absbounds.height = bounds.height;
+            if (clip != null)
+                clipAbsoluteBounds(clip);
         }
     }
     
 	@Override
     public int getMinimalWidth()
+    {
+		return minwidth;
+    }
+	
+    private int computeMinimalWidth()
     {
         //returns the length of the longest word
         int ret = 0;
@@ -381,6 +407,11 @@ public class TextBox extends Box
 	@Override
     public int getMaximalWidth()
     {
+		return maxwidth;
+    }
+	
+    private int computeMaximalWidth()
+    {
         //returns the lenth of the whole string
         FontMetrics fm = g.getFontMetrics();
         return fm.stringWidth(getText());
@@ -393,8 +424,8 @@ public class TextBox extends Box
     protected void drawContent(Graphics g)
     {
         //top left corner
-        int x = bounds.x;
-        int y = bounds.y;
+        int x = absbounds.x;
+        int y = absbounds.y;
 
         //Draw the string
         if (textEnd > textStart)
@@ -402,7 +433,10 @@ public class TextBox extends Box
             String text = node.getNodeValue().substring(textStart, textEnd);
             FontMetrics fm = g.getFontMetrics();
             Rectangle2D rect = fm.getStringBounds(text, g);
+            Shape oldclip = g.getClip();
+            g.setClip(absbounds);
             g.drawString(text, x + (int) rect.getX(), y - (int) rect.getY());
+            g.setClip(oldclip);
         }
     }
     
@@ -424,7 +458,7 @@ public class TextBox extends Box
     {
         //draw the full box
         g.setColor(Color.ORANGE);
-        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
     }
         
 }

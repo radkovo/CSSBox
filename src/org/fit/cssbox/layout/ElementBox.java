@@ -37,6 +37,7 @@ import org.fit.cssbox.css.CSSNorm;
  */
 abstract public class ElementBox extends Box
 {
+    public static final short DISPLAY_ANY = -1;
     public static final short DISPLAY_NONE = 0;
     public static final short DISPLAY_INLINE = 1;
     public static final short DISPLAY_BLOCK = 2;
@@ -62,6 +63,9 @@ abstract public class ElementBox extends Box
 
     /** The display property value */
     protected short display;
+    
+    /** Background color or null when transparent */
+    protected Color bgcolor;
     
     /** A list of nested boxes (possibly empty). The box can contain either 
      * only block boxes or only inline boxes. The inline boxes can only
@@ -166,6 +170,22 @@ abstract public class ElementBox extends Box
     	return display;
     }
     
+    /**
+     * @return the background color or null when transparent
+     */
+    public Color getBgcolor()
+    {
+        return bgcolor;
+    }
+
+    /**
+     * @param bgcolor the background color
+     */
+    public void setBgcolor(Color bgcolor)
+    {
+        this.bgcolor = bgcolor;
+    }
+
     /**
      * @return the number of subboxes in this box
      */
@@ -309,6 +329,23 @@ abstract public class ElementBox extends Box
         endChild = index;
     }
     
+    /**
+     * Sets the parent of the valid children to this (used while splitting the boxes)
+     */
+    public void adoptChildren()
+    {
+        for (int i = startChild; i < endChild; i++)
+            nested.elementAt(i).setParent(this);
+    }
+    
+    /**
+     * This method is called for all the element boxes once the box tree is finished.
+     * It is the right place for internal object initializing, content organization, etc. 
+     */
+    public void initBox()
+    {
+    }
+    
     //=======================================================================
 
     public int getContentX()
@@ -319,6 +356,16 @@ abstract public class ElementBox extends Box
     public int getContentY()
     {
         return bounds.y + emargin.top + border.top + padding.top;
+    }
+    
+    public int getAbsoluteContentX()
+    {
+        return absbounds.x + emargin.left + border.left + padding.left;
+    }
+    
+    public int getAbsoluteContentY()
+    {
+        return absbounds.y + emargin.top + border.top + padding.top;
     }
     
     public int totalWidth()
@@ -333,9 +380,9 @@ abstract public class ElementBox extends Box
             padding.bottom + border.bottom + emargin.bottom;
     }
     
-    public int getMaxContentWidth()
+    public int getAvailableContentWidth()
     {
-        return maxwidth - emargin.left - border.left - padding.left 
+        return availwidth - emargin.left - border.left - padding.left 
                   - padding.right - border.right - emargin.right;
     }
     
@@ -414,8 +461,10 @@ abstract public class ElementBox extends Box
         Color color = g.getColor(); //original color
 
         //top left corner
-        int x = bounds.x;
-        int y = bounds.y;
+        int x = absbounds.x;
+        int y = absbounds.y;
+        int x2 = absbounds.x + absbounds.width - 1;
+        int y2 = absbounds.y + absbounds.height - 1;
 
         //draw the margin
         int mx = x + emargin.left;
@@ -438,12 +487,13 @@ abstract public class ElementBox extends Box
         int bgy = y + emargin.top + border.top;
         int bgw = padding.left + content.width + padding.right;
         int bgh = padding.top + content.height + padding.bottom;
-        String bg = getStyleProperty("background-color");
-        if (!bg.equals("") && !bg.equals("transparent"))
+        //clip to computed absolute size
+        if (bgx + bgw - 1 > x2) bgw = x2 - bgx + 1;
+        if (bgy + bgh - 1 > y2) bgh = y2 - bgy + 1;
+        //draw the color
+        if (bgcolor != null)
         {
-            Color bgclr = ctx.getColor(bg);
-            if (bgclr == null) bgclr = Color.WHITE;
-            g.setColor(bgclr);
+            g.setColor(bgcolor);
             g.fillRect(bgx, bgy, bgw, bgh);
         }
 
@@ -468,7 +518,7 @@ abstract public class ElementBox extends Box
     {
     	//draw the full box
         g.setColor(Color.RED);
-        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
     	
     	//draw the content box
         /*g.setColor(Color.ORANGE);
@@ -555,6 +605,16 @@ abstract public class ElementBox extends Box
             }
             lineHeight = Math.round(r * ctx.getFontHeight());
         }
+        
+        //background
+        String bg = getStyleProperty("background-color");
+        if (!bg.equals("") && !bg.equals("transparent"))
+        {
+            bgcolor = ctx.getColor(bg);
+            if (bgcolor == null) bgcolor = Color.white; //couldn't parse, use white
+        }
+        else
+            bgcolor = null;
         
     }
     

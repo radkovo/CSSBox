@@ -94,12 +94,12 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
     {
         ctx.updateGraphics(g);
         if (img != null)
-            g.drawImage(img, getOwner().getContentX(), getOwner().getContentY(), width, height, this);
+            g.drawImage(img, getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), width, height, this);
         else
         {
-            g.drawRect(getOwner().getContentX(), getOwner().getContentY(), getOwner().getContentWidth(), getOwner().getContentHeight());
-            g.drawLine(getOwner().getContentX(), getOwner().getContentY(), getOwner().getContentX() + getOwner().getContentWidth(), getOwner().getContentY() + getOwner().getContentHeight());
-            g.drawLine(getOwner().getContentX() + getOwner().getContentWidth(), getOwner().getContentY(), getOwner().getContentX(), getOwner().getContentY() + getOwner().getContentHeight());
+            g.drawRect(getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), getOwner().getContentWidth(), getOwner().getContentHeight());
+            g.drawLine(getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), getOwner().getAbsoluteContentX() + getOwner().getContentWidth(), getOwner().getAbsoluteContentY() + getOwner().getContentHeight());
+            g.drawLine(getOwner().getAbsoluteContentX() + getOwner().getContentWidth(), getOwner().getAbsoluteContentY(), getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY() + getOwner().getContentHeight());
         }
     }
 

@@ -22,20 +22,39 @@
 package org.fit.cssbox.layout;
 
 /**
- *
+ * This class represents a set of four lengths - top, right bottom and left. It
+ * is used for representing the margin, padding and border width.
+ * 
  * @author  radek
  */
 public class LengthSet 
 {
+    /** top length */
     public int top = 0;
+    
+    /** right length */
     public int right = 0;
+    
+    /** bottom length */
     public int bottom = 0;
+    
+    /** left length */
     public int left = 0;
     
+    /**
+     * Creates a new length set with all the lengths initialized to zero.
+     */
     public LengthSet()
     {
     }
     
+    /**
+     * Creates a new length set with the specified lengths.
+     * @param t top length
+     * @param r right length
+     * @param b bottom length
+     * @param l left length
+     */
     public LengthSet(int t, int r, int b, int l)
     {
         top = t;
@@ -44,6 +63,10 @@ public class LengthSet
         left = l;
     }
     
+    /**
+     * Creates a new length set from an existing one.
+     * @param src the source length set
+     */
     public LengthSet(LengthSet src)
     {
         top = src.top;
@@ -52,6 +75,10 @@ public class LengthSet
         left = src.left;
     }
     
+    /**
+     * Returns a string representation of the length set
+     * @returns A string in the [top, left, bottom, rright] format
+     */
     public String toString()
     {
     	return "[" + top + ", " + left + ", " + bottom + ", " + right + "]";

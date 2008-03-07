@@ -35,7 +35,10 @@ public class Viewport extends BlockBox
 	private int height;
     protected ElementBox lastbox = null;
     protected ElementBox lastparent = null;
-	
+    private int maxx; //maximal X position of all the content
+    private int maxy; //maximal Y position of all the content
+
+    
     public Viewport(Graphics g, VisualContext ctx, int width, int height)
 	{
 		super(null, g, ctx);
@@ -82,6 +85,12 @@ public class Viewport extends BlockBox
     }
     
 	@Override
+	public Viewport getViewport()
+	{
+		return this;
+	}
+
+	@Override
 	protected void loadSizes(boolean update)
 	{
 		margin = new LengthSet();
@@ -97,6 +106,30 @@ public class Viewport extends BlockBox
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
+	/**
+	 * Calculates the absolute positions and updates the viewport size
+	 * in order to enclose all the boxes.
+	 */
+	public void updateBounds()
+	{
+		//first round - compute the viewport size
+		maxx = 0;
+		maxy = 0;
+		for (int i = 0; i < getSubBoxNumber(); i++)
+			getSubBox(i).absolutePositions(null);
+		//update the size
+		if (width < maxx) width = maxx;
+		if (height < maxy) height = maxy;
+		loadSizes();
+	}
+	
+	@Override
+    public void absolutePositions(Rectangle clip)
+    {
+		for (int i = 0; i < getSubBoxNumber(); i++)
+			getSubBox(i).absolutePositions(clip);
+    }
+	
 	@Override
 	public void draw(Graphics g, int turn, int mode) 
 	{
@@ -104,23 +137,27 @@ public class Viewport extends BlockBox
 			getSubBox(i).draw(g, turn, mode);
 	}
 
-	@Override
-    public void absolutePositions(ElementBox parent)
-    {
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions(parent);
-    }
-	
 	public void initBoxes()
 	{
 		for (int i = 0; i < getSubBoxNumber(); i++)
 		{
 			BlockBox box = (BlockBox) getSubBox(i);
-			recursiveLoadSizes(box);
+			recursiveInitBoxes(box);
 	        box.setFloats(new FloatList(box), new FloatList(box), 0, 0, 0);
 		}
 	}
 
+	/**
+	 * Updates the maximal viewport size according to the element bounds
+	 */
+	public void updateBoundsFor(Rectangle bounds)
+	{
+		int x = bounds.x + bounds.width - 1;
+		if (maxx < x) maxx = x;
+		int y = bounds.y + bounds.height - 1;
+		if (maxy < y) maxy = y;
+	}
+	
     //========================================================================
 
 	/**
@@ -192,7 +229,6 @@ public class Viewport extends BlockBox
                 Box subbox = box.getSubBox(i);
                 if (subbox instanceof ElementBox)
                 {
-                	((ElementBox) subbox).loadSizes();
                     recursiveCollapseMargins((ElementBox) subbox);
                 }
                 else
@@ -281,14 +317,15 @@ public class Viewport extends BlockBox
         return (box.border.bottom > 0 || box.padding.bottom > 0);
     }
     
-    private void recursiveLoadSizes(ElementBox box)
+    private void recursiveInitBoxes(ElementBox box)
     {
+        box.initBox();
         box.loadSizes();
         for (int i = 0; i < box.getSubBoxNumber(); i++)
         {
             Box child = box.getSubBox(i);
             if (child instanceof ElementBox)
-                recursiveLoadSizes((ElementBox) child);
+                recursiveInitBoxes((ElementBox) child);
         }
     }
     

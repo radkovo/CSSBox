@@ -182,6 +182,20 @@ public class HTMLNorm
                     attrs = attrs + applyBorders(fstyle, "left");
                 }
             }
+            //object alignment
+            if (el.getTagName().equals("img") ||
+            	el.getTagName().equals("object") ||
+            	el.getTagName().equals("applet"))
+            {
+            	if (el.getAttributes().getNamedItem("align") != null)
+            	{
+            		String align = el.getAttribute("align");
+            		if (align.equals("left"))
+            			attrs = attrs + "float:left;";
+            		else if (align.equals("right"))
+            			attrs = attrs + "float:right;";
+            	}
+            }
             //Text properties
             if (el.getTagName().equals("font"))
             {

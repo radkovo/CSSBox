@@ -104,12 +104,17 @@ public class BlockBox extends ElementBox
     /** true if the box height has been set explicitly */
     protected boolean hset;
     
+    /** true if the width is relative [%] */
+    protected boolean wrelative;
+    
     //TODO: add this to copy methods
     /** the preferred width or -1 if something is set to "auto" */
     protected int preferredWidth;
     
     /** Minimal width necessary for the last executed layout. */
     protected int lastPreferredWidth;
+    
+    protected boolean widthComputed = false;
     
     //============================== Computed style ======================
     
@@ -181,6 +186,7 @@ public class BlockBox extends ElementBox
         super(src.el, src.g, src.ctx);
         setStyle(src.getStyle());
         
+        viewport = src.viewport;
         cblock = src.cblock;
         isblock = true;
         contblock = false;
@@ -401,6 +407,11 @@ public class BlockBox extends ElementBox
      */
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
+        if (this.getElement() != null &&
+            this.getElement().getAttribute("id") != null &&
+            this.getElement().getAttribute("id").equals("mojo"))
+            System.out.println("jo!");
+        
         //Skip if not displayed
         if (!displayed)
         {
@@ -412,6 +423,17 @@ public class BlockBox extends ElementBox
         //remove previously splitted children from possible previous layout
         clearSplitted();
 
+        if (!hasFixedWidth())
+        {
+            int min = getMinimalContentWidthLimit();
+            int max = getMaximalContentWidth();
+            int pref = Math.min(max, availw);
+            //System.out.println(this + " prefers " + pref + " min=" + min);
+            if (pref < min) pref = min;
+            setContentWidth(pref);
+            updateChildSizes();
+        }
+        
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
         setAvailableWidth(totalWidth());
@@ -420,6 +442,9 @@ public class BlockBox extends ElementBox
             layoutInline();
         else //block elements containing block elements
             layoutBlocks();
+        
+        widthComputed = true;
+        
         //allways fits as well possible
         return true;
     }
@@ -433,13 +458,15 @@ public class BlockBox extends ElementBox
         int x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         int x = x1; //current x
         int y = 0; //current y
         int maxw = 0; //width of the longest line found
         int maxh = 0; //maximal height on the line
+        int prefw = 0; //preferred width of the not-in-flow boxes
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
+        boolean someinflow = false; //there has been any in-flow inline element?
 
         Vector<ContentLine> lines = new Vector<ContentLine>();
         ContentLine curline = new ContentLine(0);
@@ -451,8 +478,6 @@ public class BlockBox extends ElementBox
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
             Box subbox = getSubBox(i);
-            if (subbox.canSplitBefore())
-            	lastbreak = i;
             
             //if we find a block here, it must be an out-of-flow box
             //make the positioning and continue
@@ -460,23 +485,35 @@ public class BlockBox extends ElementBox
             {
                 BlockBox sb = (BlockBox) subbox;
                 BlockLayoutStatus stat = new BlockLayoutStatus();
-                stat.y = y + maxh; //floating boxes should start below this line
+                
+                //when the line has already started, the floating boxes should start below this line
+                boolean atstart = (x <= x1);
+                if (!atstart)
+                    stat.y = y + maxh;
+                
                 if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
                     layoutBlockFloating(sb, wlimit, stat);
                 else //absolute or fixed positioning
                     layoutBlockPositioned(sb, wlimit, stat);
                 
+                //preferred width
+                if (stat.prefw > prefw) prefw = stat.prefw;
                 //in case the block was floating, we need to update the bounds
                 x1 = fleft.getWidth(y + floatY) - floatXl;
                 x2 = fright.getWidth(y + floatY) - floatXr;
                 if (x1 < 0) x1 = 0;
                 if (x2 < 0) x2 = 0;
-                x = x1;
+                //if the line hasn't started yet, update its start
+                if (atstart && x < x1)
+                    x = x1;
                 //continue with next subboxes
                 continue;
             }
             
             //process inline elements
+            if (subbox.canSplitBefore())
+                lastbreak = i;
+            someinflow = true;
             boolean split;
             do //repeat while the box is being split to sub-boxes
             {
@@ -501,8 +538,9 @@ public class BlockBox extends ElementBox
                 if (subbox instanceof InlineBox)
                 {
                     InlineBox isubbox = (InlineBox) subbox;
-                    if (isubbox.getMaxLineHeight() > maxh) 
-                        maxh = isubbox.getMaxLineHeight();
+                    int prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
+                    if (prefh > maxh) 
+                        maxh = prefh;
                 }
                 else
                 {
@@ -533,7 +571,7 @@ public class BlockBox extends ElementBox
                     curline.setLimits(x2);
                     //go to the new line
                     if (x > maxw) maxw = x;
-                    y += getLineHeight();
+                    y += Math.max(maxh, getLineHeight());
                     maxh = 0;
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
@@ -559,18 +597,12 @@ public class BlockBox extends ElementBox
        }
         
         //block width
-        if (x > maxw) maxw = x;
-        lastPreferredWidth = maxw;
-        //Update width if it is not determined (out of the flow boxes with no width set)
-        //TODO: here, overflow: should be considered. Using owerflow: visible
-        if (!hasFixedWidth() && !isInFlow())
+        if (someinflow)
         {
-        	int min = getMinimalContentWidthLimit();
-        	int pref = maxw;
-        	if (pref < min) pref = min;
-            setContentWidth(pref); //shrintk-to-fit
-            updateChildSizes();
+            if (x > maxw) maxw = x; //update maxw with the last line
+            if (maxw > prefw) prefw = maxw; //update preferred width with in-flow elements
         }
+        lastPreferredWidth = prefw;
         if (!hasFixedHeight())
         {
                 y = y + maxh; //possible unfinished line
@@ -601,7 +633,7 @@ public class BlockBox extends ElementBox
      */
     private void layoutBlocks()
     {
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         BlockLayoutStatus stat = new BlockLayoutStatus();
 
         for (int i = 0; i < getSubBoxNumber(); i++)
@@ -645,14 +677,14 @@ public class BlockBox extends ElementBox
         }
 
         //Update width if not set (out of the flow boxes with no width set)
-        if (!hasFixedWidth())
+        /*if (!hasFixedWidth())
         {
         	int min = getMinimalContentWidthLimit();
         	int pref = stat.prefw;
         	if (pref < min) pref = min;
             setContentWidth(pref); //shrintk-to-fit
             updateChildSizes();
-        }
+        }*/
         //update the height when not set or set to "auto"
         if (!hasFixedHeight())
         {
@@ -689,7 +721,7 @@ public class BlockBox extends ElementBox
             stat.maxw = subbox.getWidth();
         //preferred width
         int pref = subbox.getPreferredWidth();
-        if (pref == -1) pref = subbox.getWidth(); //nothing preferred, we use the maximal width
+        if (pref == -1) pref = subbox.getMaximalWidth(); //nothing preferred, we use the maximal width
         if (pref > stat.prefw)
             stat.prefw = pref;
     }
@@ -721,8 +753,13 @@ public class BlockBox extends ElementBox
         if (floatw > stat.maxw) stat.maxw = floatw;
         if (stat.maxw > wlimit) stat.maxw = wlimit;
         //FIXME: is this correct? this shouldn't be based on maxFloadWidth()
-        if (floatw > stat.prefw) stat.prefw = floatw;
-        if (stat.prefw > wlimit) stat.prefw = wlimit;
+        //if (floatw > stat.prefw) stat.prefw = floatw;
+        //if (stat.prefw > wlimit) stat.prefw = wlimit;
+        //preferred width
+        int pref = subbox.getPreferredWidth();
+        if (pref == -1) pref = wlimit; //nothing preferred, we use the maximal width
+        if (pref > stat.prefw)
+            stat.prefw = pref;
     }
     
     private void layoutBlockPositioned(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
@@ -732,16 +769,14 @@ public class BlockBox extends ElementBox
         subbox.doLayout(wlimit, true, true);
     }
     
-    /** Calculate absolute positions of all the subboxes.
-     * @param parent Parent element box.
-     */
-    public void absolutePositions(ElementBox parent)
+    @Override
+    public void absolutePositions(Rectangle clip)
     {
         if (displayed)
         {
             //my top left corner
-            int x = cblock.getContentX() + bounds.x;
-            int y = cblock.getContentY() + bounds.y;
+            int x = cblock.getAbsoluteContentX() + bounds.x;
+            int y = cblock.getAbsoluteContentY() + bounds.y;
 
             loadPosition();
             if (floating == FLOAT_NONE)
@@ -754,46 +789,63 @@ public class BlockBox extends ElementBox
                 else if (position == POS_ABSOLUTE || position == POS_FIXED)
                 {
                 	if (leftset)
-                        x = cblock.getContentX() + coords.left;
+                        x = cblock.getAbsoluteContentX() + coords.left;
                     else if (rightset)
-                		x = cblock.getContentX() + cblock.getContentWidth() - bounds.width - coords.right - 2;
+                		x = cblock.getAbsoluteContentX() + cblock.getContentWidth() - bounds.width - coords.right - 2;
                     else
-                        x = cblock.getContentX();
+                        x = cblock.getAbsoluteContentX();
                 	
                 	if (topset)
-                        y = cblock.getContentY() + coords.top;
+                        y = cblock.getAbsoluteContentY() + coords.top;
                     else if (bottomset)
-                		y = cblock.getContentY() + cblock.getContentHeight() - bounds.height - coords.bottom - 2;
+                		y = cblock.getAbsoluteContentY() + cblock.getContentHeight() - bounds.height - coords.bottom - 2;
                     else
-                        y = cblock.getContentY();
+                        y = cblock.getAbsoluteContentY();
                 }
             }
             else if (floating == FLOAT_LEFT)
             {
             	BlockBox listowner = fown.getOwner();
-                x = listowner.getContentX() + bounds.x;
-                y = listowner.getContentY() + bounds.y;
+                x = listowner.getAbsoluteContentX() + bounds.x;
+                y = listowner.getAbsoluteContentY() + bounds.y;
             }
             else if (floating == FLOAT_RIGHT)
             {
             	BlockBox listowner = fown.getOwner();
-                x = listowner.getContentX() + listowner.getContentWidth() - bounds.width - bounds.x - 2;
-                y = listowner.getContentY() + bounds.y;
+                x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x - 2;
+                y = listowner.getAbsoluteContentY() + bounds.y;
             }
 
             //set the absolute coordinates
-            bounds.x = x;
-            bounds.y = y;
+            absbounds.x = x;
+            absbounds.y = y;
             
-            //repeat for all valid subboxes
-            for (int i = startChild; i < endChild; i++)
-                getSubBox(i).absolutePositions(this);
+            //update the width and height according to overflow of the cblock
+            absbounds.width = bounds.width;
+            absbounds.height = bounds.height;
+            if (clip != null)
+                clipAbsoluteBounds(clip);
+            
+            if (isDisplayed())
+            {
+                viewport.updateBoundsFor(absbounds);
+                if (overflow == OVERFLOW_HIDDEN)
+                    clip = new Rectangle(getAbsoluteContentX(),
+                                         getAbsoluteContentY(),
+                                         getContentWidth(),
+                                         getContentHeight());
+                
+                //repeat for all valid subboxes
+                for (int i = startChild; i < endChild; i++)
+                    getSubBox(i).absolutePositions(clip);
+            }
+            
         }
     }
 
-    public int getMaxContentWidth()
+    public int getAvailableContentWidth()
     {
-        int ret = maxwidth - emargin.left - border.left - padding.left 
+        int ret = availwidth - emargin.left - border.left - padding.left 
                   - padding.right - border.right - emargin.right;
         if (max_size.width != -1 && ret > max_size.width)
             ret = max_size.width;
@@ -804,7 +856,7 @@ public class BlockBox extends ElementBox
     {
         int ret = 0;
         //if the width is set or known implicitely, return the width
-        if (hasFixedWidth())
+        if (wset && !wrelative)
             ret = content.width;
         //return the maximum of the nested minimal widths
         else
@@ -828,9 +880,10 @@ public class BlockBox extends ElementBox
     
     public int getMaximalWidth()
     {
+    	//System.out.println("W: " + this);
         int ret;
         //if the width is set or known implicitely, return the width
-        if (hasFixedWidth())
+        if (wset && !wrelative)
             ret = content.width;
         else
             ret = getMaximalContentWidth();
@@ -842,6 +895,10 @@ public class BlockBox extends ElementBox
 
     protected int getMaximalContentWidth()
     {
+        if (this.getElement() != null &&
+            this.getElement().getAttribute("id") != null &&
+            this.getElement().getAttribute("id").equals("jojo"))
+            System.out.println("jo!");
         int sum = 0;
         int max = 0;
         //the inline elements inside are summed up, the maximum of block ones is taken 
@@ -858,7 +915,8 @@ public class BlockBox extends ElementBox
             }
             else
             {
-                if (subbox.getMaximalWidth() > max) max = subbox.getMaximalWidth();
+            	int sm = subbox.getMaximalWidth();
+                if (sm > max) max = sm;
                 if (sum > max) max = sum;
                 sum = 0; //end of line forced by the block
             }
@@ -887,10 +945,19 @@ public class BlockBox extends ElementBox
     	return ret;
     }
     
+    /**
+     * @return true if the width is specified relatively
+     */
+    public boolean isRelative()
+    {
+        return wrelative;
+    }
+
 	@Override
 	public boolean hasFixedWidth()
 	{
-		return wset || (isInFlow() && cblock.hasFixedWidth());
+		//return (wset && !wrelative) || ((isInFlow() || isRelative()) && cblock.hasFixedWidth());
+	    return wset || isInFlow();
 	}
 
 	@Override
@@ -955,9 +1022,6 @@ public class BlockBox extends ElementBox
                     }
                     break;
             }
-            
-            if (getElement().getAttribute("id").startsWith("d"))
-                drawExtent(g);
             
             if (node.getNodeType() == Node.ELEMENT_NODE)
             {
@@ -1032,7 +1096,13 @@ public class BlockBox extends ElementBox
     	return content.height;
     }
 
-    /** Returns maximal width of floats in a specified Y interval */
+    /** 
+     * Returns maximal width of floats (left and right together) in 
+     * a specified Y interval in this block.
+     * @param y1 the starting Y value
+     * @param y2 the end Y value
+     * @return the maximal sum of the left and the right float width
+     */
     protected int maxFloatWidth(int y1, int y2)
     {
         int ret = 0;
@@ -1045,11 +1115,13 @@ public class BlockBox extends ElementBox
         return ret;
     }
 
+    @Override
     protected void loadSizes()
     {
         loadSizes(false);
     }
     
+    @Override
     public void updateSizes()
     {
     	loadSizes(true);
@@ -1173,6 +1245,8 @@ public class BlockBox extends ElementBox
         String mright = getStyleProperty("margin-right");
         preferredWidth = -1;
         
+        if (!widthComputed) update = false;
+        
         if (width.equals("auto"))
         {
         	if (exact) wset = false;
@@ -1186,26 +1260,35 @@ public class BlockBox extends ElementBox
                                   - padding.right - border.right - margin.right;
                 if (content.width < 0) content.width = 0;
             }
-            if (isInFlow())
-                preferredWidth = -1; //we don't prefer anything (auto width)
-            else
-                preferredWidth = margin.left + border.left + padding.left + padding.right
-                + border.right + margin.right; 
+            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
-        	if (exact) wset = true;
+        	if (exact) 
+        	{
+        	    wset = true;
+                wrelative = dec.isPercent(width);
+        	}
           	content.width = dec.getLength(width, 0, 0, contw);
             margin.left = dec.getLength(mleft, 0, 0, contw);
             margin.right = dec.getLength(mright, 0, 0, contw);
-
-            // TODO: pro absolutni pozicovani by to melo byt jinak
-            if (isInFlow()) 
+            
+            //We will prefer some width if the value is not percentage
+            boolean prefer = !dec.isPercent(width);
+            //We will include the margins in the preferred width if they're not percentages
+            int prefml = dec.isPercent(mleft) || (mleft.equals("auto")) ? 0 : margin.left;
+            int prefmr = dec.isPercent(mright) || (mright.equals("auto")) ? 0 : margin.right;
+            //Compute the preferred width
+            if (prefer)
+                preferredWidth = prefml + border.left + padding.left + content.width +
+                                 padding.right + border.right + prefmr;
+            
+            //Compute the margins if we're in flow and we know the width
+            //TODO: pro absolutni pozicovani by to melo byt jinak
+            if (isInFlow() && prefer) 
             {
                 if (mleft.equals("auto") && mright.equals("auto"))
                 {
-                    preferredWidth = border.left + padding.left + content.width +
-                                     padding.right + border.right;
                     int rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
                     if (rest < 0) rest = 0;
@@ -1214,24 +1297,18 @@ public class BlockBox extends ElementBox
                 }
                 else if (mleft.equals("auto"))
                 {
-                    preferredWidth = border.left + padding.left + content.width +
-                                     padding.right + border.right + margin.right;
                     margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
                     if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
                 else if (mright.equals("auto"))
                 {
-                    preferredWidth = margin.left + border.left + padding.left + content.width +
-                                     padding.right + border.right;
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     if (margin.right < 0) margin.right = 0; //"treated as zero"
                 }
                 else //everything specified, ignore right margin
                 {
-                    preferredWidth = margin.left + border.left + padding.left + content.width +
-                                        padding.right + border.right + margin.right;
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     if (margin.right < 0) margin.right = 0; //"treated as zero"
@@ -1285,7 +1362,10 @@ public class BlockBox extends ElementBox
    				block.setSize(block.totalWidth(), block.totalHeight());
    				//if something has changed, update the children
     			if (block.getContentWidth() != oldw || block.getContentHeight() != oldh)
+    			{
     				block.updateChildSizes();
+    			    //block.doLayout(content.width, true, true);
+    			}
     		}
     	}
     }

@@ -40,9 +40,6 @@ public class TableBodyBox extends BlockBox
     /** cell spacing */
     protected int spacing = 2;
     
-    /** true when the rowspans have been already calculated */
-    private boolean rows_done = false;
-
     //====================================================================================
     
     /**
@@ -87,7 +84,6 @@ public class TableBodyBox extends BlockBox
      */
     public int getColumnCount()
     {
-        if (!rows_done) calcOffsets();
         return numCols;
     }
     
@@ -136,8 +132,6 @@ public class TableBodyBox extends BlockBox
      */ 
     public int getMinimalColumnWidth(int col)
     {
-        if (!rows_done) calcOffsets();
-        
         int ret = 0;
         int r = 0;
         while (r < getRowCount())
@@ -162,8 +156,6 @@ public class TableBodyBox extends BlockBox
      */ 
     public int getMaximalColumnWidth(int col)
     {
-        if (!rows_done) calcOffsets();
-        
         int ret = 0;
         int r = 0;
         while (r < getRowCount())
@@ -190,8 +182,6 @@ public class TableBodyBox extends BlockBox
      */ 
     public void updateColumn(int c, TableColumn col)
     {
-        if (!rows_done) calcOffsets();
-        
         int r = 0;
         while (r < getRowCount())
         {
@@ -216,6 +206,11 @@ public class TableBodyBox extends BlockBox
                         if (col.percent < cell.percent)
                             col.percent = cell.percent;
                     }
+                    else
+                    {
+                        if (cell.getContentWidth() > col.abswidth)
+                            col.abswidth = cell.getContentWidth();
+                    }
                 }
                 //ensure the minimal width
                 if (col.getWidth() < col.getMinimalWidth())
@@ -230,6 +225,12 @@ public class TableBodyBox extends BlockBox
     //====================================================================================
     
     @Override
+    public void initBox()
+    {
+        calcOffsets();
+    }
+    
+    @Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
         return true;
@@ -237,15 +238,14 @@ public class TableBodyBox extends BlockBox
     
     public boolean doLayout(int widthlimit, Vector<TableColumn> columns)
     {
-        this.maxwidth = widthlimit;
+        setAvailableWidth(widthlimit);
 
         int y = spacing;
         int x = spacing;
         int maxw = 0;
         int maxh = 0;
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         
-        if (!rows_done) calcOffsets();
         /*System.out.println("Table body " + getColumnCount() + "x" + getRowCount());
         for (int r = 0; r < rows.size(); r++)
         {
@@ -280,13 +280,21 @@ public class TableBodyBox extends BlockBox
                     {
                         cell.doLayout(wlimit, true, true);
                         cell.setPosition(x, 0);
-                        int ch = cell.getHeight() / cell.getRowspan();
-                        if (ch > maxh) maxh = ch;
+                        //int ch = cell.getHeight() / cell.getRowspan();
+                        if (cell.getRowspan() == 1)
+                        {
+                        	int ch = cell.getHeight();
+                        	if (ch > maxh) maxh = ch;
+                        }
                     }
                     else if (r < lastrow)
                     {
-                        int ch = cell.getHeight() / cell.getRowspan();
-                        if (ch > maxh) maxh = ch;
+                        //int ch = cell.getHeight() / cell.getRowspan();
+                        if (cell.getRowspan() == 1)
+                        {
+                        	int ch = cell.getHeight();
+                        	if (ch > maxh) maxh = ch;
+                        }
                     }
                     else if (r == lastrow) 
                     {
@@ -428,10 +436,6 @@ public class TableBodyBox extends BlockBox
                 }
             }
         }
-        
-        rows_done = true;
     }
-
-
     
 }

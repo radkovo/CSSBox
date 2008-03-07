@@ -22,32 +22,49 @@
 package org.fit.cssbox.layout;
 
 /**
- * Trida implementujici metody pro prevod CSS specifikaci
- * na Javovske datove typy.
+ * This class implements converting the CSS specifications to Java data types.
  *
  * @author  burgetr
  */
 public class CSSDecoder 
 {
-    private VisualContext context = new VisualContext();
+    private VisualContext context;
     
+    /**
+     * Creates a new VisualDecoder in the specified context. The context is
+     * used for the unit conversion (e.g. the <code>em</code> units etc.)
+     * @param c the visual contect to be assigned  
+     */
     public CSSDecoder(VisualContext c)
     {
         context = c;
     }
     
+    /**
+     * Returns the visual context of this decoder.
+     * @return the assigned visual context
+     */
     public VisualContext getContext()
     {
         return context;
     }
 
+    /**
+     * Changes the visual context assigned to this decoder.
+     * @param c The new visual context to be assigned
+     */
     public void setContext(VisualContext c)
     {
         context = c;
     }
     
-    //===================================================================
-    
+    /**
+     * If the value is defined and not empty, it is returned back. Otherwise,
+     * the default value is returned.
+     * @param value the value to be checked
+     * @param defval the default value
+     * @return the <code>value</code> if it is defined, <code>defval</code> otherwise
+     */
     public String getValue(String value, String defval)
     {
         if (value == null || value.trim().length() == 0)
@@ -55,8 +72,6 @@ public class CSSDecoder
         else
             return value;
     }
-    
-    //=============== Delky na pixely ===================================
     
     /** Returns the length in pixels from a CSS definition
      * @param value The value to be converted
@@ -107,6 +122,16 @@ public class CSSDecoder
         } catch (NumberFormatException e) {
             return whole;
         }
+    }
+    
+    /**
+     * Checks if the value is a percentage
+     * @param value The value to be checked
+     * @return <code>true</code> if the specified value is percentage
+     */
+    public boolean isPercent(String value)
+    {
+        return value.endsWith("%");
     }
     
 }

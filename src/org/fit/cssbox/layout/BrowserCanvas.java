@@ -104,7 +104,7 @@ public class BrowserCanvas extends JPanel
         
         System.err.println("Creating boxes");
         Box.next_order = 0;
-        box = (BlockBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, null);
+        box = (BlockBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, null);
         System.err.println("We have " + Box.next_order + " boxes");
         viewport.addSubBox(box);
         viewport.initBoxes();
@@ -117,6 +117,11 @@ public class BrowserCanvas extends JPanel
         viewport.doLayout(dim.width, true, true);
         System.err.println("Resulting size: " + box.getWidth() + "x" + box.getHeight() + " (" + box + ")");
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+
+        System.err.println("Updating viewport size");
+        viewport.updateBounds();
+        System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+        
         if (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height)
         {
             img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),
@@ -146,7 +151,9 @@ public class BrowserCanvas extends JPanel
     public void clearCanvas()
     {
         Graphics ig = img.getGraphics();
-        ig.setColor(Color.white);
+        Color bg = box.getBgcolor();
+        if (bg == null) bg = Color.white;
+        ig.setColor(bg);
         ig.fillRect(0, 0, img.getWidth(), img.getHeight());
         ig.setColor(Color.black);
     }

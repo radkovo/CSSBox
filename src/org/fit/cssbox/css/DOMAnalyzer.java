@@ -392,6 +392,7 @@ public class DOMAnalyzer
             recursiveStylesToDomInherited(child.item(i), nextlevel);
     }
 
+    //TODO: create table anonymous boxes
     private void recursiveCreateAnonymousBoxes(Element n)
     {
         boolean text = false;

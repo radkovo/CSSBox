@@ -75,8 +75,8 @@ public class TableColumnGroup extends TableColumn
             if (box instanceof TableColumn)
             {
                 TableColumn col = (TableColumn) box;
-                if (col.getColumnWidth().equals(""))
-                    col.setColumnWidth(colwidth); //when column width is not set, use the group width
+                if (col.getSpecifiedWidth().equals(""))
+                    col.setSpecifiedWidth(colwidth); //when column width is not set, use the group width
                 for (int i = 0; i < col.getSpan(); i++)
                     columns.add(col);
             }
@@ -85,7 +85,7 @@ public class TableColumnGroup extends TableColumn
         if (columns.isEmpty())
         {
             TableColumn col = new TableColumn(null, g, ctx);
-            col.setColumnWidth(colwidth);
+            col.setSpecifiedWidth(colwidth);
             for (int i = 0; i < span; i++)
                 columns.add(col);
         }

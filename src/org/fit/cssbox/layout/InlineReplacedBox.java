@@ -104,14 +104,14 @@ public class InlineReplacedBox extends InlineBox
         }
 
         setAvailableWidth(availw);
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else
             return force;
     }
 
-    @Override
+	@Override
     protected void loadSizes()
     {
         super.loadSizes();

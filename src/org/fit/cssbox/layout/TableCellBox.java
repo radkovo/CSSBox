@@ -39,9 +39,6 @@ public class TableCellBox extends BlockBox
     /** first collumn of this cell in the row */
     protected int column; 
     
-    /** true if the width is relative [%] */
-    protected boolean wrelative;
-    
     /** relative width [%] when used */
     protected int percent;
     
@@ -57,6 +54,7 @@ public class TableCellBox extends BlockBox
         loadAttributes();
         fleft = new FloatList(this);
         fright = new FloatList(this);
+        overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
     }
 
     /**
@@ -69,6 +67,7 @@ public class TableCellBox extends BlockBox
         loadAttributes();
         fleft = new FloatList(this);
         fright = new FloatList(this);
+        overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
     }
     
     /**
@@ -145,14 +144,6 @@ public class TableCellBox extends BlockBox
         return percent;
     }
 
-    /**
-     * @return true if the width is specified relatively
-     */
-    public boolean isRelative()
-    {
-        return wrelative;
-    }
-
     public String toString()
     {
         return super.toString() + "[" + column + "," + row + "]";
@@ -163,8 +154,8 @@ public class TableCellBox extends BlockBox
     public int getMinimalWidth()
     {
         int ret = getMinimalContentWidth();
-        if (!wrelative && hasFixedWidth() && content.width > ret)
-            ret = content.width;
+        /*if (!wrelative && hasFixedWidth() && content.width > ret)
+            ret = content.width;*/
         ret += margin.left + padding.left + border.left +
                margin.right + padding.right + border.right;
         return ret;
@@ -173,8 +164,8 @@ public class TableCellBox extends BlockBox
     public int getMaximalWidth()
     {
         int ret = getMaximalContentWidth();
-        if (!wrelative && hasFixedWidth())
-            ret = content.width;
+        /*if (!wrelative && hasFixedWidth())
+            ret = content.width;*/
         //increase by margin, padding, border
         ret += margin.left + padding.left + border.left +
                margin.right + padding.right + border.right;
@@ -287,11 +278,19 @@ public class TableCellBox extends BlockBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-		return wset; //for cells, the width cannot be computed from the containing box now
+		//return wset && !isRelative(); //for cells, the width cannot be computed from the containing box now
+	    //return false; //we can never be sure for table cells, depends on column widths
+		return true; //the width is set by the column
 	}
 
+	@Override
+	public boolean hasFixedHeight()
+	{
+		return false;
+	}
+	
 	/**
-     * Load the important values from the element attributes.
+     * Loads the important values from the element attributes.
      */
     protected void loadAttributes()
     {

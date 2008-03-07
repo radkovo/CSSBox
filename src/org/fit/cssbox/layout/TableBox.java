@@ -49,6 +49,9 @@ public class TableBox extends BlockBox
     /** an anonymous table body (for lines that are not in any other body) */
     private TableBodyBox anonbody;
     
+    /** true if the column width have been already calculated */
+    private boolean columnsCalculated = false;
+
     //====================================================================================
     
     /**
@@ -87,10 +90,18 @@ public class TableBox extends BlockBox
 	}
 	
     //====================================================================================
-    
+
+    @Override
+    public void initBox()
+    {
+        organizeContent(); //organize the child elements according to their display property
+    }
+	
     @Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
+    	if (this.getElement().getAttribute("id").equals("jojo"))
+    		System.out.println("jo!");
         int y = 0;
         int maxw = 0;
         
@@ -98,9 +109,6 @@ public class TableBox extends BlockBox
          * is updated after the layout */
         setAvailableWidth(totalWidth());
 
-        //organize the child elements according to their display property
-        organizeContent();
-        
         //calculate the column widths
         calculateColumns();
         
@@ -142,6 +150,8 @@ public class TableBox extends BlockBox
     @Override
     protected void loadSizes(boolean update)
     {
+    	if (this.getElement().getAttribute("id").equals("xoxo"))
+    		System.out.println("jo!");
         //load the content width from the attribute
         if (!update)
         {
@@ -171,9 +181,14 @@ public class TableBox extends BlockBox
         
         if (width.equals("")) width = "auto";
         if (exact) wset = !width.equals("auto");
+        if (wset && exact && dec.isPercent(width)) wrelative = true;
         String mleft = getStyleProperty("margin-left");
         String mright = getStyleProperty("margin-right");
         preferredWidth = -1;
+        
+        //if column widths haven't been calculated yet,
+        //we can reload everything from scratch
+        if (!columnsCalculated) update = false;
         
         if (!wset && !update) //width unknown and the content size unknown
         {
@@ -230,6 +245,49 @@ public class TableBox extends BlockBox
         }
     }
     
+    @Override
+    protected int getMaximalContentWidth()
+    {
+        int ret = 0;
+        if (header != null)
+        {
+            int m = header.getMaximalWidth();
+            if (m > ret) ret = m;
+        }
+        if (footer != null)
+        {
+            int m = footer.getMaximalWidth();
+            if (m > ret) ret = m;
+        }
+        for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
+        {
+            int m = it.next().getMaximalWidth();
+            if (m > ret) ret = m;
+        }
+        return ret;
+    }
+
+    @Override
+    protected int getMinimalContentWidth()
+    {
+        int ret = 0;
+        if (header != null)
+        {
+            int m = header.getMinimalWidth();
+            if (m > ret) ret = m;
+        }
+        if (footer != null)
+        {
+            int m = footer.getMinimalWidth();
+            if (m > ret) ret = m;
+        }
+        for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
+        {
+            int m = it.next().getMinimalWidth();
+            if (m > ret) ret = m;
+        }
+        return ret;
+    }
     
     //====================================================================================
     
@@ -272,12 +330,14 @@ public class TableBox extends BlockBox
      */
     private void calculateColumns()
     {
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
+        System.out.println("wset="+wset);
+        System.out.println("wlimit="+wlimit);
         
         //create the columns that haven't been specified explicitely
         determineColumnCount();
         while (columns.size() < columnCount)
-            columns.add(new TableColumn(createAnonymousColumn(getElement().getOwnerDocument()), g, ctx));
+            columns.add(new TableColumn(createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx));
         
         //load the parametres and ensure the minimal column widths
         if (header != null)
@@ -286,93 +346,129 @@ public class TableBox extends BlockBox
             updateColumns(footer);
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
             updateColumns(it.next());
+
+        //for (int i = 0; i < columns.size(); i++)
+        //    System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth());
         
-        //convert the percentages to widths
+        
+        //now, the columns are at minimal widths
+        //gather column statistics
         int sumabs = 0; //total length of absolute columns
         int sumperc = 0; //total percentage
+        int sumnonemin = 0; //total minimal length of the columns with no width specified
+        int sumnonemax = 0; //total maximal length of the columns with no width specified
+        int totalwperc = 0; //total table width computed from percentage columns
         for (int i = 0; i < columns.size(); i++) //compute the sums
         {
             TableColumn col = columns.elementAt(i);
             if (col.wrelative)
+            {
             	sumperc += col.percent;
+            	int maxw = col.getMaximalWidth();
+            	int newtotal = maxw * 100 / col.percent;
+            	if (newtotal > totalwperc) totalwperc = newtotal;
+            }
             else
-            	sumabs += col.getWidth();
-        }
-        if (sumperc > 0)
-        {
-	        int abspart = 100 - sumperc; //the absolute part is how many percent
-            int totalw = (abspart == 0) ? wlimit : sumabs * 100 / abspart; //what is 100%
-	        int maxtotalw = (wlimit - sumabs) * 100 / sumperc; //what is 100% upper limit
-	        if (totalw > maxtotalw)
-	        	totalw = maxtotalw;
-	        for (int i = 0; i < columns.size(); i++) //set the column sizes
-	        {
-	            TableColumn col = columns.elementAt(i);
-	            if (col.wrelative)
-                {
-                    int neww = col.percent * totalw / 100;
-                    if (neww > col.getMinimalWidth())
-                        col.setColumnWidth(neww);
-                }
-	        }
-        }
-        
-        //compute the space remaining for the non fixed-width columns
-        Vector<ColumnInfo> vars = new Vector<ColumnInfo>();
-        int remain = wlimit - ((columnCount+1) * spacing);
-        for (int i = 0; i < columns.size(); i++)
-        {
-            TableColumn col = columns.elementAt(i);
-            if (col.wset)
-                remain -= col.getWidth();
-            else
-                vars.add(new ColumnInfo(i, col.getMaximalWidth()));
-        }
-        //sort according to the maximal width
-        Collections.sort(vars);
-        //assign the widths
-        for (int i = 0; i < vars.size(); i++)
-        {
-            ColumnInfo vcol = vars.elementAt(i);
-            TableColumn col = columns.elementAt(vcol.index);
-            int pref = remain / (vars.size() - i);
-            if (pref > vcol.maxw) pref = vcol.maxw;
-            if (pref > col.getWidth())
-                col.setColumnWidth(pref);
-            else
-                pref = col.getWidth();
-            remain -= pref;
-        }
-        //check the total column width
-        int total = spacing;
-        for (int i = 0; i < columns.size(); i++)
-            total += columns.elementAt(i).getWidth() + spacing;
-        //distribute the remaining table width to the non-fixed columns
-        if (wset)
-            /*if (content.width > total)
             {
-                int togo = content.width - total;
-                for (int i = 0; i < vars.size(); i++)
+                if (col.wset)
+                    sumabs += col.abswidth;
+                else
                 {
-                    int add = togo / (vars.size() - i);
-                    TableColumn col = columns.elementAt(vars.elementAt(i).index);
-                    int newwidth = col.getWidth() + add;
-                    col.setColumnWidth(newwidth);
-                    togo -= add;
-                }
-            }*/
-            if (content.width > total)
-            {
-                int togo = content.width - total;
-                for (int i = 0; i < columns.size(); i++)
-                {
-                    int add = togo / (columns.size() - i);
-                    int newwidth = columns.elementAt(i).getWidth() + add;
-                    columns.elementAt(i).setColumnWidth(newwidth);
-                    togo -= add;
+                    sumnonemin += col.getWidth();
+                    sumnonemax += col.getMaximalWidth();
                 }
             }
-
+        }
+        
+        //guess the total table width (not including spacing now)
+        if (totalwperc > wlimit) totalwperc = wlimit;
+        int totalwabs = 0; //from absolute fields
+        if (sumabs + sumnonemax > 0)
+        {
+            int abspart = 100 - sumperc; //the absolute part is how many percent
+            totalwabs = (abspart == 0) ? wlimit : (sumabs + sumnonemax) * 100 / abspart; //what is 100%
+        }
+        
+        int mintotalw = getMinimalContentWidth();
+        int totalw = Math.max(totalwperc, totalwabs); //desired width
+        if (wset && totalw < wlimit)    //if the width is set explicitly, ensure the width
+            totalw = wlimit;
+        if (totalw > wlimit) totalw = wlimit; //we would like not to exceed the limit
+        if (totalw < mintotalw) totalw = mintotalw; //but we cannot be below the minimal width
+        
+        System.out.println("Percent: " + totalwperc);
+        System.out.println("Abs+%: " + totalwabs);
+        System.out.println("Minimum: " + getMinimalWidth());
+        System.out.println("wlimit: " + wlimit);
+        System.out.println("mintotalw: " + mintotalw);
+        System.out.println("result:" + totalw);
+        
+        //set the percentage columns to their values, if possible
+        int remain = totalw;
+        if (sumperc > 0)
+        {
+            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            {
+                TableColumn col = columns.elementAt(i);
+                if (col.wrelative)
+                {
+                    int neww = col.percent * totalw / 100;
+                    if (neww > remain) neww = remain;
+                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    //int dif = neww - col.getWidth();
+                    col.setColumnWidth(neww);
+                    remain -= neww;
+                }
+            }
+        }
+        System.out.println("remain2:" + remain);
+        
+        //set the absolute columns
+        if (sumabs > 0)
+        {
+            double factor = 1;
+            if (sumnonemin == 0)
+                factor = remain / (double) sumabs;
+            System.out.println("Factor: " + factor);
+            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            {
+                TableColumn col = columns.elementAt(i);
+                if (col.wset && !col.wrelative)
+                {
+                    System.out.println("Col " + i + " : " + col.abswidth);
+                    int neww = (int) (col.abswidth * factor);
+                    if (neww > remain) neww = remain;
+                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    //int dif = neww - col.getWidth();
+                    col.setColumnWidth(neww);
+                    remain -= neww;
+                }
+            }
+        }
+        System.out.println("remain3:" + remain);
+        
+        //set the remaining columns
+        if (sumnonemin > 0)
+        {
+            double factor = 1;
+            factor = remain / (double) sumnonemax;
+            System.out.println("Factor: " + factor);
+            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            {
+                TableColumn col = columns.elementAt(i);
+                if (!col.wset)
+                {
+                    int neww = (int) (col.getMaximalWidth() * factor);
+                    if (neww > remain) neww = remain;
+                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    //int dif = neww - col.getWidth();
+                    col.setColumnWidth(neww);
+                    remain -= neww;
+                }
+            }
+        }
+        
+        columnsCalculated = true;
     }
     
     //====================================================================================
@@ -419,7 +515,9 @@ public class TableBox extends BlockBox
                     case ElementBox.DISPLAY_TABLE_ROW:
                         if (anonbody == null)
                         {
-                        	Element anonelem = createAnonymousBody(getElement().getOwnerDocument());
+                            //the table itself may not have an owner document if it is an anonymous box itself
+                            //therefore, we're using the parent's owner document
+                        	Element anonelem = createAnonymousBody(getParent().getElement().getOwnerDocument()); 
                             anonbody = new TableBodyBox(anonelem, g, ctx);
                             anonbody.setContainingBlock(this);
                             anonbody.setParent(this);
@@ -481,21 +579,4 @@ public class TableBox extends BlockBox
         return div;
     }
     
-}
-
-class ColumnInfo implements Comparable<ColumnInfo>
-{
-    int index;
-    int maxw;
-    
-    public ColumnInfo(int i, int m)
-    {
-        index = i;
-        maxw = m;
-    }
-    
-    public int compareTo(ColumnInfo o)
-    {
-        return maxw - o.maxw;
-    }
 }

@@ -107,7 +107,7 @@ public class BlockReplacedBox extends BlockBox
         }
 
         setAvailableWidth(availw);
-        int wlimit = getMaxContentWidth();
+        int wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else
@@ -115,9 +115,9 @@ public class BlockReplacedBox extends BlockBox
     }
 
     @Override
-    protected void loadSizes()
+    protected void loadSizes(boolean update)
     {
-        super.loadSizes();
+        super.loadSizes(update);
         if (obj != null)
         {
             boxw = obj.getIntrinsicWidth();
@@ -153,6 +153,7 @@ public class BlockReplacedBox extends BlockBox
         content.width = boxw;
         content.height = boxh;
         bounds.setSize(totalWidth(), totalHeight());
+        preferredWidth = getWidth();
         wset = true;
         hset = true;
     }

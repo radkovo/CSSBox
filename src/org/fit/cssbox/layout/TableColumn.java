@@ -51,6 +51,9 @@ public class TableColumn extends BlockBox
     /** relative width [%] when used */
     protected int percent;
     
+    /** the absolute width when specified */
+    protected int abswidth;
+    
     //====================================================================================
     
     /**
@@ -84,7 +87,7 @@ public class TableColumn extends BlockBox
     /**
      * @return the width of the column(s)
      */
-    public String getColumnWidth()
+    public String getSpecifiedWidth()
     {
         return colwidth;
     }
@@ -93,13 +96,14 @@ public class TableColumn extends BlockBox
      * Set the width of the column form an attribute or CSS
      * @param width the new width
      */
-    public void setColumnWidth(String width)
+    public void setSpecifiedWidth(String width)
     {
         colwidth = width;
         try {
             content = new Dimension(0, 0);
             content.width = Integer.parseInt(width);
             bounds.width = content.width;
+            abswidth = content.width;
             wset = true;
         } catch (NumberFormatException e) {
             if (!width.equals(""))
@@ -117,7 +121,7 @@ public class TableColumn extends BlockBox
         content.width = width;
         bounds.width = content.width;
     }
-
+    
     /**
      * @return the maximal width of the cell contents
      */
@@ -216,7 +220,8 @@ public class TableColumn extends BlockBox
             String width = getStyleProperty("width");
             if (!width.equals("") && !width.equals("auto"))
             {
-                content.width = dec.getLength(width, "0", "0", contw);
+                abswidth = dec.getLength(width, "0", "0", contw);
+                content.width = abswidth;
                 wset = true;
 	            if (width.endsWith("%"))
 	            {
@@ -246,7 +251,7 @@ public class TableColumn extends BlockBox
         } catch (NumberFormatException e) {
             System.err.println("tableColumn: Invalid span value: " + el.getAttribute("span"));
         }
-        setColumnWidth(el.getAttribute("width"));
+        setSpecifiedWidth(el.getAttribute("width"));
     }
 
 }
