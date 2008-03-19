@@ -632,7 +632,7 @@ abstract public class Box
     }
     
     /** 
-     * Check if this is an inline.
+     * Checks if this is a block box.
      * @return false if this is an inline box and it contains inline
      * boxes only, true otherwise.
      */

@@ -409,7 +409,7 @@ public class BlockBox extends ElementBox
     {
         if (this.getElement() != null &&
             this.getElement().getAttribute("id") != null &&
-            this.getElement().getAttribute("id").equals("mojo"))
+            this.getElement().getAttribute("id").equals("alphabet"))
             System.out.println("jo!");
         
         //Skip if not displayed
@@ -752,9 +752,6 @@ public class BlockBox extends ElementBox
         //maximal width
         if (floatw > stat.maxw) stat.maxw = floatw;
         if (stat.maxw > wlimit) stat.maxw = wlimit;
-        //FIXME: is this correct? this shouldn't be based on maxFloadWidth()
-        //if (floatw > stat.prefw) stat.prefw = floatw;
-        //if (stat.prefw > wlimit) stat.prefw = wlimit;
         //preferred width
         int pref = subbox.getPreferredWidth();
         if (pref == -1) pref = wlimit; //nothing preferred, we use the maximal width
@@ -843,6 +840,7 @@ public class BlockBox extends ElementBox
         }
     }
 
+    @Override
     public int getAvailableContentWidth()
     {
         int ret = availwidth - emargin.left - border.left - padding.left 
@@ -852,6 +850,7 @@ public class BlockBox extends ElementBox
         return ret;
     }
     
+    @Override
     public int getMinimalWidth()
     {
         int ret = 0;
@@ -867,6 +866,10 @@ public class BlockBox extends ElementBox
         return ret;
     }
 
+    /**
+     * Computes the minimal width of the box content from the contained sub-boxes.
+     * @return the minimal content width
+     */
     protected int getMinimalContentWidth()
     {
         int ret = 0;
@@ -877,10 +880,10 @@ public class BlockBox extends ElementBox
         }
         return ret;
     }
-    
+
+    @Override
     public int getMaximalWidth()
     {
-    	//System.out.println("W: " + this);
         int ret;
         //if the width is set or known implicitely, return the width
         if (wset && !wrelative)
@@ -893,39 +896,50 @@ public class BlockBox extends ElementBox
         return ret;
     }
 
+    /**
+     * Computes the maximal width of the box content from the contained sub-boxes.
+     * @return the maximal content width
+     */
     protected int getMaximalContentWidth()
     {
-        if (this.getElement() != null &&
-            this.getElement().getAttribute("id") != null &&
-            this.getElement().getAttribute("id").equals("jojo"))
-            System.out.println("jo!");
         int sum = 0;
         int max = 0;
-        //the inline elements inside are summed up, the maximum of block ones is taken 
+        //the inline elements inside are summed up on the line
+        //the floating boxes are placed side by side
+        //the maximum of the remaining block boxes is taken 
         for (int i = startChild; i < endChild; i++)
         {
             Box subbox = getSubBox(i);
-            if (!subbox.isInFlow())
+            if (subbox.isBlock()) //block boxes
             {
-                if (subbox.getMaximalWidth() > max) max = subbox.getMaximalWidth();
+                BlockBox block = (BlockBox) subbox;
+                if (block.getFloating() != BlockBox.FLOAT_NONE) //floating block
+                {
+                    sum += subbox.getMaximalWidth();
+                }
+                else if (!block.isInFlow()) //positioned blocks
+                {
+                    if (subbox.getMaximalWidth() > max) max = subbox.getMaximalWidth();
+                }
+                else //in-flow blocks
+                {
+                    int sm = subbox.getMaximalWidth();
+                    if (sm > max) max = sm;
+                    if (sum > max) max = sum;
+                    sum = 0; //end of line forced by this block
+                }
             }
-            else if (!subbox.isBlock())
+            else //inline boxes
             {
                 sum += subbox.getMaximalWidth();
-            }
-            else
-            {
-            	int sm = subbox.getMaximalWidth();
-                if (sm > max) max = sm;
-                if (sum > max) max = sum;
-                sum = 0; //end of line forced by the block
             }
         }
         return Math.max(sum, max);
     }
     
     /**
-     * Determines the minimal width as it is limited by the ancestors.
+     * Determines the minimal width as it is limited by the ancestors (for in-flow boxes)
+     * or by the explicit setting of <code>width</code> or <code>min-width</code> properties.
      * @return the minimal width
      */ 
     public int getMinimalContentWidthLimit()

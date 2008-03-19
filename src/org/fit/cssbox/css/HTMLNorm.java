@@ -185,7 +185,9 @@ public class HTMLNorm
             //object alignment
             if (el.getTagName().equals("img") ||
             	el.getTagName().equals("object") ||
-            	el.getTagName().equals("applet"))
+            	el.getTagName().equals("applet") ||
+            	el.getTagName().equals("iframe") ||
+            	el.getTagName().equals("input"))
             {
             	if (el.getAttributes().getNamedItem("align") != null)
             	{
@@ -196,6 +198,29 @@ public class HTMLNorm
             			attrs = attrs + "float:right;";
             	}
             }
+            //table alignment
+            if (el.getTagName().equals("col") ||
+                el.getTagName().equals("colgroup") ||
+                el.getTagName().equals("tbody") ||
+                el.getTagName().equals("td") ||
+                el.getTagName().equals("tfoot") ||
+                el.getTagName().equals("th") ||
+                el.getTagName().equals("thead") ||
+                el.getTagName().equals("tr"))
+                {
+                    if (el.getAttributes().getNamedItem("align") != null)
+                    {
+                        String align = el.getAttribute("align");
+                        if (align.equals("left"))
+                            attrs = attrs + "text-align:left;";
+                        else if (align.equals("right"))
+                            attrs = attrs + "text-align:right;";
+                        else if (align.equals("center"))
+                            attrs = attrs + "text-align:center;";
+                        else if (align.equals("justify"))
+                            attrs = attrs + "text-align:justify;";
+                    }
+                }
             //Text properties
             if (el.getTagName().equals("font"))
             {
