@@ -1,26 +1,13 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-	<title>Insert title here</title>
-</head>
-<body>
-
-<h1>CSSBox Manual</h1>
-<p>Radek Burget<br/>
+<?xml version="1.0" encoding="UTF-8"?>
+<d:document xmlns="http://www.w3.org/1999/xhtml"
+		  xmlns:d="http://cssbox.sourceforge.net/docs">
+<d:title>CSSBox Manual</d:title>
+<d:author>Radek Burget<br/>
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
-</p>
+</d:author>
 
-<div class="section" id="toc">
-<h2>Table of Contents</h2>
-<ul>
-	<li><a href="#intro">Introduction</a></li>
-</ul>
-</div>
-
-<div class="section" id="intro">
-<h2>Introduction</h2>
+<d:section id="intro">
+<d:title>Introduction</d:title>
 <p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p>
@@ -31,84 +18,81 @@ how the basic information about the individual parts can be obtained.</p>
 from the <a href="../api/index.html">API documentation</a>.</p>
 <p>Any feedback to CSSBox and/or this manual is welcome via the
 <a href="http://cssbox.sourceforge.net/">CSSBox website</a>.</p>
-</div>
+</d:section>
 
-<div class="section" id="basic">
-<h2>Basic usage</h2>
+<d:section title="Basic usage" id="basic">
+<d:title>Basic usage</d:title>
 <p>The input of the rendering engine is a document DOM tree. The engine is able to
 automatically load the style sheets referenced in the document and it computes the
 efficient style of each element. Afterwrads, the document layout is computed.</p>
 
-<div class="subsection" id="basicLoading">
-<h3>Document Loading</h3>
+<d:subsection id="basicLoading">
+<d:title>Document Loading</d:title>
 <p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
 is used. However, any other DOM parser can be used. For creating the DOM tree using
 JTidy, following code can be used:</p> 
-<div class="code">
+<d:codebox>
 <br/>Tidy tidy = new Tidy();
 <br/>tidy.setTrimEmptyElements(false);
 <br/>tidy.setInputEncoding("utf-8");
 <br/>Document doc = tidy.parseDOM(is, null);
-</div>
+</d:codebox>>
 <p>Note tha JTidy has many configuration options that can be found in the
 documentation</p>
 <p>For the initial DOM and style sheet processing, a
-<a class="api" href="../api/org/fit/cssbox/css/DOMAnalyzer.html">DOMAnalyzer</a> object is used:</p>
-<div class="code">
+<d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used:</p>
+<d:codebox>
 <br/>DOMAnalyzer da = new DOMAnalyzer(doc, url);
 <br/>da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
 <br/>da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
 <br/>da.getStyleSheets(); <em>//load the author style sheets</em>
 <br/>da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
-</div>
+</d:codebox>
 <p>The <code>addStyleSheet()</code> method is used to add a style sheet to the document
 where the style sheet is a text string containing a CSS code. In our case we add two
 built-in style sheets that represent the standard document style. The <code>CSSNorm.stdStyleSheet()</code>
 method returns the CSS default style sheet and <code>CSSNorm.userStyleSheet()</code> contains some
 internal CSSBox modifications of the standard.</p>
-<p>The <code>getStyleSheets();</code> method loads and processes all the internal and external
+<p>The <code>getStyleSheets()</code> method loads and processes all the internal and external
 style sheets referenced from the document. In case of external style sheets, CSSBox tries to obtain
 the file from the corresponding URL, if accessible.</p>
 <p>Finally, the <code>attributesToStyles()</code> converts some HTML presentation attributes to CSS
-styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more. If the HTML
+styles (e.g. the <d:tag>font</d:tag> tag attributes, table attributes and some more. If the HTML
 attributes need not be interpreted, this method need not be called.</p> 
 <p>The resulting <code>DOMAnalyzer</code> object represents the document code together with the
 associated style.</p>
-</div> <!-- subsection -->
+</d:subsection>
 
-<div class="subsection" id="basicLayout">
-
-</div> <!-- subsection -->
-<h3>Obtaining the Layout</h3>
+<d:subsection id="basicLayout">
+<title>Obtaining the Layout</title>
 <p>The whole layout engine is represented by a graphical
-<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html">BrowserCanvas</a> object. The layout is
+<d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are
-the root DOM element (normally, it is the <code>&lt;body&gt;</code> element), the DOMAnalyzer used
+the root DOM element (normally, it is the <d:tag>body</d:tag> element), the DOMAnalyzer used
 for obtaining the element styles, the initial viewport dimensions and the document base URL used
 for loading images and other referenced content.</p>
-<div class="code">
+<d:codebox>
 <br/>BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
-</div>
- 
-</div> <!-- section -->
+</d:codebox>
+</d:subsection>
 
-<div class="section" id="model">
-<h2>Rendered Document Model</h2>
+</d:section> 
+
+<d:section id="model">
+<d:title>Rendered Document Model</d:title>
 <!-- ziskani informaci z modelu
 		- organizace stromu
 		- typy uzlu
  -->
-</div>
+</d:section>
 
-<div class="section" id="element">
-<h2>Element Boxes</h2>
+<d:section id="element">
+<title>Element Boxes</title>>
 <!--  -->
-</div>
+</d:section>
 
-<div class="section" id="text">
-<h2>Text Boxes</h2>
+<d:section id="text">
+<title>Text Boxes</title>
 <!--  -->
-</div>
-
-</body>
-</html>
+</d:section>
+</d:document>
