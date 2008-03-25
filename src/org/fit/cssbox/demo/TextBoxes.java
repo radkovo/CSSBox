@@ -35,7 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.tidy.Tidy;
 
 /**
- * This demo shows how the rendered box tree can be accessed. Itrenders the document 
+ * This demo shows how the rendered box tree can be accessed. It renders the document 
  * and prints the list of text boxes together with their positions on the page.
  * 
  * @author burgetr
@@ -90,7 +90,6 @@ public class TextBoxes
             
             //Create the CSS analyzer
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
-            da.createAnonymousBoxes(); //convert anonymous boxes to <span> elements
             da.addStyleSheet(null, CSSNorm.stdStyleSheet()); //use the standard style sheet
             da.addStyleSheet(null, CSSNorm.userStyleSheet()); //use the additional style sheet
             da.getStyleSheets(); //load the author style sheets

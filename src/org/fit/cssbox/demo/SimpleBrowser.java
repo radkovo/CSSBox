@@ -140,7 +140,6 @@ public class SimpleBrowser extends javax.swing.JFrame
             
             //Create the CSS analyzer
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
-            //da.createAnonymousBoxes(); //convert anonymous boxes to <span> elements
             da.addStyleSheet(null, CSSNorm.stdStyleSheet()); //use the standard style sheet
             da.addStyleSheet(null, CSSNorm.userStyleSheet()); //use the additional style sheet
             da.getStyleSheets(); //load the author style sheets

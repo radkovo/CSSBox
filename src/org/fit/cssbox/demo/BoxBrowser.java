@@ -107,7 +107,6 @@ public class BoxBrowser
             Document doc = tidy.parseDOM(is, null);
             
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
-            da.createAnonymousBoxes();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet());
             da.addStyleSheet(null, CSSNorm.userStyleSheet());
             da.getStyleSheets();

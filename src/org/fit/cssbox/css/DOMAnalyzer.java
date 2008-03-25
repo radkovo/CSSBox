@@ -122,6 +122,7 @@ public class DOMAnalyzer
     /**
      * Creates anonymous &lt;span&gt; elements from the text nodes which
      * have some sibling elements
+     * @deprecated
      */
     public void createAnonymousBoxes()
     {
@@ -392,7 +393,6 @@ public class DOMAnalyzer
             recursiveStylesToDomInherited(child.item(i), nextlevel);
     }
 
-    //TODO: create table anonymous boxes
     private void recursiveCreateAnonymousBoxes(Element n)
     {
         boolean text = false;

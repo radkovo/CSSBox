@@ -35,8 +35,62 @@ from the <a href="../api/index.html">API documentation</a>.</p>
 
 <div class="section" id="basic">
 <h2>Basic usage</h2>
-<!-- zakladni pouziti, renderovani dokumentu, zobrazeni, ziskani vysledku -->
+<p>The input of the rendering engine is a document DOM tree. The engine is able to
+automatically load the style sheets referenced in the document and it computes the
+efficient style of each element. Afterwrads, the document layout is computed.</p>
+
+<div class="subsection" id="basicLoading">
+<h3>Document Loading</h3>
+<p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
+is used. However, any other DOM parser can be used. For creating the DOM tree using
+JTidy, following code can be used:</p> 
+<div class="code">
+<br/>Tidy tidy = new Tidy();
+<br/>tidy.setTrimEmptyElements(false);
+<br/>tidy.setInputEncoding("utf-8");
+<br/>Document doc = tidy.parseDOM(is, null);
 </div>
+<p>Note tha JTidy has many configuration options that can be found in the
+documentation</p>
+<p>For the initial DOM and style sheet processing, a
+<a class="api" href="../api/org/fit/cssbox/css/DOMAnalyzer.html">DOMAnalyzer</a> object is used:</p>
+<div class="code">
+<br/>DOMAnalyzer da = new DOMAnalyzer(doc, url);
+<br/>da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
+<br/>da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
+<br/>da.getStyleSheets(); <em>//load the author style sheets</em>
+<br/>da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
+</div>
+<p>The <code>addStyleSheet()</code> method is used to add a style sheet to the document
+where the style sheet is a text string containing a CSS code. In our case we add two
+built-in style sheets that represent the standard document style. The <code>CSSNorm.stdStyleSheet()</code>
+method returns the CSS default style sheet and <code>CSSNorm.userStyleSheet()</code> contains some
+internal CSSBox modifications of the standard.</p>
+<p>The <code>getStyleSheets();</code> method loads and processes all the internal and external
+style sheets referenced from the document. In case of external style sheets, CSSBox tries to obtain
+the file from the corresponding URL, if accessible.</p>
+<p>Finally, the <code>attributesToStyles()</code> converts some HTML presentation attributes to CSS
+styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more. If the HTML
+attributes need not be interpreted, this method need not be called.</p> 
+<p>The resulting <code>DOMAnalyzer</code> object represents the document code together with the
+associated style.</p>
+</div> <!-- subsection -->
+
+<div class="subsection" id="basicLayout"
+
+</div> <!-- subsection -->
+<h3>Obtaining the Layout</h3>
+<p>The whole layout engine is represented by a graphical
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html">BrowserCanvas</a> object. The layout is
+computed automatically by creating an instance of this object. The constructor arguments are
+the root DOM element (normally, it is the <code>&lt;body&gt;</code> element), the DOMAnalyzer used
+for obtaining the element styles, the initial viewport dimensions and the document base URL used
+for loading images and other referenced content.</p>
+<div class="code">
+<br/>BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
+</div>
+ 
+</div> <!-- section -->
 
 <div class="section" id="model">
 <h2>Rendered Document Model</h2>
