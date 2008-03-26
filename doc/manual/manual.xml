@@ -6,6 +6,8 @@
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
 </d:author>
 
+<d:toc />
+
 <d:section id="intro">
 <d:title>Introduction</d:title>
 <p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
@@ -64,7 +66,7 @@ associated style.</p>
 </d:subsection>
 
 <d:subsection id="basicLayout">
-<title>Obtaining the Layout</title>
+<d:title>Obtaining the Layout</d:title>
 <p>The whole layout engine is represented by a graphical
 <d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are
@@ -74,6 +76,18 @@ for loading images and other referenced content.</p>
 <d:codebox>
 <br/>BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
 </d:codebox>
+</d:subsection>
+<p>The created <code>browser</code> object can be directly used for both displaying
+the rendered document and for obtaining the created layout model.</p>
+
+<d:subsection id="basicDisplay">
+<d:title>Displaying the document</d:title>
+<p>The <d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> class is
+directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can
+be directly used as a Swing user interface component. The size of the component is
+automatically adjusted according to the resulting document layout. The basic document
+displaying is shown in the <d:api class="org/fit/cssbox/demo/SimpleBrowser">SimpleBrowser</d:api>
+example.</p>
 </d:subsection>
 
 </d:section> 
@@ -87,12 +101,12 @@ for loading images and other referenced content.</p>
 </d:section>
 
 <d:section id="element">
-<title>Element Boxes</title>>
+<d:title>Element Boxes</d:title>>
 <!--  -->
 </d:section>
 
 <d:section id="text">
-<title>Text Boxes</title>
+<d:title>Text Boxes</d:title>
 <!--  -->
 </d:section>
 </d:document>

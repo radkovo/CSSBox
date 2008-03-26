@@ -24,6 +24,7 @@
 		<body>
 		<h1><xsl:apply-templates select="doc:title" /></h1>
 		<p class="author"><xsl:apply-templates select="doc:author" /></p>
+		<xsl:apply-templates select="doc:toc"/>
 		<xsl:apply-templates select="doc:section"/>
 		</body>
 		</html>
@@ -37,17 +38,53 @@
 		<xsl:apply-templates />
 	</xsl:template>
 
+	<xsl:template match="doc:toc">
+		<div class="toc">
+			<h2>Table of Contents</h2>
+			<ul>
+				<xsl:for-each select="../doc:section">
+					<li>
+						<a>
+							<xsl:attribute name="href">
+								<xsl:text>#</xsl:text>
+								<xsl:value-of select="@id" />
+							</xsl:attribute>
+							<xsl:value-of select="doc:title" />
+						</a>
+						<xsl:if test="count(doc:subsection)>0">
+							<ul>
+								<xsl:for-each select="doc:subsection">
+									<li>
+										<a>
+											<xsl:attribute name="href">
+												<xsl:text>#</xsl:text>
+												<xsl:value-of select="@id" />
+											</xsl:attribute>
+											<xsl:value-of select="doc:title" />
+										</a>
+									</li>
+								</xsl:for-each>
+							</ul>
+						</xsl:if>
+					</li>
+				</xsl:for-each>
+			</ul>
+		</div>
+	</xsl:template>
+
 	<xsl:template match="doc:section">
 		<div class="section">
+			<xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
 			<h2><xsl:apply-templates select="doc:title" /></h2>
-			<xsl:apply-templates select="*[name()!='title']" />
+			<xsl:apply-templates select="*[local-name()!='title']" />
 		</div>
 	</xsl:template>
 
 	<xsl:template match="doc:subsection">
 		<div class="subsection">
+			<xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
 			<h3><xsl:apply-templates select="doc:title" /></h3>
-			<xsl:apply-templates select="*[name()!='title']" />
+			<xsl:apply-templates select="*[local-name()!='title']" />
 		</div>
 	</xsl:template>
     
