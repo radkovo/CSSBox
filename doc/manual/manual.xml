@@ -101,7 +101,7 @@ example.</p>
 <p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
 creates a rectangular area in the resulting page and it corresponds to a particular
 rendered HTML element. There may be multiple boxes corresponding to a single element;
-e.g. a multi-line paragraph <tag>p</tag> is split to several line boxes. A box may contain
+e.g. a multi-line paragraph <d:tag>p</d:tag> is split to several line boxes. A box may contain
 nested boxes, a portion of the document text or a general object (e.g. an image). The root
 box of the tree corresponds to the viewport, the leaf boxes correspond to the DOM text nodes
 or empty elements and the remaining boxes correspond to the remaining block or inline
