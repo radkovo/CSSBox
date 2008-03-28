@@ -98,6 +98,20 @@ example.</p>
 		- organizace stromu
 		- typy uzlu
  -->
+<p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
+creates a rectangular area in the resulting page and it corresponds to a particular
+rendered HTML element. There may be multiple boxes corresponding to a single element;
+e.g. a multi-line paragraph <tag>p</tag> is split to several line boxes. A box may contain
+nested boxes, a portion of the document text or a general object (e.g. an image). The root
+box of the tree corresponds to the viewport, the leaf boxes correspond to the DOM text nodes
+or empty elements and the remaining boxes correspond to the remaining block or inline
+elements in the HTML code.</p>
+<p>Each box is represented by an object which extends the
+<d:api class="org/fit/cssbox/layout/Box">Box</d:api> abstract class. There exist
+several box types that roughly correspond to the computed value of the CSS <code>display</code>
+property for the corresponding element. Figure 1 shows the type hierarchy of boxes.</p>
+<d:fig index="1" title="Box type hierarchy" src="box_classes.png" />
+
 </d:section>
 
 <d:section id="element">

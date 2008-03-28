@@ -120,6 +120,21 @@
     	</code>
     </xsl:template>
     
+    <xsl:template match="doc:fig">
+    	<div class="figure">
+    		<img>
+    			<xsl:attribute name="src"><xsl:value-of select="@src" /></xsl:attribute>
+    			<xsl:attribute name="alt"><xsl:value-of select="@title" /></xsl:attribute>
+    		</img>
+    		<p>
+    			<xsl:text>Figure </xsl:text>
+    			<xsl:value-of select="@index" />
+    			<xsl:text>: </xsl:text>
+    			<xsl:value-of select="@title" />
+    		</p>
+    	</div>
+    </xsl:template>
+    
     <xsl:template match="*">
         <xsl:copy>
             <xsl:apply-templates select="@*"/>

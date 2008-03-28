@@ -49,4 +49,14 @@ directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore
 be directly used as a Swing user interface component. The size of the component is
 automatically adjusted according to the resulting document layout. The basic document
 displaying is shown in the <a href="../api/org/fit/cssbox/demo/SimpleBrowser.html" class="api">SimpleBrowser</a>
-example.</p></div></div><div class="section" id="model"><h2>Rendered Document Model</h2></div><div class="section" id="element"><h2>Element Boxes</h2></div><div class="section" id="text"><h2>Text Boxes</h2></div></body></html>
+example.</p></div></div><div class="section" id="model"><h2>Rendered Document Model</h2><p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
+creates a rectangular area in the resulting page and it corresponds to a particular
+rendered HTML element. There may be multiple boxes corresponding to a single element;
+e.g. a multi-line paragraph <tag>p</tag> is split to several line boxes. A box may contain
+nested boxes, a portion of the document text or a general object (e.g. an image). The root
+box of the tree corresponds to the viewport, the leaf boxes correspond to the DOM text nodes
+or empty elements and the remaining boxes correspond to the remaining block or inline
+elements in the HTML code.</p><p>Each box is represented by an object which extends the
+<a href="../api/org/fit/cssbox/layout/Box.html" class="api">Box</a> abstract class. There exist
+several box types that roughly correspond to the computed value of the CSS <code>display</code>
+property for the corresponding element. Figure 1 shows the type hierarchy of boxes.</p><div class="figure"><img src="box_classes.png" alt="Box type hierarchy" /><p>Figure 1: Box type hierarchy</p></div></div><div class="section" id="element"><h2>Element Boxes</h2></div><div class="section" id="text"><h2>Text Boxes</h2></div></body></html>
