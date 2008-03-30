@@ -4,7 +4,7 @@
 			@import "manual.css";
 			</style></head><body><h1>CSSBox Manual</h1><p class="author">Radek Burget<br />
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
-</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a></li><li><a href="#element">Element Boxes</a></li><li><a href="#text">Text Boxes</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
+</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li></ul></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
@@ -52,11 +52,17 @@ displaying is shown in the <a href="../api/org/fit/cssbox/demo/SimpleBrowser.htm
 example.</p></div></div><div class="section" id="model"><h2>Rendered Document Model</h2><p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
 creates a rectangular area in the resulting page and it corresponds to a particular
 rendered HTML element. There may be multiple boxes corresponding to a single element;
-e.g. a multi-line paragraph <tag>p</tag> is split to several line boxes. A box may contain
-nested boxes, a portion of the document text or a general object (e.g. an image). The root
-box of the tree corresponds to the viewport, the leaf boxes correspond to the DOM text nodes
-or empty elements and the remaining boxes correspond to the remaining block or inline
-elements in the HTML code.</p><p>Each box is represented by an object which extends the
+e.g. a multi-line paragraph <code>&lt;p&gt;</code> is split to several line boxes. A box may be
+either composed from child boxes or it may correspond to a particular part of the
+document content, which may be a text string or replaced content (e.g. images).</p><p>Each box is represented by an object which extends the
 <a href="../api/org/fit/cssbox/layout/Box.html" class="api">Box</a> abstract class. There exist
 several box types that roughly correspond to the computed value of the CSS <code>display</code>
-property for the corresponding element. Figure 1 shows the type hierarchy of boxes.</p><div class="figure"><img src="box_classes.png" alt="Box type hierarchy" /><p>Figure 1: Box type hierarchy</p></div></div><div class="section" id="element"><h2>Element Boxes</h2></div><div class="section" id="text"><h2>Text Boxes</h2></div></body></html>
+property for the corresponding element. Figure 1 shows the type hierarchy of boxes.</p><div class="figure"><img src="box_classes.png" alt="Box type hierarchy" /><p>Figure 1: Box type hierarchy</p></div><p>The root node of the box tree is always represented by a
+<a href="../api/org/fit/cssbox/layout/Viewport.html" class="api">Viewport</a> object and it represents
+the browser viewport. It has always a single child which is called a <dfn>root box</dfn>.
+The root box corresponds to the root element of the HTML code passed to the
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> for rendering.
+Usually, it is the <code>&lt;body&gt;</code> element.</p><p>The viewport and the root box are obtained using the
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getViewport()" class="api">getViewport()</a> and
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getRootBox()" class="api">getRootBox()</a> methods
+of the BrowserCanvas.</p><div class="subsection" id="modelBox"><h3>Basic Box Properties</h3></div><div class="subsection" id="modelText"><h3>Text Boxes</h3></div><div class="subsection" id="modelElement"><h3>Element Boxes</h3></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3></div><div class="subsection" id="modelBlock"><h3>Block Boxes</h3></div></div></body></html>

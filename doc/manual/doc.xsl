@@ -106,6 +106,10 @@
     			<xsl:text>../api/</xsl:text>
     			<xsl:value-of select="@class" />
     			<xsl:text>.html</xsl:text>
+    			<xsl:if test="string-length(@anchor)>0">
+    				<xsl:text>#</xsl:text>
+    				<xsl:value-of select="@anchor" />
+    			</xsl:if>
     		</xsl:attribute>
     		<xsl:attribute name="class">api</xsl:attribute>
     		<xsl:apply-templates />

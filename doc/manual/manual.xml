@@ -39,7 +39,7 @@ JTidy, following code can be used:</p>
 <br/>tidy.setInputEncoding("utf-8");
 <br/>Document doc = tidy.parseDOM(is, null);
 </d:codebox>>
-<p>Note tha JTidy has many configuration options that can be found in the
+<p>Note that JTidy has many configuration options that can be found in the
 documentation</p>
 <p>For the initial DOM and style sheet processing, a
 <d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used:</p>
@@ -94,33 +94,51 @@ example.</p>
 
 <d:section id="model">
 <d:title>Rendered Document Model</d:title>
-<!-- ziskani informaci z modelu
-		- organizace stromu
-		- typy uzlu
- -->
 <p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
 creates a rectangular area in the resulting page and it corresponds to a particular
 rendered HTML element. There may be multiple boxes corresponding to a single element;
-e.g. a multi-line paragraph <d:tag>p</d:tag> is split to several line boxes. A box may contain
-nested boxes, a portion of the document text or a general object (e.g. an image). The root
-box of the tree corresponds to the viewport, the leaf boxes correspond to the DOM text nodes
-or empty elements and the remaining boxes correspond to the remaining block or inline
-elements in the HTML code.</p>
+e.g. a multi-line paragraph <d:tag>p</d:tag> is split to several line boxes. A box may be
+either composed from child boxes or it may correspond to a particular part of the
+document content, which may be a text string or replaced content (e.g. images).</p>
 <p>Each box is represented by an object which extends the
 <d:api class="org/fit/cssbox/layout/Box">Box</d:api> abstract class. There exist
 several box types that roughly correspond to the computed value of the CSS <code>display</code>
 property for the corresponding element. Figure 1 shows the type hierarchy of boxes.</p>
+
 <d:fig index="1" title="Box type hierarchy" src="box_classes.png" />
 
-</d:section>
+<p>The root node of the box tree is always represented by a
+<d:api class="org/fit/cssbox/layout/Viewport">Viewport</d:api> object and it represents
+the browser viewport. It has always a single child which is called a <dfn>root box</dfn>.
+The root box corresponds to the root element of the HTML code passed to the
+<d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> for rendering.
+Usually, it is the <d:tag>body</d:tag> element.</p>
 
-<d:section id="element">
-<d:title>Element Boxes</d:title>>
-<!--  -->
-</d:section>
+<p>The viewport and the root box are obtained using the
+<d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="getViewport()">getViewport()</d:api> and
+<d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="getRootBox()">getRootBox()</d:api> methods
+of the BrowserCanvas.</p>
 
-<d:section id="text">
+<d:subsection id="modelBox">
+<d:title>Basic Box Properties</d:title>
+</d:subsection>
+
+<d:subsection id="modelText">
 <d:title>Text Boxes</d:title>
-<!--  -->
+</d:subsection>
+
+<d:subsection id="modelElement">
+<d:title>Element Boxes</d:title>
+</d:subsection>
+
+<d:subsection id="modelInline">
+<d:title>Inline Boxes</d:title>
+</d:subsection>
+
+<d:subsection id="modelBlock">
+<d:title>Block Boxes</d:title>
+</d:subsection>
+
 </d:section>
+
 </d:document>
