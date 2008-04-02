@@ -98,7 +98,9 @@
     
     <xsl:template match="doc:codebox">
     	<div class="code">
-    		<xsl:apply-templates />
+    		<pre>
+    			<xsl:apply-templates />
+    		</pre>
     	</div>
     </xsl:template>
     
@@ -137,6 +139,15 @@
     			<xsl:value-of select="." />
     		<xsl:text>&gt;</xsl:text>
     	</code>
+    </xsl:template>
+    
+    <xsl:template match="doc:ref">
+    	<a>
+    		<xsl:attribute name="href">
+    			<xsl:text>#</xsl:text>
+    			<xsl:value-of select="@target" />
+    		</xsl:attribute>
+    	</a>
     </xsl:template>
     
     <xsl:template match="doc:fig">

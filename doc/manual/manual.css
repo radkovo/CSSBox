@@ -1,0 +1,68 @@
+body {
+	font-family: Arial, sans-serif;
+	font-size: medium;
+}
+
+h2, h3, h4 {
+	padding: 0;
+	margin: 1.5em 0 0.5em 0;
+}
+
+.toc {
+	float: left;
+	padding: 1em;
+	margin: 1em 1em 1em 0;
+	border: 1px solid black;
+	background-color: #eee;
+}
+
+.toc h2 {
+	margin: 0 0 0.5em 0;
+}
+
+.toc ul {
+	margin: 0;
+	padding: 0;
+}
+
+.toc li {
+	list-style-type: none;
+	margin: 0 0 0.5em 0;
+	padding: 0;
+}
+
+.toc li li {
+	margin-left: 2em;
+	margin-bottom: 0em;
+	font-size: 90%;
+}
+
+#basic {
+	clear: left;
+}
+
+.code {
+	margin: 0.5em;
+	padding: 0.5em;
+	border: 1px solid blue;
+	background-color: #eef;
+}
+
+.code pre {
+	margin: 0;
+	padding: 0;
+	white-space: pre-wrap;
+}
+
+.subsection {
+	margin-left: 1em;
+}
+
+.subsubsection {
+	margin-left: 1em;
+}
+
+.figure {
+	text-align: center;
+	margin: 1.5em 0;
+}
