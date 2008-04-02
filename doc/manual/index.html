@@ -112,8 +112,20 @@ a corresponding substring of the text.</p><div class="subsubsection" id="textTex
 	</dl></div></div><div class="subsection" id="modelElement"><h3>Element Boxes</h3><p>An element box corresponds to a DOM node of the type <code>Element</code>. It is represented
 as an object of the abstract <a href="../api/org/fit/cssbox/layout/ElementBox.html" class="api">ElementBox</a>
 class. It can be implemented as an inline box or a block box as described below. The common
-methods of the element boxes are the following:</p><div class="subsubsection" id="elementStructure"><h4>Box Tree Structure</h4><p>Each element box may contain any number of nested sub-boxes. 
-	</p><dl>
+methods of the element boxes are the following:</p><div class="subsubsection" id="elementStructure"><h4>Box Tree Structure</h4><p>Each element box may contain any number of nested child boxes that are indexed 
+	from <em>0</em> to <em>n</em>. When there exist multiple element
+	boxes that correspond to a single DOM node, all these boxes share all the child boxes. 
+	The child boxes that belong to a particular element box can be determined using
+	their index - the <a href="../api/org/fit/cssbox/layout/ElementBox.html#getStartChild()" class="api">getStartChild()</a>
+	and the <a href="../api/org/fit/cssbox/layout/ElementBox.html#getEndChild()" class="api">getEndChild()</a>
+	methods give the first and the last index of the child boxes that belong to this particular element box.
+	Therefore, the normal way of processing all the child boxes of an element box <code>b</code> is following: </p><div class="code">
+	<br />for (int i = b.getStartChild(); i &lt; b.getEndChild(); i++)
+	<br />{
+	<br />    Box sub = b.getSubBox(i);
+	<br />    <em>//process the child box here...</em>
+	<br />}
+	</div><dl>
 		<dt><a href="../api/org/fit/cssbox/layout/TextBox.html#getText()" class="api">getText()</a></dt>
 		<dd>Returns the text string corresponding to this node.</dd>
 	</dl></div></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3></div><div class="subsection" id="modelBlock"><h3>Block Boxes</h3></div></div></body></html>

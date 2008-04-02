@@ -202,12 +202,47 @@ methods of the element boxes are the following:</p>
 
 	<d:subsubsection id="elementStructure">
 	<d:title>Box Tree Structure</d:title>
-	<p>Each element box may contain any number of nested sub-boxes. 
-	</p>
+	<p>Each element box may contain any number of nested child boxes that are indexed 
+	from <em>0</em> to <em>n</em>. When there exist multiple element
+	boxes that correspond to a single DOM node, all these boxes share all the child boxes. 
+	The child boxes that belong to a particular element box can be determined using
+	their index - the <d:api class="org/fit/cssbox/layout/ElementBox" anchor="getStartChild()">getStartChild()</d:api>
+	and the <d:api class="org/fit/cssbox/layout/ElementBox" anchor="getEndChild()">getEndChild()</d:api>
+	methods give the first and the last index of the child boxes that belong to this particular element box.
+	Therefore, the normal way of processing all the child boxes of an element box <code>b</code> is following: </p>
+	
+	<d:codebox>
+	<br/>for (int i = b.getStartChild(); i &lt; b.getEndChild(); i++)
+	<br/>{
+	<br/>    Box sub = b.getSubBox(i);
+	<br/>    <em>//process the child box here...</em>
+	<br/>}
+	</d:codebox>
+	
+	<p>The overview of the related ElementBox methods follows:</p>
 	<dl>
-		<dt><d:api class="org/fit/cssbox/layout/TextBox" anchor="getText()">getText()</d:api></dt>
-		<dd>Returns the text string corresponding to this node.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor="getStartChild()">getStartChild()</d:api></dt>
+		<dd>Returns the index of the first child box contained in this element box.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor="getEndChild()">getEndChild()</d:api></dt>
+		<dd>Returns the index of the first child box <strong>not</strong> contained in this element box.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor="getSubBox(int)">getSubBox(int)</d:api></dt>
+		<dd>Returns the child box with the given index.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor="getSubBoxNumber()">getSubBoxNumber()</d:api></dt>
+		<dd>The number of child boxes in this box.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor=""></d:api></dt>
+		<dd></dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor=""></d:api></dt>
+		<dd></dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor=""></d:api></dt>
+		<dd></dd>
+		<dt><d:api class="org/fit/cssbox/layout/ElementBox" anchor=""></d:api></dt>
+		<dd></dd>
 	</dl>
+	</d:subsubsection>
+	
+	<d:subsubsection id="elementModel">
+	<d:title>Box Sizes</d:title>
+	
 	</d:subsubsection>
 	
 </d:subsection>
