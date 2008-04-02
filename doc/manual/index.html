@@ -9,7 +9,7 @@ primary purpose is to provide a complete and further processable information
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
 how the basic information about the individual parts can be obtained.</p><p>More detailed information about the individual classes can be obtained
-from the <a href="../api/index.html">API documentation</a>.</p><p>Any feedback to CSSBox and/or this manual is welcome via the
+from the <a href="../api/index.html" class="api">API documentation</a>.</p><p>Any feedback to CSSBox and/or this manual is welcome via the
 <a href="http://cssbox.sourceforge.net/">CSSBox website</a>.</p></div><div class="section" id="basic"><h2>Basic usage</h2><p>The input of the rendering engine is a document DOM tree. The engine is able to
 automatically load the style sheets referenced in the document and it computes the
 efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
@@ -19,7 +19,7 @@ JTidy, following code can be used:</p><div class="code">
 <br />tidy.setTrimEmptyElements(false);
 <br />tidy.setInputEncoding("utf-8");
 <br />Document doc = tidy.parseDOM(is, null);
-</div><p>Note tha JTidy has many configuration options that can be found in the
+</div><p>Note that JTidy has many configuration options that can be found in the
 documentation</p><p>For the initial DOM and style sheet processing, a
 <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used:</p><div class="code">
 <br />DOMAnalyzer da = new DOMAnalyzer(doc, url);
@@ -65,4 +65,55 @@ The root box corresponds to the root element of the HTML code passed to the
 Usually, it is the <code>&lt;body&gt;</code> element.</p><p>The viewport and the root box are obtained using the
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getViewport()" class="api">getViewport()</a> and
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getRootBox()" class="api">getRootBox()</a> methods
-of the BrowserCanvas.</p><div class="subsection" id="modelBox"><h3>Basic Box Properties</h3></div><div class="subsection" id="modelText"><h3>Text Boxes</h3></div><div class="subsection" id="modelElement"><h3>Element Boxes</h3></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3></div><div class="subsection" id="modelBlock"><h3>Block Boxes</h3></div></div></body></html>
+of the BrowserCanvas.</p><p>In the following chapters, we will mention the most important methods that
+can be used for obtaining information about the resulting document layout. For
+other methods, see the <a href="../api/index.html" class="api">CSSBox API reference</a>.</p><div class="subsection" id="modelBox"><h3>Basic Box Properties</h3><p>The basic box properties are defined in the <a href="../api/org/fit/cssbox/layout/Box.html" class="api">Box</a>
+abstract class. They are mostly related to the box position and size.</p><div class="subsubsection" id="boxPositions"><h4>Box Position and Size</h4><p>During the layout, the box position is first computed relatively to the containing box and
+	in the next step, the absolute position in the page is computed. The box occupies a rectangular
+	area in the page which includes the box contents, borders and margins. The contents of the box
+	is always inside of this area and it is again a rectangle which is equal or smaller than the whole box.
+	Following methods can be used for obtaining the positions and sizes:</p><dl>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getAbsoluteBounds()" class="api">getAbsoluteBounds()</a></dt>
+		<dd>Returns the absolute box position and size on the page including all the borders
+		and margins. The result is the <code>java.awt.Rectangle</code> object.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getBounds()" class="api">getBounds()</a></dt>
+		<dd>Returns the box position and size relatively to the top-left corner of the containing block.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getAbsoluteContentX()" class="api">getAbsoluteContentX()</a></dt>
+		<dd>The absolute X coordinate of the top left corner of the box contents.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getAbsoluteContentY()" class="api">getAbsoluteContentY()</a></dt>
+		<dd>The absolute Y coordinate of the top left corner of the box contents.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getContentX()" class="api">getContentX()</a></dt>
+		<dd>The absolute X coordinate of the top left corner of the box contents relatively to the containing block.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getContentY()" class="api">getContentY()</a></dt>
+		<dd>The absolute Y coordinate of the top left corner of the box contents relatively to the containing block.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getContentWidth()" class="api">getContentWidth()</a></dt>
+		<dd>The width of the box content without any margins and borders.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getContentHeight()" class="api">getContentHeight()</a></dt>
+		<dd>The height of the box content without any margins and borders.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html" class="api"></a></dt>
+		<dd></dd>
+	</dl></div><div class="subsubsection" id="boxStructure"><h4>Box Tree Structure</h4><dl>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getParent()" class="api">getParent()</a></dt>
+		<dd>Returns the parent box of this box or <code>null</code> if this is the root box.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getContainingBlock()" class="api">getContainingBlock()</a></dt>
+		<dd>Returns the containing block for this box.</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getViewport()" class="api">getViewport()</a></dt>
+		<dd>The corresponding <a href="../api/org/fit/cssbox/layout/Viewport.html" class="api">Viewport</a>
+		object (the root of the box tree).</dd>
+		<dt><a href="../api/org/fit/cssbox/layout/Box.html#getNode()" class="api">getNode()</a></dt>
+		<dd>The DOM node this box corresponds to. There may be multiple boxes
+		corresponding to a single DOM node.</dd>
+	</dl></div></div><div class="subsection" id="modelText"><h3>Text Boxes</h3><p>A text box always box corresponds to a DOM node of the type <code>Text</code>. It is represented
+as <a href="../api/org/fit/cssbox/layout/TextBox.html" class="api">TextBox</a> object. When the text is split to
+several lines, multiple boxes correspond to a single DOM node. In this case each of them contains
+a corresponding substring of the text.</p><div class="subsubsection" id="textText"><h4>Obtaining the Text Content</h4><dl>
+		<dt><a href="../api/org/fit/cssbox/layout/TextBox.html#getText()" class="api">getText()</a></dt>
+		<dd>Returns the text string corresponding to this node.</dd>
+	</dl></div></div><div class="subsection" id="modelElement"><h3>Element Boxes</h3><p>An element box corresponds to a DOM node of the type <code>Element</code>. It is represented
+as an object of the abstract <a href="../api/org/fit/cssbox/layout/ElementBox.html" class="api">ElementBox</a>
+class. It can be implemented as an inline box or a block box as described below. The common
+methods of the element boxes are the following:</p><div class="subsubsection" id="elementStructure"><h4>Box Tree Structure</h4><p>Each element box may contain any number of nested sub-boxes. 
+	</p><dl>
+		<dt><a href="../api/org/fit/cssbox/layout/TextBox.html#getText()" class="api">getText()</a></dt>
+		<dd>Returns the text string corresponding to this node.</dd>
+	</dl></div></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3></div><div class="subsection" id="modelBlock"><h3>Block Boxes</h3></div></div></body></html>

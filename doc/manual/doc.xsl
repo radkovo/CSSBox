@@ -88,6 +88,14 @@
 		</div>
 	</xsl:template>
     
+	<xsl:template match="doc:subsubsection">
+		<div class="subsubsection">
+			<xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+			<h4><xsl:apply-templates select="doc:title" /></h4>
+			<xsl:apply-templates select="*[local-name()!='title']" />
+		</div>
+	</xsl:template>
+    
     <xsl:template match="doc:codebox">
     	<div class="code">
     		<xsl:apply-templates />
@@ -104,8 +112,15 @@
     	<a>
     		<xsl:attribute name="href">
     			<xsl:text>../api/</xsl:text>
-    			<xsl:value-of select="@class" />
-    			<xsl:text>.html</xsl:text>
+    			<xsl:choose>
+    				<xsl:when test="string-length(@class)>0">
+		    			<xsl:value-of select="@class" />
+		    			<xsl:text>.html</xsl:text>
+    				</xsl:when>
+    				<xsl:otherwise>
+    					<xsl:text>index.html</xsl:text>
+    				</xsl:otherwise>
+    			</xsl:choose>
     			<xsl:if test="string-length(@anchor)>0">
     				<xsl:text>#</xsl:text>
     				<xsl:value-of select="@anchor" />

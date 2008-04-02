@@ -17,7 +17,7 @@ about the rendered page contents and layout.</p>
 render a document and it explains how the resulting page is represented and
 how the basic information about the individual parts can be obtained.</p>
 <p>More detailed information about the individual classes can be obtained
-from the <a href="../api/index.html">API documentation</a>.</p>
+from the <d:api>API documentation</d:api>.</p>
 <p>Any feedback to CSSBox and/or this manual is welcome via the
 <a href="http://cssbox.sourceforge.net/">CSSBox website</a>.</p>
 </d:section>
@@ -119,16 +119,97 @@ Usually, it is the <d:tag>body</d:tag> element.</p>
 <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="getRootBox()">getRootBox()</d:api> methods
 of the BrowserCanvas.</p>
 
+<p>In the following chapters, we will mention the most important methods that
+can be used for obtaining information about the resulting document layout. For
+other methods, see the <d:api>CSSBox API reference</d:api>.</p>
+
 <d:subsection id="modelBox">
 <d:title>Basic Box Properties</d:title>
+<p>The basic box properties are defined in the <d:api class="org/fit/cssbox/layout/Box">Box</d:api>
+abstract class. They are mostly related to the box position and size.</p>
+
+	<d:subsubsection id="boxPositions">
+	<d:title>Box Position and Size</d:title>
+	<p>During the layout, the box position is first computed relatively to the containing box and
+	in the next step, the absolute position in the page is computed. The box occupies a rectangular
+	area in the page which includes the box contents, borders and margins. The contents of the box
+	is always inside of this area and it is again a rectangle which is equal or smaller than the whole box.
+	Following methods can be used for obtaining the positions and sizes:</p>
+	<dl>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getAbsoluteBounds()">getAbsoluteBounds()</d:api></dt>
+		<dd>Returns the absolute box position and size on the page including all the borders
+		and margins. The result is the <code>java.awt.Rectangle</code> object.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getBounds()">getBounds()</d:api></dt>
+		<dd>Returns the box position and size relatively to the top-left corner of the containing block.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getAbsoluteContentX()">getAbsoluteContentX()</d:api></dt>
+		<dd>The absolute X coordinate of the top left corner of the box contents.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getAbsoluteContentY()">getAbsoluteContentY()</d:api></dt>
+		<dd>The absolute Y coordinate of the top left corner of the box contents.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getContentX()">getContentX()</d:api></dt>
+		<dd>The absolute X coordinate of the top left corner of the box contents relatively to the containing block.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getContentY()">getContentY()</d:api></dt>
+		<dd>The absolute Y coordinate of the top left corner of the box contents relatively to the containing block.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getContentWidth()">getContentWidth()</d:api></dt>
+		<dd>The width of the box content without any margins and borders.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getContentHeight()">getContentHeight()</d:api></dt>
+		<dd>The height of the box content without any margins and borders.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor=""></d:api></dt>
+		<dd></dd>
+	</dl>
+	</d:subsubsection>
+	
+	<d:subsubsection id="boxStructure">
+	<d:title>Box Tree Structure</d:title>
+	<dl>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getParent()">getParent()</d:api></dt>
+		<dd>Returns the parent box of this box or <code>null</code> if this is the root box.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getContainingBlock()">getContainingBlock()</d:api></dt>
+		<dd>Returns the containing block for this box.</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getViewport()">getViewport()</d:api></dt>
+		<dd>The corresponding <d:api class="org/fit/cssbox/layout/Viewport">Viewport</d:api>
+		object (the root of the box tree).</dd>
+		<dt><d:api class="org/fit/cssbox/layout/Box" anchor="getNode()">getNode()</d:api></dt>
+		<dd>The DOM node this box corresponds to. There may be multiple boxes
+		corresponding to a single DOM node.</dd>
+	</dl>
+	</d:subsubsection>
+
 </d:subsection>
 
 <d:subsection id="modelText">
 <d:title>Text Boxes</d:title>
+<p>A text box always box corresponds to a DOM node of the type <code>Text</code>. It is represented
+as <d:api class="org/fit/cssbox/layout/TextBox">TextBox</d:api> object. When the text is split to
+several lines, multiple boxes correspond to a single DOM node. In this case each of them contains
+a corresponding substring of the text.</p>
+
+	<d:subsubsection id="textText">
+	<d:title>Obtaining the Text Content</d:title>
+	<dl>
+		<dt><d:api class="org/fit/cssbox/layout/TextBox" anchor="getText()">getText()</d:api></dt>
+		<dd>Returns the text string corresponding to this node.</dd>
+	</dl>
+	</d:subsubsection>
+	
 </d:subsection>
 
 <d:subsection id="modelElement">
 <d:title>Element Boxes</d:title>
+<p>An element box corresponds to a DOM node of the type <code>Element</code>. It is represented
+as an object of the abstract <d:api class="org/fit/cssbox/layout/ElementBox">ElementBox</d:api>
+class. It can be implemented as an inline box or a block box as described below. The common
+methods of the element boxes are the following:</p>
+
+	<d:subsubsection id="elementStructure">
+	<d:title>Box Tree Structure</d:title>
+	<p>Each element box may contain any number of nested sub-boxes. 
+	</p>
+	<dl>
+		<dt><d:api class="org/fit/cssbox/layout/TextBox" anchor="getText()">getText()</d:api></dt>
+		<dd>Returns the text string corresponding to this node.</dd>
+	</dl>
+	</d:subsubsection>
+	
 </d:subsection>
 
 <d:subsection id="modelInline">
