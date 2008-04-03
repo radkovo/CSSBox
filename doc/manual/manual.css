@@ -66,3 +66,7 @@ h2, h3, h4 {
 	text-align: center;
 	margin: 1.5em 0;
 }
+
+.author {
+	text-indent: 0;
+}
