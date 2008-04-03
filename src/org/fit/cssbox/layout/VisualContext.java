@@ -40,9 +40,9 @@ public class VisualContext
     private String fontStyle;
     private String fontVariant;
     private String textDecoration;
-    public int em; //pocet pixelu na 1em
-    public int ex; //pocet pixelu na 1ex
-    public double dpi; //pocet pixelu na palec
+    public int em; //number of pixels in 1em
+    public int ex; //number of pixels in 1ex
+    public double dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
     
@@ -74,21 +74,37 @@ public class VisualContext
    
     //=========================================================================
     
+    /**
+     * The font used for the box.
+     * @return current font
+     */
     public Font getFont()
     {
         return font;
     }
     
+    /**
+     * The font variant used for the box.
+     * @return <code>normal</code> or <code>small-caps</code>
+     */
     public String getFontVariant()
     {
         return fontVariant;
     }
     
+    /**
+     * Returns the text decoration used for the box.
+     * @return <code>none</code>, <code>underline</code>, <code>overline</code>, <code>line-through</code> or <code>blink</code>
+     */
     public String getTextDecoration()
     {
         return textDecoration;
     }
     
+    /**
+     * The text color used for the box.
+     * @return color specification
+     */
     public Color getColor()
     {
         return color;

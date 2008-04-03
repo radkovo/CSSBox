@@ -77,7 +77,7 @@ public class LengthSet
     
     /**
      * Returns a string representation of the length set
-     * @returns A string in the [top, left, bottom, rright] format
+     * @return A string in the [top, left, bottom, rright] format
      */
     public String toString()
     {

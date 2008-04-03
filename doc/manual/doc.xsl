@@ -147,6 +147,7 @@
     			<xsl:text>#</xsl:text>
     			<xsl:value-of select="@target" />
     		</xsl:attribute>
+  			<xsl:apply-templates />
     	</a>
     </xsl:template>
     

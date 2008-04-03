@@ -33,16 +33,25 @@ efficient style of each element. Afterwrads, the document layout is computed.</p
 <p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
 is used. However, any other DOM parser can be used. For creating the DOM tree using
 JTidy, following code can be used:</p> 
+
 <d:codebox>
+<em>//Open the network connection</em> 
+URL url = new URL("http://cssbox.sf.net");
+URLConnection con = url.openConnection();
+InputStream is = con.getInputStream();
+
+<em>//Parse the input document using jTidy</em>
 Tidy tidy = new Tidy();
 tidy.setTrimEmptyElements(false);
 tidy.setInputEncoding("utf-8");
 Document doc = tidy.parseDOM(is, null);
 </d:codebox>>
+
 <p>Note that JTidy has many configuration options that can be found in the
-documentation</p>
+documentation.</p>
 <p>For the initial DOM and style sheet processing, a
-<d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used:</p>
+<d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used. It is
+initialized with the DOM tree and the base URL:</p>
 <d:codebox>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
 da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
@@ -50,19 +59,25 @@ da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style
 da.getStyleSheets(); <em>//load the author style sheets</em>
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
 </d:codebox>
-<p>The <code>addStyleSheet()</code> method is used to add a style sheet to the document
-where the style sheet is a text string containing a CSS code. In our case we add two
-built-in style sheets that represent the standard document style. The <code>CSSNorm.stdStyleSheet()</code>
-method returns the CSS default style sheet and <code>CSSNorm.userStyleSheet()</code> contains some
-internal CSSBox modifications of the standard.</p>
-<p>The <code>getStyleSheets()</code> method loads and processes all the internal and external
+<p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="addStyleSheet(java.net.URL, java.lang.String)">addStyleSheet()</d:api> 
+method is used to add a style sheet to the document. The style sheet is passed as a text
+string containing the CSS code. In our case, we add two
+built-in style sheets that represent the standard document style.
+The <d:api class="org/fit/cssbox/css/CSSNorm" anchor="stdStyleSheet()">CSSNorm.stdStyleSheet()</d:api>
+method returns the default style sheet recommended by the CSS specification and the
+<d:api class="org/fit/cssbox/css/CSSNorm" anchor="userStyleSheet()">CSSNorm.userStyleSheet()</d:api> 
+contains some additional CSSBox definitions not covered by the standard.</p>
+<p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="getStyleSheets()">getStyleSheets()</d:api>
+method loads and processes all the internal and external
 style sheets referenced from the document. In case of external style sheets, CSSBox tries to obtain
 the file from the corresponding URL, if accessible.</p>
-<p>Finally, the <code>attributesToStyles()</code> converts some HTML presentation attributes to CSS
-styles (e.g. the <d:tag>font</d:tag> tag attributes, table attributes and some more. If the HTML
-attributes need not be interpreted, this method need not be called.</p> 
-<p>The resulting <code>DOMAnalyzer</code> object represents the document code together with the
-associated style.</p>
+<p>Finally, the
+<d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="attributesToStyles()">attributesToStyles()</d:api>
+method converts some HTML presentation attributes to CSS
+styles (e.g. the <d:tag>font</d:tag> tag attributes, table attributes and some more). If (X)HTML
+interpretation is not required, it is not necessary to use this method.</p> 
+<p>The resulting <d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object represents
+the document code together with the associated style.</p>
 </d:subsection>
 
 <d:subsection id="basicLayout">
@@ -74,7 +89,11 @@ the root DOM element (normally, it is the <d:tag>body</d:tag> element), the DOMA
 for obtaining the element styles, the initial viewport dimensions and the document base URL used
 for loading images and other referenced content.</p>
 <d:codebox>
-BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getBody(),
+                          da,
+                          new java.awt.Dimension(1000, 600),
+                          url);
 </d:codebox>
 </d:subsection>
 <p>The created <code>browser</code> object can be directly used for both displaying
@@ -89,7 +108,6 @@ automatically adjusted according to the resulting document layout. The basic doc
 displaying is shown in the <d:api class="org/fit/cssbox/demo/SimpleBrowser">SimpleBrowser</d:api>
 example.</p>
 </d:subsection>
-
 </d:section> 
 
 <d:section id="model">
@@ -320,10 +338,34 @@ are represented by several special classes derived from this class:</p>
 	<li><d:api class="org/fit/cssbox/layout/TableRowBox">TableRowBox</d:api></li>
 	<li><d:api class="org/fit/cssbox/layout/Viewport">Viewport</d:api></li>
 </ul> 
-<p>These objects differ mainly in the way how these boxes and their contents are laid out
+<p>These objects differ mainly in the way how the boxes and their contents are laid out
 on the page. From the resulting layout model point of view, they have no special
 properties in addition to the properties defined in the
 <d:api class="org/fit/cssbox/layout/ElementBox">ElementBox</d:api> class.</p>
+</d:subsection>
+
+<d:subsection id="modelColors">
+<d:title>Fonts and Colors</d:title>
+<p>For each box, a <d:api class="org/fit/cssbox/layout/VisualContext">VisualContext</d:api>
+object is defined that gathers the information about the current text font and color. This 
+object is obtained using the
+<d:api class="org/fit/cssbox/layout/Box" anchor="getVisualContext()">getVisualContext()</d:api>
+method of the box. Following methods can be used for obtaining the appropriate information:</p>
+<dl>
+	<dt><d:api class="org/fit/cssbox/layout/VisualContext" anchor="getColor()">getColor()</d:api></dt>
+	<dd>Current text color.</dd>
+	<dt><d:api class="org/fit/cssbox/layout/VisualContext" anchor="getFont()">getFont()</d:api></dt>
+	<dd>Returns the current font represented as the <code>java.awt.Font</code> object.
+	    From this object most of the font properties can be obtained.</dd>
+	<dt><d:api class="org/fit/cssbox/layout/VisualContext" anchor="getFontVariant()">getFontVariant()</d:api></dt>
+	<dd>Current font variant in the CSS syntax - i.e. <code>normal</code> or <code>small-caps</code>.</dd>
+	<dt><d:api class="org/fit/cssbox/layout/VisualContext" anchor="getTextDecoration()">getTextDecoration()</d:api></dt>
+	<dd>Current text decoration in the CSS syntax - i.e. <code>none</code>, <code>underline</code>, 
+	    <code>overline</code>, <code>line-through</code> or <code>blink</code>.</dd>
+</dl>
+<p>The background color is only applicable to <d:ref target="modelElement">element boxes</d:ref>
+as mentioned in <d:ref target="elementVisual">Visual Properties of the Element Box</d:ref>.</p>
+
 </d:subsection>
 
 </d:section>

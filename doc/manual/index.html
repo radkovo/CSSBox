@@ -4,7 +4,7 @@
 			@import "manual.css";
 			</style></head><body><h1>CSSBox Manual</h1><p class="author">Radek Burget<br />
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
-</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
+</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
@@ -15,34 +15,51 @@ automatically load the style sheets referenced in the document and it computes t
 efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
 is used. However, any other DOM parser can be used. For creating the DOM tree using
 JTidy, following code can be used:</p><div class="code"><pre>
+<em>//Open the network connection</em> 
+URL url = new URL("http://cssbox.sf.net");
+URLConnection con = url.openConnection();
+InputStream is = con.getInputStream();
+
+<em>//Parse the input document using jTidy</em>
 Tidy tidy = new Tidy();
 tidy.setTrimEmptyElements(false);
 tidy.setInputEncoding("utf-8");
 Document doc = tidy.parseDOM(is, null);
 </pre></div><p>Note that JTidy has many configuration options that can be found in the
-documentation</p><p>For the initial DOM and style sheet processing, a
-<a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used:</p><div class="code"><pre>
+documentation.</p><p>For the initial DOM and style sheet processing, a
+<a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used. It is
+initialized with the DOM tree and the base URL:</p><div class="code"><pre>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
 da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
 da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
-</pre></div><p>The <code>addStyleSheet()</code> method is used to add a style sheet to the document
-where the style sheet is a text string containing a CSS code. In our case we add two
-built-in style sheets that represent the standard document style. The <code>CSSNorm.stdStyleSheet()</code>
-method returns the CSS default style sheet and <code>CSSNorm.userStyleSheet()</code> contains some
-internal CSSBox modifications of the standard.</p><p>The <code>getStyleSheets()</code> method loads and processes all the internal and external
+</pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String)" class="api">addStyleSheet()</a> 
+method is used to add a style sheet to the document. The style sheet is passed as a text
+string containing the CSS code. In our case, we add two
+built-in style sheets that represent the standard document style.
+The <a href="../api/org/fit/cssbox/css/CSSNorm.html#stdStyleSheet()" class="api">CSSNorm.stdStyleSheet()</a>
+method returns the default style sheet recommended by the CSS specification and the
+<a href="../api/org/fit/cssbox/css/CSSNorm.html#userStyleSheet()" class="api">CSSNorm.userStyleSheet()</a> 
+contains some additional CSSBox definitions not covered by the standard.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
+method loads and processes all the internal and external
 style sheets referenced from the document. In case of external style sheets, CSSBox tries to obtain
-the file from the corresponding URL, if accessible.</p><p>Finally, the <code>attributesToStyles()</code> converts some HTML presentation attributes to CSS
-styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more. If the HTML
-attributes need not be interpreted, this method need not be called.</p><p>The resulting <code>DOMAnalyzer</code> object represents the document code together with the
-associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
+the file from the corresponding URL, if accessible.</p><p>Finally, the
+<a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
+method converts some HTML presentation attributes to CSS
+styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more). If (X)HTML
+interpretation is not required, it is not necessary to use this method.</p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
+the document code together with the associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are
 the root DOM element (normally, it is the <code>&lt;body&gt;</code> element), the DOMAnalyzer used
 for obtaining the element styles, the initial viewport dimensions and the document base URL used
 for loading images and other referenced content.</p><div class="code"><pre>
-BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getBody(),
+                          da,
+                          new java.awt.Dimension(1000, 600),
+                          url);
 </pre></div></div><p>The created <code>browser</code> object can be directly used for both displaying
 the rendered document and for obtaining the created layout model.</p><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
 directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can
@@ -138,7 +155,8 @@ for (int i = b.getStartChild(); i &lt; b.getEndChild(); i++)
 		<dd>The corresponding DOM Element.</dd>
 	</dl></div><div class="subsubsection" id="elementModel"><h4>Box Sizes</h4><p>The dimensions of an element box are modelled according to the
 	<a href="http://www.w3.org/TR/CSS21/box.html">CSS Box Model</a>. In addition
-	to the <em>content size</em> discussed in the <a href="#boxPositions"></a>, it consists of <em>padding</em>, 
+	to the <em>content size</em> discussed in the <a href="#boxPositions"><code>Box
+	interface description</code></a>, it consists of <em>padding</em>, 
 	<em>border width</em> and <em>margin</em>. All these dimensions are represented
 	by objects of a special <a href="../api/org/fit/cssbox/layout/LengthSet.html" class="api">LengthSet</a>
 	class that contain the <code>top</code>, <code>left</code>, <code>bottom</code> and
@@ -182,7 +200,7 @@ for (int i = b.getStartChild(); i &lt; b.getEndChild(); i++)
 		<dd></dd>
 		<dt><a href="../api/org/fit/cssbox/layout/ElementBox.html" class="api"></a></dt>
 		<dd></dd>
-	</dl></div></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3><p>Inline boxes are the <a href="#modelElement"></a> with value
+	</dl></div></div><div class="subsection" id="modelInline"><h3>Inline Boxes</h3><p>Inline boxes are the <a href="#modelElement">element boxes</a> with value
 of the CSS <code>display:</code> property equal to <code>inline</code>. These boxes are
 represented as the <a href="../api/org/fit/cssbox/layout/InlineBox.html" class="api">InlineBox</a> objects.
 They have no special properties in addition to the properties defined in the
@@ -197,10 +215,26 @@ are represented by several special classes derived from this class:</p><ul>
 	<li><a href="../api/org/fit/cssbox/layout/TableBodyBox.html" class="api">TableBodyBox</a></li>
 	<li><a href="../api/org/fit/cssbox/layout/TableRowBox.html" class="api">TableRowBox</a></li>
 	<li><a href="../api/org/fit/cssbox/layout/Viewport.html" class="api">Viewport</a></li>
-</ul><p>These objects differ mainly in the way how these boxes and their contents are laid out
+</ul><p>These objects differ mainly in the way how the boxes and their contents are laid out
 on the page. From the resulting layout model point of view, they have no special
 properties in addition to the properties defined in the
-<a href="../api/org/fit/cssbox/layout/ElementBox.html" class="api">ElementBox</a> class.</p></div></div><div class="section" id="feedback"><h2>Feedback</h2><p>The CSSBox library and this manual are under development. Any feedback is welcome
+<a href="../api/org/fit/cssbox/layout/ElementBox.html" class="api">ElementBox</a> class.</p></div><div class="subsection" id="modelColors"><h3>Fonts and Colors</h3><p>For each box, a <a href="../api/org/fit/cssbox/layout/VisualContext.html" class="api">VisualContext</a>
+object is defined that gathers the information about the current text font and color. This 
+object is obtained using the
+<a href="../api/org/fit/cssbox/layout/Box.html#getVisualContext()" class="api">getVisualContext()</a>
+method of the box. Following methods can be used for obtaining the appropriate information:</p><dl>
+	<dt><a href="../api/org/fit/cssbox/layout/VisualContext.html#getColor()" class="api">getColor()</a></dt>
+	<dd>Current text color.</dd>
+	<dt><a href="../api/org/fit/cssbox/layout/VisualContext.html#getFont()" class="api">getFont()</a></dt>
+	<dd>Returns the current font represented as the <code>java.awt.Font</code> object.
+	    From this object most of the font properties can be obtained.</dd>
+	<dt><a href="../api/org/fit/cssbox/layout/VisualContext.html#getFontVariant()" class="api">getFontVariant()</a></dt>
+	<dd>Current font variant in the CSS syntax - i.e. <code>normal</code> or <code>small-caps</code>.</dd>
+	<dt><a href="../api/org/fit/cssbox/layout/VisualContext.html#getTextDecoration()" class="api">getTextDecoration()</a></dt>
+	<dd>Current text decoration in the CSS syntax - i.e. <code>none</code>, <code>underline</code>, 
+	    <code>overline</code>, <code>line-through</code> or <code>blink</code>.</dd>
+</dl><p>The background color is only applicable to <a href="#modelElement">element boxes</a>
+as mentioned in <a href="#elementVisual">Visual Properties of the Element Box</a>.</p></div></div><div class="section" id="feedback"><h2>Feedback</h2><p>The CSSBox library and this manual are under development. Any feedback is welcome
 mainly via the forums and the bug tracker available via the
 <a href="http://www.sourceforge.net/projects/cssbox">project page</a>. We will be very
 happy if you want to contribute to the code. In this case, please contact the author. 
