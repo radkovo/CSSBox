@@ -270,18 +270,15 @@ abstract public class Box
                                 newbox.setParent(anbox);
                                 anbox.addSubBox(newbox);
                                 anbox.isempty = false;
-                                anbox.endChild++;
                                 anbox.setParent(root);
                                 anbox.setContainingBlock(newcont);
                                 root.addSubBox(anbox);
-                                root.endChild++;
                             }
                             else
                             {
                                 //insert directly
                                 newbox.setParent(root);
                                 root.addSubBox(newbox);
-                                root.endChild++;
                             }
                         }
                         else //positioned or floating (block only) - add it to its containing block
@@ -291,7 +288,6 @@ abstract public class Box
                                 newcblock.isempty = false;
                             newbox.setParent(newcblock);
                             newcblock.addSubBox(newbox);
-                            newcblock.endChild++;
                         }
                     }
                 }
@@ -359,7 +355,6 @@ abstract public class Box
                     }
                     sub.setParent(adiv);
                     adiv.addSubBox(sub);
-                    adiv.endChild++;
                 }
             }
             root.nested = nest;
@@ -423,7 +418,6 @@ abstract public class Box
 		                sub.setParent(adiv);
 		                sub.setContainingBlock((BlockBox) adiv);
 		                adiv.addSubBox(sub);
-		                adiv.endChild++;
 		            }
 	            }
 	            else
@@ -873,6 +867,14 @@ abstract public class Box
     }
     
     /**
+     * @return the absolute bounds of the content box
+     */
+    public Rectangle getAbsoluteContentBounds()
+    {
+        return new Rectangle(getAbsoluteContentX(), getAbsoluteContentY(), getContentWidth(), getContentHeight());
+    }
+    
+    /**
      * Determines the minimal width in which the element can fit.
      * @return the minimal width
      */
@@ -889,7 +891,7 @@ abstract public class Box
      * Determines the minimal bounds of the really displayed content.
      * @return the minimal bounds
      */
-    abstract public Rectangle getMinimalBounds();
+    abstract public Rectangle getMinimalAbsoluteBounds();
     
     /**
      * @return true, if the box is in-flow

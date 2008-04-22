@@ -549,7 +549,6 @@ public class TableBox extends BlockBox
         {
         	anonbody.endChild = anonbody.nested.size();
         	addSubBox(anonbody);
-        	endChild++;
         }
     }
 

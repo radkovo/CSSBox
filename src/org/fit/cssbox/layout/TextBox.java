@@ -213,9 +213,9 @@ public class TextBox extends Box
     }
     
 	@Override
-    public Rectangle getMinimalBounds()
+    public Rectangle getMinimalAbsoluteBounds()
     {
-    	return bounds;
+    	return absbounds;
     }
     
 	@Override

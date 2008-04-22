@@ -75,9 +75,9 @@ public class InlineReplacedBox extends InlineBox
     }
     
     @Override
-    public Rectangle getMinimalBounds()
+    public Rectangle getMinimalAbsoluteBounds()
     {
-        return new Rectangle(getContentX(), getContentY(), boxw, boxh);
+        return new Rectangle(getAbsoluteContentX(), getAbsoluteContentY(), boxw, boxh);
     }
 
     @Override

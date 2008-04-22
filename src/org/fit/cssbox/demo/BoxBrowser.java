@@ -129,7 +129,7 @@ public class BoxBrowser
             contentScroll.setViewportView(contentCanvas);
 
             //box tree
-            root = createBoxTree(((BrowserCanvas) contentCanvas).getRootBox());
+            root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());
             domTree.setModel(new DefaultTreeModel(root));
             
             //=============================================================================

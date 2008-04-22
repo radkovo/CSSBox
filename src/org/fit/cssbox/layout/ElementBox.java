@@ -210,6 +210,7 @@ abstract public class ElementBox extends Box
     public void addSubBox(Box box)
     {
         nested.add(box);
+        endChild++;
     }
     
     /**
@@ -386,14 +387,15 @@ abstract public class ElementBox extends Box
                   - padding.right - border.right - emargin.right;
     }
     
-    public Rectangle getMinimalBounds()
+    @Override
+    public Rectangle getMinimalAbsoluteBounds()
     {
     	int rx1 = 0, ry1 = 0, rx2 = 0, ry2 = 0;
     	boolean valid = false;
     	for (Iterator<Box> it = nested.iterator(); it.hasNext();)
 		{
 			Box sub = it.next();
-			Rectangle sb = sub.getMinimalBounds();
+			Rectangle sb = sub.getMinimalAbsoluteBounds();
 			if (sub.isDisplayed() && sub.isVisible() && sb.width > 0 && sb.height > 0)
 			{
 				if (sb.x < rx1 || !valid) rx1 = sb.x;
@@ -406,6 +408,7 @@ abstract public class ElementBox extends Box
     	return new Rectangle(rx1, ry1, rx2 - rx1, ry2 - ry1);
     }
     
+    @Override
     public boolean affectsDisplay()
     {
         boolean ret = !isEmpty();
@@ -422,10 +425,10 @@ abstract public class ElementBox extends Box
     /**
      * @return the bounds of the background - the content and padding
      */
-    public Rectangle getBackgroundBounds()
+    public Rectangle getAbsoluteBackgroundBounds()
     {
-        return new Rectangle(bounds.x + emargin.left + border.left,
-                             bounds.y + emargin.top + border.top,
+        return new Rectangle(absbounds.x + emargin.left + border.left,
+                             absbounds.y + emargin.top + border.top,
                              content.width + padding.left + padding.right,
                              content.height + padding.top + padding.bottom);
     }
@@ -433,10 +436,10 @@ abstract public class ElementBox extends Box
     /**
      * @return the bounds of the border - the content, padding and border
      */
-    public Rectangle getBorderBounds()
+    public Rectangle getAbsoluteBorderBounds()
     {
-        return new Rectangle(bounds.x + emargin.left,
-                             bounds.y + emargin.top,
+        return new Rectangle(absbounds.x + emargin.left,
+                             absbounds.y + emargin.top,
                              content.width + padding.left + padding.right + border.left + border.right,
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
     }
