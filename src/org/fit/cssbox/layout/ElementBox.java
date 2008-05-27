@@ -87,6 +87,9 @@ abstract public class ElementBox extends Box
     /** Content sizes */
     protected Dimension content;
     
+    /** Minimal absolute bounds. */
+    protected Rectangle minAbsBounds;
+    
     /** the computed value of line-height */
     protected int lineHeight;
     
@@ -107,6 +110,7 @@ abstract public class ElementBox extends Box
     public ElementBox(Element n, Graphics g, VisualContext ctx)
     {
         super(n, g, ctx);
+        minAbsBounds = null;
         if (n != null)
         {
 	        el = n;
@@ -390,11 +394,18 @@ abstract public class ElementBox extends Box
     @Override
     public Rectangle getMinimalAbsoluteBounds()
     {
+    	if (minAbsBounds == null)
+    		minAbsBounds = computeMinimalAbsoluteBounds();
+    	return minAbsBounds;
+    }
+    
+    private Rectangle computeMinimalAbsoluteBounds()
+    {
     	int rx1 = 0, ry1 = 0, rx2 = 0, ry2 = 0;
     	boolean valid = false;
-    	for (Iterator<Box> it = nested.iterator(); it.hasNext();)
+    	for (int i = startChild; i < endChild; i++)
 		{
-			Box sub = it.next();
+			Box sub = getSubBox(i);
 			Rectangle sb = sub.getMinimalAbsoluteBounds();
 			if (sub.isDisplayed() && sub.isVisible() && sb.width > 0 && sb.height > 0)
 			{
