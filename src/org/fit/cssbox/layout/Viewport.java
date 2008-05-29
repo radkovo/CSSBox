@@ -126,6 +126,7 @@ public class Viewport extends BlockBox
 	@Override
     public void absolutePositions(Rectangle clip)
     {
+	    absbounds = new Rectangle(bounds);
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions(clip);
     }
