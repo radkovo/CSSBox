@@ -625,7 +625,7 @@ abstract public class ElementBox extends Box
         if (!bg.equals("") && !bg.equals("transparent"))
         {
             bgcolor = ctx.getColor(bg);
-            if (bgcolor == null) bgcolor = Color.white; //couldn't parse, use white
+            //when returned null (couldn't parse), use transparent anyway
         }
         else
             bgcolor = null;
