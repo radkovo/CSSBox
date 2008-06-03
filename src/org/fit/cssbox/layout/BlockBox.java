@@ -114,7 +114,14 @@ public class BlockBox extends ElementBox
     /** Minimal width necessary for the last executed layout. */
     protected int lastPreferredWidth;
     
+    /** True means that the layout inside has been already computed
+     * and the width shouldn't be changed anymore */
     protected boolean widthComputed = false;
+    
+    /** Originally declared width of the right margin. This property
+     * saves the original value where the efficient right margin may
+     * be computed from the containing box */
+    protected int marginRightDecl; 
     
     //============================== Computed style ======================
     
@@ -407,11 +414,6 @@ public class BlockBox extends ElementBox
      */
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-        if (this.getElement() != null &&
-            this.getElement().getAttribute("id") != null &&
-            this.getElement().getAttribute("id").equals("mojo"))
-            System.out.println("jo!");
-        
         //Skip if not displayed
         if (!displayed)
         {
@@ -883,7 +885,7 @@ public class BlockBox extends ElementBox
             ret = getMaximalContentWidth();
         //increase by margin, padding, border
         ret += margin.left + padding.left + border.left +
-               margin.right + padding.right + border.right;
+               marginRightDecl + padding.right + border.right;
         return ret;
     }
 
@@ -1245,9 +1247,6 @@ public class BlockBox extends ElementBox
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
-        if (this.toString().contains("mojo"))
-            System.out.println("jo!");
-        
         if (width.equals("")) width = "auto";
         String mleft = getStyleProperty("margin-left");
         String mright = getStyleProperty("margin-right");
@@ -1260,6 +1259,7 @@ public class BlockBox extends ElementBox
         	if (exact) wset = false;
             margin.left = dec.getLength(mleft, 0, 0, contw);
             margin.right = dec.getLength(mright, 0, 0, contw);
+            marginRightDecl = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
             if (!update || isInFlow())
@@ -1280,6 +1280,7 @@ public class BlockBox extends ElementBox
           	content.width = dec.getLength(width, 0, 0, contw);
             margin.left = dec.getLength(mleft, 0, 0, contw);
             margin.right = dec.getLength(mright, 0, 0, contw);
+            marginRightDecl = margin.right;
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !dec.isPercent(width);
