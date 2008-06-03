@@ -409,7 +409,7 @@ public class BlockBox extends ElementBox
     {
         if (this.getElement() != null &&
             this.getElement().getAttribute("id") != null &&
-            this.getElement().getAttribute("id").equals("alphabet"))
+            this.getElement().getAttribute("id").equals("mojo"))
             System.out.println("jo!");
         
         //Skip if not displayed
@@ -676,15 +676,6 @@ public class BlockBox extends ElementBox
             }
         }
 
-        //Update width if not set (out of the flow boxes with no width set)
-        /*if (!hasFixedWidth())
-        {
-        	int min = getMinimalContentWidthLimit();
-        	int pref = stat.prefw;
-        	if (pref < min) pref = min;
-            setContentWidth(pref); //shrintk-to-fit
-            updateChildSizes();
-        }*/
         //update the height when not set or set to "auto"
         if (!hasFixedHeight())
         {
@@ -1253,6 +1244,9 @@ public class BlockBox extends ElementBox
     protected void computeWidths(String width, boolean exact, int contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
+        
+        if (this.toString().contains("mojo"))
+            System.out.println("jo!");
         
         if (width.equals("")) width = "auto";
         String mleft = getStyleProperty("margin-left");
