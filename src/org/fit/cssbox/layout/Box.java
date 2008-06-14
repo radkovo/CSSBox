@@ -661,6 +661,11 @@ abstract public class Box
     }
     
     /**
+     * @return all the text contained in this box and its subboxes
+     */
+    abstract public String getText();
+    
+    /**
      * @return <code>true</code> if the box only contains whitespaces
      */
     abstract public boolean isWhitespace();

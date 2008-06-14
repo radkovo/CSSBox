@@ -97,13 +97,14 @@ public class TextBox extends Box
     /**
      * @return the text contained in this box
      */
+    @Override
     public String getText()
     {
         String ret = node.getNodeValue();
         if (ret != null)
             return ret.substring(textStart, textEnd);
         else
-            return null;
+            return "";
     }
     
     //=======================================================================

@@ -455,6 +455,16 @@ abstract public class ElementBox extends Box
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
     }
 
+    @Override
+    public String getText()
+    {
+        String ret = "";
+        for (int i = startChild; i < endChild; i++)
+        	ret += getSubBox(i).getText();
+        return ret;
+    }
+    
+    @Override
     public boolean isWhitespace()
     {
         boolean ret = true;
