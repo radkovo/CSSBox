@@ -96,6 +96,12 @@ public class BlockReplacedBox extends BlockBox
     }
 
     @Override
+    public boolean isReplaced()
+    {
+        return true;
+    }
+
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed

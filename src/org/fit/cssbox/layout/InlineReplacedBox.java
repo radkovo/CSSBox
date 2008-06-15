@@ -86,10 +86,16 @@ public class InlineReplacedBox extends InlineBox
         return boxh;
     }
 
-@Override
+    @Override
     public boolean isWhitespace()
     {
         return false;
+    }
+
+    @Override
+    public boolean isReplaced()
+    {
+        return true;
     }
 
     @Override

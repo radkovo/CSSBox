@@ -661,6 +661,14 @@ abstract public class Box
     }
     
     /**
+     * @return <code> true if this is a replaced box
+     */
+    public boolean isReplaced()
+    {
+    	return false;
+    }
+    
+    /**
      * @return all the text contained in this box and its subboxes
      */
     abstract public String getText();
