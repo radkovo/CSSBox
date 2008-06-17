@@ -186,8 +186,6 @@ abstract public class Box
         {
             //Create the new box
             ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent);
-            if (root.getElement().getAttribute("id").equals("webstats"))
-            	System.out.println("jo!");
             
             //Determine the containing boxes
             BlockBox newcont = contbox;
@@ -515,6 +513,8 @@ abstract public class Box
     {
     	CSSStyleDeclaration dstyle = dest.getStyle();
     	CSSStyleDeclaration pstyle = parent.getStyle();
+    	if (pstyle == null)
+    		System.out.println("jo!");
     	CSSStyleDeclaration newstyle = CSSNorm.computeInheritedStyle(pstyle, dstyle);
     	dest.setStyle(newstyle);
     }

@@ -432,6 +432,10 @@ public class CSSNorm
     public static CSSStyleDeclaration computeInheritedStyle(CSSStyleDeclaration parent,
                                                             CSSStyleDeclaration current)
     {
+    	//when the parent has no style, return the child style only
+    	if (parent == null)
+    		return current;
+    	
         CSSStyleDeclaration ret = new CSSStyleDeclarationImpl(current.getParentRule());
         //copy all styles that are inherited by default
         for (int i = 0; i < parent.getLength(); i++)
