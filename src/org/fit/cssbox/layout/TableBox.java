@@ -100,8 +100,6 @@ public class TableBox extends BlockBox
     @Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
-    	if (this.getElement().getAttribute("id").equals("jojo"))
-    		System.out.println("jo!");
         int y = 0;
         int maxw = 0;
         
@@ -150,8 +148,6 @@ public class TableBox extends BlockBox
     @Override
     protected void loadSizes(boolean update)
     {
-    	if (this.getElement().getAttribute("id").equals("xoxo"))
-    		System.out.println("jo!");
         //load the content width from the attribute
         if (!update)
         {
@@ -331,8 +327,8 @@ public class TableBox extends BlockBox
     private void calculateColumns()
     {
         int wlimit = getAvailableContentWidth();
-        System.out.println("wset="+wset);
-        System.out.println("wlimit="+wlimit);
+        //System.out.println("wset="+wset);
+        //System.out.println("wlimit="+wlimit);
         
         //create the columns that haven't been specified explicitely
         determineColumnCount();
@@ -396,12 +392,12 @@ public class TableBox extends BlockBox
         if (totalw > wlimit) totalw = wlimit; //we would like not to exceed the limit
         if (totalw < mintotalw) totalw = mintotalw; //but we cannot be below the minimal width
         
-        System.out.println("Percent: " + totalwperc);
+        /*System.out.println("Percent: " + totalwperc);
         System.out.println("Abs+%: " + totalwabs);
         System.out.println("Minimum: " + getMinimalWidth());
         System.out.println("wlimit: " + wlimit);
         System.out.println("mintotalw: " + mintotalw);
-        System.out.println("result:" + totalw);
+        System.out.println("result:" + totalw);*/
         
         //set the percentage columns to their values, if possible
         int remain = totalw;
@@ -421,7 +417,7 @@ public class TableBox extends BlockBox
                 }
             }
         }
-        System.out.println("remain2:" + remain);
+        //System.out.println("remain2:" + remain);
         
         //set the absolute columns
         if (sumabs > 0)
@@ -429,13 +425,13 @@ public class TableBox extends BlockBox
             double factor = 1;
             if (sumnonemin == 0)
                 factor = remain / (double) sumabs;
-            System.out.println("Factor: " + factor);
+            //System.out.println("Factor: " + factor);
             for (int i = 0; i < columns.size(); i++) //set the column sizes
             {
                 TableColumn col = columns.elementAt(i);
                 if (col.wset && !col.wrelative)
                 {
-                    System.out.println("Col " + i + " : " + col.abswidth);
+                    //System.out.println("Col " + i + " : " + col.abswidth);
                     int neww = (int) (col.abswidth * factor);
                     if (neww > remain) neww = remain;
                     if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
@@ -445,14 +441,14 @@ public class TableBox extends BlockBox
                 }
             }
         }
-        System.out.println("remain3:" + remain);
+        //System.out.println("remain3:" + remain);
         
         //set the remaining columns
         if (sumnonemin > 0)
         {
             double factor = 1;
             factor = remain / (double) sumnonemax;
-            System.out.println("Factor: " + factor);
+            //System.out.println("Factor: " + factor);
             for (int i = 0; i < columns.size(); i++) //set the column sizes
             {
                 TableColumn col = columns.elementAt(i);
