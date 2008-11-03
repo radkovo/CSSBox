@@ -255,7 +255,7 @@ public class CSSNorm
                 value.equals("menu") || value.equals("message-box") ||
                 value.equals("small-caption") || value.equals("status-bar"))
             {
-                setProperty(dest, name, value, prio); //these are atomic
+                dest.setProperty(name, value, prio); //these are atomic
             }
             else
             {
