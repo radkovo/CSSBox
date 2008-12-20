@@ -25,8 +25,10 @@ import java.awt.*;
 import java.util.Iterator;
 import java.util.Vector;
 
+import cz.vutbr.web.css.*;
+
 import org.w3c.dom.*;
-import org.w3c.dom.css.CSSStyleDeclaration;
+
 
 /**
  * A box corresponding to a block element
@@ -35,29 +37,29 @@ import org.w3c.dom.css.CSSStyleDeclaration;
  */
 public class BlockBox extends ElementBox
 {
-    protected static final short FLOAT_NONE = 0;
-    protected static final short FLOAT_LEFT = 1;
-    protected static final short FLOAT_RIGHT = 2;
+    protected static final CSSProperty.Float FLOAT_NONE = CSSProperty.Float.NONE;
+    protected static final CSSProperty.Float FLOAT_LEFT = CSSProperty.Float.LEFT;
+    protected static final CSSProperty.Float FLOAT_RIGHT = CSSProperty.Float.RIGHT;
     
-    protected static final short CLEAR_NONE = 0;
-    protected static final short CLEAR_LEFT = 1;
-    protected static final short CLEAR_RIGHT = 2;
-    protected static final short CLEAR_BOTH = 3;
+    protected static final CSSProperty.Clear CLEAR_NONE = CSSProperty.Clear.NONE;
+    protected static final CSSProperty.Clear CLEAR_LEFT = CSSProperty.Clear.LEFT;
+    protected static final CSSProperty.Clear CLEAR_RIGHT = CSSProperty.Clear.RIGHT;
+    protected static final CSSProperty.Clear CLEAR_BOTH = CSSProperty.Clear.BOTH;
     
-    protected static final short POS_STATIC = 0;
-    protected static final short POS_RELATIVE = 1;
-    protected static final short POS_ABSOLUTE = 2;
-    protected static final short POS_FIXED = 3;
+    protected static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
+    protected static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
+    protected static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
+    protected static final CSSProperty.Position POS_FIXED = CSSProperty.Position.FIXED;
     
-    protected static final short ALIGN_LEFT = 0;
-    protected static final short ALIGN_RIGHT = 1;
-    protected static final short ALIGN_CENTER = 2;
-    protected static final short ALIGN_JUSTIFY = 3;
+    protected static final CSSProperty.TextAlign ALIGN_LEFT = CSSProperty.TextAlign.LEFT;
+    protected static final CSSProperty.TextAlign ALIGN_RIGHT = CSSProperty.TextAlign.RIGHT;
+    protected static final CSSProperty.TextAlign ALIGN_CENTER = CSSProperty.TextAlign.CENTER;
+    protected static final CSSProperty.TextAlign ALIGN_JUSTIFY = CSSProperty.TextAlign.JUSTIFY;
     
-    protected static final short OVERFLOW_VISIBLE = 0;
-    protected static final short OVERFLOW_HIDDEN = 1;
-    protected static final short OVERFLOW_SCROLL = 2;
-    protected static final short OVERFLOW_AUTO = 3;
+    protected static final CSSProperty.Overflow OVERFLOW_VISIBLE = CSSProperty.Overflow.VISIBLE;
+    protected static final CSSProperty.Overflow OVERFLOW_HIDDEN = CSSProperty.Overflow.HIDDEN;
+    protected static final CSSProperty.Overflow OVERFLOW_SCROLL = CSSProperty.Overflow.SCROLL;
+    protected static final CSSProperty.Overflow OVERFLOW_AUTO = CSSProperty.Overflow.AUTO;
     
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
@@ -126,16 +128,16 @@ public class BlockBox extends ElementBox
     //============================== Computed style ======================
     
     /** Floating property */
-    protected short floating;
+    protected CSSProperty.Float floating;
     
     /** Clearing property */
-    protected short clearing;
+    protected CSSProperty.Clear clearing;
     
     /** Position property */
-    protected short position;
+    protected CSSProperty.Position position;
     
     /** Overflow property */
-    protected short overflow;
+    protected CSSProperty.Overflow overflow;
         
     /** Position coordinates */
     protected LengthSet coords;
@@ -153,12 +155,12 @@ public class BlockBox extends ElementBox
     protected boolean rightset;
     
     /** Text-align property */
-    protected short align;
+    protected CSSProperty.TextAlign align;
     
     //=====================================================================
     
     /** Creates a new instance of BlockBox */
-    public BlockBox(Element n, Graphics g, VisualContext ctx)
+    public BlockBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         
@@ -184,7 +186,8 @@ public class BlockBox extends ElementBox
         bottomset = false;
         rightset = false;
         
-        loadBlockStyle();
+      	if (style != null)
+      		loadBlockStyle();
     }
 
     /** Convert an inline box to a block box */
@@ -252,13 +255,15 @@ public class BlockBox extends ElementBox
     
     //========================================================================
     
+    @Override
     public String toString()
     {
         return "<" + el.getTagName() + " id=\"" + el.getAttribute("id") + 
                "\" class=\""  + el.getAttribute("class") + "\">";
     }
     
-    public void setStyle(CSSStyleDeclaration s)
+    @Override
+    public void setStyle(NodeData s)
     {
     	super.setStyle(s);
     	loadBlockStyle();
@@ -288,14 +293,34 @@ public class BlockBox extends ElementBox
     	return fown;
     }
     
-    public short getFloating()
+    public CSSProperty.Float getFloating()
     {
         return floating;
     }
 
-    public short getClearing()
+    public String getFloatingString()
+    {
+        return floating.toString();
+    }
+
+    public CSSProperty.Clear getClearing()
     {
         return clearing;
+    }
+    
+    public String getClearingString()
+    {
+        return clearing.toString();
+    }
+    
+    public String getPositionString()
+    {
+        return position.toString();
+    }
+    
+    public String getOverflowString()
+    {
+        return overflow.toString();
     }
     
     /** Returns true if the box is in the normal text flow (not absolutely
@@ -306,12 +331,14 @@ public class BlockBox extends ElementBox
         return (displayed && floating == FLOAT_NONE && position != POS_ABSOLUTE && position != POS_FIXED);
     }
     
-	public boolean containsFlow()
+	@Override
+    public boolean containsFlow()
 	{
 		return anyinflow;
 	}
 
 	/** Returns true if the element displays at least something */
+    @Override
     public boolean affectsDisplay()
     {
         boolean ret = containsFlow();
@@ -412,8 +439,11 @@ public class BlockBox extends ElementBox
      * @param linestart Indicates whether the element is placed at the line start
      * @return <code>true</code> if the box has been succesfully placed
      */
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
+    	if (getElement() != null && getElement().getAttribute("id").equals("adPrarticle"))
+    		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
@@ -534,20 +564,22 @@ public class BlockBox extends ElementBox
                         subbox.setPosition(x,  y);
                         x += subbox.getWidth();
                     }
-                }
-                
-                //update the maximal line height
-                if (subbox instanceof InlineBox)
-                {
-                    InlineBox isubbox = (InlineBox) subbox;
-                    int prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
-                    if (prefh > maxh) 
-                        maxh = prefh;
-                }
-                else
-                {
-                    if (subbox.getHeight() > maxh)
-                        maxh = subbox.getHeight();
+                    //update the maximal line height
+                    if (subbox instanceof InlineBox)
+                    {
+                        InlineBox isubbox = (InlineBox) subbox;
+                        int prefh = 0;
+                        if (isubbox.getHeight() > 0) //subbox is not rendered as empty, consider the line height
+                            prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
+                        if (prefh > maxh) 
+                            maxh = prefh;
+                    }
+                    else
+                    {
+                        if (subbox.getHeight() > maxh)
+                            maxh = subbox.getHeight();
+                    }
+                    
                 }
                 
                 //check line overflows
@@ -581,7 +613,7 @@ public class BlockBox extends ElementBox
                     if (x2 < 0) x2 = 0;
                     x = x1;
                     //create the new line record for alignment
-                    lnstr = i+1;
+                    lnstr = i;
                     curline.setEnd(lnstr); //finish the old line
                     curline = new ContentLine(lnstr);
                     lines.add(curline);
@@ -1002,7 +1034,7 @@ public class BlockBox extends ElementBox
     }
     
 	@Override
-    public void draw(Graphics g, int turn, int mode)
+    public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
         if (displayed && isVisible())
@@ -1043,29 +1075,20 @@ public class BlockBox extends ElementBox
     
     private void loadBlockStyle()
     {
-        String fp = getStyleProperty("float");
-        if (fp.equals("left")) floating = FLOAT_LEFT;
-        else if (fp.equals("right")) floating = FLOAT_RIGHT;
+        floating = style.getProperty("float");
+        if (floating == null) floating = FLOAT_NONE;
 
-        String cp = getStyleProperty("clear");
-        if (cp.equals("left")) clearing = CLEAR_LEFT;
-        else if (cp.equals("right")) clearing = CLEAR_RIGHT;
-        else if (cp.equals("both")) clearing = CLEAR_BOTH;
+        clearing = style.getProperty("clear");
+        if (clearing == null) clearing = CLEAR_NONE;
         
-        String pp = getStyleProperty("position");
-        if (pp.equals("relative")) position = POS_RELATIVE;
-        else if (pp.equals("absolute")) position = POS_ABSOLUTE;
-        else if (pp.equals("fixed")) position = POS_FIXED;
+        position = style.getProperty("position");
+        if (position == null) position = POS_STATIC;
         
-        String op = getStyleProperty("overflow");
-        if (op.equals("hidden")) overflow = OVERFLOW_HIDDEN;
-        else if (op.equals("scroll")) overflow = OVERFLOW_SCROLL;
-        else if (op.equals("auto")) overflow = OVERFLOW_AUTO;
-
-        String ap = getStyleProperty("text-align");
-        if (ap.equals("justify")) align = ALIGN_JUSTIFY;
-        else if (ap.equals("center")) align = ALIGN_CENTER;
-        else if (ap.equals("right")) align = ALIGN_RIGHT;
+        overflow = style.getProperty("overflow");
+        if (overflow == null) overflow = OVERFLOW_VISIBLE;
+        
+        align = style.getProperty("text-align");
+        if (align == null) align = ALIGN_LEFT;
     }
     
     /**
@@ -1078,15 +1101,25 @@ public class BlockBox extends ElementBox
         int contw = cblock.getContentWidth();
         int conth = cblock.getContentHeight();
         
+        CSSProperty.Top ptop = style.getProperty("top");
+        CSSProperty.Right pright = style.getProperty("right");
+        CSSProperty.Bottom pbottom = style.getProperty("bottom");
+        CSSProperty.Left pleft = style.getProperty("left");
+
+        topset = !(ptop == null || ptop == CSSProperty.Top.AUTO);
+        rightset = !(pright == null || pright == CSSProperty.Right.AUTO);
+        bottomset = !(pbottom == null || pbottom == CSSProperty.Bottom.AUTO);
+        leftset = !(pleft == null || pleft == CSSProperty.Left.AUTO);
+        
         coords = new LengthSet();
-        coords.top = dec.getLength(getStyleProperty("top"), 0, 0, conth);
-        coords.right = dec.getLength(getStyleProperty("right"), 0, 0, contw);
-        coords.bottom = dec.getLength(getStyleProperty("bottom"), 0, 0, conth);
-        coords.left = dec.getLength(getStyleProperty("left"), 0, 0, contw);
-        topset = !(getStyleProperty("top").equals("") || getStyleProperty("top").equals("auto"));
-        leftset = !(getStyleProperty("left").equals("") || getStyleProperty("left").equals("auto"));
-        bottomset = !(getStyleProperty("bottom").equals("") || getStyleProperty("bottom").equals("auto"));
-        rightset = !(getStyleProperty("right").equals("") || getStyleProperty("right").equals("auto"));
+        if (topset)
+            coords.top = dec.getLength(getLengthValue("top"), (ptop == CSSProperty.Top.AUTO), 0, 0, conth);
+        if (rightset)
+            coords.right = dec.getLength(getLengthValue("right"), (pright == CSSProperty.Right.AUTO), 0, 0, contw);
+        if (bottomset)
+            coords.bottom = dec.getLength(getLengthValue("bottom"), (pbottom == CSSProperty.Bottom.AUTO), 0, 0, conth);
+        if (leftset)
+            coords.left = dec.getLength(getLengthValue("left"), (pleft == CSSProperty.Left.AUTO), 0, 0, contw);
     }
     
     /** Compute the total width of a block element according to the min-, max-,
@@ -1152,32 +1185,31 @@ public class BlockBox extends ElementBox
         //Borders
         if (!update) //borders needn't be updated
         {
-            String medium = "3px";
             border = new LengthSet();
-            if (borderVisible("top"))
-            		border.top = dec.getLength(getStyleProperty("border-top-width"), medium, "0", 0);
-            else
-            		border.top = 0;
-            if (borderVisible("right"))
-    	    		border.right = dec.getLength(getStyleProperty("border-right-width"), medium, "0", 0);
-    	    else
-    	    		border.right = 0;
-    	    if (borderVisible("bottom"))
-    	    		border.bottom = dec.getLength(getStyleProperty("border-bottom-width"), medium, "0", 0);
-    	    else
-    	    		border.bottom = 0;
-    	    if (borderVisible("left"))
-    	    		border.left = dec.getLength(getStyleProperty("border-left-width"), medium, "0", 0);
-    	    else
-    	    		border.left = 0;
+	        if (borderVisible("top"))
+        		border.top = getBorderWidth(dec, "border-top-width");
+	        else
+        		border.top = 0;
+	        if (borderVisible("right"))
+        		border.right = getBorderWidth(dec, "border-right-width");
+		    else
+	    		border.right = 0;
+		    if (borderVisible("bottom"))
+        		border.bottom = getBorderWidth(dec, "border-bottom-width");
+		    else
+	    		border.bottom = 0;
+		    if (borderVisible("left"))
+        		border.left = getBorderWidth(dec, "border-left-width");
+		    else
+	    		border.left = 0;
         }
         
         //Padding
         padding = new LengthSet();
-        padding.top = dec.getLength(getStyleProperty("padding-top"), 0, 0, contw);
-        padding.right = dec.getLength(getStyleProperty("padding-right"), 0, 0, contw);
-        padding.bottom = dec.getLength(getStyleProperty("padding-bottom"), 0, 0, contw);
-        padding.left = dec.getLength(getStyleProperty("padding-left"), 0, 0, contw);
+        padding.top = dec.getLength(getLengthValue("padding-top"), false, null, null, contw);
+        padding.right = dec.getLength(getLengthValue("padding-right"), false, null, null, contw);
+        padding.bottom = dec.getLength(getLengthValue("padding-bottom"), false, null, null, contw);
+        padding.left = dec.getLength(getLengthValue("padding-left"), false, null, null, contw);
         
         //Content and margins
         if (!update)
@@ -1187,42 +1219,44 @@ public class BlockBox extends ElementBox
         }
             
         //Minimal and maximal width
-        min_size = new Dimension(dec.getLength(getStyleProperty("min-width"), -1, -1, contw),
-                                 dec.getLength(getStyleProperty("min-height"), -1, -1, conth));
-        max_size = new Dimension(dec.getLength(getStyleProperty("max-width"), -1, -1, contw),
-                                 dec.getLength(getStyleProperty("max-height"), -1, -1, conth));
+        min_size = new Dimension(dec.getLength(getLengthValue("min-width"), false, -1, -1, contw),
+                                 dec.getLength(getLengthValue("min-height"), false, -1, -1, conth));
+        max_size = new Dimension(dec.getLength(getLengthValue("max-width"), false, -1, -1, contw),
+                                 dec.getLength(getLengthValue("max-height"), false, -1, -1, conth));
         if (max_size.width != -1 && max_size.width < min_size.width)
             max_size.width = min_size.width;
         if (max_size.height != -1 && max_size.height < min_size.height)
             max_size.height = min_size.height; 
         
         //Calculate widths and margins
-        String width = getStyleProperty("width");
-        computeWidths(width, true, contw, update);
+    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    		System.out.println("jo!");
+        TermLengthOrPercent width = getLengthValue("width");
+        computeWidths(width, style.getProperty("width") == CSSProperty.Width.AUTO, true, contw, update);
         if (max_size.width != -1 && content.width > max_size.width)
         {
-            width = getStyleProperty("max-width");
-            computeWidths(width, false, contw, update);
+            width = getLengthValue("max-width");
+            computeWidths(width, false, false, contw, update);
         }
         if (min_size.width != -1 && content.width < min_size.width)
         {
-            width = getStyleProperty("min-width");
-            computeWidths(width, false, contw, update);
+            width = getLengthValue("min-width");
+            computeWidths(width, false, false, contw, update);
         }
         
         //Calculate heights and margins
         // http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
-        String height = getStyleProperty("height");
-        computeHeights(height, true, contw, update);
+        TermLengthOrPercent height = getLengthValue("height");
+        computeHeights(height, style.getProperty("height") == CSSProperty.Height.AUTO, true, contw, update);
         if (max_size.height != -1 && content.height > max_size.height)
         {
-            height = getStyleProperty("max-height");
-            computeHeights(height, false, contw, update);
+            height = getLengthValue("max-height");
+            computeHeights(height, false, false, contw, update);
         }
         if (min_size.height != -1 && content.height < min_size.height)
         {
-            height = getStyleProperty("min-height");
-            computeHeights(height, false, contw, update);
+            height = getLengthValue("min-height");
+            computeHeights(height, false, false, contw, update);
         }
         
         if (update)
@@ -1237,28 +1271,31 @@ public class BlockBox extends ElementBox
     /** 
      * Calculates widths and margins according to
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_widths_and_margins .
-     * @param width the specified width
+     * @param width the specified width or null for auto
      * @param exact true if this is the exact width, false when it's a max/min width
      * @param contw containing block width
      * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
-    protected void computeWidths(String width, boolean exact, int contw, boolean update)
+    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
-        if (width.equals("")) width = "auto";
-        String mleft = getStyleProperty("margin-left");
-        String mright = getStyleProperty("margin-right");
+        if (width == null) auto = true; //no value behaves as 'auto'
+        
+        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mleft = getLengthValue("margin-left");
+        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mright = getLengthValue("margin-right");
         preferredWidth = -1;
         
         if (!widthComputed) update = false;
         
-        if (width.equals("auto"))
+        if (auto)
         {
         	if (exact) wset = false;
-            margin.left = dec.getLength(mleft, 0, 0, contw);
-            margin.right = dec.getLength(mright, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
             marginRightDecl = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
@@ -1275,18 +1312,18 @@ public class BlockBox extends ElementBox
         	if (exact) 
         	{
         	    wset = true;
-                wrelative = dec.isPercent(width);
+                wrelative = width.isPercentage();
         	}
-          	content.width = dec.getLength(width, 0, 0, contw);
-            margin.left = dec.getLength(mleft, 0, 0, contw);
-            margin.right = dec.getLength(mright, 0, 0, contw);
+          	content.width = dec.getLength(width, auto, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
             marginRightDecl = margin.right;
             
             //We will prefer some width if the value is not percentage
-            boolean prefer = !dec.isPercent(width);
+            boolean prefer = !width.isPercentage();
             //We will include the margins in the preferred width if they're not percentages
-            int prefml = dec.isPercent(mleft) || (mleft.equals("auto")) ? 0 : margin.left;
-            int prefmr = dec.isPercent(mright) || (mright.equals("auto")) ? 0 : margin.right;
+            int prefml = (mleft == null) || mleft.isPercentage() || mleftauto ? 0 : margin.left;
+            int prefmr = (mright == null) || mright.isPercentage() || mrightauto ? 0 : margin.right;
             //Compute the preferred width
             if (prefer)
                 preferredWidth = prefml + border.left + padding.left + content.width +
@@ -1296,7 +1333,7 @@ public class BlockBox extends ElementBox
             //TODO: pro absolutni pozicovani by to melo byt jinak
             if (isInFlow() && prefer) 
             {
-                if (mleft.equals("auto") && mright.equals("auto"))
+                if (mleftauto && mrightauto)
                 {
                     int rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
@@ -1304,13 +1341,13 @@ public class BlockBox extends ElementBox
                     margin.left = (rest + 1) / 2;
                     margin.right = rest / 2;
                 }
-                else if (mleft.equals("auto"))
+                else if (mleftauto)
                 {
                     margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
                     if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
-                else if (mright.equals("auto"))
+                else if (mrightauto)
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
@@ -1335,23 +1372,29 @@ public class BlockBox extends ElementBox
      * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
-    protected void computeHeights(String height, boolean exact, int contw, boolean update)
+    protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, int contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         if (cblock != null && cblock.hset)
         {
-            hset = (exact && !height.equals("auto") && !height.equals(""));
+            hset = (exact && !auto && height != null);
             if (!update)
-                content.height = dec.getLength(height, 0, 0, cblock.getContentHeight());
+                content.height = dec.getLength(height, auto, 0, 0, cblock.getContentHeight());
         }
         else
         {
-            hset = (exact && !height.equals("auto") && !height.equals("") && !height.endsWith("%"));
+            hset = (exact && !auto && height != null && !height.isPercentage());
             if (!update)
-                content.height = dec.getLength(height, 0, 0, 0);
+                content.height = dec.getLength(height, auto, 0, 0, 0);
         }
-        margin.top = dec.getLength(getStyleProperty("margin-top"), 0, 0, contw); //contw is ok here!
-        margin.bottom = dec.getLength(getStyleProperty("margin-bottom"), 0, 0, contw);
+        if (style.getProperty("margin-top") == CSSProperty.Margin.AUTO)
+            margin.top = 0;
+        else
+            margin.top = dec.getLength(getLengthValue("margin-top"), false, 0, 0, contw); //contw is ok here!
+        if (style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO)
+            margin.bottom = 0;
+        else
+            margin.bottom = dec.getLength(getLengthValue("margin-bottom"), false, 0, 0, contw);
     }
     
     /**
@@ -1384,8 +1427,8 @@ public class BlockBox extends ElementBox
      */
     protected boolean borderVisible(String dir)
     {
-    		String style = getStyleProperty("border-"+dir+"-style");
-    		return (!style.equals("") && !style.equals("none") && !style.equals("hidden")); 
+    		CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
+    		return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
     }
     
     /**

@@ -24,9 +24,8 @@ package org.fit.cssbox.layout;
 import java.util.*;
 import java.awt.*;
 
+import cz.vutbr.web.css.*;
 import org.w3c.dom.*;
-import org.w3c.dom.css.CSSStyleDeclaration;
-import org.fit.cssbox.css.CSSNorm;
 
 /**
  * An abstract class representing a box formed by a DOM element. There are two
@@ -37,32 +36,32 @@ import org.fit.cssbox.css.CSSNorm;
  */
 abstract public class ElementBox extends Box
 {
-    public static final short DISPLAY_ANY = -1;
-    public static final short DISPLAY_NONE = 0;
-    public static final short DISPLAY_INLINE = 1;
-    public static final short DISPLAY_BLOCK = 2;
-    public static final short DISPLAY_LIST_ITEM = 3;
-    public static final short DISPLAY_RUN_IN = 4;
-    public static final short DISPLAY_INLINE_BLOCK = 5;
-    public static final short DISPLAY_TABLE = 6;
-    public static final short DISPLAY_INLINE_TABLE = 7;
-    public static final short DISPLAY_TABLE_ROW_GROUP = 8;
-    public static final short DISPLAY_TABLE_HEADER_GROUP = 9;
-    public static final short DISPLAY_TABLE_FOOTER_GROUP = 10;
-    public static final short DISPLAY_TABLE_ROW = 11;
-    public static final short DISPLAY_TABLE_COLUMN_GROUP = 12;
-    public static final short DISPLAY_TABLE_COLUMN = 13;
-    public static final short DISPLAY_TABLE_CELL = 14;
-    public static final short DISPLAY_TABLE_CAPTION = 15;
+    public static final CSSProperty.Display DISPLAY_ANY = null;
+    public static final CSSProperty.Display DISPLAY_NONE = CSSProperty.Display.NONE;
+    public static final CSSProperty.Display DISPLAY_INLINE = CSSProperty.Display.INLINE;
+    public static final CSSProperty.Display DISPLAY_BLOCK = CSSProperty.Display.BLOCK;
+    public static final CSSProperty.Display DISPLAY_LIST_ITEM = CSSProperty.Display.LIST_ITEM;
+    public static final CSSProperty.Display DISPLAY_RUN_IN = CSSProperty.Display.RUN_IN;
+    public static final CSSProperty.Display DISPLAY_INLINE_BLOCK = CSSProperty.Display.INLINE_BLOCK;
+    public static final CSSProperty.Display DISPLAY_TABLE = CSSProperty.Display.TABLE;
+    public static final CSSProperty.Display DISPLAY_INLINE_TABLE = CSSProperty.Display.INLINE_TABLE;
+    public static final CSSProperty.Display DISPLAY_TABLE_ROW_GROUP = CSSProperty.Display.TABLE_ROW_GROUP;
+    public static final CSSProperty.Display DISPLAY_TABLE_HEADER_GROUP = CSSProperty.Display.TABLE_HEADER_GROUP;
+    public static final CSSProperty.Display DISPLAY_TABLE_FOOTER_GROUP = CSSProperty.Display.TABLE_FOOTER_GROUP;
+    public static final CSSProperty.Display DISPLAY_TABLE_ROW = CSSProperty.Display.TABLE_ROW;
+    public static final CSSProperty.Display DISPLAY_TABLE_COLUMN_GROUP = CSSProperty.Display.TABLE_COLUMN_GROUP;
+    public static final CSSProperty.Display DISPLAY_TABLE_COLUMN = CSSProperty.Display.TABLE_COLUMN;
+    public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
+    public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
     
     /** Default line height if nothing or 'normal' is specified */
-    private static final float DEFAULT_LINE_HEIGHT = 1.1f;
+    private static final float DEFAULT_LINE_HEIGHT = 1.12f;
     
     /** Assigned element */
     protected Element el;
 
     /** The display property value */
-    protected short display;
+    protected CSSProperty.Display display;
     
     /** Background color or null when transparent */
     protected Color bgcolor;
@@ -107,7 +106,7 @@ abstract public class ElementBox extends Box
      * @param g current graphics context
      * @param ctx current visual context
      */
-    public ElementBox(Element n, Graphics g, VisualContext ctx)
+    public ElementBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         minAbsBounds = null;
@@ -119,8 +118,6 @@ abstract public class ElementBox extends Box
 	        startChild = 0;
 	        endChild = 0;
 	        isblock = false;
-	        //style = org.burgetr.transformer.DOMAnalyzer.getStyleDeclaration(el);
-	        //loadBasicStyle();
         }
     }
     
@@ -159,7 +156,7 @@ abstract public class ElementBox extends Box
     /**
      * Set the new element style
      */
-    public void setStyle(CSSStyleDeclaration s)
+    public void setStyle(NodeData s)
     {
     	super.setStyle(s);
     	loadBasicStyle();
@@ -169,9 +166,17 @@ abstract public class ElementBox extends Box
      * Returns the value of the display property
      * @return One of the ElementBox.DISPLAY_XXX constants
      */
-    public short getDisplay()
+    public CSSProperty.Display getDisplay()
     {
     	return display;
+    }
+    
+    public String getDisplayString()
+    {
+        if (display != null)
+            return display.toString();
+        else
+            return "";
     }
     
     /**
@@ -480,7 +485,7 @@ abstract public class ElementBox extends Box
      * Draw the background and border of this box (no subboxes)
      * @param g the graphics context used for drawing 
      */
-    protected void drawBackground(Graphics g)
+    protected void drawBackground(Graphics2D g)
     {
         Color color = g.getColor(); //original color
 
@@ -524,13 +529,13 @@ abstract public class ElementBox extends Box
         g.setColor(color); //restore original color
     }
     
-    private void drawBorder(Graphics g, int x1, int y1, int x2, int y2,
+    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2,
                             String side)
     {
-        String sclr = getStyleProperty("border-"+side+"-color");
-        if (!sclr.equals("") && !sclr.equals("none"))
+        TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
+        if (tclr != null)
         {
-            Color clr = ctx.getColor(sclr);
+            Color clr = tclr.getValue();
             if (clr == null) clr = Color.BLACK;
             g.setColor(clr);
             g.fillRect(x1, y1, x2 - x1, y2 - y1);            
@@ -538,7 +543,8 @@ abstract public class ElementBox extends Box
         
     }
 
-    public void drawExtent(Graphics g)
+    @Override
+    public void drawExtent(Graphics2D g)
     {
     	//draw the full box
         g.setColor(Color.RED);
@@ -575,67 +581,46 @@ abstract public class ElementBox extends Box
     {
         ctx.updateForGraphics(style, g);
         
-        String d = getStyleProperty("display");
-        if (d.equals("none")) display = DISPLAY_NONE;
-        else if (d.equals("inline")) display = DISPLAY_INLINE;
-        else if (d.equals("block")) display = DISPLAY_BLOCK;
-        else if (d.equals("list-item")) display = DISPLAY_LIST_ITEM;
-        else if (d.equals("run-in")) display = DISPLAY_RUN_IN;
-        else if (d.equals("inline-block")) display = DISPLAY_INLINE_BLOCK;
-        else if (d.equals("table")) display = DISPLAY_TABLE;
-        else if (d.equals("inline-table")) display = DISPLAY_INLINE_TABLE;
-        else if (d.equals("table-row-group")) display = DISPLAY_TABLE_ROW_GROUP;
-        else if (d.equals("table-header-group")) display = DISPLAY_TABLE_HEADER_GROUP;
-        else if (d.equals("table-footer-group")) display = DISPLAY_TABLE_FOOTER_GROUP;
-        else if (d.equals("table-row")) display = DISPLAY_TABLE_ROW;
-        else if (d.equals("table-column-group")) display = DISPLAY_TABLE_COLUMN_GROUP;
-        else if (d.equals("table-column")) display = DISPLAY_TABLE_COLUMN;
-        else if (d.equals("table-cell")) display = DISPLAY_TABLE_CELL;
-        else if (d.equals("table-caption")) display = DISPLAY_TABLE_CAPTION;
-        else display = DISPLAY_INLINE;
+        display = style.getProperty("display");
+        if (display == null) display = CSSProperty.Display.INLINE;
         
         isblock = (display == DISPLAY_BLOCK);
         displayed = (display != DISPLAY_NONE && display != DISPLAY_TABLE_COLUMN);
-        visible = !getStyleProperty("visibility").equals("hidden");
-        
-        String fp = getStyleProperty("float");
-        String pp = getStyleProperty("position");
-        if (fp.equals("right") || fp.equals("left") ||
-            pp.equals("absolute") || pp.equals("fixed"))
+        visible = (style.getProperty("visibility") != CSSProperty.Visibility.HIDDEN); 
+
+        CSSProperty.Float fp = style.getProperty("float");
+        CSSProperty.Position pp = style.getProperty("position");
+        if (fp == CSSProperty.Float.RIGHT || fp == CSSProperty.Float.LEFT ||
+            pp == CSSProperty.Position.ABSOLUTE || pp == CSSProperty.Position.FIXED)
                 isblock = true;
         
         //line height
-        String lh = getStyleProperty("line-height");
-        if (lh.equals("") || lh.equals("normal"))
+        CSSProperty.LineHeight lh = style.getProperty("line-height");
+        if (lh == null || lh == CSSProperty.LineHeight.NORMAL)
             lineHeight = Math.round(DEFAULT_LINE_HEIGHT * ctx.getFontHeight());
-        else if (CSSNorm.isLength(lh))
-            lineHeight = ctx.getLength(lh);
-        else if (CSSNorm.isPercent(lh))
+        else if (lh == CSSProperty.LineHeight.length)
         {
-            String lhp = lh.substring(0, lh.length()-1);
-            float r = DEFAULT_LINE_HEIGHT * 100; 
-            try {
-                r = Float.valueOf(lhp);
-            } catch (NumberFormatException e) {
-            }
-            lineHeight = Math.round(r * ctx.getFontHeight() / 100.0f);
+            TermLength len = style.getValue(TermLength.class, "line-height");
+            lineHeight = (int) ctx.pxLength(len);
         }
-        else
+        else if (lh == CSSProperty.LineHeight.percentage)
         {
-            float r = DEFAULT_LINE_HEIGHT; 
-            try {
-                r = Float.valueOf(lh);
-            } catch (NumberFormatException e) {
-            }
-            lineHeight = Math.round(r * ctx.getFontHeight());
+            TermPercent len = style.getValue(TermPercent.class, "line-height");
+            lineHeight = (int) ctx.pxLength(len, ctx.getEm()); 
+        }
+        else //must be NUMBER
+        {
+            TermNumber len = style.getValue(TermNumber.class, "line-height");
+            float r = len.getValue(); 
+            lineHeight = (int) Math.round(r * ctx.getEm());
         }
         
         //background
-        String bg = getStyleProperty("background-color");
-        if (!bg.equals("") && !bg.equals("transparent"))
+        CSSProperty.BackgroundColor bg = style.getProperty("background-color");
+        if (bg == CSSProperty.BackgroundColor.color)
         {
-            bgcolor = ctx.getColor(bg);
-            //when returned null (couldn't parse), use transparent anyway
+            TermColor bgc = style.getValue(TermColor.class, "background-color");
+            bgcolor = bgc.getValue();
         }
         else
             bgcolor = null;

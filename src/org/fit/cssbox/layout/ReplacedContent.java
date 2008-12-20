@@ -20,7 +20,7 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 /**
  * A class that represents the contents of a replace box
@@ -77,7 +77,7 @@ public abstract class ReplacedContent
 	 * @param width the required width of the result 
 	 * @param height the required height of the result 
 	 */
-    abstract public void draw(Graphics g, int width, int height);
+    abstract public void draw(Graphics2D g, int width, int height);
     
     /**
      * @return the intrinsic width of the contents

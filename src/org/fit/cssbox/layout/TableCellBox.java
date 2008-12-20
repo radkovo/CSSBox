@@ -21,8 +21,12 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
+import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.TermNumeric.Unit;
+
+import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Element;
 
 /**
@@ -47,7 +51,7 @@ public class TableCellBox extends BlockBox
     /**
      * Create a new table cell
      */
-    public TableCellBox(Element n, Graphics g, VisualContext ctx)
+    public TableCellBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;
@@ -182,35 +186,37 @@ public class TableCellBox extends BlockBox
             { System.err.println(toString() + " has no cblock"); return; }
         int contw = cblock.getContentWidth();
         
+        TermLength zero = CSSFactory.getTermFactory().createLength(0.0F, Unit.px);
+        
         //Borders
         if (!update) //borders needn't be updated
         {
-            String medium = "3px";
+            TermLength medium = CSSFactory.getTermFactory().createLength(3.0F, Unit.px);
             border = new LengthSet();
             if (borderVisible("top"))
-                    border.top = dec.getLength(getStyleProperty("border-top-width"), medium, "0", 0);
+                    border.top = dec.getLength(getLengthValue("border-top-width"), false, medium, zero, 0);
             else
                     border.top = 0;
             if (borderVisible("right"))
-                    border.right = dec.getLength(getStyleProperty("border-right-width"), medium, "0", 0);
+                    border.right = dec.getLength(getLengthValue("border-right-width"), false, medium, zero, 0);
             else
                     border.right = 0;
             if (borderVisible("bottom"))
-                    border.bottom = dec.getLength(getStyleProperty("border-bottom-width"), medium, "0", 0);
+                    border.bottom = dec.getLength(getLengthValue("border-bottom-width"), false, medium, zero, 0);
             else
                     border.bottom = 0;
             if (borderVisible("left"))
-                    border.left = dec.getLength(getStyleProperty("border-left-width"), medium, "0", 0);
+                    border.left = dec.getLength(getLengthValue("border-left-width"), false, medium, zero, 0);
             else
                     border.left = 0;
         }
         
         //Padding
         padding = new LengthSet();
-        padding.top = dec.getLength(getStyleProperty("padding-top"), "0", "0", contw);
-        padding.right = dec.getLength(getStyleProperty("padding-right"), "0", "0", contw);
-        padding.bottom = dec.getLength(getStyleProperty("padding-bottom"), "0", "0", contw);
-        padding.left = dec.getLength(getStyleProperty("padding-left"), "0", "0", contw);
+        padding.top = dec.getLength(getLengthValue("padding-top"), false, zero, zero, contw);
+        padding.right = dec.getLength(getLengthValue("padding-right"), false, zero, zero, contw);
+        padding.bottom = dec.getLength(getLengthValue("padding-bottom"), false, zero, zero, contw);
+        padding.left = dec.getLength(getLengthValue("padding-left"), false, zero, zero, contw);
         
         //Content and margins
         if (!update)
@@ -223,15 +229,22 @@ public class TableCellBox extends BlockBox
         }
         
         //Load the width if set
-        String width = getElement().getAttribute("width").trim(); //try to load from attribute
-        if (!width.equals(""))
+        CSSProperty.Width wprop = null;
+        TermLengthOrPercent width = null; 
+        String widthattr = getElement().getAttribute("width"); //try to load from attribute
+        if (!widthattr.equals(""))
         {
-            if (!width.endsWith("%"))
-                width = width + "px";
+            width = HTMLNorm.createLengthOrPercent(widthattr);
+            if (width != null)
+                wprop = width.isPercentage() ? CSSProperty.Width.percentage : CSSProperty.Width.length;
         }
-        else
-            width = getStyleProperty("width"); //no attribute set - use the style
-        if (width.equals("") || width.equals("auto"))
+        else //no attribute set - use the style
+        {
+            wprop = style.getProperty("width");
+            width = getLengthValue("width");
+        }
+        
+        if (wprop == null || wprop == CSSProperty.Width.AUTO)
         {
             wset = false;
         }
@@ -239,39 +252,42 @@ public class TableCellBox extends BlockBox
         {
             wset = true;
             if (!update)
-                content.width = dec.getLength(width, "0", "0", contw);
-            if (width.endsWith("%"))
+                content.width = dec.getLength(width, false, 0, 0, contw);
+            if (width.isPercentage())
             {
             	wrelative = true;
-            	try {
-            		percent = Integer.parseInt(width.substring(0, width.length()-1));
-            	} catch (NumberFormatException e) {
-            		wrelative = false;
-            		percent = 0;
-            	}
+            	percent = (int) Math.round(width.getValue());
             }
         }
         
         //Load the height if set
-        String height = getElement().getAttribute("height").trim(); //try to load from attribute
-        if (!height.equals(""))
+        String heightattr = getElement().getAttribute("height"); //try to load from attribute
+        CSSProperty.Height hprop = null;
+        TermLengthOrPercent height = null;
+        if (!heightattr.equals(""))
         {
-            if (!height.endsWith("%"))
-                width = width + "px";
+            height = HTMLNorm.createLengthOrPercent(widthattr);
+            if (height != null)
+                hprop = height.isPercentage() ? CSSProperty.Height.percentage : CSSProperty.Height.length;
         }
         else
-            height = getStyleProperty("height");
+        {
+            hprop = style.getProperty("height");
+            height = getLengthValue("height");
+        }
+
+        boolean hauto = (hprop == null || hprop == CSSProperty.Height.AUTO); 
         if (cblock.hset)
         {
-            hset = (!height.equals("auto") && !height.equals(""));
+            hset = !hauto;
             if (!update)
-                content.height = dec.getLength(height, "0", "0", cblock.getContentHeight());
+                content.height = dec.getLength(height, hauto, 0, 0, cblock.getContentHeight());
         }
         else
         {
-            hset = (!height.equals("auto") && !height.equals("") && !height.endsWith("%"));
+            hset = (!hauto && !height.isPercentage());
             if (!update)
-                content.height = dec.getLength(height, "0", "0", 0);
+                content.height = dec.getLength(height, hauto, 0, 0, 0);
         }
     }
 

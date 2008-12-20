@@ -29,25 +29,25 @@ documentation.</p><p>For the initial DOM and style sheet processing, a
 <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used. It is
 initialized with the DOM tree and the base URL:</p><div class="code"><pre>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
+da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
 da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
 da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
-da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
-</pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String)" class="api">addStyleSheet()</a> 
+</pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
+method converts some HTML presentation attributes to CSS
+styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more). If (X)HTML
+interpretation is not required, this method need not be called.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String)" class="api">addStyleSheet()</a> 
 method is used to add a style sheet to the document. The style sheet is passed as a text
-string containing the CSS code. In our case, we add two
-built-in style sheets that represent the standard document style.
+string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style.
 The <a href="../api/org/fit/cssbox/css/CSSNorm.html#stdStyleSheet()" class="api">CSSNorm.stdStyleSheet()</a>
 method returns the default style sheet recommended by the CSS specification and the
 <a href="../api/org/fit/cssbox/css/CSSNorm.html#userStyleSheet()" class="api">CSSNorm.userStyleSheet()</a> 
-contains some additional CSSBox definitions not covered by the standard.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
-method loads and processes all the internal and external
-style sheets referenced from the document. In case of external style sheets, CSSBox tries to obtain
-the file from the corresponding URL, if accessible.</p><p>Finally, the
-<a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
-method converts some HTML presentation attributes to CSS
-styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more). If (X)HTML
-interpretation is not required, it is not necessary to use this method.</p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
+contains some additional CSSBox definitions not covered by the standard.</p><p>Finally, the <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
+method loads and processes all the internal and external style sheets referenced from the document including the inline
+style definitions. In case of external style sheets, CSSBox tries to obtain
+the file from the corresponding URL, if accessible.</p><p><em><strong>NOTE:</strong> Since the CSSBox 2.0 version, when the <code>attributesToStyles()</code> method is used
+for interpreting the HTML presentation attributes, it must be called before <code>getStyleSheets()</code> is used.
+Otherwise, the presentation attributes will not be considered in the resulting style.</em></p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
 the document code together with the associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are

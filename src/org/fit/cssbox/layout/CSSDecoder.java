@@ -21,6 +21,8 @@
 
 package org.fit.cssbox.layout;
 
+import cz.vutbr.web.css.*;
+
 /**
  * This class implements converting the CSS specifications to Java data types.
  *
@@ -65,73 +67,50 @@ public class CSSDecoder
      * @param defval the default value
      * @return the <code>value</code> if it is defined, <code>defval</code> otherwise
      */
-    public String getValue(String value, String defval)
+    /*public String getValue(String value, String defval)
     {
         if (value == null || value.trim().length() == 0)
             return defval;
         else
             return value;
-    }
+    }*/
     
-    /** Returns the length in pixels from a CSS definition
-     * @param value The value to be converted
-     * @param defval The value to be used when the first one is null or empty
-     * @param auto The value to be used when "auto" is specified
+    /** 
+     * Returns the length in pixels from a CSS definition. <code>null</code> values
+     * of the lengths are interpreted as zero.
+     * @param value The length or percentage value to be converted
+     * @param auto True, if the property is set to <code>auto</code>
+     * @param defval The length value to be used when the first one is null
+     * @param autoval The value to be used when "auto" is specified
      * @param whole the length to be returned as 100% (in case of percentage values)
      */
-    public int getLength(String value, String defval, String auto, int whole)
+    public int getLength(TermLengthOrPercent value, boolean auto, TermLengthOrPercent defval, TermLengthOrPercent autoval, int whole)
     {
-        try {
-            String val = getValue(value, defval);
-            if (val.equals("auto")) val = auto;
-            if (val.endsWith("%"))
-            {
-                String sval = val.substring(0, val.length()-1);
-                double pval = Double.parseDouble(sval);
-                return (int) ((whole * pval) / 100);
-            }
-            else
-                return context.getLength(val);
-        } catch (NumberFormatException e) {
-            return whole;
-        }
+        TermLengthOrPercent val = value;
+        if (value == null) val = defval;
+        if (auto) val = autoval;
+        if (val != null)
+        	return (int) Math.round(context.pxLength(val, whole));
+        else
+        	return 0;
     }
     
-    /** Returns the length in pixels from a CSS definition
-     * @param value The value to be converted
-     * @param defval The value to be used when the first one is null or empty
-     * @param auto The value to be used when "auto" is specified
+    /** 
+     * Returns the length in pixels from a CSS definition
+     * @param value The length or percentage value to be converted
+     * @param auto True, if the property is set to <code>auto</code>
+     * @param defval The length value to be used when the first one is null
+     * @param autoval The value to be used when "auto" is specified
      * @param whole the length to be returned as 100% (in case of percentage values)
      */
-    public int getLength(String value, int defval, int auto, int whole)
+    public int getLength(TermLengthOrPercent value, boolean auto, int defval, int autoval, int whole)
     {
-        try {
-            if (value == null || value.trim().length() == 0)
-                return defval;
-            String val = value;
-            if (val.equals("auto"))
-                    return auto;
-            if (val.endsWith("%"))
-            {
-                String sval = val.substring(0, val.length()-1);
-                double pval = Double.parseDouble(sval);
-                return (int) ((whole * pval) / 100);
-            }
-            else
-                return context.getLength(val);
-        } catch (NumberFormatException e) {
-            return whole;
-        }
-    }
-    
-    /**
-     * Checks if the value is a percentage
-     * @param value The value to be checked
-     * @return <code>true</code> if the specified value is percentage
-     */
-    public boolean isPercent(String value)
-    {
-        return value.endsWith("%");
+        if (value == null)
+            return defval;
+        else if (auto)
+            return autoval;
+        else
+            return (int) Math.round(context.pxLength(value, whole));
     }
     
 }

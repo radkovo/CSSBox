@@ -23,6 +23,7 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 
 import org.w3c.dom.*;
+import cz.vutbr.web.css.*;
 
 /**
  * @author radek
@@ -37,7 +38,7 @@ public class BlockReplacedBox extends BlockBox
     /** 
      * Creates a new instance of BlockReplacedBox 
      */
-    public BlockReplacedBox(Element el, Graphics g, VisualContext ctx)
+    public BlockReplacedBox(Element el, Graphics2D g, VisualContext ctx)
     {
         super(el, g, ctx);
     }
@@ -134,13 +135,16 @@ public class BlockReplacedBox extends BlockBox
             boxw = 20; //some reasonable default values
             boxh = 20;
         }
+
+        TermPercent whole = CSSFactory.getTermFactory().createPercent(100.0f);
         try {
             if (!el.getAttribute("width").equals(""))
                 boxw = Integer.parseInt(el.getAttribute("width"));
             else //try to get from style
             {
+                CSSProperty.Width width = style.getProperty("width");
                 CSSDecoder dec = new CSSDecoder(ctx);
-                boxw = dec.getLength(getStyleProperty("width"), "100%", "100%", boxw);
+                boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, whole, whole, boxw);
             }
         } catch (NumberFormatException e) {
             System.err.println("Invalid width value: " + el.getAttribute("width"));
@@ -150,8 +154,9 @@ public class BlockReplacedBox extends BlockBox
                 boxh = Integer.parseInt(el.getAttribute("height"));
             else //try to get from style
             {
+                CSSProperty.Height height = style.getProperty("height");
                 CSSDecoder dec = new CSSDecoder(ctx);
-                boxh = dec.getLength(getStyleProperty("height"), "100%", "100%", boxh);
+                boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, whole, whole, boxh);
             }
         } catch (NumberFormatException e) {
             System.err.println("Invalid height value: " + el.getAttribute("height"));
@@ -177,7 +182,7 @@ public class BlockReplacedBox extends BlockBox
 	}
 
 	@Override
-	public void draw(Graphics g, int turn, int mode)
+	public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
         if (displayed && isVisible())

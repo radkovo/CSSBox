@@ -20,9 +20,10 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import org.w3c.dom.Element;
+import cz.vutbr.web.css.*;
 
 /**
  * This class represents a list-item box. This box behaves the same way
@@ -35,7 +36,7 @@ public class ListItemBox extends BlockBox
 	/**
 	 * Create a new list item
 	 */
-	public ListItemBox(Element n, Graphics g, VisualContext ctx)
+	public ListItemBox(Element n, Graphics2D g, VisualContext ctx)
 	{
 		super(n, g, ctx);
 		isblock = true;
@@ -51,7 +52,8 @@ public class ListItemBox extends BlockBox
 	}
 
 	
-    public void draw(Graphics g, int turn, int mode)
+    @Override
+	public void draw(Graphics2D g, int turn, int mode)
     {
     	super.draw(g, turn, mode);
     	if (displayed && isVisible())
@@ -66,19 +68,19 @@ public class ListItemBox extends BlockBox
     /**
      * Draw a bullet
      */
-    private void drawBullet(Graphics g)
+    private void drawBullet(Graphics2D g)
     {
-    	int x = Math.round(getContentX() - (float)1.2 * ctx.em);
-    	int y = Math.round(getContentY() + (float)0.4 * ctx.em);
-    	int r = Math.round((float)0.6 * ctx.em);
-    	String type = getStyleProperty("list-style-type");
-    	if (type.equals("circle")) 
+    	int x = (int) Math.round(getContentX() - 1.2 * ctx.getEm());
+    	int y = (int) Math.round(getContentY() + 0.4 * ctx.getEm());
+    	int r = (int) Math.round(0.6 * ctx.getEm());
+    	CSSProperty.ListStyleType type = style.getProperty("list-style-type");
+    	if (type == CSSProperty.ListStyleType.CIRCLE) 
     		g.drawOval(x, y, r, r);
-    	else if (type.equals("square")) 
+    	else if (type == CSSProperty.ListStyleType.SQUARE) 
     		g.fillRect(x, y, r, r);
-    	else if (type.equals("box")) //not documented, recognized by Konqueror 
-    		g.drawRect(x, y, r, r);
-    	else if (!type.equals("none")) //use 'disc'
+    	//else if (type == CSSProperty.ListStyleType.BOX) //not documented, recognized by Konqueror 
+    	//	g.drawRect(x, y, r, r);
+    	else if (type != CSSProperty.ListStyleType.NONE) //use 'disc'
     		g.fillOval(x, y, r, r);
     }
     

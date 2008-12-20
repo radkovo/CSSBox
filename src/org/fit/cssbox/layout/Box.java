@@ -25,10 +25,11 @@ import java.net.URL;
 import java.util.*;
 import java.awt.*;
 
-import org.w3c.dom.*;
-import org.w3c.dom.css.*;
+import cz.vutbr.web.css.*;
 
-import org.fit.cssbox.css.CSSNorm;
+import org.w3c.dom.*;
+
+import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.DOMAnalyzer;
 
 /**
@@ -68,7 +69,7 @@ abstract public class Box
     protected int order;
     
     /** The style of the node (for element nodes only) */
-    protected CSSStyleDeclaration style;
+    protected NodeData style;
     
     /** Box position on the screen relatively to the containing content box.
      * Coordinates of the whole box including margin. */
@@ -90,7 +91,7 @@ abstract public class Box
     protected int availwidth;
     
     /** Graphics context */
-    protected Graphics g;
+    protected Graphics2D g;
     
     /** Rendering context (em size etc.) */
     protected VisualContext ctx;
@@ -112,7 +113,7 @@ abstract public class Box
      * @param g current graphics context
      * @param ctx current visual context
      */
-    public Box(Node n, Graphics g, VisualContext ctx)
+    public Box(Node n, Graphics2D g, VisualContext ctx)
     {
         this.g = g;
         this.ctx = ctx;
@@ -167,7 +168,7 @@ abstract public class Box
      * @param absbox the containing box of the new box when absolutly positioned
      * @return the root node of the created tree of boxes
      */
-    public static Box createBoxTree(Node n, Graphics g, VisualContext ctx,
+    public static Box createBoxTree(Node n, Graphics2D g, VisualContext ctx,
                                     DOMAnalyzer decoder, URL baseurl,
                                     Viewport viewport,
                                     BlockBox contbox, BlockBox absbox,
@@ -185,7 +186,7 @@ abstract public class Box
         else
         {
             //Create the new box
-            ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent);
+            ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent, null);
             
             //Determine the containing boxes
             BlockBox newcont = contbox;
@@ -231,7 +232,7 @@ abstract public class Box
                         cn.getNodeType() == Node.TEXT_NODE)
                     {
                         //Create a new subtree
-                        Box newbox = createBoxTree(cn, g.create(), ctx.create(), 
+                        Box newbox = createBoxTree(cn, (Graphics2D) g.create(), ctx.create(), 
                                                     decoder, baseurl, viewport,
                                                     newcont, newabs, root);
                         //If the new box is block, it's parent box must be block too
@@ -264,7 +265,7 @@ abstract public class Box
                             {
                                 //create anonymous inline box for the text
                                 Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "Xspan", "inline");
-                                ElementBox anbox = createBox(anelem, g, ctx, decoder, baseurl, viewport, root);
+                                ElementBox anbox = createBox(anelem, g, ctx, decoder, baseurl, viewport, root, "intline");
                                 newbox.setParent(anbox);
                                 anbox.addSubBox(newbox);
                                 anbox.isempty = false;
@@ -336,7 +337,7 @@ abstract public class Box
                     {
                         Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "div", "block");
                         adiv = new BlockBox(anelem, root.getGraphics(), root.getVisualContext());
-                        adiv.setStyle(DOMAnalyzer.getStyleDeclaration(adiv.getElement()));
+                        adiv.setStyle(createAnonymousBoxStyle("block"));
                         computeInheritedStyle(adiv, root);
                         adiv.isblock = true;
                         adiv.contblock = false;
@@ -367,17 +368,17 @@ abstract public class Box
      * @param decoder DOM style decoder used for obtaining the efficient node styles
      * @param type the required display type of the child boxes. The remaining child boxes are skipped.
      * @param reqtype1 the first required display type of the root. If the root type doesn't correspond
-     * 		to any of the required types the anonymous parent is created for the selected children.
+     * 		to any of the required types, an anonymous parent is created for the selected children.
      * @param reqtype3 the second required display type of the root.
      * @param reqtype4 the third required display type of the root.
      * @param the element name of the created anonymous box
      * @param the display type of the created anonymous box
      */
     private static void createAnonymousBoxes(ElementBox root, DOMAnalyzer decoder, 
-                                             short type,
-                                             short reqtype1, 
-                                             short reqtype2, 
-                                             short reqtype3, 
+                                             CSSProperty.Display type,
+                                             CSSProperty.Display reqtype1, 
+                                             CSSProperty.Display reqtype2, 
+                                             CSSProperty.Display reqtype3, 
     		                                 String name, String display)
     {
     	if (root.getDisplay() != reqtype1 && root.getDisplay() != reqtype2 && root.getDisplay() != reqtype3)
@@ -400,7 +401,7 @@ abstract public class Box
 		                if (adiv == null)
 		                {
 		                	Element elem = createAnonymousBox(root.getElement().getOwnerDocument(), name, display);
-		                	adiv = createBox(elem, root.getGraphics(), root.getVisualContext(), decoder, root.getBase(), root.getViewport(), root);
+		                	adiv = createBox(elem, root.getGraphics(), root.getVisualContext(), decoder, root.getBase(), root.getViewport(), root, display);
 		                    adiv.isblock = true;
 		                    adiv.isempty = true;
 		                    adiv.setViewport(root.getViewport());
@@ -435,17 +436,19 @@ abstract public class Box
      * @param baseurl The base URL of the document
      * @param viewport The used viewport
      * @param parent the root element from which the style will be inherited
+     * @param display the display: property value that is used when the box style is not known (e.g. anonymous boxes)
      * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
      */
-    public static ElementBox createBox(Element n, Graphics g, VisualContext ctx, 
+    public static ElementBox createBox(Element n, Graphics2D g, VisualContext ctx, 
                                        DOMAnalyzer decoder, URL baseurl, Viewport viewport,
-                                       ElementBox parent)
+                                       ElementBox parent, String display)
     {
 	    ElementBox root;
         
         //New box style
-        CSSStyleDeclaration pstyle = (parent == null) ? null : parent.getStyle();
-        CSSStyleDeclaration style = decoder.getElementStyleInherited(n, pstyle);
+        NodeData style = decoder.getElementStyleInherited(n);
+        if (style == null)
+        		style = createAnonymousBoxStyle(display);
         
         //Special tag names
         if (n.getNodeName().equals("img"))
@@ -504,6 +507,25 @@ abstract public class Box
         return div;
     }
     
+    private static NodeData createAnonymousBoxStyle(String display)
+    {
+        NodeData ret = CSSFactory.createNodeData();
+        
+        Declaration cls = CSSFactory.getRuleFactory().createDeclaration();
+        cls.unlock();
+        cls.setProperty("class");
+        cls.add(CSSFactory.getTermFactory().createString("Xanonymous"));
+        ret.push(cls);
+        
+        Declaration disp = CSSFactory.getRuleFactory().createDeclaration();
+        disp.unlock();
+        disp.setProperty("display");
+        disp.add(CSSFactory.getTermFactory().createIdent(display));
+        ret.push(disp);
+        
+        return ret;
+    }
+    
     /**
      * Computes the style of a node based on its parent using the CSS inheritance.
      * @param dest the box whose style should be computed
@@ -511,11 +533,7 @@ abstract public class Box
      */ 
     private static void computeInheritedStyle(ElementBox dest, ElementBox parent)
     {
-    	CSSStyleDeclaration dstyle = dest.getStyle();
-    	CSSStyleDeclaration pstyle = parent.getStyle();
-    	if (pstyle == null)
-    		System.out.println("jo!");
-    	CSSStyleDeclaration newstyle = CSSNorm.computeInheritedStyle(pstyle, dstyle);
+    	NodeData newstyle = dest.getStyle().inheritFrom(parent.getStyle()); 
     	dest.setStyle(newstyle);
     }
    
@@ -594,25 +612,46 @@ abstract public class Box
      * Returns the style of the DOM node that forms this box.
      * @return the style declaration
      */
-    public CSSStyleDeclaration getStyle()
+    public NodeData getStyle()
     {
     	return style;
+    }
+    
+    public String getStyleString()
+    {
+        if (style != null)
+            return style.toString();
+        else
+            return "";
     }
     
     /**
      * Assign a new style to this box
      * @param s the new style declaration
      */
-    public void setStyle(CSSStyleDeclaration s)
+    public void setStyle(NodeData s)
     {
     	style = s;
     }
     
     /**
+     *
+     */
+    public String getStylePropertyValue(String property)
+    {
+        Object t = style.getValue(Term.class, property);
+        if (t == null)
+            return "";
+        else
+            return t.toString();
+    }
+    
+    
+    /**
      * Returns the graphics context that is used for rendering.
      * @return the graphics context
      */
-    public Graphics getGraphics()
+    public Graphics2D getGraphics()
     {
         return g;
     }
@@ -657,7 +696,7 @@ abstract public class Box
      */
     public boolean isVisible()
     {
-        return visible && (bounds.x + bounds.width > 0) && (bounds.y + bounds.height > 0);
+        return visible && (absbounds.x + absbounds.width > 0) && (absbounds.y + absbounds.height >= 0);
     }
     
     /**
@@ -778,7 +817,7 @@ abstract public class Box
     public void clipAbsoluteBounds(Rectangle clip)
     {
         Rectangle inter = absbounds.intersection(clip);
-        if (inter.isEmpty())
+        if (inter.width == 0 && inter.height == 0)
             displayed = false;
         else
             absbounds = inter;
@@ -994,16 +1033,36 @@ abstract public class Box
     }
     
     /**
-     * Get a CSS style property of the box.
+     * Reads a CSS length value of a style property of the box.
      * @param name property name
-     * @return the property value
+     * @return the length value
      */
-    public String getStyleProperty(String name)
+    public TermLengthOrPercent getLengthValue(String name)
     {
         if (style != null)
-            return style.getPropertyValue(name);
+            return style.getValue(TermLengthOrPercent.class, name);
         else
-            return "";
+            return null;
+    }
+    
+    /**
+     * Reads the value of a border width specified by a CSS property.
+     * @param dec a CSS decoder used for converting the values
+     * @param property, the property name, e.g. "border-top-width"
+     * @return the border width in pixels
+     */
+    public int getBorderWidth(CSSDecoder dec, String property)
+    {
+    	if (style != null)
+    	{
+    		CSSProperty.BorderWidth prop = style.getProperty(property);
+    		if (prop == CSSProperty.BorderWidth.length)
+    			return dec.getLength(style.getValue(TermLengthOrPercent.class, property), false, CSSUnits.MEDIUM_BORDER, 0, 0);
+    		else
+    			return CSSUnits.convertBorderWidth(prop);
+    	}
+    	else
+    		return 0;
     }
     
     //========================================================================
@@ -1040,7 +1099,7 @@ abstract public class Box
      * Draw the box and all the subboxes.
      * @param g graphics context to draw on
      */
-    public void draw(Graphics g)
+    public void draw(Graphics2D g)
     {
         if (isVisible())
         {
@@ -1056,11 +1115,11 @@ abstract public class Box
      * @param turn drawing stage - DRAW_ALL, DRAW_FLOAT or DRAW_NONFLOAT
      * @param mode what to draw - DRAW_FG, DRAW_BG or DRAW_BOTH 
      */
-    abstract public void draw(Graphics g, int turn, int mode);
+    abstract public void draw(Graphics2D g, int turn, int mode);
 
     /**
      * Draw the bounds of the box (for visualisation).
      */
-    abstract public void drawExtent(Graphics g);
+    abstract public void drawExtent(Graphics2D g);
     
 }

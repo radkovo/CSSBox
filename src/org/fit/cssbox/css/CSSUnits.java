@@ -21,9 +21,9 @@
 
 package org.fit.cssbox.css;
 
-import java.text.*;
-import java.util.*;
-import org.w3c.dom.css.*;
+import java.awt.Toolkit;
+
+import cz.vutbr.web.css.CSSProperty;
 
 /**
  * CSS unit conversion functions.
@@ -32,155 +32,70 @@ import org.w3c.dom.css.*;
  */
 public class CSSUnits 
 {
-    public static final double dpi = 100;  //100 DPI display
+    //public static final double dpi = 100;  //100 DPI display
+    public static final double dpi = Toolkit.getDefaultToolkit().getScreenResolution();
+    public static final double medium_font = 16;
     private static final double font_step = 1.2;
-    private static final double medium_font = 12;
-    private static final String default_font_size = "12pt";
+    public static final int THIN_BORDER = 1;
+    public static final int MEDIUM_BORDER = 3;
+    public static final int THICK_BORDER = 5;
     
     /** Converts points to pixels according to the DPI set */
-    public static int pixels(double pt)
+    public static double pixels(double pt)
     {
-        return (int) ((pt * 72) / dpi);
+        return pt * dpi / 72.0; 
     }
 
     /** Converts pixels to points according to the DPI set */
-    public static double points(int px)
+    public static double points(double px)
     {
-        return (px * dpi) / (double) 72;
-    }
-    
-    /** Converts a length to absolute units (points) */
-    public static double convertLength(String src, double em, double ex)
-    {
-        if (src.length() < 3) //this cannot be a number with a unit, most probably it's just 0
-            return 0;
-        String val = src.substring(0, src.length()-2);
-        String unit = src.substring(src.length()-2);
-        double ret = 0;
-        try {
-            double nval = Double.parseDouble(val);
-            if (unit.equals("pt"))
-            {
-                ret = nval;
-            }
-            else if (unit.equals("in"))
-            {
-                ret = nval * 72; //1pt = 1/72"
-            }
-            else if (unit.equals("cm"))
-            {
-                ret = (nval * 72) / 2.54;
-            }
-            else if (unit.equals("mm"))
-            {
-                ret = (nval * 72) / 25.4;
-            }
-            else if (unit.equals("pc"))
-            {
-                ret = nval * 12;
-            }
-            else if (unit.equals("px"))
-            {
-                ret = (nval * 72) / dpi;
-            }
-            else if (unit.equals("em"))
-            {
-                ret = em * nval;
-            }
-            else if (unit.equals("ex"))
-            {
-                ret = ex * nval;
-            }
-            return ret;
-        } catch (NumberFormatException e) {
-            return Double.NaN;
-        }
+        return px * 72.0 / dpi;
     }
     
     /** 
-     * Converts the font size to absolute length in points 
-     *@param parent Parent font size CSS specification
-     *@param current The size specification to be converted 
+     * Converts the font size given by an identifier to absolute length in points.
+     * @param parent Parent font size (taken as 1em)
+     * @param current The size specification to be converted
+     * @return absolute font size in pt 
      */
-    public static String convertFontSize(String parent, String current)
+    public static double convertFontSize(double parent, CSSProperty.FontSize value)
     {
-        try {
-            String pval = parent.substring(0, parent.length()-2);
-            double em = Double.parseDouble(pval);
-            double ret = em;
-            if (current.equals("medium"))
-                ret = medium_font;
-            else if (current.equals("small"))
-                ret = medium_font / font_step;
-            else if (current.equals("x-small"))
-                ret = medium_font / font_step / font_step;
-            else if (current.equals("xx-small"))
-                ret = medium_font / font_step / font_step / font_step;
-            else if (current.equals("large"))
-                ret = medium_font * font_step;
-            else if (current.equals("x-large"))
-                ret = medium_font * font_step * font_step;
-            else if (current.equals("xx-large"))
-                ret = medium_font * font_step * font_step * font_step;
-            else if (current.equals("smaller"))
-                ret = em / font_step;
-            else if (current.equals("larger"))
-                ret = em * font_step;
-            else if (current.endsWith("%"))
-            {
-                double perc = Double.parseDouble(current.substring(0, current.length()-1));
-                ret = (perc * em) / 100;
-            }
-            else if (current.endsWith("pt") || current.endsWith("in") || current.endsWith("cm") ||
-                     current.endsWith("mm") || current.endsWith("pc") || current.endsWith("px") ||
-                     current.endsWith("em") || current.endsWith("ex"))
-                ret = convertLength(current, em, 0.6*em);
-            
-            NumberFormat f = new DecimalFormat("#.#", new DecimalFormatSymbols(new Locale("en")));
-            return f.format(ret) + "pt";
-        } catch (NumberFormatException e) {
-            return current; //cannot convert
-        }
+        double em = parent;
+        double ret = em;
+        if (value == CSSProperty.FontSize.MEDIUM)
+            ret = medium_font;
+        else if (value == CSSProperty.FontSize.SMALL)
+            ret = medium_font / font_step;
+        else if (value == CSSProperty.FontSize.X_SMALL)
+            ret = medium_font / font_step / font_step;
+        else if (value == CSSProperty.FontSize.XX_SMALL)
+            ret = medium_font / font_step / font_step / font_step;
+        else if (value == CSSProperty.FontSize.LARGE)
+            ret = medium_font * font_step;
+        else if (value == CSSProperty.FontSize.X_LARGE)
+            ret = medium_font * font_step * font_step;
+        else if (value == CSSProperty.FontSize.XX_LARGE)
+            ret = medium_font * font_step * font_step * font_step;
+        else if (value == CSSProperty.FontSize.SMALLER)
+            ret = em / font_step;
+        else if (value == CSSProperty.FontSize.LARGER)
+            ret = em * font_step;
+        return ret;
     }
     
-    //========================================================================
-    
-    public static void normalizeUnits(CSSStyleDeclaration parent, CSSStyleDeclaration decl)
+    /**
+     * Converts the border size given by an identifier to an absolute value.
+     * @param width the border-width identifier
+     * @return absolute length in pixels
+     */
+    public static int convertBorderWidth(CSSProperty.BorderWidth width)
     {
-        RGBColor rgb = new RGBColor();
-        for (int i = 0; i < decl.getLength(); i++)
-        {
-            String name = decl.item(i);
-            String value = decl.getPropertyValue(name);
-            String prio = decl.getPropertyPriority(name);
-            if (name.equals("font-size"))
-            {
-                String psize = "";
-                if (parent != null)
-                    psize = parent.getPropertyValue("font-size");
-                if (psize.length() == 0)
-                    psize = default_font_size;
-                decl.setProperty(name, convertFontSize(psize, value), prio);
-            }
-            if (name.equals("color") || name.indexOf("-color") > 0)
-            {
-                if (!value.startsWith("#") && !value.startsWith("rgb("))
-                {
-                    String ncolor = rgb.getColorString(value);
-                    if (ncolor != null)
-                        decl.setProperty(name, ncolor, prio);
-                }
-            }
-            if (name.startsWith("border-") && name.endsWith("-width"))
-            {
-            		if (value.equals("thin"))
-            			decl.setProperty(name, "1px", prio);
-            		else if (value.equals("medium"))
-            			decl.setProperty(name, "3px", prio);
-            		else if (value.equals("thick"))
-            			decl.setProperty(name, "5px", prio);
-            }
-        }
+    	if (width == CSSProperty.BorderWidth.THIN)
+    		return THIN_BORDER;
+    	else if (width == CSSProperty.BorderWidth.MEDIUM)
+    		return MEDIUM_BORDER;
+    	else
+    		return THICK_BORDER;
     }
     
 }

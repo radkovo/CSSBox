@@ -45,7 +45,7 @@ public class BrowserCanvas extends JPanel
     protected DOMAnalyzer decoder;
     protected URL baseurl;
     protected Viewport viewport;
-    protected BlockBox box;
+    protected ElementBox box;
 
     protected BufferedImage img;
     
@@ -70,7 +70,7 @@ public class BrowserCanvas extends JPanel
      * After creating the layout, the root box of the document can be accessed through this method.
      * @return the root box of the rendered document. Normally, it corresponds to the &lt;body&gt; element
      */
-    public BlockBox getRootBox()
+    public ElementBox getRootBox()
     {
         return box;
     }
@@ -94,17 +94,15 @@ public class BrowserCanvas extends JPanel
     {
         img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         System.gc();
-        Graphics ig = img.getGraphics();
+        Graphics2D ig = img.createGraphics();
         
-        VisualContext ctx = new VisualContext();
-        ctx.em = 12; //some default values of em and ex
-        ctx.ex = 10;
+        VisualContext ctx = new VisualContext(null);
         
         viewport = new Viewport(ig, ctx, dim.width, dim.height);
         
         System.err.println("Creating boxes");
         Box.next_order = 0;
-        box = (BlockBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, null);
+        box = (ElementBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, null);
         System.err.println("We have " + Box.next_order + " boxes");
         viewport.addSubBox(box);
         viewport.initBoxes();
@@ -127,7 +125,7 @@ public class BrowserCanvas extends JPanel
             img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),
                                     Math.max(viewport.getHeight(), dim.height),
                                     BufferedImage.TYPE_INT_RGB);
-            ig = img.getGraphics();
+            ig = img.createGraphics();
         }
         
         System.err.println("Positioning for "+img.getWidth()+"x"+img.getHeight()+"px");
@@ -150,7 +148,7 @@ public class BrowserCanvas extends JPanel
      */
     public void clearCanvas()
     {
-        Graphics ig = img.getGraphics();
+        Graphics2D ig = img.createGraphics();
         Color bg = box.getBgcolor();
         if (bg == null) bg = Color.white;
         ig.setColor(bg);
@@ -163,7 +161,7 @@ public class BrowserCanvas extends JPanel
      */
     public void redrawBoxes()
     {
-        Graphics ig = img.getGraphics();
+        Graphics2D ig = img.createGraphics();
         clearCanvas();
         viewport.draw(ig);
         revalidate();
@@ -172,9 +170,9 @@ public class BrowserCanvas extends JPanel
     /**
      * @return the graphics context for drawing in the page image
      */
-    public Graphics getImageGraphics()
+    public Graphics2D getImageGraphics()
     {
-        return img.getGraphics();
+        return img.createGraphics();
     }
     
 }

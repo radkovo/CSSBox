@@ -24,12 +24,15 @@ import javax.swing.*;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Vector;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
 import org.w3c.tidy.Tidy;
 
@@ -41,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.GridLayout;
 import javax.swing.JTree;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -52,6 +56,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.FlowLayout;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
 
 /**
  * This demo implements a browser that displays the rendered box tree and the
@@ -82,11 +88,16 @@ public class BoxBrowser
     private JPanel toolPanel = null;
     private JScrollPane treeScroll = null;
     private JTree domTree = null;
-    
+    private JSplitPane infoSplitter = null;
+    private JPanel infoPanel = null;
+    private JScrollPane infoScroll = null;
+    private JTable infoTable = null;
+    private JScrollPane styleScroll = null;
+    private JTextArea styleText = null;
     /**
      * Reads the document, creates the layout and displays it
      */
-	private void displayURL(String urlstring)
+	public void displayURL(String urlstring)
     {
         try {
             if (!urlstring.startsWith("http:") &&
@@ -98,23 +109,18 @@ public class BoxBrowser
             URLConnection con = url.openConnection();
             InputStream is = con.getInputStream();
             
-            Tidy tidy = new Tidy();
-            tidy.setTrimEmptyElements(false);
-            tidy.setAsciiChars(false);
-            tidy.setInputEncoding("iso-8859-2");
-            //tidy.setInputEncoding("utf-8");
-            tidy.setXHTML(true);
+            Tidy tidy = createTidy();
             Document doc = tidy.parseDOM(is, null);
             
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            da.attributesToStyles();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet());
             da.addStyleSheet(null, CSSNorm.userStyleSheet());
             da.getStyleSheets();
-            da.attributesToStyles();
             
             is.close();
 
-            contentCanvas = new BrowserCanvas(da.getBody(), da, contentScroll.getSize(), url);
+            contentCanvas = new BrowserCanvas(da.getRoot(), da, contentScroll.getSize(), url);
             contentCanvas.addMouseListener(new MouseListener() {
                 public void mouseClicked(MouseEvent e)
                 {
@@ -129,7 +135,8 @@ public class BoxBrowser
             contentScroll.setViewportView(contentCanvas);
 
             //box tree
-            root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());
+            Viewport viewport = ((BrowserCanvas) contentCanvas).getViewport();
+            root = createBoxTree(viewport);
             domTree.setModel(new DefaultTreeModel(root));
             
             //=============================================================================
@@ -140,6 +147,20 @@ public class BoxBrowser
         }
     }
     
+	
+	/**
+	 * Creates and initializes the jTidy parser
+	 */
+	protected Tidy createTidy()
+	{
+        Tidy tidy = new Tidy();
+        tidy.setTrimEmptyElements(false);
+        tidy.setAsciiChars(false);
+        tidy.setInputEncoding("utf-8");
+        tidy.setXHTML(true);
+        return tidy;
+	}
+	
 	/**
 	 * Recursively creates a tree from the box tree
 	 */
@@ -163,7 +184,7 @@ public class BoxBrowser
 	private DefaultMutableTreeNode locateBox(DefaultMutableTreeNode root, int x, int y)
 	{
 	    Box box = (Box) root.getUserObject();
-	    Rectangle bounds = box.getBounds();
+	    Rectangle bounds = box.getAbsoluteBounds();
 	    if (bounds.contains(x, y))
 	    {
             for (int i = 0; i < root.getChildCount(); i++)
@@ -191,6 +212,63 @@ public class BoxBrowser
             domTree.expandPath(select);
         }
     }
+
+    private void displayBoxInfo(Box box)
+    {
+        Vector<String> cols = infoTableData("Property", "Value");
+        
+        Vector<Vector <String>> vals = new Vector<Vector <String>>();
+        vals.add(infoTableData("Class", box.getClass().getSimpleName()));
+        vals.add(infoTableData("Displayed", "" + box.isDisplayed()));
+        vals.add(infoTableData("Visible", "" + box.isVisible()));
+        vals.add(infoTableData("Bounds", boundString(box.getBounds())));
+        vals.add(infoTableData("AbsBounds", boundString(box.getAbsoluteBounds())));
+        vals.add(infoTableData("Content", boundString(box.getContentBounds())));
+        vals.add(infoTableData("Color", box.getVisualContext().getColor().toString()));
+        vals.add(infoTableData("Font name", box.getVisualContext().getFont().getFontName()));
+        vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "px"));
+        
+        if (box instanceof ElementBox)
+        {
+            ElementBox eb = (ElementBox) box;
+            vals.add(infoTableData("Display", eb.getDisplayString().toString()));
+            vals.add(infoTableData("BgColor", (eb.getBgcolor() == null) ? "" : eb.getBgcolor().toString()));
+            vals.add(infoTableData("Margin", eb.getMargin().toString()));
+            vals.add(infoTableData("EMargin", eb.getEMargin().toString()));
+            vals.add(infoTableData("Padding", eb.getPadding().toString()));
+            vals.add(infoTableData("Border", eb.getBorder().toString()));
+        }
+        
+        if (box instanceof BlockBox)
+        {
+            BlockBox eb = (BlockBox) box;
+            vals.add(infoTableData("Float", eb.getFloatingString()));
+            vals.add(infoTableData("Position", eb.getPositionString()));
+            vals.add(infoTableData("Overflow", eb.getOverflowString()));
+            vals.add(infoTableData("Clear", eb.getClearingString()));
+        }
+        
+        DefaultTableModel tab = new DefaultTableModel(vals, cols);
+        infoTable.setModel(tab);
+        
+        styleText.setText(box.getStyleString());
+    }
+    
+    private Vector<String> infoTableData(String prop, String value)
+    {
+        Vector<String> cols = new Vector<String>(2);
+        cols.add(prop);
+        cols.add(value);
+        return cols;
+    }
+    
+    private String boundString(Rectangle rect)
+    {
+        return "[" + rect.x + ", "
+                   + rect.y + ", "
+                   + rect.width + ", "
+                   + rect.height + "]";
+    }
     
     public BrowserCanvas getBrowserCanvas()
     {
@@ -204,7 +282,7 @@ public class BoxBrowser
      * 	
      * @return javax.swing.JFrame	
      */
-    private JFrame getMainWindow()
+    public JFrame getMainWindow()
     {
         if (mainWindow == null)
         {
@@ -469,7 +547,7 @@ public class BoxBrowser
         {
             mainSplitter = new JSplitPane();
             mainSplitter.setLeftComponent(getStructurePanel());
-            mainSplitter.setRightComponent(getContentPanel());
+            mainSplitter.setRightComponent(getInfoSplitter());
         }
         return mainSplitter;
     }
@@ -570,12 +648,109 @@ public class BoxBrowser
                         {
                             box.drawExtent(((BrowserCanvas) contentCanvas).getImageGraphics());
                             contentCanvas.repaint();
+                            displayBoxInfo(box);
                         }
                     }
                 }
             });
         }
         return domTree;
+    }
+
+    /**
+     * This method initializes infoSplitter	
+     * 	
+     * @return javax.swing.JSplitPane	
+     */
+    private JSplitPane getInfoSplitter()
+    {
+        if (infoSplitter == null)
+        {
+            infoSplitter = new JSplitPane();
+            infoSplitter.setDividerLocation(800);
+            infoSplitter.setLeftComponent(getContentPanel());
+            infoSplitter.setRightComponent(getInfoPanel());
+        }
+        return infoSplitter;
+    }
+
+    /**
+     * This method initializes infoPanel	
+     * 	
+     * @return javax.swing.JPanel	
+     */
+    private JPanel getInfoPanel()
+    {
+        if (infoPanel == null)
+        {
+            GridLayout gridLayout2 = new GridLayout();
+            gridLayout2.setRows(2);
+            gridLayout2.setColumns(1);
+            infoPanel = new JPanel();
+            infoPanel.setLayout(gridLayout2);
+            infoPanel.add(getInfoScroll(), null);
+            infoPanel.add(getStyleScroll(), null);
+        }
+        return infoPanel;
+    }
+
+    /**
+     * This method initializes infoScroll	
+     * 	
+     * @return javax.swing.JScrollPane	
+     */
+    private JScrollPane getInfoScroll()
+    {
+        if (infoScroll == null)
+        {
+            infoScroll = new JScrollPane();
+            infoScroll.setViewportView(getInfoTable());
+        }
+        return infoScroll;
+    }
+
+    /**
+     * This method initializes infoTable	
+     * 	
+     * @return javax.swing.JTable	
+     */
+    private JTable getInfoTable()
+    {
+        if (infoTable == null)
+        {
+            infoTable = new JTable();
+        }
+        return infoTable;
+    }
+
+    /**
+     * This method initializes styleScroll	
+     * 	
+     * @return javax.swing.JScrollPane	
+     */
+    private JScrollPane getStyleScroll()
+    {
+        if (styleScroll == null)
+        {
+            styleScroll = new JScrollPane();
+            styleScroll.setViewportView(getStyleText());
+        }
+        return styleScroll;
+    }
+
+    /**
+     * This method initializes styleText	
+     * 	
+     * @return javax.swing.JTextArea	
+     */
+    private JTextArea getStyleText()
+    {
+        if (styleText == null)
+        {
+            styleText = new JTextArea();
+            styleText.setEditable(false);
+        }
+        return styleText;
     }
 
     /**

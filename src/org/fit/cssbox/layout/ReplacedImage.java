@@ -90,7 +90,7 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
 		return url;
 	}
 
-	public void draw(Graphics g, int width, int height)
+	public void draw(Graphics2D g, int width, int height)
     {
         ctx.updateGraphics(g);
         if (img != null)

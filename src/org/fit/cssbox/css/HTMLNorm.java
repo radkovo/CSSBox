@@ -21,6 +21,11 @@
 
 package org.fit.cssbox.css;
 
+import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermPercent;
+
 import org.w3c.dom.*;
 
 /**
@@ -271,6 +276,59 @@ public class HTMLNorm
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
             attributesToStyles(child.item(i), itab);
+    }
+    
+    /**
+     * Computes a length defined using an HTML attribute (e.g. width for tables).
+     * @param value The attribute value
+     * @param whole the value used as 100% when value is a percentage
+     * @return the computed length or zero in case of error
+     */
+    public static int computeAttributeLength(String value, int whole)
+    {
+        try {
+            if (value.endsWith("%"))
+            {
+                double val = Double.parseDouble(value.substring(0, value.length() - 1));
+                return (int) Math.round(val * whole / 100.0);
+            }
+            else
+            {
+                return (int) Math.rint(Double.parseDouble(value));
+            }
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Creates a CSS length or percentage from a string.
+     * @param spec The string length or percentage according to CSS
+     * @return the length or percentage
+     */
+    public static TermLengthOrPercent createLengthOrPercent(String spec)
+    {
+        spec = spec.trim();
+        if (spec.endsWith("%"))
+        {
+            try {
+                float val = Float.parseFloat(spec.substring(0, spec.length() - 1));
+                TermPercent perc = CSSFactory.getTermFactory().createPercent(val);
+                return perc;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        else
+        {
+            try {
+                float val = Float.parseFloat(spec);
+                TermLength len = CSSFactory.getTermFactory().createLength(val, TermLength.Unit.px);
+                return len;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
     }
     
     //=======================================================================

@@ -22,6 +22,8 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 
+import cz.vutbr.web.css.*;
+
 import org.w3c.dom.Element;
 
 /**
@@ -59,7 +61,7 @@ public class TableColumn extends BlockBox
     /**
      * Create a new table column
      */
-    public TableColumn(Element n, Graphics g, VisualContext ctx)
+    public TableColumn(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;
@@ -217,21 +219,17 @@ public class TableColumn extends BlockBox
         {
             int contw = cblock.getContentWidth();
             CSSDecoder dec = new CSSDecoder(ctx);
-            String width = getStyleProperty("width");
-            if (!width.equals("") && !width.equals("auto"))
+            CSSProperty.Width wprop = style.getProperty("width");
+            if (wprop != null && wprop != CSSProperty.Width.AUTO)
             {
-                abswidth = dec.getLength(width, "0", "0", contw);
+                TermLengthOrPercent width = getLengthValue("width");
+                abswidth = dec.getLength(width, false, 0, 0, contw);
                 content.width = abswidth;
                 wset = true;
-	            if (width.endsWith("%"))
+	            if (width.isPercentage())
 	            {
 	            	wrelative = true;
-	            	try {
-	            		percent = Integer.parseInt(width.substring(0, width.length()-1));
-	            	} catch (NumberFormatException e) {
-	            		wrelative = false;
-	            		percent = 0;
-	            	}
+                    percent = (int) Math.round(width.getValue());
 	            }
             }
         }

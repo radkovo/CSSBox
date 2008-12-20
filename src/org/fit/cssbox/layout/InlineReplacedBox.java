@@ -23,6 +23,7 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 
 import org.w3c.dom.*;
+import cz.vutbr.web.css.*;
 
 
 /**
@@ -38,7 +39,7 @@ public class InlineReplacedBox extends InlineBox
     /** 
      * Creates a new instance of ImgBox 
      */
-    public InlineReplacedBox(Element el, Graphics g, VisualContext ctx)
+    public InlineReplacedBox(Element el, Graphics2D g, VisualContext ctx)
     {
         super(el, g, ctx);
         lineHeight = boxh;
@@ -99,6 +100,24 @@ public class InlineReplacedBox extends InlineBox
     }
 
     @Override
+    public boolean canSplitAfter()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canSplitBefore()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canSplitInside()
+    {
+        return false;
+    }
+
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
@@ -132,13 +151,16 @@ public class InlineReplacedBox extends InlineBox
             boxw = 20; //some reasonable default values
             boxh = 20;
         }
+        
+        TermPercent whole = CSSFactory.getTermFactory().createPercent(100.0f);
         try {
             if (!el.getAttribute("width").equals(""))
                 boxw = Integer.parseInt(el.getAttribute("width"));
             else //try to get from style
             {
+                CSSProperty.Width width = style.getProperty("width");
                 CSSDecoder dec = new CSSDecoder(ctx);
-                boxw = dec.getLength(getStyleProperty("width"), "100%", "100%", boxw);
+                boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, whole, whole, boxw);
             }
         } catch (NumberFormatException e) {
             System.err.println("Invalid width value: " + el.getAttribute("width"));
@@ -148,8 +170,9 @@ public class InlineReplacedBox extends InlineBox
                 boxh = Integer.parseInt(el.getAttribute("height"));
             else //try to get from style
             {
+                CSSProperty.Height height = style.getProperty("height");
                 CSSDecoder dec = new CSSDecoder(ctx);
-                boxh = dec.getLength(getStyleProperty("height"), "100%", "100%", boxh);
+                boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, whole, whole, boxh);
             }
         } catch (NumberFormatException e) {
             System.err.println("Invalid height value: " + el.getAttribute("height"));
@@ -159,7 +182,8 @@ public class InlineReplacedBox extends InlineBox
         bounds.setSize(totalWidth(), totalHeight());
     }
     
-    public void draw(Graphics g, int turn, int mode)
+    @Override
+	public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
         if (displayed && isVisible())

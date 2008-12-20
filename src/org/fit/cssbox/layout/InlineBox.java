@@ -24,6 +24,7 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 
 import org.w3c.dom.*;
+import cz.vutbr.web.css.*;
 
 /**
  * An inline element box.
@@ -38,7 +39,7 @@ public class InlineBox extends ElementBox
     //========================================================================
     
     /** Creates a new instance of InlineBox */
-    public InlineBox(Element n, Graphics g, VisualContext ctx) 
+    public InlineBox(Element n, Graphics2D g, VisualContext ctx) 
     {
         super(n, g, ctx);
     }
@@ -58,18 +59,21 @@ public class InlineBox extends ElementBox
     
     //========================================================================
     
+    @Override
     public String toString()
     {
         return "<" + el.getTagName() + " id=\"" + el.getAttribute("id") + 
                "\" class=\""  + el.getAttribute("class") + "\">";
     }
     
-	public boolean isInFlow()
+	@Override
+    public boolean isInFlow()
 	{
 		return true;
 	}
 	
-	public boolean containsFlow()
+	@Override
+    public boolean containsFlow()
 	{
 		return !isempty;
 	}
@@ -82,6 +86,7 @@ public class InlineBox extends ElementBox
      * @param linestart Indicates whether the element is placed at the line start
      * @return True if the box has been succesfully placed
      */
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
         //Skip if not displayed
@@ -161,7 +166,10 @@ public class InlineBox extends ElementBox
         //(at this point all the boxes have y=0 (see above))
         
         content.width = x;
-        content.height = Math.max(lineHeight, maxh); //according to CSS spec. section 10.6.1 TODO: is this right?
+        if (maxh == 0)
+            content.height = 0; //no content
+        else
+            content.height = Math.max(lineHeight, maxh); //according to CSS spec. section 10.6.1
         setSize(totalWidth(), totalHeight());
         
         return ret;
@@ -191,6 +199,7 @@ public class InlineBox extends ElementBox
         }
     }
 
+    @Override
     public int getMinimalWidth()
     {
         //return the maximum of the nested minimal widths that are separated
@@ -206,6 +215,7 @@ public class InlineBox extends ElementBox
         return ret;
     }
     
+    @Override
     public int getMaximalWidth()
     {
         //return the sum of all the elements inside
@@ -240,7 +250,8 @@ public class InlineBox extends ElementBox
     }
     
     /** Draw the specified stage (DRAW_*) */
-    public void draw(Graphics g, int turn, int mode)
+    @Override
+    public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
         if (displayed && isVisible())
@@ -268,6 +279,7 @@ public class InlineBox extends ElementBox
     
     //=======================================================================
     
+    @Override
     protected void loadSizes()
     {
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -281,57 +293,59 @@ public class InlineBox extends ElementBox
         //top and bottom margins take no effect for inline boxes
         // http://www.w3.org/TR/CSS21/box.html#propdef-margin-top
         margin = new LengthSet();
-        margin.right = dec.getLength(getStyleProperty("margin-right"), "0", "0", contw);
-        margin.left = dec.getLength(getStyleProperty("margin-left"), "0", "0", contw);
+        margin.right = dec.getLength(getLengthValue("margin-right"), style.getProperty("margin-right") == CSSProperty.Margin.AUTO, 0, 0, contw);
+        margin.left = dec.getLength(getLengthValue("margin-left"), style.getProperty("margin-left") == CSSProperty.Margin.AUTO, 0, 0, contw);
         emargin = new LengthSet(margin);
         
-        String medium = "3px";
         border = new LengthSet();
         if (borderVisible("top"))
-        		border.top = dec.getLength(getStyleProperty("border-top-width"), medium, "0", 0);
+        		border.top = getBorderWidth(dec, "border-top-width");
         else
         		border.top = 0;
         if (borderVisible("right"))
-	    		border.right = dec.getLength(getStyleProperty("border-right-width"), medium, "0", 0);
+        		border.right = getBorderWidth(dec, "border-right-width");
 	    else
 	    		border.right = 0;
 	    if (borderVisible("bottom"))
-	    		border.bottom = dec.getLength(getStyleProperty("border-bottom-width"), medium, "0", 0);
+        		border.bottom = getBorderWidth(dec, "border-bottom-width");
 	    else
 	    		border.bottom = 0;
 	    if (borderVisible("left"))
-	    		border.left = dec.getLength(getStyleProperty("border-left-width"), medium, "0", 0);
+        		border.left = getBorderWidth(dec, "border-left-width");
 	    else
 	    		border.left = 0;
         
         padding = new LengthSet();
-        padding.top = dec.getLength(getStyleProperty("padding-top"), "0", "0", contw);
-        padding.right = dec.getLength(getStyleProperty("padding-right"), "0", "0", contw);
-        padding.bottom = dec.getLength(getStyleProperty("padding-bottom"), "0", "0", contw);
-        padding.left = dec.getLength(getStyleProperty("padding-left"), "0", "0", contw);
+        padding.top = dec.getLength(getLengthValue("padding-top"), false, null, null, contw);
+        padding.right = dec.getLength(getLengthValue("padding-right"), false, null, null, contw);
+        padding.bottom = dec.getLength(getLengthValue("padding-bottom"), false, null, null, contw);
+        padding.left = dec.getLength(getLengthValue("padding-left"), false, null, null, contw);
         
         content = new Dimension(0, 0);
     }
     
+    @Override
     public void updateSizes()
     {
     	//no update needed - inline box size depends on the contents only
     }
    
+    @Override
     public boolean hasFixedWidth()
     {
     	return false; //depends on the contents
     }
     
+    @Override
     public boolean hasFixedHeight()
     {
     	return false; //depends on the contents
     }
     
-    private boolean borderVisible(String dir)
+    protected boolean borderVisible(String dir)
     {
-    		String style = getStyleProperty("border-"+dir+"-style");
-    		return (!style.equals("") && !style.equals("none") && !style.equals("hidden")); 
+            CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
+            return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
     }
 
     private void computeMaxLineHeight()

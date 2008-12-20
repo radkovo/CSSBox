@@ -20,7 +20,7 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.*;
 
 import org.w3c.dom.Element;
@@ -45,7 +45,7 @@ public class TableBodyBox extends BlockBox
     /**
      * Create a new table body
      */
-    public TableBodyBox(Element n, Graphics g, VisualContext ctx)
+    public TableBodyBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;

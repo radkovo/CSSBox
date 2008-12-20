@@ -1,0 +1,13 @@
+Changes in CSSBox 2.0
+=====================
+
+	CSSBox 2.0 introduces a brand new CSS parser - jStyleParser.
+	This parser is much more efficient and reliable than the
+	previous 'naive' parser based on the CSS Parser project.
+
+	Most Important Changes in the CSSBox API
+	----------------------------------------
+	
+	- if the DOMAnalyzer.attributesToStyles() method is used for
+	  interpreting HTML visual attributes, it must be called 
+	  BEFORE calling the DOMAnalyzer.getStyleSheets() method 

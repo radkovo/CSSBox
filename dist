@@ -18,7 +18,7 @@ mkdir $FDIR
 cp -r src $FDIR
 cp -r lib $FDIR
 cp -r doc $FDIR
-cp LICENSE README $FDIR
+cp CHANGELOG LICENSE README $FDIR
 (cd bin; jar cvf $FDIR/CSSBox.jar *)
 
 find $TMPDIR -name '.svn' -exec rm -rf {} \;

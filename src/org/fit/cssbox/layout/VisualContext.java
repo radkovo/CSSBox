@@ -22,44 +22,49 @@
 package org.fit.cssbox.layout;
 
 import java.awt.*;
-import org.w3c.dom.css.*;
+
+import org.fit.cssbox.css.CSSUnits;
+
+import cz.vutbr.web.css.*;
 
 /**
- * Trida reprezentujici vizualni kontext elementu:
- *  - velikost pisma - slouzi k vypoctu 1em
+ * The visual context represents the context of the element - the current font properties, EM and EX values,
+ * font metrics and color.
  *
  * @author  burgetr
  */
 public class VisualContext 
 {
-    private CSSStyleDeclaration style;
-    
+    private VisualContext parent;
     private Font font; //current font
     private FontMetrics fm; //current font metrics
-    private String fontWeight;
-    private String fontStyle;
-    private String fontVariant;
-    private String textDecoration;
-    public int em; //number of pixels in 1em
-    public int ex; //number of pixels in 1ex
-    public double dpi; //number of pixels in 1 inch
+    private CSSProperty.FontWeight fontWeight;
+    private CSSProperty.FontStyle fontStyle;
+    private CSSProperty.FontVariant fontVariant;
+    private CSSProperty.TextDecoration textDecoration;
+    private double em; //number of pixels in 1em
+    private double ex; //number of pixels in 1ex
+    private double dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
     
-    public VisualContext()
+    public VisualContext(VisualContext parent)
     {
-        font = new Font("Serif", Font.PLAIN, 12);
-        fontWeight = "normal";
-        fontStyle = "normal";
-        em = 12;
-        ex = 10;
+        this.parent = parent;
+        font = new Font(Font.SERIF, Font.PLAIN, 12);
+        fontWeight = CSSProperty.FontWeight.NORMAL;
+        fontStyle = CSSProperty.FontStyle.NORMAL;
+        fontVariant = CSSProperty.FontVariant.NORMAL;
+        textDecoration = CSSProperty.TextDecoration.NONE;
+        em = CSSUnits.medium_font;
+        ex = 0.8 * em;
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
         color = Color.BLACK;
     }
     
     public VisualContext create()
     {
-        VisualContext ret = new VisualContext();
+        VisualContext ret = new VisualContext(this);
         ret.em = em;
         ret.ex = ex;
         ret.dpi = dpi;
@@ -73,6 +78,11 @@ public class VisualContext
     }
    
     //=========================================================================
+    
+    public VisualContext getParentContext()
+    {
+        return parent;
+    }
     
     /**
      * The font used for the box.
@@ -89,7 +99,7 @@ public class VisualContext
      */
     public String getFontVariant()
     {
-        return fontVariant;
+        return fontVariant.toString();
     }
     
     /**
@@ -98,7 +108,7 @@ public class VisualContext
      */
     public String getTextDecoration()
     {
-        return textDecoration;
+        return textDecoration.toString();
     }
     
     /**
@@ -110,84 +120,119 @@ public class VisualContext
         return color;
     }
     
+    /**
+     * @return the em value of the context
+     */
+    public double getEm()
+    {
+        return em;
+    }
+
+    /**
+     * @return the ex value of the context
+     */
+    public double getEx()
+    {
+        return ex;
+    }
+
+    /**
+     * @return the dpi value used in the context
+     */
+    public double getDpi()
+    {
+        return dpi;
+    }
+
     //=========================================================================
     
-    /** Update the context according to the current style */
-    public void update(CSSStyleDeclaration style)
+    /** 
+     * Updates the context according to the given element style. The properties that are not defined 
+     * in the style are left unchanged.
+     * @param style the style data 
+     */
+    public void update(NodeData style)
     {
-        this.style = style;
-
         //setup the font
         String family;
-        String fmlspec = getStyleProperty("font-family").trim();
-        if (fmlspec.equals(""))
+        TermList fmlspec = style.getValue(TermList.class, "font-family");
+        if (fmlspec == null)
             family = font.getFamily();
         else
             family = getFontName(fmlspec);
-        int size = getFontSize(getStyleProperty("font-size"));
-        if (size == -1) size = font.getSize();
-        String wspec = getStyleProperty("font-weight");
-        if (!wspec.equals("")) fontWeight = wspec;
-        String sspec = getStyleProperty("font-style");
-        if (!sspec.equals("")) fontStyle = sspec;
+        
+        double size;
+        double psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();
+        CSSProperty.FontSize fsize = style.getProperty("font-size");
+        if (fsize == null)
+            size = em;
+        else if (fsize == CSSProperty.FontSize.length || fsize == CSSProperty.FontSize.percentage)
+        {
+            TermLengthOrPercent lenspec = style.getValue(TermLengthOrPercent.class, "font-size");
+            if (lenspec != null)
+            {
+                em = psize;
+                size = ptLength(lenspec, psize);
+            }
+            else
+                size = em;
+        }
+        else
+            size = CSSUnits.convertFontSize(psize, fsize);
+        
+        CSSProperty.FontWeight weight = style.getProperty("font-weight");
+        if (weight != null) fontWeight = weight;
+        CSSProperty.FontStyle fstyle =  style.getProperty("font-style");
+        if (fstyle != null) fontStyle = fstyle;
         int fs = Font.PLAIN;
-        if (!fontWeight.equals("normal") && !fontWeight.equals("100"))
+        if (fontWeight != CSSProperty.FontWeight.NORMAL && fontWeight != CSSProperty.FontWeight.numeric_100)
             fs = Font.BOLD;
-        if (fontStyle.equals("italic") || fontStyle.equals("oblique"))
+        if (fontStyle == CSSProperty.FontStyle.ITALIC || fontStyle == CSSProperty.FontStyle.OBLIQUE)
             fs = fs | Font.ITALIC;
         
-        font = new Font(family, fs, size);
+        font = new Font(family, fs, (int) Math.round(size));
+        em = size;
         
-        String vspec = getStyleProperty("font-variant");
-        if (vspec.equals("small-caps"))
-            fontVariant = vspec;
-        else
-            fontVariant = "normal";
-        
-        String dspec = getStyleProperty("text-decoration");
-        if (dspec.equals("underline") || dspec.equals("overline") || dspec.equals("line-through"))
-            textDecoration = dspec;
-        else
-            textDecoration = "none";
+        CSSProperty.FontVariant variant = style.getProperty("font-variant");
+        if (variant != null) fontVariant = variant;
+        CSSProperty.TextDecoration decor = style.getProperty("text-decoration");
+        if (decor != null) textDecoration = decor;
         
         //color
-        Color clr = getColor(getStyleProperty("color"));
-        if (clr != null) color = clr;
+        TermColor clr = style.getValue(TermColor.class, "color");
+        if (clr != null) color = clr.getValue();
     }
     
-    /** Update the Graphics according to this context */
-    public void updateGraphics(Graphics g)
+    /** 
+     * Updates a Graphics according to this context
+     * @param Graphics to be updated
+     */
+    public void updateGraphics(Graphics2D g)
     {
         g.setFont(font);
         g.setColor(color);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
      
-    /** Update the context according to the current style */
-    public void updateForGraphics(CSSStyleDeclaration style, Graphics g)
+    /** 
+     * Updates this context according to the given style. Moreover given Graphics is updated
+     * to this style and used for taking the font metrics.
+     * @param style the style data to be used
+     * @param g Graphics to be updated and used 
+     */
+    public void updateForGraphics(NodeData style, Graphics2D g)
     {
-        if (style != null)
-            update(style);
+        if (style != null) update(style);
         updateGraphics(g);
         fm = g.getFontMetrics();
-        //isn't this a bit naive?
-        em = fm.charWidth('M');
-        ex = (int) (fm.getHeight() * 0.6);
+        ex = (int) (fm.getHeight() * 0.6); //em has been updated in update()
     }
     
-    
-    //-----------------------------------------------------------------------
-    
-    private String getStyleProperty(String name)
-    {
-        if (style != null)
-            return style.getPropertyValue(name);
-        else
-            return "";
-    }
     
     //-----------------------------------------------------------------------
     
     /**
+     * Computes current text line height.
      * @return the height of the normal text line in pixels
      */
     public int getFontHeight()
@@ -195,85 +240,151 @@ public class VisualContext
         return fm.getHeight();
     }
     
-    /** Returns font size from the CSS declaration in pt */
-    public int getFontSize(String spec)
+    /** 
+     * Converts a length from a CSS length or percentage to 'pt'.
+     * @param spec the CSS length specification
+     * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
+     * @return the length in 'pt' 
+     */
+    public double ptLength(TermLengthOrPercent spec, double whole)
     {
-        if (spec.length() < 3) return -1;
-        String s = spec.substring(0, spec.length()-2); //strip trailing 'pt'
-        try {
-            return (int) (Float.parseFloat(s) * 1.2);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
-    /** Returns a particular length in pixels */
-    public int getLength(String src)
-    {
-        if (src.length() < 3) //this cannot be a number with a unit, most probably it's just 0
-            return 0;
-        String val = src.substring(0, src.length()-2);
-        String unit = src.substring(src.length()-2);
-        double ret = 0;
-        try {
-            double nval = Double.parseDouble(val);
-            if (unit.equals("pt"))
-            {
-                ret = (nval * dpi) / 72;
-            }
-            else if (unit.equals("in"))
-            {
-                ret = nval * dpi;
-            }
-            else if (unit.equals("cm"))
-            {
-                ret = (nval * dpi) / 2.54;
-            }
-            else if (unit.equals("mm"))
-            {
-                ret = (nval * dpi) / 25.4;
-            }
-            else if (unit.equals("pc"))
-            {
-                ret = (nval * 12 * dpi) / 72;
-            }
-            else if (unit.equals("px"))
+        float nval = spec.getValue();
+        if (spec.isPercentage())
+            return (whole * nval) / 100;
+        else
+        {
+            TermLength.Unit unit = spec.getUnit();
+            
+            double ret = 0;
+            if (unit == TermLength.Unit.pt)
             {
                 ret = nval;
             }
-            else if (unit.equals("em"))
+            else if (unit == TermLength.Unit.in)
+            {
+                ret = nval * 72;
+            }
+            else if (unit == TermLength.Unit.cm)
+            {
+                ret = (nval * 72) / 2.54;
+            }
+            else if (unit == TermLength.Unit.mm)
+            {
+                ret = (nval * 72) / 25.4;
+            }
+            else if (unit == TermLength.Unit.pc)
+            {
+                ret = nval * 12;
+            }
+            else if (unit == TermLength.Unit.px)
+            {
+                ret = (nval * 72) / dpi;
+            }
+            else if (unit == TermLength.Unit.em)
             {
                 ret = em * nval;
             }
-            else if (unit.equals("ex"))
+            else if (unit == TermLength.Unit.ex)
             {
                 ret = ex * nval;
             }
-            return (int) Math.round(ret);
-        } catch (NumberFormatException e) {
-            return 0;
+            return ret;
+        }
+    }
+
+    /** 
+     * Converts a length from a CSS length to 'pt'. Percentages are always evaluated to 0.
+     * @param spec the CSS length specification
+     * @return font size in 'pt' 
+     */
+    public double ptLength(TermLengthOrPercent spec)
+    {
+        return ptLength(spec, 0);
+    }
+    
+    /** 
+     * Converts a length from a CSS length or percentage to 'px'.
+     * @param spec the CSS length specification
+     * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
+     * @return the length in 'px' 
+     */
+    public double pxLength(TermLengthOrPercent spec, double whole)
+    {
+        float nval = spec.getValue();
+        if (spec.isPercentage())
+            return (whole * nval) / 100;
+        else
+        {
+            TermLength.Unit unit = spec.getUnit();
+            
+            double ret = 0;
+            if (unit == TermLength.Unit.pt)
+            {
+                ret = (nval * dpi) / 72;
+            }
+            else if (unit == TermLength.Unit.in)
+            {
+                ret = nval * dpi;
+            }
+            else if (unit == TermLength.Unit.cm)
+            {
+                ret = (nval * dpi) / 2.54;
+            }
+            else if (unit == TermLength.Unit.mm)
+            {
+                ret = (nval * dpi) / 25.4;
+            }
+            else if (unit == TermLength.Unit.pc)
+            {
+                ret = (nval * 12 * dpi) / 72;
+            }
+            else if (unit == TermLength.Unit.px)
+            {
+                ret = nval;
+            }
+            else if (unit == TermLength.Unit.em)
+            {
+                ret = (em * nval * dpi) / 72; //em is in pt
+            }
+            else if (unit == TermLength.Unit.ex)
+            {
+                ret = (ex * nval * dpi) / 72;
+            }
+            return ret;
         }
     }
     
-    /** Scan a list of font names and choose the first one that is available */
-    public String getFontName(String list)
+    /** 
+     * Converts a length from a CSS length to 'px'. Percentages are always evaluated to 0.
+     * @param spec the CSS length specification
+     * @return font size in 'px' 
+     */
+    public double pxLength(TermLengthOrPercent spec)
+    {
+        return pxLength(spec, 0);
+    }
+    
+    /** 
+     * Scans a list of font definitions and chooses the first one that is available
+     * @param list of terms obtained from the font-family property
+     * @return a font name string according to java.awt.Font
+     */
+    public String getFontName(TermList list)
     {
         String avail[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-        String lst[] = list.split(",");
-        for (int i = 0; i < lst.length; i++)
+        for (Term<?> term : list)
         {
-            String name = lst[i].trim().toLowerCase();
-            if (name.equals("serif")) return "Serif";
-            else if (name.equals("sans-serif")) return "SansSerif";
-            else if (name.equals("monospace")) return "Monospaced";
+            Object value = term.getValue();
+            if (value instanceof CSSProperty.FontFamily)
+                return ((CSSProperty.FontFamily) value).getAWTValue();
             else
             {
-                String avf = fontAvailable(name, avail);
-                if (avf != null) return avf;
+                String name = fontAvailable(value.toString(), avail);
+                if (name != null) return name;
             }
         }
         //nothing found, use Serif
-        return "Serif";
+        return java.awt.Font.SERIF;
     }
     
     /** Returns true if the font family is available.

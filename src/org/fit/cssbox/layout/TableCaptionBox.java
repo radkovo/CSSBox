@@ -20,7 +20,7 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import org.w3c.dom.Element;
 
@@ -34,7 +34,7 @@ public class TableCaptionBox extends BlockBox
     /**
      * Create a new table caption
      */
-    public TableCaptionBox(Element n, Graphics g, VisualContext ctx)
+    public TableCaptionBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;

@@ -20,11 +20,13 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.*;
 
+import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import cz.vutbr.web.css.*;
 
 /**
  * A box that represents a table.
@@ -34,6 +36,8 @@ import org.w3c.dom.Element;
  */
 public class TableBox extends BlockBox
 {
+	private final int DEFAULT_SPACING = 2;
+	
     protected TableCaptionBox caption;
     protected TableBodyBox header;
     protected TableBodyBox footer;
@@ -57,7 +61,7 @@ public class TableBox extends BlockBox
     /**
      * Create a new table
      */
-    public TableBox(Element n, Graphics g, VisualContext ctx)
+    public TableBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;
@@ -148,15 +152,23 @@ public class TableBox extends BlockBox
     @Override
     protected void loadSizes(boolean update)
     {
-        //load the content width from the attribute
+        //load the content width from the attribute (transform to declaration)
         if (!update)
         {
+            //create an important 'width' style for this element
             String width = getElement().getAttribute("width");
             if (!width.equals(""))
             {
-                if (!width.endsWith("%"))
-                    width = width + "px";
-                style.setProperty("width", width, "important");
+                TermLengthOrPercent wspec = HTMLNorm.createLengthOrPercent(width);
+                if (wspec != null)
+                {
+                    Declaration dec = CSSFactory.getRuleFactory().createDeclaration();
+                    dec.setProperty("width");
+                    dec.unlock();
+                    dec.add(wspec);
+                    dec.setImportant(true);
+                    style.push(dec);
+                }
             }
         }
         super.loadSizes(update);
@@ -171,15 +183,17 @@ public class TableBox extends BlockBox
      * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
-    protected void computeWidths(String width, boolean exact, int contw, boolean update)
+    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
-        if (width.equals("")) width = "auto";
-        if (exact) wset = !width.equals("auto");
-        if (wset && exact && dec.isPercent(width)) wrelative = true;
-        String mleft = getStyleProperty("margin-left");
-        String mright = getStyleProperty("margin-right");
+        if (width == null) auto = true;
+        if (exact) wset = !auto;
+        if (wset && exact && width.isPercentage()) wrelative = true;
+        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mleft = getLengthValue("margin-left");
+        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mright = getLengthValue("margin-right");
         preferredWidth = -1;
         
         //if column widths haven't been calculated yet,
@@ -190,21 +204,21 @@ public class TableBox extends BlockBox
         {
             /* For the first time, we always try to use the maximal width even for the table.
              * That means: 'auto' margins are taken as 0, width comes from the parent element. */
-            margin.left = dec.getLength(mleft, 0, 0, contw);
-            margin.right = dec.getLength(mright, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
             content.width = contw - margin.left - border.left - padding.left
                               - padding.right - border.right - margin.right;
         }
         else
         {
         	if (!update)
-        		content.width = dec.getLength(width, 0, 0, contw);
-            margin.left = dec.getLength(mleft, 0, 0, contw);
-            margin.right = dec.getLength(mright, 0, 0, contw);
+        		content.width = dec.getLength(width, auto, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
 
             if (isInFlow()) 
             {
-                if (mleft.equals("auto") && mright.equals("auto"))
+                if (mleftauto && mrightauto)
                 {
                     preferredWidth = border.left + padding.left + content.width +
                                      padding.right + border.right;
@@ -213,7 +227,7 @@ public class TableBox extends BlockBox
                     margin.left = (rest + 1) / 2;
                     margin.right = rest / 2;
                 }
-                else if (mleft.equals("auto"))
+                else if (mleftauto)
                 {
                     preferredWidth = border.left + padding.left + content.width +
                                      padding.right + border.right + margin.right;
@@ -221,7 +235,7 @@ public class TableBox extends BlockBox
                                         - padding.right - border.right - margin.right;
                     if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
-                else if (mright.equals("auto"))
+                else if (mrightauto)
                 {
                     preferredWidth = margin.left + border.left + padding.left + content.width +
                                      padding.right + border.right;
@@ -476,7 +490,13 @@ public class TableBox extends BlockBox
     {
   		CSSDecoder dec = new CSSDecoder(ctx);
     	//border spacing
-   		spacing = dec.getLength(getStyleProperty("border-spacing"), "2px", "0", 0);
+  		TermList spc = style.getValue(TermList.class, "border-spacing");
+  		if (spc != null)
+  		{
+  			spacing = dec.getLength((TermLength) spc.get(0), false, DEFAULT_SPACING, 0, 0);
+  		}
+  		else
+  			spacing = dec.getLength(getLengthValue("border-spacing"), false, DEFAULT_SPACING, 0, 0);
     }
     
     /**
@@ -494,51 +514,42 @@ public class TableBox extends BlockBox
             if (box instanceof ElementBox)
             {
                 ElementBox subbox = (ElementBox) box;
-                switch (subbox.getDisplay())
+                if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
                 {
-                    case ElementBox.DISPLAY_TABLE_CAPTION:
-                        caption = (TableCaptionBox) subbox;
-                        break;
-                    case ElementBox.DISPLAY_TABLE_HEADER_GROUP:
-                        header = (TableBodyBox) subbox;
-                        break;
-                    case ElementBox.DISPLAY_TABLE_FOOTER_GROUP:
-                        footer = (TableBodyBox) subbox;
-                        break;
-                    case ElementBox.DISPLAY_TABLE_ROW_GROUP:
-                        bodies.add((TableBodyBox) subbox);
-                        break;
-                    case ElementBox.DISPLAY_TABLE_ROW:
-                        if (anonbody == null)
-                        {
-                            //the table itself may not have an owner document if it is an anonymous box itself
-                            //therefore, we're using the parent's owner document
-                        	Element anonelem = createAnonymousBody(getParent().getElement().getOwnerDocument()); 
-                            anonbody = new TableBodyBox(anonelem, g, ctx);
-                            anonbody.setContainingBlock(this);
-                            anonbody.setParent(this);
-                            anonbody.loadSizes();
-                            bodies.add(anonbody);
-                        }
-                        anonbody.addSubBox(subbox);
-                        anonbody.isempty = false;
-                        subbox.setContainingBlock(anonbody);
-                        subbox.setParent(anonbody);
-                        it.remove();
-                        endChild--;
-                        break;
-                    case ElementBox.DISPLAY_TABLE_COLUMN:
-                        for (int i = 0; i < ((TableColumn) subbox).getSpan(); i++)
-                            columns.add((TableColumn) subbox);
-                        break;
-                    case ElementBox.DISPLAY_TABLE_COLUMN_GROUP:
-                        for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
-                            columns.add(((TableColumnGroup) subbox).getColumn(i));
-                        break;
-                    default:
-                        System.err.println("TableBox: Warning: Element ignored: " + subbox);
-                        break;
+                    if (anonbody == null)
+                    {
+                        //the table itself may not have an owner document if it is an anonymous box itself
+                        //therefore, we're using the parent's owner document
+                        Element anonelem = createAnonymousBody(getParent().getElement().getOwnerDocument()); 
+                        anonbody = new TableBodyBox(anonelem, g, ctx);
+                        anonbody.setContainingBlock(this);
+                        anonbody.setParent(this);
+                        anonbody.loadSizes();
+                        bodies.add(anonbody);
+                    }
+                    anonbody.addSubBox(subbox);
+                    anonbody.isempty = false;
+                    subbox.setContainingBlock(anonbody);
+                    subbox.setParent(anonbody);
+                    it.remove();
+                    endChild--;
                 }
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
+                    caption = (TableCaptionBox) subbox;
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP)
+                    header = (TableBodyBox) subbox;
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
+                    footer = (TableBodyBox) subbox;
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP)
+                    bodies.add((TableBodyBox) subbox);
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
+                    for (int i = 0; i < ((TableColumn) subbox).getSpan(); i++)
+                        columns.add((TableColumn) subbox);
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
+                    for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
+                        columns.add(((TableColumnGroup) subbox).getColumn(i));
+                else
+                    System.err.println("TableBox: Warning: Element ignored: " + subbox);
             }
         }
         if (anonbody != null)

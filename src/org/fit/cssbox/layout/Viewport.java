@@ -22,6 +22,9 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 import java.util.Vector;
 
+import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.TermNumeric.Unit;
+
 /**
  * This class represents a browser viewport which is implemented as a special case of a block
  * box. It differs mainly in the way the sizes are computed. Moreover, it provides the methods
@@ -39,9 +42,10 @@ public class Viewport extends BlockBox
     private int maxy; //maximal Y position of all the content
 
     
-    public Viewport(Graphics g, VisualContext ctx, int width, int height)
+    public Viewport(Graphics2D g, VisualContext ctx, int width, int height)
 	{
 		super(null, g, ctx);
+		style = CSSFactory.createNodeData(); //Viewport starts with an empty style
         nested = new Vector<Box>();
         startChild = 0;
         endChild = 0;
@@ -101,8 +105,8 @@ public class Viewport extends BlockBox
 		min_size = new Dimension(width, height);
 		max_size = new Dimension(-1, -1);
 		position = BlockBox.POS_ABSOLUTE;
-		computeWidths(width+"px", false, 0, update); 
-		computeHeights(height+"px", false, 0, update); 
+		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, 0, update); 
+		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, 0, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
@@ -132,7 +136,7 @@ public class Viewport extends BlockBox
     }
 	
 	@Override
-	public void draw(Graphics g, int turn, int mode) 
+	public void draw(Graphics2D g, int turn, int mode) 
 	{
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).draw(g, turn, mode);
@@ -142,9 +146,10 @@ public class Viewport extends BlockBox
 	{
 		for (int i = 0; i < getSubBoxNumber(); i++)
 		{
-			BlockBox box = (BlockBox) getSubBox(i);
+			ElementBox box = (ElementBox) getSubBox(i);
 			recursiveInitBoxes(box);
-	        box.setFloats(new FloatList(box), new FloatList(box), 0, 0, 0);
+			if (box instanceof BlockBox)
+			    ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
 		}
 	}
 

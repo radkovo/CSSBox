@@ -39,7 +39,7 @@ public class TableRowBox extends BlockBox
     /**
      * Create a new table row
      */
-    public TableRowBox(Element n, Graphics g, VisualContext ctx)
+    public TableRowBox(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         isblock = true;

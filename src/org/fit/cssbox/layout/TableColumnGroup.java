@@ -39,7 +39,7 @@ public class TableColumnGroup extends TableColumn
     /**
      * Create a new table column
      */
-    public TableColumnGroup(Element n, Graphics g, VisualContext ctx)
+    public TableColumnGroup(Element n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
     }

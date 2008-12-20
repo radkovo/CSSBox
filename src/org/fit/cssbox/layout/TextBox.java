@@ -55,7 +55,7 @@ public class TextBox extends Box
      * @param g the graphics context used for rendering
      * @param ctx current visual context
      */
-    public TextBox(Text n, Graphics g, VisualContext ctx)
+    public TextBox(Text n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
         text = n;
@@ -422,7 +422,7 @@ public class TextBox extends Box
      * Draw the text content of this box (no subboxes)
      * @param g the graphics context to draw on
      */
-    protected void drawContent(Graphics g)
+    protected void drawContent(Graphics2D g)
     {
         //top left corner
         int x = absbounds.x;
@@ -442,9 +442,8 @@ public class TextBox extends Box
     }
     
 	@Override
-    public void draw(Graphics g, int turn, int mode)
+    public void draw(Graphics2D g, int turn, int mode)
     {
-        ctx.updateGraphics(g);
         if (displayed)
         {
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
@@ -455,7 +454,7 @@ public class TextBox extends Box
     }
     
 	@Override
-    public void drawExtent(Graphics g)
+    public void drawExtent(Graphics2D g)
     {
         //draw the full box
         g.setColor(Color.ORANGE);
