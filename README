@@ -12,7 +12,7 @@ CSSBox relies on the jStyleParser open source CSS parser
 with this CSSBox version is provided in the distribution as a jar file.
 
 In the demo applications, the jTidy parser (http://jtidy.sourceforge.net/)
-is used for creating the HTML DOM tree. An official snapshot is included in this distribution
+is used for creating the HTML DOM tree. An official snapshot is included in this distribution.
 as a jar file.
 
 Package contents:

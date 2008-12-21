@@ -7,5 +7,13 @@ fi
 
 ROOT="../.."
 
-export CLASSPATH=$CLASSPATH:$ROOT/CSSBox.jar:$ROOT/lib/CSSParser_SNAPSHOT.jar:$ROOT/lib/jtidy-r8-SNAPSHOT.jar
+DEPS=$ROOT/CSSBox.jar
+DEPS=$DEPS:$ROOT/lib/antlr-runtime-3.1.jar
+DEPS=$DEPS:$ROOT/lib/slf4j-api-1.5.2.jar
+DEPS=$DEPS:$ROOT/lib/jStyleParser_SNAPSHOT.jar
+DEPS=$DEPS:$ROOT/lib/jtidy-r8-SNAPSHOT.jar
+DEPS=$DEPS:$ROOT/lib/logback-classic-0.9.9.jar
+DEPS=$DEPS:$ROOT/lib/logback-core-0.9.9.jar
+
+export CLASSPATH=$CLASSPATH:$DEPS
 java org.fit.cssbox.demo.$1 $2 $3 $4
