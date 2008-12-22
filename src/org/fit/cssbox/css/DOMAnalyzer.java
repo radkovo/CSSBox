@@ -275,8 +275,7 @@ public class DOMAnalyzer
             NodeData decl = getElementStyle(el);
             if (decl != null)
             {
-                String decls = decl.toString();
-                decls = decls.substring(1, decls.length()-1);
+                String decls = decl.toString().replace("\n", "");
                 el.setAttribute("style", quote(decls));
             }
         }                
@@ -293,14 +292,13 @@ public class DOMAnalyzer
             NodeData decl = getElementStyleInherited(el);
             if (decl != null)
             {
-                String decls = decl.toString();
-                decls = decls.substring(1, decls.length()-1);
+                String decls = decl.toString().replace("\n", "");
                 el.setAttribute("style", quote(decls));
             }
         }                
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
-            recursiveStylesToDom(child.item(i));
+            recursiveStylesToDomInherited(child.item(i));
     }
 
     

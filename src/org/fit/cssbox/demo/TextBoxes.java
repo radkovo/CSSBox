@@ -52,7 +52,7 @@ public class TextBoxes
         {
             //text boxes are just printed
             TextBox text = (TextBox) root;
-            System.out.println("x=" + text.getBounds().x + " y=" + text.getBounds().y + " text=" + text.getText());
+            System.out.println("x=" + text.getAbsoluteBounds().x + " y=" + text.getAbsoluteBounds().y + " text=" + text.getText());
         }
         else if (root instanceof ElementBox)
         {
@@ -98,7 +98,7 @@ public class TextBoxes
             //Disable image loading
             ReplacedImage.setLoadImages(false);
             
-            //Create the browser canvas
+            //Create the browser canvas of 1000x600 pixels
             BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
             
             //Display the result
