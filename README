@@ -9,11 +9,11 @@ Public License (LGPL), version 2.1. A copy of the LGPL can be found in the LICEN
 
 CSSBox relies on the jStyleParser open source CSS parser 
 (http://cssbox.sourceforge.net/jstyleparser). A snaphsot from its SVN which is tested
-with this CSSBox version is provided in the distribution as a jar file.
+with this CSSBox version is provided in the distribution as a jar file. See the
+jStyleParser documentation for the additional dependencies.
 
-In the demo applications, the jTidy parser (http://jtidy.sourceforge.net/)
-is used for creating the HTML DOM tree. An official snapshot is included in this distribution.
-as a jar file.
+The jTidy parser (http://jtidy.sourceforge.net/) is used for creating the HTML DOM tree.
+An official snapshot is included in this distribution as a .jar file.
 
 Package contents:
 src/ - CSSBox source files
