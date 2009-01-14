@@ -107,6 +107,7 @@ public class BoxBrowser
             
             URL url = new URL(urlstring);
             URLConnection con = url.openConnection();
+            con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; BoxBrowserTest/2.x; Linux) CSSBox/2.x (like Gecko)");
             InputStream is = con.getInputStream();
             
             Tidy tidy = createTidy();
