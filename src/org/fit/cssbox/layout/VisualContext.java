@@ -185,7 +185,7 @@ public class VisualContext
         CSSProperty.FontStyle fstyle =  style.getProperty("font-style");
         if (fstyle != null) fontStyle = fstyle;
         int fs = Font.PLAIN;
-        if (fontWeight != CSSProperty.FontWeight.NORMAL && fontWeight != CSSProperty.FontWeight.numeric_100)
+        if (representsBold(fontWeight))
             fs = Font.BOLD;
         if (fontStyle == CSSProperty.FontStyle.ITALIC || fontStyle == CSSProperty.FontStyle.OBLIQUE)
             fs = fs | Font.ITALIC;
@@ -362,6 +362,25 @@ public class VisualContext
     public double pxLength(TermLengthOrPercent spec)
     {
         return pxLength(spec, 0);
+    }
+    
+    /**
+     * Converts the weight value to bold / not bold
+     * @param weight a CSS weight
+     * @return true if the given weight corresponds to bold
+     */
+    public boolean representsBold(CSSProperty.FontWeight weight)
+    {
+        if (weight == CSSProperty.FontWeight.BOLD ||
+            weight == CSSProperty.FontWeight.numeric_600 ||    
+            weight == CSSProperty.FontWeight.numeric_700 ||    
+            weight == CSSProperty.FontWeight.numeric_800 ||    
+            weight == CSSProperty.FontWeight.numeric_900)
+        {
+            return true;
+        }
+        else
+            return false;
     }
     
     /** 
