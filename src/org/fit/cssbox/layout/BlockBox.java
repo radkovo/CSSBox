@@ -640,7 +640,7 @@ public class BlockBox extends ElementBox
         if (!hasFixedHeight())
         {
                 y = y + maxh; //possible unfinished line
-                if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || display == ElementBox.DISPLAY_INLINE_BLOCK)
+                if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
                 {
                     //enclose all floating boxes we own
                     // http://www.w3.org/TR/CSS21/visudet.html#root-height
@@ -713,7 +713,7 @@ public class BlockBox extends ElementBox
         //update the height when not set or set to "auto"
         if (!hasFixedHeight())
         {
-            if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || display == ElementBox.DISPLAY_INLINE_BLOCK)
+            if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
             {
                 //enclose all floating boxes we own
                 // http://www.w3.org/TR/CSS21/visudet.html#root-height
@@ -800,7 +800,7 @@ public class BlockBox extends ElementBox
             int x = cblock.getAbsoluteContentX() + bounds.x;
             int y = cblock.getAbsoluteContentY() + bounds.y;
 
-            loadPosition();
+            //loadPosition(); //moved to loadSizes()
             if (floating == FLOAT_NONE)
             {
                 if (position == POS_RELATIVE)
@@ -1211,6 +1211,9 @@ public class BlockBox extends ElementBox
         padding.bottom = dec.getLength(getLengthValue("padding-bottom"), false, null, null, contw);
         padding.left = dec.getLength(getLengthValue("padding-left"), false, null, null, contw);
         
+        //Position
+        loadPosition();
+        
         //Content and margins
         if (!update)
         {
@@ -1247,16 +1250,16 @@ public class BlockBox extends ElementBox
         //Calculate heights and margins
         // http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
         TermLengthOrPercent height = getLengthValue("height");
-        computeHeights(height, style.getProperty("height") == CSSProperty.Height.AUTO, true, contw, update);
+        computeHeights(height, style.getProperty("height") == CSSProperty.Height.AUTO, true, contw, conth, update);
         if (max_size.height != -1 && content.height > max_size.height)
         {
             height = getLengthValue("max-height");
-            computeHeights(height, false, false, contw, update);
+            computeHeights(height, false, false, contw, conth, update);
         }
         if (min_size.height != -1 && content.height < min_size.height)
         {
             height = getLengthValue("min-height");
-            computeHeights(height, false, false, contw, update);
+            computeHeights(height, false, false, contw, conth, update);
         }
         
         if (update)
@@ -1369,13 +1372,23 @@ public class BlockBox extends ElementBox
      * @param height the specified width
      * @param exact true if this is the exact height, false when it's a max/min height
      * @param contw containing block width
+     * @param conth containing block height
      * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
-    protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
-        if (cblock != null && cblock.hset)
+        
+    	if (height == null) auto = true; //no value behaves as "auto"
+
+    	boolean mtopauto = style.getProperty("margin-top") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mtop = getLengthValue("margin-top");
+        boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
+    	
+        //compute height when set
+    	if (cblock != null && cblock.hset)
         {
             hset = (exact && !auto && height != null);
             if (!update)
@@ -1387,14 +1400,25 @@ public class BlockBox extends ElementBox
             if (!update)
                 content.height = dec.getLength(height, auto, 0, 0, 0);
         }
-        if (style.getProperty("margin-top") == CSSProperty.Margin.AUTO)
-            margin.top = 0;
-        else
-            margin.top = dec.getLength(getLengthValue("margin-top"), false, 0, 0, contw); //contw is ok here!
-        if (style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO)
-            margin.bottom = 0;
-        else
-            margin.bottom = dec.getLength(getLengthValue("margin-bottom"), false, 0, 0, contw);
+    	
+    	if (position != POS_ABSOLUTE)
+    	{
+    		//Not absolutely positioned - auto margins are treated as zero
+	        if (mtopauto)
+	            margin.top = 0;
+	        else
+	            margin.top = dec.getLength(mtop, false, 0, 0, contw); //contw is ok here!
+	        if (mbottomauto)
+	            margin.bottom = 0;
+	        else
+	            margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
+    	}
+    	else
+    	{
+    		//Absolutely positioned - compute according to
+    		// http://www.w3.org/TR/CSS21/visudet.html#abs-non-replaced-height
+    		//TODO
+    	}
     }
     
     /**

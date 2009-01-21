@@ -106,7 +106,7 @@ public class Viewport extends BlockBox
 		max_size = new Dimension(-1, -1);
 		position = BlockBox.POS_ABSOLUTE;
 		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, 0, update); 
-		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, 0, update); 
+		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, 0, 0, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
