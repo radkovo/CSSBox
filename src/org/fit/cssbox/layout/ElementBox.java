@@ -503,13 +503,13 @@ abstract public class ElementBox extends Box
 
         //draw the border
         if (border.top > 0)
-            drawBorder(g, mx, my, mx + mw, my + border.top, "top");
+            drawBorder(g, mx, my, mx + mw, my, border.top, "top");
         if (border.right > 0)
-            drawBorder(g, mx + mw - border.right, my, mx + mw, my + mh, "right"); 
+            drawBorder(g, mx + mw, my, mx + mw, my + mh, border.right, "right"); 
         if (border.bottom > 0)
-            drawBorder(g, mx, my + mh - border.bottom, mx + mw, my + mh, "bottom"); 
+            drawBorder(g, mx, my + mh, mx + mw, my + mh, border.bottom, "bottom"); 
         if (border.left > 0)
-            drawBorder(g, mx, my, mx + border.left, my + mh, "left"); 
+            drawBorder(g, mx, my, mx, my + mh, border.left, "left"); 
 
         //Background
         int bgx = x + emargin.left + border.left;
@@ -529,16 +529,18 @@ abstract public class ElementBox extends Box
         g.setColor(color); //restore original color
     }
     
-    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2,
+    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width,
                             String side)
     {
         TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
         if (tclr != null)
         {
             Color clr = tclr.getValue();
+            float dash[] = {10.0f}; 
+            g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, width, dash, 0));
             if (clr == null) clr = Color.BLACK;
             g.setColor(clr);
-            g.fillRect(x1, y1, x2 - x1, y2 - y1);            
+            g.drawRect(x1, y1, x2 - x1, y2 - y1);            
         }
         
     }
