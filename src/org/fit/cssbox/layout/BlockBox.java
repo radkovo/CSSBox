@@ -154,6 +154,9 @@ public class BlockBox extends ElementBox
     /** The top position coordinate is set explicitely */
     protected boolean rightset;
     
+    /** the top position should be set to static position during the layout */
+    protected boolean topstatic;
+    
     /** Text-align property */
     protected CSSProperty.TextAlign align;
     
@@ -185,6 +188,7 @@ public class BlockBox extends ElementBox
         leftset = false;
         bottomset = false;
         rightset = false;
+        topstatic = false;
         
       	if (style != null)
       		loadBlockStyle();
@@ -220,6 +224,7 @@ public class BlockBox extends ElementBox
         leftset = false;
         bottomset = false;
         rightset = false;
+        topstatic = false;
         
         nested = src.nested;
         startChild = src.startChild;
@@ -243,6 +248,7 @@ public class BlockBox extends ElementBox
         leftset = src.leftset;
         bottomset = src.bottomset;
         rightset = src.rightset;
+        topstatic = src.topstatic;
     }
     
     /** Create a new box from the same DOM node in the same context */
@@ -466,6 +472,9 @@ public class BlockBox extends ElementBox
             updateChildSizes();
         }
         
+        //the width should be fixed from this point
+        widthComputed = true;
+        
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
         setAvailableWidth(totalWidth());
@@ -474,8 +483,6 @@ public class BlockBox extends ElementBox
             layoutInline();
         else //block elements containing block elements
             layoutBlocks();
-        
-        widthComputed = true;
         
         //allways fits as well possible
         return true;
@@ -649,6 +656,7 @@ public class BlockBox extends ElementBox
                 }
                 //the total height is the last Y coordinate
                 setContentHeight(y);
+                updateSizes();
         }
         setSize(totalWidth(), totalHeight());
         
@@ -722,6 +730,7 @@ public class BlockBox extends ElementBox
             }
             //the total height is the last Y coordinate
             setContentHeight(stat.y);
+            updateSizes();
         }
         setSize(totalWidth(), totalHeight());
     }
@@ -810,6 +819,7 @@ public class BlockBox extends ElementBox
                 }
                 else if (position == POS_ABSOLUTE || position == POS_FIXED)
                 {
+                    //TODO: this could be unified to 'top' and 'left' because they should be always computed during the layout
                 	if (leftset)
                         x = cblock.getAbsoluteContentX() + coords.left;
                     else if (rightset)
@@ -820,7 +830,11 @@ public class BlockBox extends ElementBox
                 	if (topset)
                         y = cblock.getAbsoluteContentY() + coords.top;
                     else if (bottomset)
+                    {
+                        System.out.println("cblock=" + cblock);
+                        System.out.println(this + "  y= " + cblock.getAbsoluteContentY()  + "+" + cblock.getContentHeight() + "-" + bounds.height + "-" + coords.bottom + "- 2");
                 		y = cblock.getAbsoluteContentY() + cblock.getContentHeight() - bounds.height - coords.bottom - 2;
+                    }
                     else
                         y = cblock.getAbsoluteContentY();
                 }
@@ -1232,8 +1246,6 @@ public class BlockBox extends ElementBox
             max_size.height = min_size.height; 
         
         //Calculate widths and margins
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-    		System.out.println("jo!");
         TermLengthOrPercent width = getLengthValue("width");
         computeWidths(width, style.getProperty("width") == CSSProperty.Width.AUTO, true, contw, update);
         if (max_size.width != -1 && content.width > max_size.width)
@@ -1333,7 +1345,7 @@ public class BlockBox extends ElementBox
                                  padding.right + border.right + prefmr;
             
             //Compute the margins if we're in flow and we know the width
-            //TODO: pro absolutni pozicovani by to melo byt jinak
+            //TODO: this should be different for absolutely positioned boxes
             if (isInFlow() && prefer) 
             {
                 if (mleftauto && mrightauto)
@@ -1387,12 +1399,12 @@ public class BlockBox extends ElementBox
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
     	
-        //compute height when set
+        //compute height when set. If not, it will be computed during the layout
     	if (cblock != null && cblock.hset)
         {
             hset = (exact && !auto && height != null);
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, cblock.getContentHeight());
+                content.height = dec.getLength(height, auto, 0, 0, conth);
         }
         else
         {
@@ -1401,9 +1413,15 @@ public class BlockBox extends ElementBox
                 content.height = dec.getLength(height, auto, 0, 0, 0);
         }
     	
-    	if (position != POS_ABSOLUTE)
+    	//count top, bottom and height constraints
+    	int constr = 0;
+    	if (hset) constr++;
+    	if (topset) constr++;
+    	if (bottomset) constr++;
+    	
+    	//compute margins
+    	if (position != POS_ABSOLUTE || constr < 3)  //Not absolutely positioned or too many auto values - auto margins are treated as zero
     	{
-    		//Not absolutely positioned - auto margins are treated as zero
 	        if (mtopauto)
 	            margin.top = 0;
 	        else
@@ -1413,11 +1431,52 @@ public class BlockBox extends ElementBox
 	        else
 	            margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
     	}
-    	else
+    	else if (position == POS_ABSOLUTE) //absolutely positioned, everything specified
     	{
-    		//Absolutely positioned - compute according to
-    		// http://www.w3.org/TR/CSS21/visudet.html#abs-non-replaced-height
-    		//TODO
+    	    if (mtopauto && mbottomauto)
+    	    {
+    	        int rest = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - content.height;
+                margin.top = (rest + 1) / 2;
+                margin.bottom = rest / 2;
+    	    }
+    	    else if (mtopauto)
+    	    {
+    	        margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
+    	        margin.top = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - content.height - margin.bottom;
+    	    }
+    	    else if (mbottomauto)
+    	    {
+                margin.top = dec.getLength(mtop, false, 0, 0, contw);
+                margin.bottom = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - content.height - margin.top;
+    	    }
+    	    else //over-constrained, both margins apply (bottom will be ignored)
+    	    {
+                margin.top = dec.getLength(mtop, false, 0, 0, contw);
+                margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
+    	    }
+    	}
+    	
+    	//If absolutely positioned, compute the top and bottom
+    	if (position == POS_ABSOLUTE)
+    	{
+    	    if (!topset && !bottomset)
+    	    {
+    	        topstatic = true; //top will be set to static position during the layout
+                coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+    	    }
+    	    else if (!topset)
+    	    {
+                coords.top = conth - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+    	    }
+    	    else if (!bottomset)
+    	    {
+                coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+    	    }
+    	    else
+    	    {
+    	        if (auto) //auto height is computed from the rest
+    	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom;
+    	    }
     	}
     }
     

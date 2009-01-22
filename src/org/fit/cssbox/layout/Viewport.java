@@ -94,6 +94,17 @@ public class Viewport extends BlockBox
 		return this;
 	}
 
+    @Override
+    protected void loadPosition()
+    {
+        position = BlockBox.POS_ABSOLUTE;
+        topset = true;
+        leftset = true;
+        bottomset = false;
+        rightset = false;
+        coords = new LengthSet(0, 0, 0, 0);
+    }
+    
 	@Override
 	protected void loadSizes(boolean update)
 	{
@@ -102,9 +113,9 @@ public class Viewport extends BlockBox
 		border = new LengthSet();
 		padding = new LengthSet(1, 1, 1, 1);
 		content = new Dimension(0, 0);
-		min_size = new Dimension(width, height);
+		min_size = new Dimension(width, height); //TODO this doesn't work correctly?
 		max_size = new Dimension(-1, -1);
-		position = BlockBox.POS_ABSOLUTE;
+		loadPosition();
 		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, 0, update); 
 		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, 0, 0, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
@@ -334,6 +345,6 @@ public class Viewport extends BlockBox
                 recursiveInitBoxes((ElementBox) child);
         }
     }
-    
+
 }
 
