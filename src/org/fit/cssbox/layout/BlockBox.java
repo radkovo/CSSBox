@@ -1019,6 +1019,11 @@ public class BlockBox extends ElementBox
 		return hset; //only true if the height is set explicitly
 	}
 
+	public LengthSet getCoords()
+	{
+	    return coords;
+	}
+	
     /**
      * Computes the maximal height of the floating boxes inside of this box and
      * all its children.

@@ -503,13 +503,13 @@ abstract public class ElementBox extends Box
 
         //draw the border
         if (border.top > 0)
-            drawBorder(g, mx, my, mx + mw, my, border.top, "top");
+            drawBorder(g, mx, my, mx + mw, my, border.top, 0, border.top/2, "top");
         if (border.right > 0)
-            drawBorder(g, mx + mw, my, mx + mw, my + mh, border.right, "right"); 
+            drawBorder(g, mx + mw, my, mx + mw, my + mh, border.right, -border.right/2, 0, "right"); 
         if (border.bottom > 0)
-            drawBorder(g, mx, my + mh, mx + mw, my + mh, border.bottom, "bottom"); 
+            drawBorder(g, mx, my + mh, mx + mw, my + mh, border.bottom, 0, -border.bottom/2, "bottom"); 
         if (border.left > 0)
-            drawBorder(g, mx, my, mx, my + mh, border.left, "left"); 
+            drawBorder(g, mx, my, mx, my + mh, border.left, border.left/2, 0, "left"); 
 
         //Background
         int bgx = x + emargin.left + border.left;
@@ -529,20 +529,50 @@ abstract public class ElementBox extends Box
         g.setColor(color); //restore original color
     }
     
-    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width,
-                            String side)
+    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 
+                            int right, int down, String side)
     {
         TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
-        if (tclr != null)
+        CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
+        if (tclr != null && bst != CSSProperty.BorderStyle.HIDDEN)
         {
             Color clr = tclr.getValue();
-            float dash[] = {10.0f}; 
-            g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, width, dash, 0));
             if (clr == null) clr = Color.BLACK;
             g.setColor(clr);
-            g.drawRect(x1, y1, x2 - x1, y2 - y1);            
+            
+            if (bst == CSSProperty.BorderStyle.SOLID)
+            {
+                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
+                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
+            }
+            else if (bst == CSSProperty.BorderStyle.DOTTED)
+            {
+                float dash[] = {width, width};
+                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
+                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
+            }
+            else if (bst == CSSProperty.BorderStyle.DASHED)
+            {
+                float dash[] = {3*width, width};
+                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
+                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
+            }
+            else if (bst == CSSProperty.BorderStyle.DOUBLE)
+            {
+                int sw = (width + 2) / 3;
+                int gw = width - 2 * sw;
+                int gwr = (right == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
+                int gwd = (down == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
+                g.setStroke(new BasicStroke(sw, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
+                g.drawLine(x1 + right - gwr, y1 + down - gwd, x2 + right - gwr, y2 + down - gwd);
+                g.drawLine(x1 + right + gwr, y1 + down + gwd, x2 + right + gwr, y2 + down + gwd);
+            }
+            else //default or unsupported - draw a solid line
+            {
+                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
+                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
+            }
         }
-        
     }
 
     @Override
