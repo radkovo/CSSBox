@@ -495,22 +495,22 @@ abstract public class ElementBox extends Box
         int x2 = absbounds.x + absbounds.width - 1;
         int y2 = absbounds.y + absbounds.height - 1;
 
-        //draw the margin
-        int mx = x + emargin.left;
-        int my = y + emargin.top;
-        int mw = bounds.width - emargin.left - emargin.right;
-        int mh = bounds.height - emargin.top - emargin.bottom;
-
+        //border bounds
+        int bx1 = x + emargin.left;
+        int by1 = y + emargin.top;
+        int bx2 = x2 - emargin.right;
+        int by2 = y2 - emargin.bottom;
+        
         //draw the border
         if (border.top > 0)
-            drawBorder(g, mx, my, mx + mw, my, border.top, 0, border.top/2, "top");
+            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, border.top/2, "top");
         if (border.right > 0)
-            drawBorder(g, mx + mw, my, mx + mw, my + mh, border.right, -border.right/2, 0, "right"); 
+            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right/2 + 1, 0, "right"); 
         if (border.bottom > 0)
-            drawBorder(g, mx, my + mh, mx + mw, my + mh, border.bottom, 0, -border.bottom/2, "bottom"); 
+            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom/2 + 1, "bottom"); 
         if (border.left > 0)
-            drawBorder(g, mx, my, mx, my + mh, border.left, border.left/2, 0, "left"); 
-
+            drawBorder(g, bx1, by1, bx1, by2, border.left, border.left/2, 0, "left"); 
+        
         //Background
         int bgx = x + emargin.left + border.left;
         int bgy = y + emargin.top + border.top;
