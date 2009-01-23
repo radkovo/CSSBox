@@ -108,14 +108,17 @@ public class Viewport extends BlockBox
 	@Override
 	protected void loadSizes(boolean update)
 	{
-		margin = new LengthSet();
-		emargin = new LengthSet();
-		border = new LengthSet();
-		padding = new LengthSet(1, 1, 1, 1);
-		content = new Dimension(0, 0);
-		min_size = new Dimension(width, height); //TODO this doesn't work correctly?
-		max_size = new Dimension(-1, -1);
-		loadPosition();
+		if (!update)
+		{
+			margin = new LengthSet();
+			emargin = new LengthSet();
+			border = new LengthSet();
+			padding = new LengthSet(1, 1, 1, 1);
+			content = new Dimension(0, 0);
+			min_size = new Dimension(width, height);
+			max_size = new Dimension(-1, -1);
+			loadPosition();
+		}
 		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, 0, update); 
 		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, 0, 0, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
