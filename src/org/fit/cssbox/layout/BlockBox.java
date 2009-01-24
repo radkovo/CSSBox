@@ -109,7 +109,6 @@ public class BlockBox extends ElementBox
     /** true if the width is relative [%] */
     protected boolean wrelative;
     
-    //TODO: add this to copy methods
     /** the preferred width or -1 if something is set to "auto" */
     protected int preferredWidth;
     
@@ -153,6 +152,9 @@ public class BlockBox extends ElementBox
     
     /** The top position coordinate is set explicitely */
     protected boolean rightset;
+    
+    /** the left position should be set to static position during the layout */
+    protected boolean leftstatic;
     
     /** the top position should be set to static position during the layout */
     protected boolean topstatic;
@@ -414,6 +416,30 @@ public class BlockBox extends ElementBox
         content.height = h;
     }
     
+    /**
+     * Sets the position in case that the box is absolutely positioned and
+     * one of the 'top' or 'left' coordinates must be taken from the static position.
+     * In other cases this method does nothing. The remaining sizes are
+     * recomputed automatically when necessary.
+     */
+    public void setStaticPosition(int left, int top)
+    {
+    	boolean changed = false;
+    	if (leftstatic)
+    	{
+    		coords.left = left;
+    		changed = true;
+    	}
+    	if (topstatic)
+    	{
+    		System.out.println(toString() + " : top=" + top);
+    		coords.top = top;
+    		changed = true;
+    	}
+    	if (changed)
+    		updateSizes();
+    }
+    
    //========================================================================
     
     /** 
@@ -524,11 +550,12 @@ public class BlockBox extends ElementBox
             {
                 BlockBox sb = (BlockBox) subbox;
                 BlockLayoutStatus stat = new BlockLayoutStatus();
+                stat.y = y;
                 
                 //when the line has already started, the floating boxes should start below this line
                 boolean atstart = (x <= x1);
                 if (!atstart)
-                    stat.y = y + maxh;
+                    stat.y += maxh;
                 
                 if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
                     layoutBlockFloating(sb, wlimit, stat);
@@ -711,6 +738,7 @@ public class BlockBox extends ElementBox
                 }
                 else //absolute or fixed positioning
                 {
+                	//TODO: stat.y is not correct here
                     layoutBlockPositioned(subbox, wlimit, stat);
                 }
                 //accept the resulting Y coordinate
@@ -798,6 +826,8 @@ public class BlockBox extends ElementBox
         //layout the contents
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.doLayout(wlimit, true, true);
+        //set the static position (x is always 0)
+        subbox.setStaticPosition(0, stat.y);
     }
     
     @Override
@@ -830,11 +860,7 @@ public class BlockBox extends ElementBox
                 	if (topset)
                         y = cblock.getAbsoluteContentY() + coords.top;
                     else if (bottomset)
-                    {
-                        System.out.println("cblock=" + cblock);
-                        System.out.println(this + "  y= " + cblock.getAbsoluteContentY()  + "+" + cblock.getContentHeight() + "-" + bounds.height + "-" + coords.bottom + "- 2");
                 		y = cblock.getAbsoluteContentY() + cblock.getContentHeight() - bounds.height - coords.bottom - 2;
-                    }
                     else
                         y = cblock.getAbsoluteContentY();
                 }
@@ -1299,6 +1325,14 @@ public class BlockBox extends ElementBox
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
     {
+    	if (position == POS_ABSOLUTE)
+    		computeWidthsAbsolute(width, auto, exact, contw, update);
+    	else
+    		computeWidthsInFlow(width, auto, exact, contw, update);
+    }
+    
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    {
         CSSDecoder dec = new CSSDecoder(ctx);
         
         if (width == null) auto = true; //no value behaves as 'auto'
@@ -1350,7 +1384,6 @@ public class BlockBox extends ElementBox
                                  padding.right + border.right + prefmr;
             
             //Compute the margins if we're in flow and we know the width
-            //TODO: this should be different for absolutely positioned boxes
             if (isInFlow() && prefer) 
             {
                 if (mleftauto && mrightauto)
@@ -1383,6 +1416,100 @@ public class BlockBox extends ElementBox
         }
     }
 
+    protected void computeWidthsAbsolute(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    {
+        CSSDecoder dec = new CSSDecoder(ctx);
+        
+    	if (width == null) auto = true; //no value behaves as "auto"
+
+        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mleft = getLengthValue("margin-left");
+        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
+        TermLengthOrPercent mright = getLengthValue("margin-right");
+        preferredWidth = -1;
+        
+        if (!widthComputed) update = false;
+    	
+        //compute width when set. If not, it will be computed during the layout
+    	if (cblock != null && cblock.wset)
+        {
+            wset = (exact && !auto && width != null);
+            if (!update)
+                content.height = dec.getLength(width, auto, 0, 0, contw);
+        }
+        else
+        {
+            wset = (exact && !auto && width != null && !width.isPercentage());
+            if (!update)
+                content.width = dec.getLength(width, auto, 0, 0, 0);
+        }
+    	
+    	//count left, right and width constraints
+    	int constr = 0;
+    	if (wset) constr++;
+    	if (leftset) constr++;
+    	if (rightset) constr++;
+    	
+    	//compute margins
+    	if (constr < 3)  //too many auto values - auto margins are treated as zero
+    	{
+	        if (mleftauto)
+	            margin.left = 0;
+	        else
+	            margin.left = dec.getLength(mleft, false, 0, 0, contw);
+	        if (mrightauto)
+	            margin.right = 0;
+	        else
+	            margin.right = dec.getLength(mright, false, 0, 0, contw);
+    	}
+    	else //everything specified
+    	{
+    	    if (mleftauto && mrightauto)
+    	    {
+    	        int rest = contw - coords.left - coords.right - border.left - border.right - padding.left - padding.right - content.width;
+                margin.left = (rest + 1) / 2;
+                margin.right = rest / 2;
+    	    }
+    	    else if (mleftauto)
+    	    {
+    	        margin.right = dec.getLength(mright, false, 0, 0, contw);
+    	        margin.left = contw - coords.right - border.left - border.right - padding.left - padding.right - content.width - margin.right;
+    	    }
+    	    else if (mleftauto)
+    	    {
+    	        margin.left = dec.getLength(mright, false, 0, 0, contw);
+    	        margin.right = contw - coords.right - border.left - border.right - padding.left - padding.right - content.width - margin.left;
+    	    }
+    	    else //over-constrained, both margins apply (right coordinate will be ignored)
+    	    {
+                margin.left = dec.getLength(mleft, false, 0, 0, contw);
+                margin.right = dec.getLength(mright, false, 0, 0, contw);
+    	    }
+    	}
+    	
+    	//compute the top and bottom
+	    if (!leftset && !rightset)
+	    {
+	        leftstatic = true; //left will be set to static position during the layout
+    	    coords.right = contw - coords.left - border.left - border.right - padding.left - padding.right - content.width - margin.left - margin.right;
+	    }
+	    else if (!leftset)
+	    {
+    	    coords.left = contw - coords.right - border.left - border.right - padding.left - padding.right - content.width - margin.left - margin.right;
+	    }
+	    else if (!rightset)
+	    {
+    	    coords.right = contw - coords.left - border.left - border.right - padding.left - padding.right - content.width - margin.left - margin.right;
+	    }
+	    else
+	    {
+	        if (auto) //auto height is computed from the rest
+	        	content.width = contw - coords.left - coords.right - border.left - border.right - padding.left - padding.right - margin.left - margin.right;
+	        else //over-constrained - compute the right coordinate
+	        	coords.right = contw - coords.left - border.left - border.right - padding.left - padding.right - content.width - margin.left - margin.right;
+	    }
+    }
+    
     /** 
      * Calculates heights and margins according to
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
@@ -1481,6 +1608,8 @@ public class BlockBox extends ElementBox
     	    {
     	        if (auto) //auto height is computed from the rest
     	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom;
+    	        else //over-constrained - compute the bottom coordinate
+    	        	coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
     	    }
     	}
     }
