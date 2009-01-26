@@ -219,6 +219,7 @@ public class BoxBrowser
         Vector<String> cols = infoTableData("Property", "Value");
         
         Vector<Vector <String>> vals = new Vector<Vector <String>>();
+        vals.add(infoTableData("Parent", (box.getParent() == null) ? "- none -" : box.getParent().toString()));
         vals.add(infoTableData("Class", box.getClass().getSimpleName()));
         vals.add(infoTableData("Displayed", "" + box.isDisplayed()));
         vals.add(infoTableData("Visible", "" + box.isVisible()));
