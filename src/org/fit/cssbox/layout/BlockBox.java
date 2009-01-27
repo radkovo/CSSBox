@@ -846,6 +846,7 @@ public class BlockBox extends ElementBox
             else if (floating == FLOAT_RIGHT)
             {
             	BlockBox listowner = fown.getOwner();
+                System.out.println("For " + this + " owner is  " + listowner);
                 x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x - 2;
                 y = listowner.getAbsoluteContentY() + bounds.y;
             }
