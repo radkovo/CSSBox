@@ -821,7 +821,6 @@ public class BlockBox extends ElementBox
             int x = cblock.getAbsoluteContentX() + bounds.x;
             int y = cblock.getAbsoluteContentY() + bounds.y;
 
-            //loadPosition(); //moved to loadSizes()
             if (floating == FLOAT_NONE)
             {
                 if (position == POS_RELATIVE)
@@ -846,8 +845,9 @@ public class BlockBox extends ElementBox
             else if (floating == FLOAT_RIGHT)
             {
             	BlockBox listowner = fown.getOwner();
-                System.out.println("For " + this + " owner is  " + listowner);
-                x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x - 2;
+            	BlockBox froot = getContainingBlock();
+                System.out.println("For " + this + " owner is  " + froot);
+                x = froot.getAbsoluteContentX() + froot.getContentWidth() - bounds.width - bounds.x - 2;
                 y = listowner.getAbsoluteContentY() + bounds.y;
             }
 
