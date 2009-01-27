@@ -223,6 +223,9 @@ abstract public class Box
                     if (children.item(i).getNodeType() == Node.ELEMENT_NODE)
                         textonly = false;
                 
+                //a reference box for possible absolutely positioned boxes
+                Box inflowReference = root;
+                
                 //Create child boxes
                 for (int i = 0; i < children.getLength(); i++)
                 {
@@ -279,6 +282,7 @@ abstract public class Box
                                 newbox.setParent(root);
                                 root.addSubBox(newbox);
                             }
+                            inflowReference = newbox;
                         }
                         else //positioned or floating (block only) - add it to its containing block
                         {
@@ -287,6 +291,7 @@ abstract public class Box
                                 newcblock.isempty = false;
                             newbox.setParent(newcblock);
                             newcblock.addSubBox(newbox);
+                            ((BlockBox) newbox).absReference = inflowReference; //set the reference box for computing the static position
                         }
                     }
                 }

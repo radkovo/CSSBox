@@ -159,6 +159,10 @@ public class BlockBox extends ElementBox
     /** the top position should be set to static position during the layout */
     protected boolean topstatic;
     
+    /** Reference box for absolutely positioned boxes. It is used
+     * when some of the absolute coordinates are based on the static position */
+    protected Box absReference;
+    
     /** Text-align property */
     protected CSSProperty.TextAlign align;
     
@@ -388,6 +392,11 @@ public class BlockBox extends ElementBox
         return preferredWidth;
     }
     
+    public Box getAbsReference()
+    {
+        return absReference;
+    }
+    
     /**
      * Sets the width of the content while considering the min- and max- width.
      * @param width the width the set if possible
@@ -414,30 +423,6 @@ public class BlockBox extends ElementBox
         if (min_size.height != -1 && h < min_size.height)
             h = min_size.height;
         content.height = h;
-    }
-    
-    /**
-     * Sets the position in case that the box is absolutely positioned and
-     * one of the 'top' or 'left' coordinates must be taken from the static position.
-     * In other cases this method does nothing. The remaining sizes are
-     * recomputed automatically when necessary.
-     */
-    public void setStaticPosition(int left, int top)
-    {
-    	boolean changed = false;
-    	if (leftstatic)
-    	{
-    		coords.left = left;
-    		changed = true;
-    	}
-    	if (topstatic)
-    	{
-    		System.out.println(toString() + " : top=" + top);
-    		coords.top = top;
-    		changed = true;
-    	}
-    	if (changed)
-    		updateSizes();
     }
     
    //========================================================================
@@ -738,7 +723,6 @@ public class BlockBox extends ElementBox
                 }
                 else //absolute or fixed positioning
                 {
-                	//TODO: stat.y is not correct here
                     layoutBlockPositioned(subbox, wlimit, stat);
                 }
                 //accept the resulting Y coordinate
@@ -826,8 +810,6 @@ public class BlockBox extends ElementBox
         //layout the contents
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.doLayout(wlimit, true, true);
-        //set the static position (x is always 0)
-        subbox.setStaticPosition(0, stat.y);
     }
     
     @Override
@@ -849,20 +831,10 @@ public class BlockBox extends ElementBox
                 }
                 else if (position == POS_ABSOLUTE || position == POS_FIXED)
                 {
-                    //TODO: this could be unified to 'top' and 'left' because they should be always computed during the layout
-                	if (leftset)
-                        x = cblock.getAbsoluteContentX() + coords.left;
-                    else if (rightset)
-                		x = cblock.getAbsoluteContentX() + cblock.getContentWidth() - bounds.width - coords.right - 2;
-                    else
-                        x = cblock.getAbsoluteContentX();
-                	
-                	if (topset)
-                        y = cblock.getAbsoluteContentY() + coords.top;
-                    else if (bottomset)
-                		y = cblock.getAbsoluteContentY() + cblock.getContentHeight() - bounds.height - coords.bottom - 2;
-                    else
-                        y = cblock.getAbsoluteContentY();
+                    if (topstatic || leftstatic)
+                        updateStaticPosition();
+                    x = cblock.getAbsoluteContentX() + coords.left;
+                    y = cblock.getAbsoluteContentY() + coords.top;
                 }
             }
             else if (floating == FLOAT_LEFT)
@@ -902,6 +874,23 @@ public class BlockBox extends ElementBox
                     getSubBox(i).absolutePositions(clip);
             }
             
+        }
+    }
+    
+    /** Obtains the static position of an absolutely positioned box
+     * from the reference box (if any) */
+    private void updateStaticPosition()
+    {
+        if (absReference != null)
+        {
+            Rectangle ab = absReference.getAbsoluteBounds();
+            if (ab != null)
+            {
+                if (topstatic)
+                    coords.top = ab.y + ab.height - 1;
+                if (leftstatic)
+                    coords.left = ab.x;
+            }
         }
     }
 

@@ -249,6 +249,7 @@ public class BoxBrowser
             vals.add(infoTableData("Position", eb.getPositionString()));
             vals.add(infoTableData("Overflow", eb.getOverflowString()));
             vals.add(infoTableData("Clear", eb.getClearingString()));
+            vals.add(infoTableData("Reference", (eb.getAbsReference() == null) ? "- none -" : eb.getAbsReference().toString()));
         }
         
         DefaultTableModel tab = new DefaultTableModel(vals, cols);
