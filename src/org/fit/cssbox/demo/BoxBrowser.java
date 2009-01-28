@@ -196,10 +196,16 @@ public class BoxBrowser
             DefaultMutableTreeNode inside = locateBox((DefaultMutableTreeNode) root.getChildAt(i), x, y);
             if (inside != null)
             {
-                Box ibox = (Box) inside.getUserObject();
-                if (ibox.getAbsoluteBounds().width * ibox.getAbsoluteBounds().height <
-                        box.getAbsoluteBounds().width * box.getAbsoluteBounds().height)
+                if (found == null)
                     found = inside;
+                else
+                {
+                    Box fbox = (Box) found.getUserObject();
+                    Box ibox = (Box) inside.getUserObject();
+                    if (ibox.getAbsoluteBounds().width * ibox.getAbsoluteBounds().height <
+                            fbox.getAbsoluteBounds().width * fbox.getAbsoluteBounds().height)
+                        found = inside;
+                }
             }
         }
             
