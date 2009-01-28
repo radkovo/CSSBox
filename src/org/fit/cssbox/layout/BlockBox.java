@@ -782,10 +782,11 @@ public class BlockBox extends ElementBox
         int fy = stat.y + floatY;  //float Y position
         int fx = f.getWidth(fy);   //total width of floats at this side
         int ofx = of.getWidth(fy); //total width of floats at the opposite side
-        if (fx < floatX) fx = floatX;
+        if (fx < floatX) fx = floatX; //stay in the containing box if it is narrower
+        if (fx == 0 && floatX < 0) fx = floatX; //if it is wider (and there are no floating boxes yet)
         //moving the floating box down until it fits
         while (fx > floatX //if we're not already at the left/right border
-               && (fx + subbox.getWidth() > wlimit-ofx + floatX)) //the subbox doesn't fit in this Y coordinate
+               && (fx + subbox.getWidth() > wlimit - ofx + floatX)) //the subbox doesn't fit in this Y coordinate
         {
             fy = f.getNextY(fy);
             fx = f.getWidth(fy);
@@ -845,9 +846,7 @@ public class BlockBox extends ElementBox
             else if (floating == FLOAT_RIGHT)
             {
             	BlockBox listowner = fown.getOwner();
-            	BlockBox froot = getContainingBlock();
-                System.out.println("For " + this + " owner is  " + froot);
-                x = froot.getAbsoluteContentX() + froot.getContentWidth() - bounds.width - bounds.x - 2;
+                x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x - 2;
                 y = listowner.getAbsoluteContentY() + bounds.y;
             }
 
@@ -1388,19 +1387,19 @@ public class BlockBox extends ElementBox
                 {
                     margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
-                    if (margin.left < 0) margin.left = 0; //"treated as zero"
+                    //if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
                 else if (mrightauto)
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                 }
                 else //everything specified, ignore right margin
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                 }
             }
         }
