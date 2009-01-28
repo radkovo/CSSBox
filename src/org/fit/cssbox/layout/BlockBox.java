@@ -440,12 +440,15 @@ public class BlockBox extends ElementBox
         int dif = maxw - curw; //difference between maximal and current width
         if (align != ALIGN_LEFT && dif > 0)
         {
-            for (int i = linestrt; i < lineend; i++) //all boxes on this line
+            for (int i = linestrt; i < lineend; i++) //all inline boxes on this line
             {
-                if (align == ALIGN_RIGHT)
-                    getSubBox(i).moveRight(dif);
-                else if (align == ALIGN_CENTER)
-                    getSubBox(i).moveRight(dif/2);
+                if (!getSubBox(i).isBlock())
+                {
+                    if (align == ALIGN_RIGHT)
+                        getSubBox(i).moveRight(dif);
+                    else if (align == ALIGN_CENTER)
+                        getSubBox(i).moveRight(dif/2);
+                }
             }
         }
     }
@@ -791,6 +794,7 @@ public class BlockBox extends ElementBox
             fy = f.getNextY(fy);
             fx = f.getWidth(fy);
             if (fx < floatX) fx = floatX;
+            if (fx == 0 && floatX < 0) fx = floatX;
         }
         subbox.setPosition(fx, fy);
         f.add(subbox);
