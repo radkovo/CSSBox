@@ -184,20 +184,26 @@ public class BoxBrowser
 	 */
 	private DefaultMutableTreeNode locateBox(DefaultMutableTreeNode root, int x, int y)
 	{
+	    DefaultMutableTreeNode found = null;
 	    Box box = (Box) root.getUserObject();
 	    Rectangle bounds = box.getAbsoluteBounds();
 	    if (bounds.contains(x, y))
-	    {
-            for (int i = 0; i < root.getChildCount(); i++)
+	        found = root;
+	    
+        //find if there is something smallest that fits among the child boxes
+	    for (int i = 0; i < root.getChildCount(); i++)
+        {
+            DefaultMutableTreeNode inside = locateBox((DefaultMutableTreeNode) root.getChildAt(i), x, y);
+            if (inside != null)
             {
-                DefaultMutableTreeNode inside = locateBox((DefaultMutableTreeNode) root.getChildAt(i), x, y);
-                if (inside != null)
-                    return inside;
+                Box ibox = (Box) inside.getUserObject();
+                if (ibox.getAbsoluteBounds().width * ibox.getAbsoluteBounds().height <
+                        box.getAbsoluteBounds().width * box.getAbsoluteBounds().height)
+                    found = inside;
             }
-            return root;
-	    }
-	    else
-	        return null;
+        }
+            
+        return found;
 	}
 	
     /** 
