@@ -175,4 +175,12 @@ public class BrowserCanvas extends JPanel
         return img.createGraphics();
     }
     
+    /**
+     * @return image containing the rendered page
+     */
+    public BufferedImage getImage()
+    {
+        return img;
+    }
+    
 }
