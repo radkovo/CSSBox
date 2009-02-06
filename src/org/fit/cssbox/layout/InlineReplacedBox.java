@@ -30,7 +30,7 @@ import cz.vutbr.web.css.*;
  * @author radek
  *
  */
-public class InlineReplacedBox extends InlineBox
+public class InlineReplacedBox extends InlineBox implements ReplacedBox
 {
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute

@@ -29,7 +29,7 @@ import cz.vutbr.web.css.*;
  * @author radek
  *
  */
-public class BlockReplacedBox extends BlockBox
+public class BlockReplacedBox extends BlockBox implements ReplacedBox
 {
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute

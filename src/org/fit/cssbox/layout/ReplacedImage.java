@@ -89,6 +89,14 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
 	{
 		return url;
 	}
+	
+	/**
+	 * @return the image
+	 */
+	public BufferedImage getImage()
+	{
+	    return img;
+	}
 
 	public void draw(Graphics2D g, int width, int height)
     {

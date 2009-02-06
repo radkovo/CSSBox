@@ -22,9 +22,12 @@ package org.fit.cssbox.demo;
 
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
@@ -36,6 +39,8 @@ import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.layout.*;
 import org.w3c.dom.Document;
 import org.w3c.tidy.Tidy;
+
+import sun.misc.BASE64Encoder;
 
 /**
  * This class provides a rendering interface for obtaining the document image
@@ -95,7 +100,7 @@ public class ImageRenderer
             {
                 ReplacedImage.setLoadImages(true);
                 BrowserCanvas contentCanvas = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
-                PrintWriter w = new PrintWriter(out);
+                PrintWriter w = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
                 writeSVG(contentCanvas.getViewport(), w);
                 w.close();
             }
@@ -109,11 +114,11 @@ public class ImageRenderer
         }
     }
     
-    private void writeSVG(Viewport vp, PrintWriter out)
+    private void writeSVG(Viewport vp, PrintWriter out) throws IOException
     {
         int w = vp.getContentWidth();
         int h = vp.getContentHeight();
-        out.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>");
+        out.println("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
         out.println("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20010904//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">");
         out.println("<svg xmlns=\"http://www.w3.org/2000/svg\"");
         out.println("     xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\"");
@@ -127,13 +132,14 @@ public class ImageRenderer
         out.println("</svg>");    
     }
     
-    private void writeBoxSVG(Box box, PrintWriter out)
+    private void writeBoxSVG(Box box, PrintWriter out) throws IOException
     {
         Rectangle b = box.getAbsoluteBounds();
         if (box instanceof TextBox)
         {
             TextBox t = (TextBox) box;
             VisualContext ctx = t.getVisualContext();
+            
             String style = "font-size:" + ctx.getFont().getSize() + "px;" + 
                            "font-weight:" + (ctx.getFont().isBold()?"bold":"normal") + ";" + 
                            "font-variant:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
@@ -141,17 +147,33 @@ public class ImageRenderer
                            "fill:" + colorString(ctx.getColor()) + ";" +
                            "stroke:none";
                            
-            out.println("<text x=\"" + b.x + "\" y=\"" + b.y + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(t.getText()) + "</text>"); 
+            out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + b.height) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(t.getText()) + "</text>"); 
+        }
+        else if (box.isReplaced())
+        {
+            ReplacedContent cont = ((ReplacedBox) box).getContentObj();
+            if (cont != null && cont instanceof ReplacedImage)
+            {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                ImageIO.write(((ReplacedImage) cont).getImage(), "png", os);
+                BASE64Encoder enc = new BASE64Encoder();
+                String imgdata = "data:image/png;base64," + enc.encode(os.toByteArray());
+                
+                ElementBox eb = (ElementBox) box;
+                Rectangle cb = eb.getAbsoluteContentBounds();
+                out.println("<image x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" xlink:href=\"" + imgdata + "\" />");
+            }
         }
         else
         {
             ElementBox eb = (ElementBox) box;
             
             Color bg = eb.getBgcolor();
+            Rectangle cb = eb.getAbsoluteContentBounds();
             if (bg != null)
             {
                 String style = "stroke:none;fill-opacity:1;fill:" + colorString(bg);
-                out.println("<rect x=\"" + b.x + "\" y=\"" + b.y + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\" />");
+                out.println("<rect x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" style=\"" + style + "\" />");
             }
             
             for (int i = 0; i < eb.getSubBoxNumber(); i++)
@@ -198,7 +220,7 @@ public class ImageRenderer
                 System.exit(0);
             }
             
-            FileOutputStream os = new FileOutputStream(args[1]); 
+            FileOutputStream os = new FileOutputStream(args[1]);
             
             ImageRenderer r = new ImageRenderer();
             r.renderURL(args[0], os, type);
