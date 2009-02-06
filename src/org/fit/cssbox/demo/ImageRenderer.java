@@ -18,10 +18,11 @@
  *
  * Created on 5.2.2009, 12:00:02 by burgetr
  */
-package org.fit.cssbox.iface;
+package org.fit.cssbox.demo;
 
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -42,7 +43,7 @@ import org.w3c.tidy.Tidy;
  * 
  * @author burgetr
  */
-public class Renderer
+public class ImageRenderer
 {
     public static final short TYPE_PNG = 0;
     public static final short TYPE_SVG = 1;
@@ -145,6 +146,14 @@ public class Renderer
         else
         {
             ElementBox eb = (ElementBox) box;
+            
+            Color bg = eb.getBgcolor();
+            if (bg != null)
+            {
+                String style = "stroke:none;fill-opacity:1;fill:" + colorString(bg);
+                out.println("<rect x=\"" + b.x + "\" y=\"" + b.y + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\" />");
+            }
+            
             for (int i = 0; i < eb.getSubBoxNumber(); i++)
                 writeBoxSVG(eb.getSubBox(i), out);
         }
@@ -160,4 +169,46 @@ public class Renderer
     {
         return s.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;");
     }
+    
+    //=================================================================================
+    
+    public static void main(String[] args)
+    {
+        if (args.length != 3)
+        {
+            System.err.println("Usage: ImageRenderer <url> <output_file> <format>");
+            System.err.println();
+            System.err.println("Renders a document at the specified URL and stores the document image");
+            System.err.println("to the specified file.");
+            System.err.println("Supported formats:");
+            System.err.println("png: a Portable Network Graphics file (bitmap image)");
+            System.err.println("svg: a SVG file (vector image)");
+            System.exit(0);
+        }
+        
+        try {
+            short type = -1;
+            if (args[2].equalsIgnoreCase("png"))
+                type = TYPE_PNG;
+            else if (args[2].equalsIgnoreCase("svg"))
+                type = TYPE_SVG;
+            else
+            {
+                System.err.println("Error: unknown format");
+                System.exit(0);
+            }
+            
+            FileOutputStream os = new FileOutputStream(args[1]); 
+            
+            ImageRenderer r = new ImageRenderer();
+            r.renderURL(args[0], os, type);
+            
+            os.close();
+            System.err.println("Done.");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+        
+    }
+    
 }
