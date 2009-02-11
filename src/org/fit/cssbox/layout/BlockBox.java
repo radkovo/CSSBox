@@ -578,7 +578,7 @@ public class BlockBox extends ElementBox
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
                 //do the layout
-                boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
+                boolean fit = subbox.doLayout(space, f, x == x1);
                 if (fit) //positioning succeeded
                 {
                     if (subbox.isInFlow())
@@ -1127,6 +1127,18 @@ public class BlockBox extends ElementBox
         
         align = style.getProperty("text-align");
         if (align == null) align = ALIGN_LEFT;
+        
+        //apply combination rules
+        //http://www.w3.org/TR/CSS21/visuren.html#dis-pos-flo
+        if (display == ElementBox.DISPLAY_NONE)
+        {
+            position = POS_STATIC;
+            floating = FLOAT_NONE;
+        }
+        else if (position == POS_ABSOLUTE || position == POS_FIXED)
+        {
+            floating = FLOAT_NONE;
+        }
     }
     
     /**
@@ -1428,7 +1440,7 @@ public class BlockBox extends ElementBox
         {
             wset = (exact && !auto && width != null);
             if (!update)
-                content.height = dec.getLength(width, auto, 0, 0, contw);
+                content.width = dec.getLength(width, auto, 0, 0, contw);
         }
         else
         {
