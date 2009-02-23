@@ -37,29 +37,29 @@ import org.w3c.dom.*;
  */
 public class BlockBox extends ElementBox
 {
-    protected static final CSSProperty.Float FLOAT_NONE = CSSProperty.Float.NONE;
-    protected static final CSSProperty.Float FLOAT_LEFT = CSSProperty.Float.LEFT;
-    protected static final CSSProperty.Float FLOAT_RIGHT = CSSProperty.Float.RIGHT;
+    public static final CSSProperty.Float FLOAT_NONE = CSSProperty.Float.NONE;
+    public static final CSSProperty.Float FLOAT_LEFT = CSSProperty.Float.LEFT;
+    public static final CSSProperty.Float FLOAT_RIGHT = CSSProperty.Float.RIGHT;
     
-    protected static final CSSProperty.Clear CLEAR_NONE = CSSProperty.Clear.NONE;
-    protected static final CSSProperty.Clear CLEAR_LEFT = CSSProperty.Clear.LEFT;
-    protected static final CSSProperty.Clear CLEAR_RIGHT = CSSProperty.Clear.RIGHT;
-    protected static final CSSProperty.Clear CLEAR_BOTH = CSSProperty.Clear.BOTH;
+    public static final CSSProperty.Clear CLEAR_NONE = CSSProperty.Clear.NONE;
+    public static final CSSProperty.Clear CLEAR_LEFT = CSSProperty.Clear.LEFT;
+    public static final CSSProperty.Clear CLEAR_RIGHT = CSSProperty.Clear.RIGHT;
+    public static final CSSProperty.Clear CLEAR_BOTH = CSSProperty.Clear.BOTH;
     
-    protected static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
-    protected static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
-    protected static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
-    protected static final CSSProperty.Position POS_FIXED = CSSProperty.Position.FIXED;
+    public static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
+    public static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
+    public static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
+    public static final CSSProperty.Position POS_FIXED = CSSProperty.Position.FIXED;
     
-    protected static final CSSProperty.TextAlign ALIGN_LEFT = CSSProperty.TextAlign.LEFT;
-    protected static final CSSProperty.TextAlign ALIGN_RIGHT = CSSProperty.TextAlign.RIGHT;
-    protected static final CSSProperty.TextAlign ALIGN_CENTER = CSSProperty.TextAlign.CENTER;
-    protected static final CSSProperty.TextAlign ALIGN_JUSTIFY = CSSProperty.TextAlign.JUSTIFY;
+    public static final CSSProperty.TextAlign ALIGN_LEFT = CSSProperty.TextAlign.LEFT;
+    public static final CSSProperty.TextAlign ALIGN_RIGHT = CSSProperty.TextAlign.RIGHT;
+    public static final CSSProperty.TextAlign ALIGN_CENTER = CSSProperty.TextAlign.CENTER;
+    public static final CSSProperty.TextAlign ALIGN_JUSTIFY = CSSProperty.TextAlign.JUSTIFY;
     
-    protected static final CSSProperty.Overflow OVERFLOW_VISIBLE = CSSProperty.Overflow.VISIBLE;
-    protected static final CSSProperty.Overflow OVERFLOW_HIDDEN = CSSProperty.Overflow.HIDDEN;
-    protected static final CSSProperty.Overflow OVERFLOW_SCROLL = CSSProperty.Overflow.SCROLL;
-    protected static final CSSProperty.Overflow OVERFLOW_AUTO = CSSProperty.Overflow.AUTO;
+    public static final CSSProperty.Overflow OVERFLOW_VISIBLE = CSSProperty.Overflow.VISIBLE;
+    public static final CSSProperty.Overflow OVERFLOW_HIDDEN = CSSProperty.Overflow.HIDDEN;
+    public static final CSSProperty.Overflow OVERFLOW_SCROLL = CSSProperty.Overflow.SCROLL;
+    public static final CSSProperty.Overflow OVERFLOW_AUTO = CSSProperty.Overflow.AUTO;
     
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
