@@ -105,6 +105,7 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
             g.drawImage(img, getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), width, height, this);
         else
         {
+            g.setStroke(new BasicStroke(1));
             g.drawRect(getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), getOwner().getContentWidth()-1, getOwner().getContentHeight()-1);
             g.drawLine(getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY(), getOwner().getAbsoluteContentX() + getOwner().getContentWidth() - 1, getOwner().getAbsoluteContentY() + getOwner().getContentHeight() - 1);
             g.drawLine(getOwner().getAbsoluteContentX() + getOwner().getContentWidth() - 1, getOwner().getAbsoluteContentY(), getOwner().getAbsoluteContentX(), getOwner().getAbsoluteContentY() + getOwner().getContentHeight() - 1);
