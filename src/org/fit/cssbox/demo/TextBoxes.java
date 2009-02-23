@@ -99,7 +99,7 @@ public class TextBoxes
             ReplacedImage.setLoadImages(false);
             
             //Create the browser canvas of 1000x600 pixels
-            BrowserCanvas browser = new BrowserCanvas(da.getBody(), da, new java.awt.Dimension(1000, 600), url);
+            BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
             
             //Display the result
             printTextBoxes(browser.getRootBox());

@@ -49,7 +49,7 @@ public class SimpleBrowser extends javax.swing.JFrame
     private javax.swing.JScrollPane documentScroll;
     
     /** Root DOM Element of the document body */
-	private Element docbody;
+	private Element docroot;
 	
 	/** The CSS analyzer of the DOM tree */
     private DOMAnalyzer decoder;
@@ -57,13 +57,13 @@ public class SimpleBrowser extends javax.swing.JFrame
     
     /** 
      * Creates a new application window and displays the rendered document
-     * @param body The root DOM element of the document body
+     * @param root The root DOM element of the document body
      * @param baseurl The base URL of the document used for completing the relative paths
      * @param decoder The CSS analyzer that provides the effective style of the elements 
      */
-    public SimpleBrowser(Element body, URL baseurl, DOMAnalyzer decoder)
+    public SimpleBrowser(Element root, URL baseurl, DOMAnalyzer decoder)
     {
-        docbody = body;
+        docroot = root;
         this.decoder = decoder;
         initComponents(baseurl);
     }
@@ -77,7 +77,7 @@ public class SimpleBrowser extends javax.swing.JFrame
         documentScroll = new javax.swing.JScrollPane();
         
         //Create the browser canvas
-        browserCanvas = new BrowserCanvas(docbody, decoder, new java.awt.Dimension(1000, 600), baseurl);
+        browserCanvas = new BrowserCanvas(docroot, decoder, new java.awt.Dimension(1000, 600), baseurl);
 
         //A simple mouse listener that displays the coordinates clicked
         browserCanvas.addMouseListener(new MouseListener() {
@@ -146,7 +146,7 @@ public class SimpleBrowser extends javax.swing.JFrame
             da.getStyleSheets(); //load the author style sheets
             
             //Display the result
-            SimpleBrowser test = new SimpleBrowser(da.getBody(), url, da);
+            SimpleBrowser test = new SimpleBrowser(da.getRoot(), url, da);
             test.setSize(1275, 750);
             test.setVisible(true);
             
