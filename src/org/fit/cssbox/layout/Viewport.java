@@ -79,6 +79,12 @@ public class Viewport extends BlockBox
 		return false;
 	}
 
+    @Override
+    public boolean isVisible()
+    {
+        return true;
+    }
+
 	@Override
 	public void setSize(int width, int height)
     {

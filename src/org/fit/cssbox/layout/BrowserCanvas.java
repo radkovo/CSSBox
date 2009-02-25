@@ -102,7 +102,7 @@ public class BrowserCanvas extends JPanel
         
         System.err.println("Creating boxes");
         Box.next_order = 0;
-        box = (ElementBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, null);
+        box = (ElementBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, viewport, null);
         System.err.println("We have " + Box.next_order + " boxes");
         viewport.addSubBox(box);
         viewport.initBoxes();

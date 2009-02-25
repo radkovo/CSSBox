@@ -208,6 +208,7 @@ public class BlockBox extends ElementBox
         
         viewport = src.viewport;
         cblock = src.cblock;
+        clipblock = src.clipblock;
         isblock = true;
         contblock = false;
         anyinflow = false;

@@ -87,6 +87,11 @@ abstract public class Box
     /** Containing block */
     protected BlockBox cblock;
     
+    /** Clipping box. The box is not visible if it is not inside of the clipping box.
+     * Normally, the clipping box is the viewport or the nearest parent with
+     * overflow set to hidden */
+    protected BlockBox clipblock;
+    
     /** Maximal total width for the layout (obtained from the owner box) */
     protected int availwidth;
     
@@ -144,6 +149,7 @@ abstract public class Box
         viewport = src.viewport;
         parent = src.parent;
         cblock = src.cblock;
+        clipblock = src.clipblock;
 
         bounds = new Rectangle(src.bounds);
         absbounds = new Rectangle(src.absbounds);
@@ -164,14 +170,15 @@ abstract public class Box
      * @param decoder a CSS style decoder
      * @param baseurl the base URL of the document
      * @param viewport current viewport
-     * @param contbox the containing box of the new box when not absolutly positioned
-     * @param absbox the containing box of the new box when absolutly positioned
+     * @param contbox the containing box of the new box when not absolutley positioned
+     * @param absbox the containing box of the new box when absolutley positioned
+     * @param clipbox the clipping block of this subtree
      * @return the root node of the created tree of boxes
      */
     public static Box createBoxTree(Node n, Graphics2D g, VisualContext ctx,
                                     DOMAnalyzer decoder, URL baseurl,
                                     Viewport viewport,
-                                    BlockBox contbox, BlockBox absbox,
+                                    BlockBox contbox, BlockBox absbox, BlockBox clipbox,
                                     ElementBox parent)
     {
         //-- Text nodes --
@@ -180,6 +187,7 @@ abstract public class Box
             TextBox text = new TextBox((Text) n, g, ctx);
             text.setOrder(next_order++);
             text.setContainingBlock(contbox);
+            text.setClipBlock(clipbox);
             return text;
         }
         //-- Element nodes --
@@ -191,6 +199,7 @@ abstract public class Box
             //Determine the containing boxes
             BlockBox newcont = contbox;
             BlockBox newabs = absbox;
+            BlockBox newclip = clipbox;
             if (root.isBlock())
             {
                 BlockBox block = (BlockBox) root; 
@@ -208,9 +217,15 @@ abstract public class Box
                     newabs = block;
                 //Any block box forms a containing box for not positioned elements
                 newcont = block;
+                //A box with overflow:hidden creates a clipping box
+                if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
+                    newclip = block;
             }
             else    
                 root.setContainingBlock(contbox);
+            
+            //Set the clipping block
+            root.setClipBlock(clipbox);
             
             //process the subtree
             if (root.isDisplayed())
@@ -238,9 +253,9 @@ abstract public class Box
                         //Create a new subtree
                         Box newbox = createBoxTree(cn, (Graphics2D) g.create(), ctx.create(), 
                                                     decoder, baseurl, viewport,
-                                                    newcont, newabs, root);
+                                                    newcont, newabs, newclip, root);
                         //If the new box is block, it's parent box must be block too
-                        //This is not true for positioned boxes (the're moved to their containing block)
+                        //This is not true for positioned boxes (they are moved to their containing block)
                         boolean inflow = true;
                         if (newbox.isBlock())
                         {
@@ -275,6 +290,7 @@ abstract public class Box
                                 anbox.isempty = false;
                                 anbox.setParent(root);
                                 anbox.setContainingBlock(newcont);
+                                anbox.setClipBlock(newclip);
                                 root.addSubBox(anbox);
                             }
                             else
@@ -351,6 +367,7 @@ abstract public class Box
                         adiv.setViewport(root.getViewport());
                         adiv.setParent(root);
                         adiv.setContainingBlock(sub.getContainingBlock());
+                        adiv.setClipBlock(sub.getClipBlock());
                         nest.add(adiv);
                     }
                     if (sub.isDisplayed() && !sub.isEmpty()) 
@@ -413,6 +430,7 @@ abstract public class Box
 		                    adiv.setViewport(root.getViewport());
 		                    adiv.setParent(root);
 		                    adiv.setContainingBlock(sub.getContainingBlock());
+                            adiv.setClipBlock(sub.getClipBlock());
 		                    nest.add(adiv);
 		                }
 		                if (sub.isDisplayed() && !sub.isEmpty()) 
@@ -697,12 +715,15 @@ abstract public class Box
     }
 
     /**
-     * @return <code>true</code> if the element is at least partially located in the visible area,
-     * that means its <code>x</code> and <code>y</code> coordinates are above zero.
+     * Checks if this box is visible, i.e. it has not visibility:hidden and it is at least partially
+     * contained in the clipping region.
+     * @return <code>true</code> if the element is visible
      */
     public boolean isVisible()
     {
-        return visible && (absbounds.x + absbounds.width > 0) && (absbounds.y + absbounds.height >= 0);
+        //return visible && (absbounds.x + absbounds.width > 0) && (absbounds.y + absbounds.height >= 0);
+        System.out.println("test: " + toString());
+        return visible && clipblock.absbounds.intersects(absbounds);
     }
     
     /**
@@ -864,6 +885,25 @@ abstract public class Box
     public void setContainingBlock(BlockBox box)
     {
         cblock = box;
+    }
+    
+    /**
+     * Determines the clipping box. The box is not visible if it is not inside of the clipping box. 
+     * Normally, the clipping box is the viewport or the nearest parent with overflow set to hidden. 
+     * @return the clipping block
+     */
+    public BlockBox getClipBlock()
+    {
+        return clipblock;
+    }
+
+    /**
+     * Sets the clipping block.
+     * @param clipblock the clipblock to set
+     */
+    public void setClipBlock(BlockBox clipblock)
+    {
+        this.clipblock = clipblock;
     }
     
     /**
@@ -1127,5 +1167,5 @@ abstract public class Box
      * Draw the bounds of the box (for visualisation).
      */
     abstract public void drawExtent(Graphics2D g);
-    
+
 }
