@@ -75,13 +75,15 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     @Override
     public int getMaximalWidth()
     {
-        return boxw;
+        return boxw + margin.left + padding.left + border.left +
+                marginRightDecl + padding.right + border.right;
     }
 
     @Override
     public int getMinimalWidth()
     {
-        return boxw;
+        return boxw + margin.left + padding.left + border.left +
+                marginRightDecl + padding.right + border.right;
     }
 
     @Override

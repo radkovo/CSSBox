@@ -66,13 +66,15 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     @Override
     public int getMaximalWidth()
     {
-        return boxw;
+        return boxw + margin.left + padding.left + border.left + 
+                margin.right + padding.right + border.right;
     }
 
     @Override
     public int getMinimalWidth()
     {
-        return boxw;
+        return boxw + margin.left + padding.left + border.left + 
+                margin.right + padding.right + border.right;
     }
     
     @Override
