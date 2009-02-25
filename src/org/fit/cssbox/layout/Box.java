@@ -224,7 +224,8 @@ abstract public class Box
                         textonly = false;
                 
                 //a reference box for possible absolutely positioned boxes
-                Box inflowReference = root;
+                //normally, it is the previous in-flow box, or null, if this is the first box
+                Box inflowReference = null;
                 
                 //Create child boxes
                 for (int i = 0; i < children.getLength(); i++)

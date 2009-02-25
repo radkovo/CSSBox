@@ -233,6 +233,7 @@ public class BoxBrowser
         Vector<Vector <String>> vals = new Vector<Vector <String>>();
         vals.add(infoTableData("ID", String.valueOf(box.getOrder())));
         vals.add(infoTableData("Parent", (box.getParent() == null) ? "- none -" : box.getParent().toString()));
+        vals.add(infoTableData("Cont. block", (box.getContainingBlock() == null) ? "- none -" : box.getContainingBlock().toString()));
         vals.add(infoTableData("Class", box.getClass().getSimpleName()));
         vals.add(infoTableData("Displayed", "" + box.isDisplayed()));
         vals.add(infoTableData("Visible", "" + box.isVisible()));
