@@ -579,7 +579,7 @@ public class BlockBox extends ElementBox
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
                 //do the layout
-                boolean fit = subbox.doLayout(space, f, x == x1);
+                boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
                 if (fit) //positioning succeeded
                 {
                     if (subbox.isInFlow())
