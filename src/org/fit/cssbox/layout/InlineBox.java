@@ -189,7 +189,7 @@ public class InlineBox extends ElementBox
             absbounds.height = bounds.height;
             
             //repeat for all valid subboxes
-            if (isDisplayed() && isVisible())
+            if (isDisplayed())
             {
                 for (int i = startChild; i < endChild; i++)
                     getSubBox(i).absolutePositions();
@@ -252,7 +252,7 @@ public class InlineBox extends ElementBox
     public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
-        if (displayed && isVisible())
+        if (displayed)
         {
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getAbsoluteContentBounds());
