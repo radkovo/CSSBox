@@ -140,7 +140,7 @@ public class Viewport extends BlockBox
 		maxx = 0;
 		maxy = 0;
 		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions(null);
+			getSubBox(i).absolutePositions();
 		//update the size
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
@@ -148,11 +148,11 @@ public class Viewport extends BlockBox
 	}
 	
 	@Override
-    public void absolutePositions(Rectangle clip)
+    public void absolutePositions()
     {
 	    absbounds = new Rectangle(bounds);
 		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions(clip);
+			getSubBox(i).absolutePositions();
     }
 	
 	@Override

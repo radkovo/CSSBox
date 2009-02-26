@@ -176,7 +176,7 @@ public class InlineBox extends ElementBox
     }
     
     @Override
-    public void absolutePositions(Rectangle clip)
+    public void absolutePositions()
     {
         if (isDisplayed())
         {
@@ -187,14 +187,12 @@ public class InlineBox extends ElementBox
             //update the width and height according to overflow of the parent
             absbounds.width = bounds.width;
             absbounds.height = bounds.height;
-            if (clip != null)
-                clipAbsoluteBounds(clip);
             
             //repeat for all valid subboxes
-            if (isDisplayed())
+            if (isDisplayed() && isVisible())
             {
                 for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).absolutePositions(clip);
+                    getSubBox(i).absolutePositions();
             }
         }
     }
@@ -256,6 +254,8 @@ public class InlineBox extends ElementBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
+            Shape oldclip = g.getClip();
+            g.setClip(clipblock.getAbsoluteContentBounds());
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
                 if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
@@ -266,6 +266,7 @@ public class InlineBox extends ElementBox
                 for (int i = startChild; i < endChild; i++)
                     getSubBox(i).draw(g, turn, mode);
             }
+            g.setClip(oldclip);
         }
     }
     

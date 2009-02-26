@@ -363,7 +363,7 @@ public class TextBox extends Box
     }
     
 	@Override
-    public void absolutePositions(Rectangle clip)
+    public void absolutePositions()
     {
         if (displayed)
         {
@@ -372,8 +372,6 @@ public class TextBox extends Box
             absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
 	        absbounds.width = bounds.width;
 	        absbounds.height = bounds.height;
-            if (clip != null)
-                clipAbsoluteBounds(clip);
         }
     }
     
@@ -435,7 +433,7 @@ public class TextBox extends Box
             FontMetrics fm = g.getFontMetrics();
             Rectangle2D rect = fm.getStringBounds(text, g);
             Shape oldclip = g.getClip();
-            g.setClip(absbounds);
+            g.setClip(clipblock.getAbsoluteContentBounds());
             g.drawString(text, x + (int) rect.getX(), y - (int) rect.getY());
             g.setClip(oldclip);
         }

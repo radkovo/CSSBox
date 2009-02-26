@@ -819,7 +819,7 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public void absolutePositions(Rectangle clip)
+    public void absolutePositions()
     {
         if (displayed)
         {
@@ -838,8 +838,8 @@ public class BlockBox extends ElementBox
                 {
                     if (topstatic || leftstatic)
                         updateStaticPosition();
-                    x = cblock.getAbsoluteContentX() + coords.left;
-                    y = cblock.getAbsoluteContentY() + coords.top;
+                    x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
+                    y = cblock.getAbsoluteBackgroundBounds().y + coords.top;
                 }
             }
             else if (floating == FLOAT_LEFT)
@@ -862,21 +862,14 @@ public class BlockBox extends ElementBox
             //update the width and height according to overflow of the cblock
             absbounds.width = bounds.width;
             absbounds.height = bounds.height;
-            if (clip != null)
-                clipAbsoluteBounds(clip);
             
-            if (isDisplayed())
+            if (isDisplayed() && isVisible())
             {
                 viewport.updateBoundsFor(absbounds);
-                if (overflow == OVERFLOW_HIDDEN)
-                    clip = new Rectangle(getAbsoluteContentX(),
-                                         getAbsoluteContentY(),
-                                         getContentWidth(),
-                                         getContentHeight());
                 
                 //repeat for all valid subboxes
                 for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).absolutePositions(clip);
+                    getSubBox(i).absolutePositions();
             }
             
         }
@@ -1078,6 +1071,8 @@ public class BlockBox extends ElementBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
+            Shape oldclip = g.getClip();
+            g.setClip(clipblock.getAbsoluteContentBounds());
             int nestTurn = turn;
             switch (turn)
             {
@@ -1106,6 +1101,7 @@ public class BlockBox extends ElementBox
                 for (int i = startChild; i < endChild; i++)
                     getSubBox(i).draw(g, nestTurn, mode);
             }
+            g.setClip(oldclip);
         }
     }
     

@@ -721,8 +721,6 @@ abstract public class Box
      */
     public boolean isVisible()
     {
-        //return visible && (absbounds.x + absbounds.width > 0) && (absbounds.y + absbounds.height >= 0);
-        System.out.println("test: " + toString());
         return visible && clipblock.absbounds.intersects(absbounds);
     }
     
@@ -1125,9 +1123,8 @@ abstract public class Box
 
     /** 
      * Calculate absolute positions of all the subboxes.
-     * @param clip clipping area
      */
-    abstract public void absolutePositions(Rectangle clip);
+    abstract public void absolutePositions();
     
     
     //=======================================================================

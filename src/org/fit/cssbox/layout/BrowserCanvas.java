@@ -129,7 +129,7 @@ public class BrowserCanvas extends JPanel
         }
         
         System.err.println("Positioning for "+img.getWidth()+"x"+img.getHeight()+"px");
-        viewport.absolutePositions(null);
+        viewport.absolutePositions();
         
         clearCanvas();
         viewport.draw(ig);
