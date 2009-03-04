@@ -41,10 +41,9 @@ import cz.vutbr.web.css.TermColor;
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.layout.*;
+import org.fit.cssbox.misc.Base64Coder;
 import org.w3c.dom.Document;
 import org.w3c.tidy.Tidy;
-
-import sun.misc.BASE64Encoder;
 
 /**
  * This class provides a rendering interface for obtaining the document image
@@ -229,8 +228,8 @@ public class ImageRenderer
                     {
                         ByteArrayOutputStream os = new ByteArrayOutputStream();
                         ImageIO.write(img, "png", os);
-                        BASE64Encoder enc = new BASE64Encoder();
-                        String imgdata = "data:image/png;base64," + enc.encode(os.toByteArray());
+                        char[] data = Base64Coder.encode(os.toByteArray());
+                        String imgdata = "data:image/png;base64," + new String(data);
                         out.println("<image x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" xlink:href=\"" + imgdata + "\" />");
                     }
                 }

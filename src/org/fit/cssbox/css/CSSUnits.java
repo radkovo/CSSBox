@@ -55,7 +55,7 @@ public class CSSUnits
     /** 
      * Converts the font size given by an identifier to absolute length in points.
      * @param parent Parent font size (taken as 1em)
-     * @param current The size specification to be converted
+     * @param value The size specification to be converted
      * @return absolute font size in pt 
      */
     public static double convertFontSize(double parent, CSSProperty.FontSize value)

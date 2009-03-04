@@ -1092,7 +1092,7 @@ abstract public class Box
     /**
      * Reads the value of a border width specified by a CSS property.
      * @param dec a CSS decoder used for converting the values
-     * @param property, the property name, e.g. "border-top-width"
+     * @param property the property name, e.g. "border-top-width"
      * @return the border width in pixels
      */
     public int getBorderWidth(CSSDecoder dec, String property)

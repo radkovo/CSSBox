@@ -205,7 +205,7 @@ public class VisualContext
     
     /** 
      * Updates a Graphics according to this context
-     * @param Graphics to be updated
+     * @param g Graphics to be updated
      */
     public void updateGraphics(Graphics2D g)
     {
