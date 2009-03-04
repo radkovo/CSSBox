@@ -1,13 +1,23 @@
-Changes in CSSBox 2.0
-=====================
+2009-03-04 - Version 2.2
+- New ImageRenderer tools that stores the rendered document in PNG or SVG
+- New box clipping implementation (overflow: hidden)
+- Box width computation fixes
+- Layout fixes for absolutely positioned elements
+- New ReplaceBox interface for joining the inline and block ones
 
-	CSSBox 2.0 introduces a brand new CSS parser - jStyleParser.
-	This parser is much more efficient and reliable than the
-	previous 'naive' parser based on the CSS Parser project.
+2009-01-29 - Version 2.1
+- Box size computation fixes (absolutely positioned boxes)
+- Floating block positioning fixes
+- Other small bugfixes
 
-	Most Important Changes in the CSSBox API
-	----------------------------------------
-	
-	- if the DOMAnalyzer.attributesToStyles() method is used for
-	  interpreting HTML visual attributes, it must be called 
-	  BEFORE calling the DOMAnalyzer.getStyleSheets() method 
+2008-12-22 - Version 2.0
+CSSBox 2.0 introduces a brand new CSS parser - jStyleParser.
+This parser is much more efficient and reliable than the
+previous 'naive' parser based on the CSS Parser project.
+
+Most Important Changes in the CSSBox API
+----------------------------------------
+
+- if the DOMAnalyzer.attributesToStyles() method is used for
+  interpreting HTML visual attributes, it must be called 
+  BEFORE calling the DOMAnalyzer.getStyleSheets() method 

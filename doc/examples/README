@@ -36,3 +36,9 @@ Implements a browser that displays the rendered box tree and the corresponding
 page. Each box corresponds to an HTML element or a text node and it can be
 interactiveli highlighted documents either by selecting a tree node or by clicking
 the appropriate position in the page.
+
+ImageRenderer <url> <output_file> <format>
+Renders a document at the specified URL and stores the document image to the specified file.
+Supported formats:
+png: a Portable Network Graphics file (bitmap image)
+svg: a SVG file (vector image with bitmap images included)
