@@ -721,7 +721,7 @@ abstract public class Box
      */
     public boolean isVisible()
     {
-        return visible && clipblock.absbounds.intersects(absbounds);
+        return visible && clipblock.absbounds.intersects(absbounds) && clipblock.isVisible();
     }
     
     /**
