@@ -226,6 +226,7 @@ public class TableCellBox extends BlockBox
             emargin = new LengthSet();
             min_size = new Dimension(-1, -1);
             max_size = new Dimension(-1, -1);
+            coords = new LengthSet();
         }
         
         //Load the width if set

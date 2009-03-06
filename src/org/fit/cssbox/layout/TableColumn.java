@@ -214,6 +214,7 @@ public class TableColumn extends BlockBox
         isempty = true;
         displayed = false;
         visible = false;
+        coords = new LengthSet();
         
         if (colwidth.equals("")) //no width set - try to get from style
         {

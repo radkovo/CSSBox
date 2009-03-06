@@ -134,6 +134,7 @@ public class TableRowBox extends BlockBox
 	        border = new LengthSet();
             min_size = new Dimension(-1, -1);
             max_size = new Dimension(-1, -1);
+            coords = new LengthSet();
     	}
     }
     
