@@ -98,7 +98,7 @@ public class BrowserCanvas extends JPanel
         
         VisualContext ctx = new VisualContext(null);
         
-        viewport = new Viewport(ig, ctx, dim.width, dim.height);
+        viewport = new Viewport(root, ig, ctx, dim.width, dim.height);
         
         System.err.println("Creating boxes");
         Box.next_order = 0;

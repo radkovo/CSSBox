@@ -21,6 +21,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 import java.util.Vector;
+import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.TermNumeric.Unit;
@@ -42,9 +43,9 @@ public class Viewport extends BlockBox
     private int maxy; //maximal Y position of all the content
 
     
-    public Viewport(Graphics2D g, VisualContext ctx, int width, int height)
+    public Viewport(Element root, Graphics2D g, VisualContext ctx, int width, int height)
 	{
-		super(null, g, ctx);
+		super(root, g, ctx);
 		style = CSSFactory.createNodeData(); //Viewport starts with an empty style
         nested = new Vector<Box>();
         startChild = 0;
