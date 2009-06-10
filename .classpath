@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/CSSParser"/>
 	<classpathentry exported="true" kind="lib" path="lib/jTidy-090119-SNAPSHOT.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CachedHTTP"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
