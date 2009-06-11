@@ -26,10 +26,6 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 
-import org.fit.http.core.HttpConnection;
-import org.fit.http.entities.HttpRequest;
-import org.fit.http.entities.HttpResponse;
-
 /**
  * This class represents an image as the contents of a replaced element
  * 
@@ -38,7 +34,6 @@ import org.fit.http.entities.HttpResponse;
 public class ReplacedImage extends ReplacedContent implements ImageObserver
 {
     private static boolean LOAD_IMAGES = true;
-    private static HttpConnection connection = null;
     
     private URL base; //document base url
     private URL url;  //image url
@@ -59,7 +54,7 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
             if (LOAD_IMAGES)
             {
                 System.err.println("Loading image: " + url);
-                img = loadImage(url);
+                img = javax.imageio.ImageIO.read(url);
             }
          } catch (MalformedURLException e) {
              System.err.println("ImgBox: URL: " + e.getMessage());
@@ -72,19 +67,6 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
              System.err.println("ImgBox: Format error: " + e.getMessage());
              img = null;
          }
-    }
-    
-    private BufferedImage loadImage(URL url) throws IOException
-    {
-        //return javax.imageio.ImageIO.read(url);
-        HttpConnection conn = connection;
-        if (connection == null)
-            conn = new HttpConnection(true);
-        HttpResponse resp = conn.sendAndRecieve(url.toString(), HttpRequest.GET, null);
-        InputStream is = resp.getInputStream();
-        if (connection == null)
-            conn.close();
-        return javax.imageio.ImageIO.read(is);
     }
     
     /**
@@ -100,11 +82,6 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
         LOAD_IMAGES = b;
     }
 
-    public static void setHttpConnection(HttpConnection conn)
-    {
-        connection = conn;
-    }
-    
     /**
 	 * @return the url of the image
 	 */
