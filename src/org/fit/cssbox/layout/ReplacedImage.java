@@ -82,6 +82,11 @@ public class ReplacedImage extends ReplacedContent implements ImageObserver
         LOAD_IMAGES = b;
     }
 
+    public static boolean getLoadImages()
+    {
+        return LOAD_IMAGES;
+    }
+    
     /**
 	 * @return the url of the image
 	 */
