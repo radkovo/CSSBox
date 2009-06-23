@@ -985,7 +985,7 @@ public class BlockBox extends ElementBox
                 }
                 else if (!block.isInFlow()) //positioned blocks
                 {
-                    if (subbox.getMaximalWidth() > max) max = subbox.getMaximalWidth();
+                	//positioned blocks should not be taken into account
                 }
                 else //in-flow blocks
                 {
