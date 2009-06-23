@@ -929,8 +929,20 @@ public class BlockBox extends ElementBox
         int ret = 0;
         for (int i = startChild; i < endChild; i++)
         {
-            int w = getSubBox(i).getMinimalWidth();
-            if (w > ret) ret = w;
+            Box box = getSubBox(i);
+            boolean affect = true; //does the box affect the minimal width?
+            if (box instanceof BlockBox)
+            {
+                BlockBox block = (BlockBox) box;
+                if (block.position == POS_ABSOLUTE || block.position == POS_FIXED) //absolute or fixed position boxes don't affect the width
+                    affect = false;
+            }
+            
+            if (affect)
+            {
+                int w = box.getMinimalWidth();
+                if (w > ret) ret = w;
+            }
         }
         return ret;
     }
@@ -1071,7 +1083,7 @@ public class BlockBox extends ElementBox
     public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
-        if (displayed)
+        if (isDisplayed() && isVisible())
         {
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getAbsoluteContentBounds());
