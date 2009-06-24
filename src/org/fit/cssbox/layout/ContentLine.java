@@ -29,10 +29,15 @@ package org.fit.cssbox.layout;
  */
 public class ContentLine
 {
+    //width
     private int start;
     private int end;
     private int width;
     private int limits;
+    
+    //height
+    private int maxh; //maximal content height
+    
 
     public ContentLine(int start)
     {
@@ -103,4 +108,13 @@ public class ContentLine
         this.limits = limits;
     }
 
+    public void setMaxHeight(int maxh)
+    {
+        this.maxh = maxh;
+    }
+
+    public int getMaxHeight()
+    {
+        return maxh;
+    }
 }

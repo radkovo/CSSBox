@@ -435,7 +435,7 @@ public class BlockBox extends ElementBox
      * @param curw Content width when aligned to the left
      * @param maxw Total line width
      */
-    private void alignLine(int linestrt, int lineend, int curw, int maxw)
+    private void alignLineHorizontally(int linestrt, int lineend, int curw, int maxw)
     {
     	//TODO: align: justify
         int dif = maxw - curw; //difference between maximal and current width
@@ -450,6 +450,19 @@ public class BlockBox extends ElementBox
                     else if (align == ALIGN_CENTER)
                         getSubBox(i).moveRight(dif/2);
                 }
+            }
+        }
+    }
+    
+    private void alignLineVertically(int linestrt, int lineend, int curw, int maxw)
+    {
+        //TODO: check if this is correct
+        int dif = maxw - curw; //difference between maximal and current width
+        for (int i = linestrt; i < lineend; i++) //all inline boxes on this line
+        {
+            if (!getSubBox(i).isBlock())
+            {
+                getSubBox(i).moveDown(dif/2);
             }
         }
     }
@@ -623,9 +636,10 @@ public class BlockBox extends ElementBox
                 else if (((!fit || x >= wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
-                    //the width for text alignment
+                    //the width and height for text alignment
                     curline.setWidth(x);
                     curline.setLimits(x2);
+                    curline.setMaxHeight(maxh);
                     //go to the new line
                     if (x > maxw) maxw = x;
                     y += Math.max(maxh, getLineHeight());
@@ -683,7 +697,8 @@ public class BlockBox extends ElementBox
         for (Iterator<ContentLine> it = lines.iterator(); it.hasNext();)
         {
             ContentLine line = it.next();
-            alignLine(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
+            alignLineHorizontally(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
+            //alignLineVertically(line.getStart(), line.getEnd(), line.getMaxHeight(), getLineHeight());
         }
     }
 
