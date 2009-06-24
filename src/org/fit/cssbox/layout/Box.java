@@ -725,6 +725,15 @@ abstract public class Box
     }
     
     /**
+     * Checks if the box has visibility property set to visible.
+     * @return <code>true</code>, if this element has the 'visibility' property set to 'visible'
+     */
+    public boolean isDeclaredVisible()
+    {
+        return visible;
+    }
+    
+    /**
      * @return <code> true if this is a replaced box
      */
     public boolean isReplaced()

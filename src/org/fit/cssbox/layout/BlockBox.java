@@ -1083,7 +1083,7 @@ public class BlockBox extends ElementBox
     public void draw(Graphics2D g, int turn, int mode)
     {
         ctx.updateGraphics(g);
-        if (isDisplayed())
+        if (isDisplayed() && isDeclaredVisible())
         {
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getAbsoluteContentBounds());
