@@ -169,7 +169,8 @@ public class InlineBox extends ElementBox
         if (maxh == 0)
             content.height = 0; //no content
         else
-            content.height = Math.max(lineHeight, maxh); //according to CSS spec. section 10.6.1
+            //content.height = Math.max(lineHeight, maxh);
+            content.height = maxh;
         setSize(totalWidth(), totalHeight());
         
         return ret;
