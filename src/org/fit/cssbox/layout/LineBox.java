@@ -1,5 +1,5 @@
 /**
- * ContentLine.java
+ * LineBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
  * This program is free software; you can redistribute it and/or
@@ -21,29 +21,44 @@
 package org.fit.cssbox.layout;
 
 /**
- * This class describes a single line of the content in a block box. It
- * contains the start and end index of the subboxes that form the line,
- * the total text width and the additional width limit that can be caused
- * by floating boxes. 
+ * This class describes a single line of the content in a block box.
  * @author burgetr
  */
-public class ContentLine
+public class LineBox
 {
-    //width
-    private int start;
-    private int end;
-    private int width;
-    private int limits;
+    /** The BlockBox containing the lines */
+    private BlockBox parent;
     
-    //height
-    private int maxh; //maximal content height
+    /** Index of the first box at this line (from all the subboxes of the block) */
+    private int start;
+    
+    /** Index of the last box at this line (excl.) */
+    private int end;
+    
+    /** Total text width in pixels (for horizontal alignment) */
+    private int width;
+    
+    /** Left offset caused by floating boxes */
+    private int left;
+    
+    /** Right offset caused by floating boxes */
+    private int right;
+    
+    /** Maximal height of the content boxes */
+    private int maxh;
     
 
-    public ContentLine(int start)
+    public LineBox(BlockBox parent, int start)
     {
+        this.parent = parent;
         this.start = start;
     }
 
+    public BlockBox getParent()
+    {
+        return parent;
+    }
+    
     /**
      * @return Returns the end.
      */
@@ -76,36 +91,35 @@ public class ContentLine
         this.start = start;
     }
 
-    /**
-     * @return Returns the width.
-     */
     public int getWidth()
     {
         return width;
     }
 
-    /**
-     * @param width The width to set.
-     */
     public void setWidth(int width)
     {
         this.width = width;
     }
     
-    /**
-     * @return Returns the limits.
-     */
-    public int getLimits()
+    public int getLeftLimit()
     {
-        return limits;
+        return left;
     }
 
-    /**
-     * @param limits The limits to set.
-     */
-    public void setLimits(int limits)
+    public int getRightLimit()
     {
-        this.limits = limits;
+        return right;
+    }
+    
+    public int getLimits()
+    {
+        return left + right;
+    }
+    
+    public void setLimits(int left, int right)
+    {
+        this.left = left;
+        this.right = right;
     }
 
     public void setMaxHeight(int maxh)

@@ -535,8 +535,9 @@ public class BlockBox extends ElementBox
         int lastbreak = 0; //last possible position of a line break
         boolean someinflow = false; //there has been any in-flow inline element?
 
-        Vector<ContentLine> lines = new Vector<ContentLine>();
-        ContentLine curline = new ContentLine(0);
+        //line boxes
+        Vector<LineBox> lines = new Vector<LineBox>();
+        LineBox curline = new LineBox(this, 0);
         lines.add(curline);
         
         //TODO: If it only has inline-level children, the height is the distance between the top of the topmost line box and the bottom of the bottommost line box.
@@ -593,7 +594,7 @@ public class BlockBox extends ElementBox
                 boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
                 //do the layout
                 boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
-                if (fit) //positioning succeeded
+                if (fit) //positioning succeeded, at least a part fit
                 {
                     if (subbox.isInFlow())
                     {
@@ -637,12 +638,12 @@ public class BlockBox extends ElementBox
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
                     //the width and height for text alignment
-                    curline.setWidth(x);
-                    curline.setLimits(x2);
+                    curline.setWidth(x - x1);
+                    curline.setLimits(x1, x2);
                     curline.setMaxHeight(maxh);
                     //go to the new line
                     if (x > maxw) maxw = x;
-                    y += Math.max(maxh, getLineHeight());
+                    y += Math.max(maxh, getLineHeight()); //line-height is the minimal line box height: http://www.w3.org/TR/CSS21/visudet.html#propdef-line-height
                     maxh = 0;
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
@@ -652,7 +653,7 @@ public class BlockBox extends ElementBox
                     //create the new line record for alignment
                     lnstr = i;
                     curline.setEnd(lnstr); //finish the old line
-                    curline = new ContentLine(lnstr);
+                    curline = new LineBox(this, lnstr);
                     lines.add(curline);
                     
                     if (!fit)
@@ -694,9 +695,9 @@ public class BlockBox extends ElementBox
         //align the lines according to the real box width
         curline.setWidth(x); //last line width
         curline.setEnd(getSubBoxNumber());
-        for (Iterator<ContentLine> it = lines.iterator(); it.hasNext();)
+        for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
-            ContentLine line = it.next();
+            LineBox line = it.next();
             alignLineHorizontally(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
             //alignLineVertically(line.getStart(), line.getEnd(), line.getMaxHeight(), getLineHeight());
         }
