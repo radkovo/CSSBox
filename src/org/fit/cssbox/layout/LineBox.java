@@ -52,6 +52,16 @@ public class LineBox
     {
         this.parent = parent;
         this.start = start;
+        width = 0;
+        left = 0;
+        right = 0;
+        maxh = 0;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LineBox " + start + ".." + end + " width=" + width;
     }
 
     public BlockBox getParent()
@@ -59,33 +69,21 @@ public class LineBox
         return parent;
     }
     
-    /**
-     * @return Returns the end.
-     */
     public int getEnd()
     {
         return end;
     }
 
-    /**
-     * @param end The end to set.
-     */
     public void setEnd(int end)
     {
         this.end = end;
     }
 
-    /**
-     * @return Returns the start.
-     */
     public int getStart()
     {
         return start;
     }
 
-    /**
-     * @param start The start to set.
-     */
     public void setStart(int start)
     {
         this.start = start;
@@ -111,11 +109,20 @@ public class LineBox
         return right;
     }
     
+    /**
+     * Computes the sum of the left and right limiting widths
+     * @return The sum of the widths
+     */
     public int getLimits()
     {
         return left + right;
     }
     
+    /**
+     * Sets the left and right width limits formed by the floating blocks (if any)
+     * @param left the left limit
+     * @param right the right limit
+     */
     public void setLimits(int left, int right)
     {
         this.left = left;
@@ -131,4 +138,5 @@ public class LineBox
     {
         return maxh;
     }
+    
 }

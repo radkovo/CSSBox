@@ -429,26 +429,24 @@ public class BlockBox extends ElementBox
    //========================================================================
     
     /** 
-     * Align the subboxes in a line according to the selected alignment settings
-     * @param linestrt Index of the first subbox on the line
-     * @param lineend Index of the last subbox on the line (excluding)
-     * @param curw Content width when aligned to the left
-     * @param maxw Total line width
+     * Aligns the subboxes in a line according to the selected alignment settings.
+     * @param line The line box to be aligned
      */
-    private void alignLineHorizontally(int linestrt, int lineend, int curw, int maxw)
+    private void alignLineHorizontally(LineBox line)
     {
     	//TODO: align: justify
-        int dif = maxw - curw; //difference between maximal and current width
+        int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
         if (align != ALIGN_LEFT && dif > 0)
         {
-            for (int i = linestrt; i < lineend; i++) //all inline boxes on this line
+            for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
             {
-                if (!getSubBox(i).isBlock())
+                Box subbox = getSubBox(i);
+                if (!subbox.isBlock())
                 {
                     if (align == ALIGN_RIGHT)
-                        getSubBox(i).moveRight(dif);
+                        subbox.moveRight(dif);
                     else if (align == ALIGN_CENTER)
-                        getSubBox(i).moveRight(dif/2);
+                        subbox.moveRight(dif/2);
                 }
             }
         }
@@ -650,17 +648,24 @@ public class BlockBox extends ElementBox
                     if (x1 < 0) x1 = 0;
                     if (x2 < 0) x2 = 0;
                     x = x1;
-                    //create the new line record for alignment
-                    lnstr = i;
-                    curline.setEnd(lnstr); //finish the old line
-                    curline = new LineBox(this, lnstr);
-                    lines.add(curline);
-                    
-                    if (!fit)
-                    	split = true; //force repeating the same once again
-                    else 
-                    	if (subbox.getRest() != null) //not everything placed
-                    		insertSubBox(i+1, subbox.getRest());
+
+                    //create a new line
+                    if (!fit) //nothing fit
+                    {
+                        lnstr = i; //new line starts here
+                        curline.setEnd(lnstr); //finish the old line
+                        curline = new LineBox(this, lnstr); //create the new line 
+                        lines.add(curline);
+                        split = true; //force repeating the same once again
+                    }
+                    else if (subbox.getRest() != null) //something fit but not everything placed
+                    {
+                   		insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
+                        lnstr = i+1; //new line starts with the next subbox
+                        curline.setEnd(lnstr); //finish the old line
+                        curline = new LineBox(this, lnstr); //create the new line 
+                        lines.add(curline);
+                    }
                 }
             } while (split);
             
@@ -698,7 +703,8 @@ public class BlockBox extends ElementBox
         for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
             LineBox line = it.next();
-            alignLineHorizontally(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
+            alignLineHorizontally(line);
+            //alignLineHorizontally(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
             //alignLineVertically(line.getStart(), line.getEnd(), line.getMaxHeight(), getLineHeight());
         }
     }
