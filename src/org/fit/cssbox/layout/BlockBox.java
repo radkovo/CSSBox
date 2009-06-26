@@ -452,15 +452,17 @@ public class BlockBox extends ElementBox
         }
     }
     
-    private void alignLineVertically(int linestrt, int lineend, int curw, int maxw)
+    private void alignLineVertically(LineBox line)
     {
-        //TODO: check if this is correct
-        int dif = maxw - curw; //difference between maximal and current width
-        for (int i = linestrt; i < lineend; i++) //all inline boxes on this line
+        int maxh = line.getMaxHeight();
+        for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
-            if (!getSubBox(i).isBlock())
+            Box subbox = getSubBox(i);
+            if (!subbox.isBlock())
             {
-                getSubBox(i).moveDown(dif/2);
+                int dif = maxh - subbox.getHeight();
+                //TODO: vertical-align should be considered here -- implementing 'middle' now
+                subbox.moveDown(dif/2);
             }
         }
     }
@@ -699,13 +701,14 @@ public class BlockBox extends ElementBox
         
         //align the lines according to the real box width
         curline.setWidth(x); //last line width
+        curline.setLimits(x1, x2);
+        curline.setMaxHeight(maxh);
         curline.setEnd(getSubBoxNumber());
         for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
             LineBox line = it.next();
             alignLineHorizontally(line);
-            //alignLineHorizontally(line.getStart(), line.getEnd(), line.getWidth(), content.width - line.getLimits());
-            //alignLineVertically(line.getStart(), line.getEnd(), line.getMaxHeight(), getLineHeight());
+            //TODO: alignLineVertically(line);
         }
     }
 

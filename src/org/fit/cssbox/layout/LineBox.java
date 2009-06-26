@@ -61,7 +61,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " width=" + width;
+        return "LineBox " + start + ".." + end + " width=" + width + " maxh=" + maxh;
     }
 
     public BlockBox getParent()
