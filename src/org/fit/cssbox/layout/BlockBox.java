@@ -634,7 +634,7 @@ public class BlockBox extends ElementBox
                     //force repeating the same once again
                     split = true;
                 }
-                else if (((!fit || x >= wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
+                else if (((!fit || x > wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
                     //the width and height for text alignment
@@ -652,7 +652,7 @@ public class BlockBox extends ElementBox
                     x = x1;
 
                     //create a new line
-                    if (!fit) //nothing fit
+                    if (!fit || x > wlimit - x2) //line overflow
                     {
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
@@ -708,7 +708,7 @@ public class BlockBox extends ElementBox
         {
             LineBox line = it.next();
             alignLineHorizontally(line);
-            //TODO: alignLineVertically(line);
+            alignLineVertically(line);
         }
     }
 
