@@ -32,6 +32,7 @@ import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.InlineBox;
 import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
 import org.w3c.tidy.Tidy;
@@ -255,6 +256,12 @@ public class BoxBrowser
             vals.add(infoTableData("Padding", eb.getPadding().toString()));
             vals.add(infoTableData("Border", eb.getBorder().toString()));
             vals.add(infoTableData("LineHght", String.valueOf(eb.getLineHeight())));
+        }
+        
+        if (box instanceof InlineBox)
+        {
+            InlineBox ib = (InlineBox) box;
+            vals.add(infoTableData("VAlign", ib.getVerticalAlign().toString()));
         }
         
         if (box instanceof BlockBox)

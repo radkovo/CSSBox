@@ -929,6 +929,22 @@ abstract public class Box
     abstract public int getLineHeight();
     
     /**
+     * Obtains the distance from the line top to the baseline of this box for the
+     * current font.
+     * @return the <em>y</em> offset of the baseline in this box
+     */
+    public int getBaselineOffset()
+    {
+        return ctx.getBaselineOffset();
+    }
+    
+    /**
+     * Obtains the maximal distance from the line top to the baseline of this box.
+     * @return the <em>y</em> offset of the baseline in this box
+     */
+    abstract public int getMaxBaselineOffset();
+    
+    /**
      * @return maximal available width of the content during the layout
      */
     abstract public int getAvailableContentWidth();

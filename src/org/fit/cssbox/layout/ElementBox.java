@@ -479,6 +479,17 @@ abstract public class ElementBox extends Box
         return ret;
     }
         
+    @Override
+    public int getMaxBaselineOffset()
+    {
+        int max = ctx.getBaselineOffset(); //current font offset is the minimum
+        //find the maximum of the baseline offsets of the subboxes
+        for (int i = startChild; i < endChild; i++)
+            if (getSubBox(i).getMaxBaselineOffset() > max)
+                max = getSubBox(i).getMaxBaselineOffset();
+        return max;
+    }
+    
     //=======================================================================
     
     /** 

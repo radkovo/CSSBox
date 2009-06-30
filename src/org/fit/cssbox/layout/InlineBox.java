@@ -33,6 +33,9 @@ import cz.vutbr.web.css.*;
  */
 public class InlineBox extends ElementBox
 {
+    /** vertical box alignment specified by the style */
+    private CSSProperty.VerticalAlign valign;
+    
     /** maximal line height of the contained boxes */
     private int maxLineHeight;
     
@@ -47,6 +50,7 @@ public class InlineBox extends ElementBox
     public void copyValues(InlineBox src)
     {
         super.copyValues(src);
+        valign = src.valign;
     }
     
     /** Create a new box from the same DOM node in the same context */
@@ -66,6 +70,20 @@ public class InlineBox extends ElementBox
                "\" class=\""  + el.getAttribute("class") + "\">";
     }
     
+    @Override
+    public void setStyle(NodeData s)
+    {
+        super.setStyle(s);
+        loadInlineStyle();
+    }
+    
+    public CSSProperty.VerticalAlign getVerticalAlign()
+    {
+        return valign;
+    }
+    
+    //========================================================================
+    
 	@Override
     public boolean isInFlow()
 	{
@@ -77,8 +95,6 @@ public class InlineBox extends ElementBox
 	{
 		return !isempty;
 	}
-    
-    //========================================================================
     
     /** Compute the width and height of this element. Layout the sub-elements.
      * @param availw Maximal width available to the child elements
@@ -162,15 +178,16 @@ public class InlineBox extends ElementBox
         
         //compute the vertical positions of the boxes
         computeMaxLineHeight();
-        //TODO: vertical-align should be considered here
-        //(at this point all the boxes have y=0 (see above))
+        alignLineBoxes();
         
         content.width = x;
-        if (maxh == 0)
+        content.height = lineHeight;
+        
+        /*if (maxh == 0)
             content.height = 0; //no content
         else
             //content.height = Math.max(lineHeight, maxh);
-            content.height = maxh;
+            content.height = maxh;*/
         setSize(totalWidth(), totalHeight());
         
         return ret;
@@ -181,9 +198,11 @@ public class InlineBox extends ElementBox
     {
         if (isDisplayed())
         {
-            //my top left corner
+            //x coordinate is taken from the content edge
             absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
-            absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+            //align baselines => align the content edges
+            int yofs = getParent().getAbsoluteContentY() - padding.top; 
+            absbounds.y = yofs + bounds.y;
 
             //update the width and height according to overflow of the parent
             absbounds.width = bounds.width;
@@ -281,6 +300,15 @@ public class InlineBox extends ElementBox
     
     //=======================================================================
     
+    /**
+     * Loads the basic style properties related to the inline elements.
+     */
+    protected void loadInlineStyle()
+    {
+        valign = style.getProperty("vertical-align");
+        if (valign == null) valign = CSSProperty.VerticalAlign.BASELINE;
+    }
+    
     @Override
     protected void loadSizes()
     {
@@ -344,12 +372,14 @@ public class InlineBox extends ElementBox
     	return false; //depends on the contents
     }
     
+    //=====================================================================================================
+    
     protected boolean borderVisible(String dir)
     {
-            CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
-            return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
+        CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
+        return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
     }
-
+    
     private void computeMaxLineHeight()
     {
         int max = lineHeight; //shouldn't be smaller than our own height
@@ -365,4 +395,41 @@ public class InlineBox extends ElementBox
         }
         maxLineHeight = max;
     }
+    
+    private void alignLineBoxes()
+    {
+        int base = getBaselineOffset();
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box sub = getSubBox(i);
+            if (sub instanceof InlineBox)
+            {
+                CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
+                int baseshift = base - sub.getMaxBaselineOffset(); 
+                int dif = 0;
+                if (va == CSSProperty.VerticalAlign.BASELINE)
+                    dif = baseshift;
+                else if (va == CSSProperty.VerticalAlign.MIDDLE)
+                    dif = baseshift - (int) (ctx.getEx() / 2);
+                else if (va == CSSProperty.VerticalAlign.SUB)
+                    dif = baseshift + (int) (0.3 * getLineHeight());  
+                else if (va == CSSProperty.VerticalAlign.SUPER)
+                    dif = baseshift - (int) (0.3 * getLineHeight());  
+                else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
+                    dif = 0;
+                else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
+                    dif = getLineHeight() - sub.getLineHeight();
+                else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
+                {
+                    CSSDecoder dec = new CSSDecoder(sub.getVisualContext());
+                    int len = dec.getLength(sub.getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
+                    dif = baseshift - len;
+                }
+                
+                if (dif != 0)
+                    sub.moveDown(dif);
+            }
+        }
+    }
+    
 }

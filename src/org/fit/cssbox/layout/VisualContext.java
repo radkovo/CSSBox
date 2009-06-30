@@ -51,13 +51,13 @@ public class VisualContext
     public VisualContext(VisualContext parent)
     {
         this.parent = parent;
-        font = new Font(Font.SERIF, Font.PLAIN, 12);
+        font = new Font(Font.SERIF, Font.PLAIN, (int)((CSSUnits.medium_font * 72) / dpi)); //convert medium font to pixels
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = CSSProperty.TextDecoration.NONE;
         em = CSSUnits.medium_font;
-        ex = 0.8 * em;
+        ex = 0.6 * em;
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
         color = Color.BLACK;
     }
@@ -239,6 +239,16 @@ public class VisualContext
     public int getFontHeight()
     {
         return fm.getHeight();
+    }
+    
+    /**
+     * Obtains the maximal distance from the line top to the baseline
+     * for the current font.
+     * @return the baseline <em>y</em> offset.
+     */
+    public int getBaselineOffset()
+    {
+        return fm.getMaxAscent();
     }
     
     /** 
