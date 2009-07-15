@@ -396,6 +396,9 @@ public class InlineBox extends ElementBox
         maxLineHeight = max;
     }
     
+    /**
+     * Vertically aligns the contained boxes according to their vertical-align properties.
+     */
     private void alignLineBoxes()
     {
         int base = getBaselineOffset();

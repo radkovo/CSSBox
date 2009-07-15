@@ -462,7 +462,7 @@ public class BlockBox extends ElementBox
             {
                 int dif = maxh - subbox.getHeight();
                 //TODO: vertical-align should be considered here -- implementing 'middle' now
-                subbox.moveDown(dif/2);
+                subbox.moveDown(dif/2 + line.getY());
             }
         }
     }
@@ -537,7 +537,7 @@ public class BlockBox extends ElementBox
 
         //line boxes
         Vector<LineBox> lines = new Vector<LineBox>();
-        LineBox curline = new LineBox(this, 0);
+        LineBox curline = new LineBox(this, 0, 0);
         lines.add(curline);
         
         //TODO: If it only has inline-level children, the height is the distance between the top of the topmost line box and the bottom of the bottommost line box.
@@ -598,7 +598,7 @@ public class BlockBox extends ElementBox
                 {
                     if (subbox.isInFlow())
                     {
-                        subbox.setPosition(x,  y);
+                        subbox.setPosition(x,  0); //y position will be determined during the line box vertical alignment
                         x += subbox.getWidth();
                     }
                     //update the maximal line height
@@ -656,7 +656,7 @@ public class BlockBox extends ElementBox
                     {
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
-                        curline = new LineBox(this, lnstr); //create the new line 
+                        curline = new LineBox(this, lnstr, y); //create the new line 
                         lines.add(curline);
                         split = true; //force repeating the same once again
                     }
@@ -665,7 +665,7 @@ public class BlockBox extends ElementBox
                    		insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
                         lnstr = i+1; //new line starts with the next subbox
                         curline.setEnd(lnstr); //finish the old line
-                        curline = new LineBox(this, lnstr); //create the new line 
+                        curline = new LineBox(this, lnstr, y); //create the new line 
                         lines.add(curline);
                     }
                 }

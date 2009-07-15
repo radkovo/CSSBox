@@ -32,6 +32,9 @@ public class LineBox
     /** Index of the first box at this line (from all the subboxes of the block) */
     private int start;
     
+    /** The Y position of this line */
+    private int y;
+    
     /** Index of the last box at this line (excl.) */
     private int end;
     
@@ -48,10 +51,11 @@ public class LineBox
     private int maxh;
     
 
-    public LineBox(BlockBox parent, int start)
+    public LineBox(BlockBox parent, int start, int y)
     {
         this.parent = parent;
         this.start = start;
+        this.y = y;
         width = 0;
         left = 0;
         right = 0;
@@ -84,6 +88,11 @@ public class LineBox
         return start;
     }
 
+    public int getY()
+    {
+        return y;
+    }
+    
     public void setStart(int start)
     {
         this.start = start;

@@ -257,12 +257,13 @@ public class BoxBrowser
             vals.add(infoTableData("EMargin", eb.getEMargin().toString()));
             vals.add(infoTableData("Padding", eb.getPadding().toString()));
             vals.add(infoTableData("Border", eb.getBorder().toString()));
-            vals.add(infoTableData("LineHght", String.valueOf(eb.getLineHeight())));
+            vals.add(infoTableData("LineH", String.valueOf(eb.getLineHeight())));
         }
         
         if (box instanceof InlineBox)
         {
             InlineBox ib = (InlineBox) box;
+            vals.add(infoTableData("MaxLineH", String.valueOf(ib.getMaxLineHeight())));
             vals.add(infoTableData("VAlign", ib.getVerticalAlign().toString()));
         }
         
