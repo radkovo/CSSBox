@@ -455,14 +455,16 @@ public class BlockBox extends ElementBox
     private void alignLineVertically(LineBox line)
     {
         int maxh = line.getMaxHeight();
+        int top = line.getTopOffset();
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
             Box subbox = getSubBox(i);
             if (!subbox.isBlock())
             {
-                int dif = maxh - subbox.getHeight();
+                //int dif = maxh - subbox.getHeight();
+                int dif = 0;
                 //TODO: vertical-align should be considered here -- implementing 'middle' now
-                subbox.moveDown(dif/2 + line.getY());
+                subbox.moveDown(dif/2 + line.getY() + top);
             }
         }
     }
@@ -605,11 +607,16 @@ public class BlockBox extends ElementBox
                     if (subbox instanceof InlineBox)
                     {
                         InlineBox isubbox = (InlineBox) subbox;
+                        //update the maximal height
                         int prefh = 0;
                         if (isubbox.getHeight() > 0) //subbox is not rendered as empty, consider the line height
                             prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
                         if (prefh > maxh) 
                             maxh = prefh;
+                        //update the line offset
+                        int mintop = isubbox.getMinimalTopOffset();
+                        if (-mintop > curline.getTopOffset())
+                            curline.setTopOffset(-mintop);
                     }
                     else
                     {

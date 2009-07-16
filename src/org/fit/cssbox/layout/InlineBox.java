@@ -39,6 +39,9 @@ public class InlineBox extends ElementBox
     /** maximal line height of the contained boxes */
     private int maxLineHeight;
     
+    /** minimal top bound of the contained boxes (it may be negative when some contained box overflows the line) */
+    private int mintop = 0; 
+    
     //========================================================================
     
     /** Creates a new instance of InlineBox */
@@ -246,6 +249,26 @@ public class InlineBox extends ElementBox
         return ret;
     }
     
+    /**
+     * Returns the height of the box or the highest subbox.
+     */
+    public int getMaximalHeight()
+    {
+        int ret = getHeight();
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box sub = getSubBox(i);
+            int h = 0;
+            if (sub instanceof InlineBox)
+                h = ((InlineBox) sub).getMaximalHeight();
+            else
+                h = sub.getHeight();
+            
+            if (h > ret) ret = h;
+        }
+        return ret;
+    }
+    
     @Override
     public boolean canSplitInside()
     {
@@ -296,6 +319,15 @@ public class InlineBox extends ElementBox
     public int getMaxLineHeight()
     {
         return maxLineHeight;
+    }
+    
+    /**
+     * @return the minimal top offset of the contained subboxes. It can be negative
+     * when some subbox overflows the line (e.g. a higher baseline-aligned box)
+     */
+    public int getMinimalTopOffset()
+    {
+        return mintop;
     }
     
     //=======================================================================
@@ -430,7 +462,12 @@ public class InlineBox extends ElementBox
                 }
                 
                 if (dif != 0)
+                {
                     sub.moveDown(dif);
+                    if (dif < mintop)
+                        mintop = dif;
+                }
+                
             }
         }
     }

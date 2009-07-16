@@ -35,6 +35,10 @@ public class LineBox
     /** The Y position of this line */
     private int y;
     
+    /** The top offset that should be added in order to enclose all the boxes that are higher
+     * than the normal line height */
+    private int top;
+    
     /** Index of the last box at this line (excl.) */
     private int end;
     
@@ -65,7 +69,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " width=" + width + " maxh=" + maxh;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " maxh=" + maxh;
     }
 
     public BlockBox getParent()
@@ -91,6 +95,16 @@ public class LineBox
     public int getY()
     {
         return y;
+    }
+    
+    public int getTopOffset()
+    {
+        return top;
+    }
+    
+    public void setTopOffset(int top)
+    {
+        this.top = top; 
     }
     
     public void setStart(int start)
