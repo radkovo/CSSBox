@@ -92,6 +92,9 @@ abstract public class ElementBox extends Box
     /** the computed value of line-height */
     protected int lineHeight;
     
+    /** baseline offset */
+    private int baseline;
+    
     /** First valid child */
     protected int startChild;
     
@@ -135,6 +138,7 @@ abstract public class ElementBox extends Box
         style = src.style;
         display = src.display;
         lineHeight = src.lineHeight;
+        baseline = src.baseline;
         
         margin = new LengthSet(src.margin);
         emargin = new LengthSet(src.emargin);
@@ -480,6 +484,12 @@ abstract public class ElementBox extends Box
     }
         
     @Override
+    public int getBaselineOffset()
+    {
+        return baseline;
+    }
+    
+    @Override
     public int getMaxBaselineOffset()
     {
         int max = ctx.getBaselineOffset(); //current font offset is the minimum
@@ -649,15 +659,16 @@ abstract public class ElementBox extends Box
         else if (lh == CSSProperty.LineHeight.percentage)
         {
             TermPercent len = style.getValue(TermPercent.class, "line-height");
-            lineHeight = (int) ctx.pxLength(len, ctx.getEm()); 
+            lineHeight = (int) ctx.pxLength(len, ctx.getFontHeight()); 
         }
         else //must be NUMBER
         {
             TermNumber len = style.getValue(TermNumber.class, "line-height");
             float r = len.getValue(); 
-            lineHeight = (int) Math.round(r * ctx.getEm());
+            lineHeight = (int) Math.round(r * ctx.getFontHeight());
         }
-        
+        baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
+
         //background
         CSSProperty.BackgroundColor bg = style.getProperty("background-color");
         if (bg == CSSProperty.BackgroundColor.color)

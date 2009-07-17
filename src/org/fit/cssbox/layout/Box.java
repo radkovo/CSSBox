@@ -929,18 +929,15 @@ abstract public class Box
     abstract public int getLineHeight();
     
     /**
-     * Obtains the distance from the line top to the baseline of this box for the
-     * current font.
+     * Obtains the distance from the line top to the baseline of this box
      * @return the <em>y</em> offset of the baseline in this box
      */
-    public int getBaselineOffset()
-    {
-        return ctx.getBaselineOffset();
-    }
+    abstract public int getBaselineOffset();
     
     /**
      * Obtains the maximal distance from the line top to the baseline of this box.
      * @return the <em>y</em> offset of the baseline in this box
+     * @deprecated shoud be removed?
      */
     abstract public int getMaxBaselineOffset();
     

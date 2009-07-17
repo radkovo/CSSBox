@@ -202,6 +202,12 @@ public class TextBox extends Box
     }
 
     @Override
+    public int getBaselineOffset()
+    {
+        return ctx.getBaselineOffset();
+    }
+    
+    @Override
     public int getMaxBaselineOffset()
     {
         return ctx.getBaselineOffset();

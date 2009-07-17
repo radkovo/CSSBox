@@ -36,7 +36,7 @@ public class LineBox
     private int y;
     
     /** The top offset that should be added in order to enclose all the boxes that are higher
-     * than the normal line height */
+     * than the normal line height (the extra space required in the top) */
     private int top;
     
     /** Index of the last box at this line (excl.) */
@@ -97,6 +97,9 @@ public class LineBox
         return y;
     }
     
+    /**
+     * @return the top offset that should be added in order to enclose all the boxes that are higher
+     * than the normal line height (the extra space required in the top). */
     public int getTopOffset()
     {
         return top;

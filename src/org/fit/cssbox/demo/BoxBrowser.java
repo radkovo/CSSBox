@@ -247,6 +247,8 @@ public class BoxBrowser
         vals.add(infoTableData("Color", box.getVisualContext().getColor().toString()));
         vals.add(infoTableData("Font name", box.getVisualContext().getFont().getFontName()));
         vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "px"));
+        vals.add(infoTableData("LineH", String.valueOf(box.getLineHeight())));
+        vals.add(infoTableData("Baseline", String.valueOf(box.getBaselineOffset())));
         
         if (box instanceof ElementBox)
         {
@@ -257,7 +259,6 @@ public class BoxBrowser
             vals.add(infoTableData("EMargin", eb.getEMargin().toString()));
             vals.add(infoTableData("Padding", eb.getPadding().toString()));
             vals.add(infoTableData("Border", eb.getBorder().toString()));
-            vals.add(infoTableData("LineH", String.valueOf(eb.getLineHeight())));
         }
         
         if (box instanceof InlineBox)

@@ -181,7 +181,7 @@ public class InlineBox extends ElementBox
         
         //compute the vertical positions of the boxes
         computeMaxLineHeight();
-        alignLineBoxes();
+        alignBoxes();
         
         content.width = x;
         content.height = lineHeight;
@@ -404,6 +404,27 @@ public class InlineBox extends ElementBox
     	return false; //depends on the contents
     }
     
+    /**
+     * Vertically aligns the boxes placed relatively to the line box (vertical-align:top or bottom).
+     * @param top the top y coordinate relatively to this box
+     * @param bootom the bottom y coordinate relatively to this box
+     */
+    public void alignLineBoxes(int top, int bottom)
+    {
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box sub = getSubBox(i);
+            if (sub instanceof InlineBox)
+            {
+                CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
+                if (va == CSSProperty.VerticalAlign.TOP)
+                    sub.moveDown(top);
+                else if (va == CSSProperty.VerticalAlign.BOTTOM)
+                    sub.moveDown(bottom);
+            }
+        }
+    }
+    
     //=====================================================================================================
     
     protected boolean borderVisible(String dir)
@@ -431,17 +452,17 @@ public class InlineBox extends ElementBox
     /**
      * Vertically aligns the contained boxes according to their vertical-align properties.
      */
-    private void alignLineBoxes()
+    private void alignBoxes()
     {
         int base = getBaselineOffset();
         for (int i = startChild; i < endChild; i++)
         {
+            int dif = 0;
             Box sub = getSubBox(i);
+            int baseshift = base - sub.getBaselineOffset(); 
             if (sub instanceof InlineBox)
             {
                 CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
-                int baseshift = base - sub.getMaxBaselineOffset(); 
-                int dif = 0;
                 if (va == CSSProperty.VerticalAlign.BASELINE)
                     dif = baseshift;
                 else if (va == CSSProperty.VerticalAlign.MIDDLE)
@@ -460,14 +481,18 @@ public class InlineBox extends ElementBox
                     int len = dec.getLength(sub.getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
                     dif = baseshift - len;
                 }
-                
-                if (dif != 0)
-                {
-                    sub.moveDown(dif);
-                    if (dif < mintop)
-                        mintop = dif;
-                }
-                
+            }
+            else if (sub instanceof TextBox) //use baseline
+            {
+                dif = baseshift;
+            }
+            
+            
+            if (dif != 0)
+            {
+                sub.moveDown(dif);
+                if (dif < mintop)
+                    mintop = dif;
             }
         }
     }

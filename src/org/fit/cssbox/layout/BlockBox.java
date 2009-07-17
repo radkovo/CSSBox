@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty.VerticalAlign;
 
 import org.w3c.dom.*;
 
@@ -454,17 +455,56 @@ public class BlockBox extends ElementBox
     
     private void alignLineVertically(LineBox line)
     {
-        int maxh = line.getMaxHeight();
-        int top = line.getTopOffset();
+        int maxh = line.getMaxHeight(); //highest box on the line
+        int difh = maxh - getLineHeight(); //difference between the normal size and the highest box
+        int top = line.getTopOffset(); //extra top space for subboxes
+        if (difh > 0 && difh > top) //if the extra space is not enough for the highest box, enlarge it
+            top = difh;
+        int baseline = getBaselineOffset() + top + line.getY(); //strut baseline
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
             Box subbox = getSubBox(i);
             if (!subbox.isBlock())
             {
-                //int dif = maxh - subbox.getHeight();
+                CSSProperty.VerticalAlign va = VerticalAlign.BASELINE; 
+                if (subbox instanceof InlineBox)    
+                    va = ((InlineBox) subbox).getVerticalAlign();
+                
                 int dif = 0;
+                int baseshift = baseline - subbox.getBaselineOffset();
+                if (va == CSSProperty.VerticalAlign.BASELINE)
+                    dif = baseshift;
+                else if (va == CSSProperty.VerticalAlign.MIDDLE)
+                    dif = baseshift - (int) (ctx.getEx() / 2);
+                else if (va == CSSProperty.VerticalAlign.SUB)
+                    dif = baseshift + (int) (0.3 * getLineHeight());  
+                else if (va == CSSProperty.VerticalAlign.SUPER)
+                    dif = baseshift - (int) (0.3 * getLineHeight());  
+                else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
+                    dif = 0;
+                else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
+                    dif = getLineHeight() - subbox.getLineHeight();
+                else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
+                {
+                    CSSDecoder dec = new CSSDecoder(subbox.getVisualContext());
+                    int len = dec.getLength(subbox.getLengthValue("vertical-align"), false, 0, 0, subbox.getLineHeight());
+                    dif = baseshift - len;
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                /*if (subbox instanceof InlineBox)
+                    ((InlineBox) subbox).alignLineBoxes(line.getY() - boxtop, maxh + top - subbox.getHeight());*/
+                
+                //int dif = maxh - subbox.getHeight();
                 //TODO: vertical-align should be considered here -- implementing 'middle' now
-                subbox.moveDown(dif/2 + line.getY() + top);
+                subbox.moveDown(dif);
             }
         }
     }
@@ -613,7 +653,7 @@ public class BlockBox extends ElementBox
                             prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
                         if (prefh > maxh) 
                             maxh = prefh;
-                        //update the line offset
+                        //update the top offset caused by the sub boxes
                         int mintop = isubbox.getMinimalTopOffset();
                         if (-mintop > curline.getTopOffset())
                             curline.setTopOffset(-mintop);
