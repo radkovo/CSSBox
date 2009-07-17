@@ -936,8 +936,7 @@ abstract public class Box
     
     /**
      * Obtains the maximal distance from the line top to the baseline of this box.
-     * @return the <em>y</em> offset of the baseline in this box
-     * @deprecated shoud be removed?
+     * @return the <em>y</em> offset of the baseline in this box and all its subboxes.
      */
     abstract public int getMaxBaselineOffset();
     

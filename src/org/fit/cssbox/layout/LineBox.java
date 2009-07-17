@@ -35,10 +35,6 @@ public class LineBox
     /** The Y position of this line */
     private int y;
     
-    /** The top offset that should be added in order to enclose all the boxes that are higher
-     * than the normal line height (the extra space required in the top) */
-    private int top;
-    
     /** Index of the last box at this line (excl.) */
     private int end;
     
@@ -54,6 +50,8 @@ public class LineBox
     /** Maximal height of the content boxes */
     private int maxh;
     
+    /** Maximal baseline offset for the line */
+    private int baseline;
 
     public LineBox(BlockBox parent, int start, int y)
     {
@@ -95,19 +93,6 @@ public class LineBox
     public int getY()
     {
         return y;
-    }
-    
-    /**
-     * @return the top offset that should be added in order to enclose all the boxes that are higher
-     * than the normal line height (the extra space required in the top). */
-    public int getTopOffset()
-    {
-        return top;
-    }
-    
-    public void setTopOffset(int top)
-    {
-        this.top = top; 
     }
     
     public void setStart(int start)
@@ -163,6 +148,21 @@ public class LineBox
     public int getMaxHeight()
     {
         return maxh;
+    }
+    
+    /**
+     * Updates the baseline value if the new value is greater than the current one
+     * @param baseline the new baseline value
+     */
+    public void considerBaseline(int baseline)
+    {
+    	if (this.baseline < baseline)
+    		this.baseline = baseline;
+    }
+    
+    public int getBaselineOffset()
+    {
+    	return baseline;
     }
     
 }

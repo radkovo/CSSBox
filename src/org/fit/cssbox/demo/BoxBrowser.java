@@ -249,6 +249,7 @@ public class BoxBrowser
         vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "px"));
         vals.add(infoTableData("LineH", String.valueOf(box.getLineHeight())));
         vals.add(infoTableData("Baseline", String.valueOf(box.getBaselineOffset())));
+        vals.add(infoTableData("MaxBaseline", String.valueOf(box.getMaxBaselineOffset())));
         
         if (box instanceof ElementBox)
         {
