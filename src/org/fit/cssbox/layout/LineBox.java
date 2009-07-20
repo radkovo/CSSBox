@@ -95,6 +95,11 @@ public class LineBox
         return y;
     }
     
+    public int getAbsoluteY()
+    {
+        return parent.getAbsoluteContentY() + y;
+    }
+    
     public void setStart(int start)
     {
         this.start = start;

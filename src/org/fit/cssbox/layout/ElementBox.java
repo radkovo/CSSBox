@@ -362,6 +362,26 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
 
+    /**
+     * Computes the distance of the content from the left edge of the whole box
+     * (a convenience function for margin + border + padding).
+     * @return the distance 
+     */
+    public int getContentOffsetX()
+    {
+        return emargin.left + border.left + padding.left;
+    }
+    
+    /**
+     * Computes the distance of the content from the top edge of the whole box. 
+     * (a convenience function for margin + border + padding).
+     * @return the distance
+     */
+    public int getContentOffsetY()
+    {
+        return emargin.top + border.top + padding.top;
+    }
+    
     public int getContentX()
     {
         return bounds.x + emargin.left + border.left + padding.left;
@@ -648,6 +668,8 @@ abstract public class ElementBox extends Box
                 isblock = true;
         
         //line height
+        if (this.toString().contains("mojo"))
+            System.out.println("jo!");
         CSSProperty.LineHeight lh = style.getProperty("line-height");
         if (lh == null || lh == CSSProperty.LineHeight.NORMAL)
             lineHeight = Math.round(DEFAULT_LINE_HEIGHT * ctx.getFontHeight());

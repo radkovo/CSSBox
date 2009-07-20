@@ -266,7 +266,6 @@ public class BoxBrowser
         {
             InlineBox ib = (InlineBox) box;
             vals.add(infoTableData("MaxLineH", String.valueOf(ib.getMaxLineHeight())));
-            vals.add(infoTableData("MinTop", String.valueOf(ib.getMinimalTopOffset())));
             vals.add(infoTableData("VAlign", ib.getVerticalAlign().toString()));
         }
         

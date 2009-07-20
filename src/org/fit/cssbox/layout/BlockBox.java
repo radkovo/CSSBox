@@ -481,10 +481,6 @@ public class BlockBox extends ElementBox
                     dif = top;
                 else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
                     dif = top + getLineHeight() - subbox.getLineHeight();
-                else if (va == CSSProperty.VerticalAlign.TOP)
-                    dif = line.getY();
-                else if (va == CSSProperty.VerticalAlign.BOTTOM)
-                    dif = line.getY() + line.getMaxHeight() - subbox.getLineHeight();
                 else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
                 {
                     CSSDecoder dec = new CSSDecoder(subbox.getVisualContext());
@@ -492,9 +488,13 @@ public class BlockBox extends ElementBox
                     dif = baseshift - len;
                 }
                 
+                //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
+                if (subbox instanceof ElementBox)
+                    dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
+                
+                //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)
-                    ((InlineBox) subbox).alignLineBoxes(line.getY() - top, 
-                    		                            line.getY() + line.getMaxHeight() - subbox.getLineHeight() - top);
+                    ((InlineBox) subbox).setLineBox(line);
                 
                 subbox.moveDown(dif);
             }
@@ -642,7 +642,8 @@ public class BlockBox extends ElementBox
                         //update the maximal height
                         int prefh = 0;
                         if (isubbox.getHeight() > 0) //subbox is not rendered as empty, consider the line height
-                            prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
+                            //prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
+                            prefh = isubbox.getMaxLineHeight();
                         if (prefh > maxh) 
                             maxh = prefh;
                         //update current baseline

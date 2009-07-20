@@ -39,8 +39,8 @@ public class InlineBox extends ElementBox
     /** maximal line height of the contained boxes */
     private int maxLineHeight;
     
-    /** minimal top bound of the contained boxes (it may be negative when some contained box overflows the line) */
-    private int mintop = 0; 
+    /** parent LineBox assigned during layout */
+    private LineBox linebox;
     
     //========================================================================
     
@@ -83,6 +83,29 @@ public class InlineBox extends ElementBox
     public CSSProperty.VerticalAlign getVerticalAlign()
     {
         return valign;
+    }
+    
+    /**
+     * Assigns the line box assigned to this inline box and all the inline sub-boxes.
+     * @param linebox The assigned linebox.
+     */
+    public void setLineBox(LineBox linebox)
+    {
+        this.linebox = linebox;
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box sub = getSubBox(i);
+            if (sub instanceof InlineBox)
+                ((InlineBox) sub).setLineBox(linebox);
+        }
+    }
+    
+    /**
+     * Returns the line box used for positioning this element.
+     */
+    public LineBox getLineBox()
+    {
+        return linebox;
     }
     
     //========================================================================
@@ -186,11 +209,6 @@ public class InlineBox extends ElementBox
         content.width = x;
         content.height = lineHeight;
         
-        /*if (maxh == 0)
-            content.height = 0; //no content
-        else
-            //content.height = Math.max(lineHeight, maxh);
-            content.height = maxh;*/
         setSize(totalWidth(), totalHeight());
         
         return ret;
@@ -203,20 +221,27 @@ public class InlineBox extends ElementBox
         {
             //x coordinate is taken from the content edge
             absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
-            //align baselines => align the content edges
-            int yofs = getParent().getAbsoluteContentY() - padding.top; 
-            absbounds.y = yofs + bounds.y;
+            //y coordinate -- depends on the vertical alignment
+            if (valign == CSSProperty.VerticalAlign.TOP)
+            {
+                absbounds.y = linebox.getAbsoluteY() - getContentOffsetY();
+            }
+            else if (valign == CSSProperty.VerticalAlign.BOTTOM)
+            {
+                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxHeight() - getContentHeight() - getContentOffsetY();
+            }
+            else //other positions -- set during the layout. Relative to the parent content edge.
+            {
+                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+            }
 
             //update the width and height according to overflow of the parent
             absbounds.width = bounds.width;
             absbounds.height = bounds.height;
             
             //repeat for all valid subboxes
-            if (isDisplayed())
-            {
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).absolutePositions();
-            }
+            for (int i = startChild; i < endChild; i++)
+                getSubBox(i).absolutePositions();
         }
     }
 
@@ -319,15 +344,6 @@ public class InlineBox extends ElementBox
     public int getMaxLineHeight()
     {
         return maxLineHeight;
-    }
-    
-    /**
-     * @return the minimal top offset of the contained subboxes. It can be negative
-     * when some subbox overflows the line (e.g. a higher baseline-aligned box)
-     */
-    public int getMinimalTopOffset()
-    {
-        return mintop;
     }
     
     //=======================================================================
@@ -481,6 +497,8 @@ public class InlineBox extends ElementBox
                     int len = dec.getLength(sub.getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
                     dif = baseshift - len;
                 }
+                //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
+                dif = dif - ((InlineBox) sub).getContentOffsetY(); 
             }
             else if (sub instanceof TextBox) //use baseline
             {
@@ -491,8 +509,6 @@ public class InlineBox extends ElementBox
             if (dif != 0)
             {
                 sub.moveDown(dif);
-                if (dif < mintop)
-                    mintop = dif;
             }
         }
     }

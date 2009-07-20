@@ -929,7 +929,7 @@ abstract public class Box
     abstract public int getLineHeight();
     
     /**
-     * Obtains the distance from the line top to the baseline of this box
+     * Obtains the distance from the whole content top to the baseline of this box.
      * @return the <em>y</em> offset of the baseline in this box
      */
     abstract public int getBaselineOffset();
