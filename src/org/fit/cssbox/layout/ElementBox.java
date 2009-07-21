@@ -668,8 +668,6 @@ abstract public class ElementBox extends Box
                 isblock = true;
         
         //line height
-        if (this.toString().contains("mojo"))
-            System.out.println("jo!");
         CSSProperty.LineHeight lh = style.getProperty("line-height");
         if (lh == null || lh == CSSProperty.LineHeight.NORMAL)
             lineHeight = Math.round(DEFAULT_LINE_HEIGHT * ctx.getFontHeight());
