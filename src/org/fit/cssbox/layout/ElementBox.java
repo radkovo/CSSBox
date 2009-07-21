@@ -683,10 +683,14 @@ abstract public class ElementBox extends Box
             TermPercent len = style.getValue(TermPercent.class, "line-height");
             lineHeight = (int) ctx.pxLength(len, ctx.getFontHeight()); 
         }
-        else //must be NUMBER
+        else //must be INTEGER or NUMBER
         {
-            TermNumber len = style.getValue(TermNumber.class, "line-height");
-            float r = len.getValue(); 
+            Term<?> len = style.getValue("line-height", true);
+            float r;
+            if (len instanceof TermInteger)
+                r = ((TermInteger) len).getValue();
+            else
+                r = ((TermNumber) len).getValue();
             lineHeight = (int) Math.round(r * ctx.getFontHeight());
         }
         baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline

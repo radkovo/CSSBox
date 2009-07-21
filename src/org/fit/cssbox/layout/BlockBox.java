@@ -722,7 +722,8 @@ public class BlockBox extends ElementBox
         lastPreferredWidth = prefw;
         if (!hasFixedHeight())
         {
-                y = y + maxh; //possible unfinished line
+                if (maxh > 0)  //possible unfinished line
+                    y += Math.max(maxh, getLineHeight());
                 if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
                 {
                     //enclose all floating boxes we own
