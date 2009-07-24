@@ -858,8 +858,9 @@ public class BlockBox extends ElementBox
         while (fx > floatX //if we're not already at the left/right border
                && (fx + subbox.getWidth() > wlimit - ofx + floatX)) //the subbox doesn't fit in this Y coordinate
         {
-            fy = f.getNextY(fy);
+            fy = Math.min(f.getNextY(fy), of.getNextY(fy));
             fx = f.getWidth(fy);
+            ofx = of.getWidth(fy);
             if (fx < floatX) fx = floatX;
             if (fx == 0 && floatX < 0) fx = floatX;
         }
