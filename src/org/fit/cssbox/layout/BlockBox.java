@@ -592,7 +592,20 @@ public class BlockBox extends ElementBox
                 //when the line has already started, the floating boxes should start below this line
                 boolean atstart = (x <= x1);
                 if (!atstart)
-                    stat.y += maxh;
+                    stat.y += Math.max(maxh, getLineHeight());
+                
+                //clear set - try to find the first possible Y value
+                if (sb.getClearing() != CLEAR_NONE)
+                {
+                    int ny = stat.y;
+                    if (sb.getClearing() == CLEAR_LEFT)
+                        ny = fleft.getMaxY() - floatY;
+                    else if (sb.getClearing() == CLEAR_RIGHT)
+                        ny = fright.getMaxY() - floatY;
+                    else if (sb.getClearing() == CLEAR_BOTH)
+                        ny = Math.max(fleft.getMaxY(), fright.getMaxY()) - floatY;
+                    if (stat.y < ny) stat.y = ny;
+                }
                 
                 if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
                     layoutBlockFloating(sb, wlimit, stat);
