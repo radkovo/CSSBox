@@ -846,24 +846,45 @@ public class BlockBox extends ElementBox
     {
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.doLayout(wlimit, true, true);
-        FloatList f = (subbox.getFloating() == FLOAT_LEFT) ? fleft : fright;
-        FloatList of = (subbox.getFloating() == FLOAT_LEFT) ? fright : fleft;
-        int floatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXl : floatXr;
+        FloatList f = (subbox.getFloating() == FLOAT_LEFT) ? fleft : fright;    //float list at my side
+        FloatList of = (subbox.getFloating() == FLOAT_LEFT) ? fright : fleft;   //float list at the opposite side
+        int floatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXl : floatXr;  //float offset at this side
+        int oFloatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXr : floatXl; //float offset at the opposite side
+        
         int fy = stat.y + floatY;  //float Y position
+        if (fy < f.getLastY()) fy = f.getLastY(); //don't place above the last placed box
+
         int fx = f.getWidth(fy);   //total width of floats at this side
-        int ofx = of.getWidth(fy); //total width of floats at the opposite side
         if (fx < floatX) fx = floatX; //stay in the containing box if it is narrower
         if (fx == 0 && floatX < 0) fx = floatX; //if it is wider (and there are no floating boxes yet)
+
+        int ofx = of.getWidth(fy); //total width of floats at the opposite side
+        if (ofx < oFloatX) ofx = oFloatX; //stay in the containing box at the opposite side
+        if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
+
         //moving the floating box down until it fits
         while (fx > floatX //if we're not already at the left/right border
-               && (fx + subbox.getWidth() > wlimit - ofx + floatX)) //the subbox doesn't fit in this Y coordinate
+               && (fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
-            fy = Math.min(f.getNextY(fy), of.getNextY(fy)); //TODO: co kdyz v f nebo of dojdou plovouci bloky?
+            int nexty1 = f.getNextY(fy);
+            int nexty2 = of.getNextY(fy);
+            if (nexty1 != -1 && nexty2 != -1)
+                fy = Math.min(f.getNextY(fy), of.getNextY(fy));
+            else if (nexty1 == -1)
+                fy = nexty2;
+            else if (nexty2 == -1)
+                fy = nexty1;
+            else
+                fy++; //we don't know, increase by one and try again
+            //recompute the limits for the new fy
             fx = f.getWidth(fy);
-            ofx = of.getWidth(fy);
             if (fx < floatX) fx = floatX;
             if (fx == 0 && floatX < 0) fx = floatX;
+            ofx = of.getWidth(fy);
+            if (ofx < oFloatX) ofx = oFloatX;
+            if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
         }
+
         subbox.setPosition(fx, fy);
         f.add(subbox);
         //a floating box must enclose all the floats inside
