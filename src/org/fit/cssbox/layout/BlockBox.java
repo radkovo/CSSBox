@@ -966,7 +966,7 @@ public class BlockBox extends ElementBox
             
             if (isDisplayed())
             {
-                viewport.updateBoundsFor(absbounds);
+                viewport.updateBoundsFor(getClippedBounds());
                 
                 //repeat for all valid subboxes
                 for (int i = startChild; i < endChild; i++)

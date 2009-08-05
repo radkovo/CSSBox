@@ -857,6 +857,14 @@ abstract public class Box
             absbounds = inter;
     }
     
+    /**
+     * Computes the absolute bounds after clipping by the appropriate clipping box. 
+     * @return the clipped absolute bounds
+     */
+    public Rectangle getClippedBounds()
+    {
+        return absbounds.intersection(clipblock.absbounds);
+    }
     
     /**
      * @return maximal width that was available for the box placement during the layout processing
