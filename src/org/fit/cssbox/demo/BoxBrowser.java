@@ -226,6 +226,7 @@ public class BoxBrowser
             TreePath select = new TreePath(node.getPath());
             domTree.setSelectionPath(select);
             domTree.expandPath(select);
+            domTree.scrollPathToVisible(select);
         }
     }
 
@@ -499,6 +500,13 @@ public class BoxBrowser
         if (urlText == null)
         {
             urlText = new JTextField();
+            urlText.addActionListener(new java.awt.event.ActionListener()
+            {
+                public void actionPerformed(java.awt.event.ActionEvent e)
+                {
+                    displayURL(urlText.getText());
+                }
+            });
         }
         return urlText;
     }
