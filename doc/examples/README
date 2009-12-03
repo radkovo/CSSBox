@@ -3,8 +3,7 @@ Running the Examples
 The examples are implemented in the org.fit.cssbox.demo package. For running the
 examples, following jar files must be in the classpath:
 - CSSBox.jar -- the CSSBox library
-- lib/CSSParser_SNAPSHOT.jar -- the CSS parser used
-- lib/jtidy-r8-SNAPSHOT.jar -- the jTidy HTML parser used for creating the DOM tree
+- lib/*.jar -- the CSS and HTML parsers
 
 For convenience, scripts are provided for running the examples. For Unix, example.sh
 should be used, for Windows, there is the example.bat batch file. The example

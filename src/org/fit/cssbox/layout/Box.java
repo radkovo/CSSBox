@@ -2,19 +2,18 @@
  * Box.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 11. z��2005, 18:36
  */
@@ -48,6 +47,9 @@ abstract public class Box
     protected static final short DRAW_BG = 2;
     
     protected static int next_order = 0;
+    
+    /** Is this a box for the root element? */
+    protected boolean rootelem;
     
     /** Is this box a block? */
     protected boolean isblock;
@@ -123,6 +125,7 @@ abstract public class Box
         this.g = g;
         this.ctx = ctx;
         node = n;
+        rootelem = false;
         isblock = false;
         style = null;
         isempty = true;
@@ -141,6 +144,7 @@ abstract public class Box
      */
     public void copyValues(Box src)
     {
+        rootelem = src.rootelem;
         isblock = src.isblock;
         order = src.order;
         style = src.style;
@@ -157,6 +161,22 @@ abstract public class Box
         visible = src.visible;
         splitted = src.splitted;
         rest = src.rest;
+    }
+    
+    /**
+     * Initializes a box in order to be a proper child box of the specified parent. Copies
+     * all the necessary information from the parent.
+     * @param parent the parent box
+     */
+    public void adoptParent(ElementBox parent)
+    {
+        if (parent instanceof BlockBox)
+            setContainingBlock((BlockBox) parent);
+        else
+            setContainingBlock(parent.getContainingBlock());
+        setParent(parent);
+        setViewport(parent.getViewport());
+        setClipBlock(parent.getClipBlock());
     }
     
     /** 
@@ -195,6 +215,8 @@ abstract public class Box
         {
             //Create the new box
             ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent, null);
+            if (root.toString().contains("abColumn"))
+                System.out.println("jo!");
             
             //Determine the containing boxes
             BlockBox newcont = contbox;
@@ -283,7 +305,7 @@ abstract public class Box
                             if (cn.getNodeType() == Node.TEXT_NODE && !textonly)
                             {
                                 //create anonymous inline box for the text
-                                Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "Xspan", "inline");
+                                Element anelem = createAnonymousElement(root.getElement().getOwnerDocument(), "Xspan", "inline");
                                 ElementBox anbox = createBox(anelem, g, ctx, decoder, baseurl, viewport, root, "intline");
                                 newbox.setParent(anbox);
                                 anbox.addSubBox(newbox);
@@ -324,6 +346,10 @@ abstract public class Box
                                  ElementBox.DISPLAY_TABLE_ROW_GROUP, ElementBox.DISPLAY_TABLE_HEADER_GROUP, ElementBox.DISPLAY_TABLE_FOOTER_GROUP, 
                                  "tbody", "table-row-group");
             createAnonymousBoxes(root, decoder,
+                                 ElementBox.DISPLAY_TABLE_COLUMN,
+                                 ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_TABLE_COLUMN_GROUP, ElementBox.DISPLAY_ANY,
+                                 "table", "table");
+            createAnonymousBoxes(root, decoder,
                                  ElementBox.DISPLAY_TABLE_ROW_GROUP,
                                  ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY,
                                  "table", "table");
@@ -357,7 +383,7 @@ abstract public class Box
                 {
                     if (adiv == null)
                     {
-                        Element anelem = createAnonymousBox(root.getElement().getOwnerDocument(), "div", "block");
+                        Element anelem = createAnonymousElement(root.getElement().getOwnerDocument(), "div", "block");
                         adiv = new BlockBox(anelem, root.getGraphics(), root.getVisualContext());
                         adiv.setStyle(createAnonymousBoxStyle("block"));
                         computeInheritedStyle(adiv, root);
@@ -419,11 +445,11 @@ abstract public class Box
 		                adiv = null;
 		                nest.add(sub);
 		            }
-		            else if (!sub.isWhitespace()) //omit whitespace boxes
+		            else
 		            {
 		                if (adiv == null)
 		                {
-		                	Element elem = createAnonymousBox(root.getElement().getOwnerDocument(), name, display);
+		                	Element elem = createAnonymousElement(root.getElement().getOwnerDocument(), name, display);
 		                	adiv = createBox(elem, root.getGraphics(), root.getVisualContext(), decoder, root.getBase(), root.getViewport(), root, display);
 		                    adiv.isblock = true;
 		                    adiv.isempty = true;
@@ -484,36 +510,53 @@ abstract public class Box
         	if (root.isBlock())
         		root = new BlockReplacedBox(rbox);
         }
-        //Convert the box type according to the <code>display</code> value
+        //Create a box according to the <code>display</code> value
         else
         {
-    	    root = new InlineBox((Element) n, g, ctx);
-            root.setStyle(style);
-    	    if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
-    	    	root = new ListItemBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
-                root = new TableBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
-                root = new TableCaptionBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP
-                     || root.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP
-                     || root.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
-                root = new TableBodyBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
-                root = new TableRowBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CELL)
-                root = new TableCellBox((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
-                root = new TableColumn((InlineBox) root);
-            else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
-                root = new TableColumnGroup((InlineBox) root);
-    	    else if (root.isBlock())
-    	        root = new BlockBox((InlineBox) root);
+    	    root = createBoxInstance(n, g, ctx, style);
         }
         root.setBase(baseurl);
         root.setViewport(viewport);
         root.setOrder(next_order++);
     	return root;
+    }
+
+    /**
+     * Creates an instance of ElementBox. According to the display: property of the style, the appropriate
+     * subclass of ElementBox is created (e.g. BlockBox, TableBox, etc.)
+     * @param n The source DOM element
+     * @param g Graphics context
+     * @param ctx Visual context
+     * @param style Style definition for the node
+     * @return The created instance of ElementBox
+     */
+    private static ElementBox createBoxInstance(Element n, Graphics2D g, VisualContext ctx, NodeData style)
+    {
+        ElementBox root = new InlineBox((Element) n, g, ctx);
+        root.setStyle(style);
+        if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
+            root = new ListItemBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
+            root = new BlockTableBox((InlineBox) root);
+        /*else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
+            root = new InlineTableBox((InlineBox) root);*/
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
+            root = new TableCaptionBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP
+                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP
+                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
+            root = new TableBodyBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
+            root = new TableRowBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CELL)
+            root = new TableCellBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
+            root = new TableColumn((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
+            root = new TableColumnGroup((InlineBox) root);
+        else if (root.isBlock())
+            root = new BlockBox((InlineBox) root);
+        return root;
     }
     
     /**
@@ -523,7 +566,7 @@ abstract public class Box
      * @param display the display style value for the block
      * @return the new element
      */
-    private static Element createAnonymousBox(Document doc, String name, String display)
+    protected static Element createAnonymousElement(Document doc, String name, String display)
     {
         Element div = doc.createElement(name);
         div.setAttribute("class", "Xanonymous");
@@ -531,7 +574,13 @@ abstract public class Box
         return div;
     }
     
-    private static NodeData createAnonymousBoxStyle(String display)
+    /**
+     * Creates the style definition for an anonymous box. It contains only the class name set to "Xanonymous"
+     * and the display: property set according to the parametres.
+     * @param display display: property value of the resulting style.
+     * @return Resulting style definition
+     */
+    protected static NodeData createAnonymousBoxStyle(String display)
     {
         NodeData ret = CSSFactory.createNodeData();
         
@@ -688,6 +737,23 @@ abstract public class Box
         return ctx;
     }
     
+    /**
+     * Checks if the box corresponds to the root element
+     * @return true, if the box corresponds to the root element
+     */
+    public boolean isRootElement()
+    {
+        return rootelem;
+    }
+
+    /**
+     * Makes this box a root element box.
+     */
+    public void makeRoot()
+    {
+        this.rootelem = true;
+    }
+
     /** 
      * Checks if this is a block box.
      * @return false if this is an inline box and it contains inline

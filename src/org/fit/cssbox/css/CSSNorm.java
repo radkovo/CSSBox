@@ -2,19 +2,18 @@
  * CSSNorm.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 21. leden 2005, 22:28
  */
@@ -63,11 +62,11 @@ public class CSSNorm
         "h1              { font-size: 2em; margin: .67em 0 }"+
         "h2              { font-size: 1.5em; margin: .75em 0 }"+
         "h3              { font-size: 1.17em; margin: .83em 0 }"+
-        /*"h4, p,"+
-        "blockquote, ul,"+
+        "h4, p,"+
+        /*"blockquote, ul,"+
         "fieldset, form,"+
-        "ol, dl, dir,"+
-        "menu            { margin: 1.12em 0 }"+*/
+        "ol, dl, dir,"+*/
+        "menu            { margin: 1.12em 0 }"+
         "h5              { font-size: .83em; margin: 1.5em 0 }"+
         "h6              { font-size: .75em; margin: 1.67em 0 }"+
         "h1, h2, h3, h4,"+
@@ -122,6 +121,7 @@ public class CSSNorm
         "body   { color: black; background-color: #fafafa;}"+
         "a      { color: blue; text-decoration: underline; }"+
         "script { display: none; }"+
+        "style  { display: none; }"+
         "option { display: none; }"+
         "br     { display: block; }"+
         "hr     { display: block; margin-top: 1px solid; }"+

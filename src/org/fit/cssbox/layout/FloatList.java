@@ -2,19 +2,18 @@
  * FloatList.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 27. zברם 2005, 23:00
  */
@@ -32,8 +31,10 @@ public class FloatList
 {
 	private BlockBox owner;
     private Vector<BlockBox> floats;
-    private int maxY;
-    private int lastY; //Y coordinate of the last box. New boxes shouldn't be placed above this limit
+    //private int maxY;
+    //private int lastY; //Y coordinate of the last box. New boxes shouldn't be placed above this limit
+    private BlockBox bottomBox = null; //Bottom-most box.
+    private BlockBox lastBox = null; //last box inserted. New boxes shouldn't be placed above this box.
     
     /**
      * Creates a list of floating boxes for some owner block.
@@ -61,10 +62,10 @@ public class FloatList
     {
 		box.setOwnerFloatList(this);
         floats.add(box);
-        if (box.getBounds().y + box.getBounds().height > maxY)
-            maxY = box.getBounds().y + box.getBounds().height;
-        if (box.getBounds().y > lastY)
-            lastY = box.getBounds().y;
+        if (box.getBounds().y + box.getBounds().height > getMaxY())
+            bottomBox = box;
+        if (box.getBounds().y > getLastY())
+            lastBox = box;
     }
     
     /**
@@ -92,7 +93,10 @@ public class FloatList
      */
     public int getMaxY()
     {
-        return maxY;
+        if (bottomBox == null)
+            return 0;
+        else
+            return bottomBox.getBounds().y + bottomBox.getBounds().height;
     }
     
     /**
@@ -101,7 +105,10 @@ public class FloatList
      */
     public int getLastY()
     {
-        return lastY;
+        if (lastBox == null)
+            return 0;
+        else
+            return lastBox.getBounds().y;
     }
 
     /** 

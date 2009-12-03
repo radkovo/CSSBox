@@ -2,19 +2,18 @@
  * ElementBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 5. únor 2006, 21:32
  */
@@ -74,7 +73,7 @@ abstract public class ElementBox extends Box
     /** Margin widths */
     protected LengthSet margin;
     
-    /** Effective margins (after collapsing) */
+    /** Effective top and bottom margins (after collapsing with the contained boxes) */
     protected LengthSet emargin;
     
     /** Padding widths */
@@ -227,14 +226,26 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Inserts a new sub box before a specified sub box
+     * @param where the box already existing in the list
+     * @param what the new box to add
+     */
+    public void insertSubBoxBefore(Box where, Box what)
+    {
+        int pos = nested.indexOf(where);
+        nested.insertElementAt(what, pos);
+        endChild++;
+    }
+
+    /**
      * Inserts a new sub box after a specified sub box
      * @param where the box already existing in the list
      * @param what the new box to add
      */
-    public void insertSubBox(Box where, Box what)
+    public void insertSubBoxAfter(Box where, Box what)
     {
         int pos = nested.indexOf(where);
-        nested.insertElementAt(what,  pos+1);
+        nested.insertElementAt(what, pos+1);
         endChild++;
     }
 
@@ -352,6 +363,8 @@ abstract public class ElementBox extends Box
             nested.elementAt(i).setParent(this);
     }
     
+    //=======================================================================
+
     /**
      * This method is called for all the element boxes once the box tree is finished.
      * It is the right place for internal object initializing, content organization, etc. 
@@ -360,8 +373,6 @@ abstract public class ElementBox extends Box
     {
     }
     
-    //=======================================================================
-
     /**
      * Computes the distance of the content from the left edge of the whole box
      * (a convenience function for margin + border + padding).
@@ -369,7 +380,7 @@ abstract public class ElementBox extends Box
      */
     public int getContentOffsetX()
     {
-        return emargin.left + border.left + padding.left;
+        return margin.left + border.left + padding.left;
     }
     
     /**
@@ -379,45 +390,41 @@ abstract public class ElementBox extends Box
      */
     public int getContentOffsetY()
     {
-        return emargin.top + border.top + padding.top;
+        return margin.top + border.top + padding.top;
     }
     
     public int getContentX()
     {
-        return bounds.x + emargin.left + border.left + padding.left;
+        return bounds.x + margin.left + border.left + padding.left;
     }
     
     public int getContentY()
     {
-        return bounds.y + emargin.top + border.top + padding.top;
+        return bounds.y + margin.top + border.top + padding.top;
     }
     
     public int getAbsoluteContentX()
     {
-        return absbounds.x + emargin.left + border.left + padding.left;
+        return absbounds.x + margin.left + border.left + padding.left;
     }
     
     public int getAbsoluteContentY()
     {
-        return absbounds.y + emargin.top + border.top + padding.top;
+        return absbounds.y + margin.top + border.top + padding.top;
     }
     
     public int totalWidth()
     {
-        return emargin.left + border.left + padding.left + content.width +
-            padding.right + border.right + emargin.right;
+        return margin.left + border.left + padding.left + content.width +
+            padding.right + border.right + margin.right;
     }
     
-    public int totalHeight()
-    {
-        return emargin.top + border.top + padding.top + content.height +
-            padding.bottom + border.bottom + emargin.bottom;
-    }
+    //totalHeight() differs for inline and block boxes
     
     public int getAvailableContentWidth()
     {
-        return availwidth - emargin.left - border.left - padding.left 
-                  - padding.right - border.right - emargin.right;
+        return availwidth - margin.left - border.left - padding.left 
+                  - padding.right - border.right - margin.right;
     }
     
     @Override
@@ -467,8 +474,8 @@ abstract public class ElementBox extends Box
      */
     public Rectangle getAbsoluteBackgroundBounds()
     {
-        return new Rectangle(absbounds.x + emargin.left + border.left,
-                             absbounds.y + emargin.top + border.top,
+        return new Rectangle(absbounds.x + margin.left + border.left,
+                             absbounds.y + margin.top + border.top,
                              content.width + padding.left + padding.right,
                              content.height + padding.top + padding.bottom);
     }
@@ -478,8 +485,8 @@ abstract public class ElementBox extends Box
      */
     public Rectangle getAbsoluteBorderBounds()
     {
-        return new Rectangle(absbounds.x + emargin.left,
-                             absbounds.y + emargin.top,
+        return new Rectangle(absbounds.x + margin.left,
+                             absbounds.y + margin.top,
                              content.width + padding.left + padding.right + border.left + border.right,
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
     }
@@ -496,11 +503,10 @@ abstract public class ElementBox extends Box
     @Override
     public boolean isWhitespace()
     {
-        boolean ret = true;
         for (int i = startChild; i < endChild; i++)
             if (!getSubBox(i).isWhitespace())
-                ret = false;
-        return ret;
+                return false;
+        return true;
     }
         
     @Override
@@ -537,10 +543,10 @@ abstract public class ElementBox extends Box
         int y2 = absbounds.y + absbounds.height - 1;
 
         //border bounds
-        int bx1 = x + emargin.left;
-        int by1 = y + emargin.top;
-        int bx2 = x2 - emargin.right;
-        int by2 = y2 - emargin.bottom;
+        int bx1 = x + margin.left;
+        int by1 = y + margin.top;
+        int bx2 = x2 - margin.right;
+        int by2 = y2 - margin.bottom;
         
         //draw the border
         if (border.top > 0)
@@ -553,8 +559,8 @@ abstract public class ElementBox extends Box
             drawBorder(g, bx1, by1, bx1, by2, border.left, border.left/2, 0, "left"); 
         
         //Background
-        int bgx = x + emargin.left + border.left;
-        int bgy = y + emargin.top + border.top;
+        int bgx = x + margin.left + border.left;
+        int bgy = y + margin.top + border.top;
         int bgw = padding.left + content.width + padding.right;
         int bgh = padding.top + content.height + padding.bottom;
         //clip to computed absolute size
@@ -624,8 +630,8 @@ abstract public class ElementBox extends Box
         g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
     	
     	//draw the content box
-        /*g.setColor(Color.ORANGE);
-        g.drawRect(getContentX(), getContentY(), getContentWidth(), getContentHeight());*/
+        g.setColor(Color.ORANGE);
+        g.drawRect(getAbsoluteContentX(), getAbsoluteContentY(), getContentWidth(), getContentHeight());
         
         //draw the real content box
         /*g.setColor(Color.GREEN);
@@ -647,25 +653,66 @@ abstract public class ElementBox extends Box
     abstract public void updateSizes(); 
 
     /**
+     * Computes efficient top and bottom margins for collapsing.
+     */
+    abstract public void computeEfficientMargins();
+    
+    /**
+     * Checks if the element's own top and bottom margins are adjoining 
+     * according to the CSS specifiaction.
+     * @return <code>true</code> if the margins are adjoining
+     */
+    abstract public boolean marginsAdjoin();
+    
+    /**
      * Load the basic style from the CSS properties. This includes the display
      * properties, floating, positioning, color and font properties.
      */
-    private void loadBasicStyle()
+    protected void loadBasicStyle()
     {
         ctx.updateForGraphics(style, g);
         
         display = style.getProperty("display");
         if (display == null) display = CSSProperty.Display.INLINE;
         
+        CSSProperty.Float floating = style.getProperty("float");
+        if (floating == null) floating = BlockBox.FLOAT_NONE;
+        CSSProperty.Position position = style.getProperty("position");
+        if (position == null) position = BlockBox.POS_STATIC;
+        
+        //apply combination rules
+        //http://www.w3.org/TR/CSS21/visuren.html#dis-pos-flo
+        if (display == ElementBox.DISPLAY_NONE)
+        {
+            position = BlockBox.POS_STATIC;
+            floating = BlockBox.FLOAT_NONE;
+        }
+        else if (position == BlockBox.POS_ABSOLUTE || position == BlockBox.POS_FIXED)
+        {
+            floating = BlockBox.FLOAT_NONE;
+        }
+        //compute the display computed value
+        if (floating != BlockBox.FLOAT_NONE || position == BlockBox.POS_ABSOLUTE || isRootElement())
+        {
+            if (display == DISPLAY_INLINE_TABLE)
+                display = DISPLAY_TABLE;
+            else if (display == DISPLAY_INLINE ||
+                     display == DISPLAY_RUN_IN ||
+                     display == DISPLAY_TABLE_ROW_GROUP ||
+                     display == DISPLAY_TABLE_COLUMN ||
+                     display == DISPLAY_TABLE_COLUMN_GROUP ||
+                     display == DISPLAY_TABLE_HEADER_GROUP ||
+                     display == DISPLAY_TABLE_FOOTER_GROUP ||
+                     display == DISPLAY_TABLE_ROW ||
+                     display == DISPLAY_TABLE_CELL ||
+                     display == DISPLAY_TABLE_CAPTION ||
+                     display == DISPLAY_INLINE_BLOCK)
+                display = DISPLAY_BLOCK;
+        }
+
         isblock = (display == DISPLAY_BLOCK);
         displayed = (display != DISPLAY_NONE && display != DISPLAY_TABLE_COLUMN);
         visible = (style.getProperty("visibility") != CSSProperty.Visibility.HIDDEN); 
-
-        CSSProperty.Float fp = style.getProperty("float");
-        CSSProperty.Position pp = style.getProperty("position");
-        if (fp == CSSProperty.Float.RIGHT || fp == CSSProperty.Float.LEFT ||
-            pp == CSSProperty.Position.ABSOLUTE || pp == CSSProperty.Position.FIXED)
-                isblock = true;
         
         //line height
         CSSProperty.LineHeight lh = style.getProperty("line-height");
@@ -694,6 +741,14 @@ abstract public class ElementBox extends Box
         baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
 
         //background
+        loadBackground();
+    }
+    
+    /**
+     * Loads the background information from the style
+     */
+    protected void loadBackground()
+    {
         CSSProperty.BackgroundColor bg = style.getProperty("background-color");
         if (bg == CSSProperty.BackgroundColor.color)
         {
@@ -702,7 +757,6 @@ abstract public class ElementBox extends Box
         }
         else
             bgcolor = null;
-        
     }
     
 }

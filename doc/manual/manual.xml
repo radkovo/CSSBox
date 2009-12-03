@@ -30,9 +30,13 @@ efficient style of each element. Afterwrads, the document layout is computed.</p
 
 <d:subsection id="basicLoading">
 <d:title>Document Loading</d:title>
-<p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
-is used. However, any other DOM parser can be used. For creating the DOM tree using
-JTidy, following code can be used:</p> 
+<p>In the examples, the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
+is used that is based on <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>.
+However, any other DOM parser with DOM Traversal support can be used. For our demos,
+we have created a simple <d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api>
+class that hides the detail of document parsing implementation. See the 
+<d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api> source code for
+more details.</p> 
 
 <d:codebox>
 <em>//Open the network connection</em> 
@@ -40,15 +44,11 @@ URL url = new URL("http://cssbox.sf.net");
 URLConnection con = url.openConnection();
 InputStream is = con.getInputStream();
 
-<em>//Parse the input document using jTidy</em>
-Tidy tidy = new Tidy();
-tidy.setTrimEmptyElements(false);
-tidy.setInputEncoding("utf-8");
-Document doc = tidy.parseDOM(is, null);
+<em>//Parse the input document (replace this with your own parser)</em>
+DOMSource parser = new DOMSource(is);
+Document doc = parser.parse();
 </d:codebox>>
 
-<p>Note that JTidy has many configuration options that can be found in the
-documentation.</p>
 <p>For the initial DOM and style sheet processing, a
 <d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used. It is
 initialized with the DOM tree and the base URL:</p>
@@ -86,12 +86,11 @@ the document code together with the associated style.</p>
 <p>The whole layout engine is represented by a graphical
 <d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are
-the root DOM element (normally, it is the <d:tag>body</d:tag> element), the DOMAnalyzer used
-for obtaining the element styles, the initial viewport dimensions and the document base URL used
-for loading images and other referenced content.</p>
+the root DOM element, the DOMAnalyzer used for obtaining the element styles, the initial viewport 
+dimensions and the document base URL used for loading images and other referenced content.</p>
 <d:codebox>
 BrowserCanvas browser = 
-        new BrowserCanvas(da.getBody(),
+        new BrowserCanvas(da.getRoot(),
                           da,
                           new java.awt.Dimension(1000, 600),
                           url);

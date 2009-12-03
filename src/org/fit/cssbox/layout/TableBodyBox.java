@@ -2,19 +2,18 @@
  * TableBodyBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 29.9.2006, 14:13:58 by burgetr
  */
@@ -31,6 +30,8 @@ import org.w3c.dom.Element;
  */
 public class TableBodyBox extends BlockBox
 {
+    /** The table the body belongs to */
+    protected TableBox ownerTable;
     /** The row boxes contained inside */
     protected Vector<TableRowBox> rows;
     /** Number of columns inside */
@@ -103,6 +104,23 @@ public class TableBodyBox extends BlockBox
     public void setSpacing(int spacing)
     {
     	this.spacing = spacing;
+    }
+    
+    /**
+     * @return the table where the caption is placed
+     */
+    public TableBox getOwnerTable()
+    {
+        return ownerTable;
+    }
+
+    /**
+     * Sets the table where the caption belongs to.
+     * @param ownerTable the table to set
+     */
+    public void setOwnerTable(TableBox ownerTable)
+    {
+        this.ownerTable = ownerTable;
     }
     
     //====================================================================================
@@ -227,6 +245,7 @@ public class TableBodyBox extends BlockBox
     @Override
     public void initBox()
     {
+        organizeContent();
         calcOffsets();
     }
     
@@ -351,17 +370,48 @@ public class TableBodyBox extends BlockBox
     //====================================================================================
     
     /**
-     * Goes through the list of child boxes and organizes them into captions, header,
-     * footer, etc.
+     * Goes through the list of child boxes and creates the anonymous rows if necessary.
      */
     private void organizeContent()
     {
-        for (int i = 0; i < getSubBoxNumber(); i++)
+        TableRowBox anonrow = null;
+        
+        for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {
-            Box box = getSubBox(i);
-            if (box instanceof ElementBox &&
-                ((ElementBox) box).getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
+            Box box = it.next();
+            if (box instanceof ElementBox && ((ElementBox) box).getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
+            {
                 addRow((TableRowBox) box);
+                //finish and add possible previous anonymous row
+                if (anonrow != null)
+                {
+                    anonrow.endChild = anonrow.nested.size();
+                    addSubBox(anonrow);
+                }
+                anonrow = null;
+            }
+            else
+            {
+                if (anonrow == null)
+                {
+                    Element anonelem = createAnonymousElement(getParent().getParent().getElement().getOwnerDocument(), "tr", "table-row"); 
+                    anonrow = new TableRowBox(anonelem, g, ctx);
+                    anonrow.setStyle(createAnonymousBoxStyle("table-row"));
+                    anonrow.adoptParent(this);
+                    addRow(anonrow);
+                }
+                anonrow.addSubBox(box);
+                anonrow.isempty = false;
+                box.setContainingBlock(anonrow);
+                box.setParent(anonrow);
+                it.remove();
+                endChild--;
+            }
+        }
+        if (anonrow != null)
+        {
+            anonrow.endChild = anonrow.nested.size();
+            addSubBox(anonrow);
         }
     }
                 
@@ -370,9 +420,6 @@ public class TableBodyBox extends BlockBox
      */
     private void calcOffsets()
     {
-        //collect the table rows
-        organizeContent();
-        
         //Find the longest line
         int rowidx[] = new int[rows.size()];
         int maxCells = 0;

@@ -2,19 +2,18 @@
  * Renderer.java
  * Copyright (c) 2005-2009 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 5.2.2009, 12:00:02 by burgetr
  */
@@ -43,7 +42,7 @@ import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.layout.*;
 import org.fit.cssbox.misc.Base64Coder;
 import org.w3c.dom.Document;
-import org.w3c.tidy.Tidy;
+import org.xml.sax.SAXException;
 
 /**
  * This class provides a rendering interface for obtaining the document image
@@ -70,8 +69,9 @@ public class ImageRenderer
      * @param out output stream
      * @param type output type, one of the TYPE_XXX constants
      * @return true in case of success, false otherwise
+     * @throws SAXException 
      */
-    public boolean renderURL(String urlstring, OutputStream out, short type) throws IOException
+    public boolean renderURL(String urlstring, OutputStream out, short type) throws IOException, SAXException
     {
         if (!urlstring.startsWith("http:") &&
             !urlstring.startsWith("ftp:") &&
@@ -83,13 +83,8 @@ public class ImageRenderer
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; Transformer/2.x; Linux) CSSBox/2.x (like Gecko)");
         InputStream is = con.getInputStream();
         
-        Tidy tidy = new Tidy();
-        tidy.setTrimEmptyElements(false);
-        tidy.setAsciiChars(false);
-        tidy.setInputEncoding("iso-8859-2");
-        //tidy.setInputEncoding("utf-8");
-        tidy.setXHTML(true);
-        Document doc = tidy.parseDOM(is, null);
+        DOMSource parser = new DOMSource(is);
+        Document doc = parser.parse();
         
         DOMAnalyzer da = new DOMAnalyzer(doc, url);
         da.attributesToStyles();

@@ -2,19 +2,18 @@
  * TextBoxes.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 13.11.2007, 14:34:04 by burgetr
  */
@@ -32,7 +31,6 @@ import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedImage;
 import org.fit.cssbox.layout.TextBox;
 import org.w3c.dom.Document;
-import org.w3c.tidy.Tidy;
 
 /**
  * This demo shows how the rendered box tree can be accessed. It renders the document 
@@ -81,12 +79,8 @@ public class TextBoxes
             InputStream is = con.getInputStream();
             
             //Parse the input document using jTidy
-            Tidy tidy = new Tidy();
-            tidy.setTrimEmptyElements(false);
-            tidy.setAsciiChars(false);
-            tidy.setInputEncoding("iso-8859-2");
-            tidy.setXHTML(true);
-            Document doc = tidy.parseDOM(is, null);
+            DOMSource parser = new DOMSource(is);
+            Document doc = parser.parse();
             
             //Create the CSS analyzer
             DOMAnalyzer da = new DOMAnalyzer(doc, url);

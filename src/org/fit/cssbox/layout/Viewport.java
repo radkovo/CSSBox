@@ -2,19 +2,18 @@
  * Viewport.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.fit.cssbox.layout;
@@ -169,6 +168,7 @@ public class Viewport extends BlockBox
 		{
 			ElementBox box = (ElementBox) getSubBox(i);
 			recursiveInitBoxes(box);
+			box.computeEfficientMargins();
 			if (box instanceof BlockBox)
 			    ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
 		}
@@ -185,164 +185,7 @@ public class Viewport extends BlockBox
 		if (maxy < y) maxy = y;
 	}
 	
-    //========================================================================
-
-	/**
-	 * Compute the effective margins from the specified.
-	 */
-	public void collapseMargins()
-	{
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			recursiveCollapseMargins((ElementBox) getSubBox(i));
-	}
-	
-    protected void recursiveCollapseMargins(ElementBox box)
-    {
-        //Do not count with empty in-flow elements that do not affect display
-        if (box.isInFlow()
-            && box.isEmpty()
-            && !box.affectsDisplay()
-            && !(box.isBlock() && (((BlockBox) box).getClearing() != CLEAR_NONE)))
-            box.displayed = false;
-    	
-        if (box.isDisplayed())
-        {
-            //Solve collapsing with preceding boxes or parents
-            if (box.affectsDisplay())
-            {
-                if (box.isBlock())
-                {
-                    if (lastparent != null) //if there is some parent
-                    {
-                        //collapse if it is not separated by border or padding
-                        if (lastparent.isInFlow() && !separatedFromTop(lastparent))
-                        {
-                        	if (box.isInFlow())
-                        	{
-                        		collapseNestedTopMargins(lastparent, box);
-                        		lastparent = null; //following siblings don't collapse
-                        	}
-                        }
-                    }
-                    //no parent to collapse but some preceding box
-                    else if (lastbox != null)
-                    {
-                    	if (box.isInFlow())
-                    		collapseSubsequentMargins(lastbox, box);
-                    	else //apply the correction to floating boxes
-                    		uncollapseSubsequentMargins(lastbox, box);
-                    }
-                }
-                else
-                {
-                    lastbox = null;
-                    lastparent = null;
-                }
-            }
-
-            //----------------- collapse the elements inside -----------------------------
-            ElementBox mylastbox = lastbox;
-            ElementBox myparent = lastparent;
-            
-            if (!box.isInFlow() ||
-            	separatedFromTop(box))
-                lastbox = null; //do not collapse anything inside with anything before 
-            //get a new parent box
-            if (box.isBlock() && box.affectsDisplay())
-            	lastparent = box;
-            //process the children
-            for (int i = box.getStartChild(); i < box.getEndChild(); i++)
-            {
-                Box subbox = box.getSubBox(i);
-                if (subbox instanceof ElementBox)
-                {
-                    recursiveCollapseMargins((ElementBox) subbox);
-                }
-                else
-                {
-                    if (subbox.isDisplayed()) //displayed content separates
-                    {
-                        lastbox = null;
-                        lastparent = null;
-                    }
-                }
-            }
-
-            //Collapse bottom margins with nested content if not separated
-            if (lastbox != null && lastbox != mylastbox &&
-                !separatedFromBottom(box))
-                collapseNestedBottomMargins(box, lastbox);
-            
-    		lastbox = mylastbox;
-    		lastparent = myparent;
-
-            //set this box as the last box for following boxes
-            if (box.affectsDisplay() && box.isBlock() && box.isInFlow())
-                lastbox = box;
-        }
-    }
-    
-    /** 
-     * Compute efective margins by applying the margin collapsing agorithms
-     * on two subsequent adjoining boxes.
-     */
-    protected void collapseSubsequentMargins(ElementBox b1, ElementBox b2)
-    {
-        int max = Math.max(b1.emargin.bottom, b2.emargin.top);
-        //System.out.println("Seq collapsing "+ b1 + " with " + b2 + " by " + max);
-        b1.emargin.bottom = 0;
-        b2.emargin.top = max;
-    }
-    
-    /**
-     * Applies a top margin correction to a box not in flow when a previous in-flow box lost
-     * its bottom margin.  
-     */
-    protected void uncollapseSubsequentMargins(ElementBox b1, ElementBox b2)
-    {
-        //System.out.println("Seq uncollapsing "+ b1 + " with " + b2 + " by " + b1.margin.bottom);
-        b1.emargin.bottom = 0;
-        b2.emargin.top += b1.margin.bottom;
-    }
-    
-    /** 
-     * Compute efective margins by applying the margin collapsing agorithms
-     * on two the top margins of two nested blocks
-     */
-    protected void collapseNestedTopMargins(ElementBox parent, ElementBox child)
-    {
-        int max = Math.max(parent.emargin.top, child.emargin.top);
-        //System.out.println("Top collapsing "+ parent + " with " + child);
-        parent.emargin.top = max;
-        child.emargin.top = 0;
-    }
-    
-    /** 
-     * Compute efective margins by applying the margin collapsing agorithms
-     * on two the bottom margins of two nested blocks
-     */
-    protected void collapseNestedBottomMargins(ElementBox parent, ElementBox child)
-    {
-        int max = Math.max(parent.emargin.bottom, child.emargin.bottom);
-        if (child.isInFlow())
-        {
-	        //System.out.println("Bottom collapsing "+ parent + " with " + child);
-	        parent.emargin.bottom = max;
-	        child.emargin.bottom = 0;
-        }
-    }
-    
     //===================================================================================
-    
-    private boolean separatedFromTop(ElementBox box)
-    {
-        return (box.border.top > 0 || box.padding.top > 0);
-    }
-    
-    private boolean separatedFromBottom(ElementBox box)
-    {
-        return (box.border.bottom > 0 || box.padding.bottom > 0);
-    }
     
     private void recursiveInitBoxes(ElementBox box)
     {

@@ -2,19 +2,18 @@
  * TableRowBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 29.9.2006, 14:14:48 by burgetr
  */
@@ -117,10 +116,56 @@ public class TableRowBox extends BlockBox
     @Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
-        //do nothing (table line must be laid out other way)
+        //do nothing (table line must be laid out other way, through the table body)
         return true;
     }
     
+    @Override
+    public void absolutePositions()
+    {
+        int x = cblock.getAbsoluteContentX() + bounds.x;
+        int y = cblock.getAbsoluteContentY() + bounds.y;
+
+        if (position == POS_RELATIVE)
+        {
+            x += leftset ? coords.left : (-coords.right);
+            y += topset ? coords.top : (-coords.bottom);
+        }
+            
+        //set the absolute coordinates
+        absbounds.x = x;
+        absbounds.y = y;
+        absbounds.width = bounds.width;
+        absbounds.height = bounds.height;
+        
+        //Compute the absolute positions as for in-flow boxes. Ignore floating.
+        if (isDisplayed())
+        {
+            //for (int i = startChild; i < endChild; i++)
+            for (TableCellBox child : cells)
+            {
+                //BlockBox child = (BlockBox) getSubBox(i);
+                x = getAbsoluteContentX() + child.getBounds().x;
+                y = getAbsoluteContentY() + child.getBounds().y;
+
+                if (child.position == POS_RELATIVE)
+                {
+                    x += child.leftset ? child.coords.left : (-child.coords.right);
+                    y += child.topset ? child.coords.top : (-child.coords.bottom);
+                }
+                    
+                child.absbounds.x = x;
+                child.absbounds.y = y;
+                child.absbounds.width = child.bounds.width;
+                child.absbounds.height = child.bounds.height;
+                
+                for (int j = child.getStartChild(); j < child.getEndChild(); j++)
+                    child.getSubBox(j).absolutePositions();
+            }
+        }
+
+    }
+
     @Override
     protected void loadSizes(boolean update)
     {
@@ -140,15 +185,52 @@ public class TableRowBox extends BlockBox
     
     //=====================================================================================
     
+    /**
+     * Goes through the list of child boxes and creates the anonymous rows if necessary.
+     */
     private void organizeContent()
     {
         cells = new Vector<TableCellBox>();
-        for (int i = 0; i < getSubBoxNumber(); i++)
+        TableCellBox anoncell = null;
+        
+        for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {
-            Box box = getSubBox(i);
+            Box box = it.next();
             if (box instanceof TableCellBox)
+            {
                 addCell((TableCellBox) box);
+                //finish and add possible previous anonymous cell
+                if (anoncell != null)
+                {
+                    anoncell.endChild = anoncell.nested.size();
+                    addSubBox(anoncell);
+                }
+                anoncell = null;
+            }
+            else
+            {
+                if (anoncell == null)
+                {
+                    Element anonelem = createAnonymousElement(getParent().getParent().getParent().getElement().getOwnerDocument(), "td", "table-cell"); 
+                    anoncell = new TableCellBox(anonelem, g, ctx);
+                    anoncell.setStyle(createAnonymousBoxStyle("table-cell"));
+                    anoncell.adoptParent(this);
+                    addCell(anoncell);
+                }
+                anoncell.addSubBox(box);
+                anoncell.isempty = false;
+                if (box.isBlock()) anoncell.contblock = true;
+                box.setContainingBlock(anoncell);
+                box.setParent(anoncell);
+                it.remove();
+                endChild--;
+            }
+        }
+        if (anoncell != null)
+        {
+            anoncell.endChild = anoncell.nested.size();
+            addSubBox(anoncell);
         }
     }
-
+    
 }

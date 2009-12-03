@@ -11,7 +11,9 @@ DEPS=$ROOT/CSSBox.jar
 DEPS=$DEPS:$ROOT/lib/antlr-runtime-3.1.jar
 DEPS=$DEPS:$ROOT/lib/slf4j-api-1.5.2.jar
 DEPS=$DEPS:$ROOT/lib/jStyleParser_SNAPSHOT.jar
-DEPS=$DEPS:$ROOT/lib/jTidy-090119-SNAPSHOT.jar
+DEPS=$DEPS:$ROOT/lib/nekohtml.jar
+DEPS=$DEPS:$ROOT/lib/xercesImpl.jar
+DEPS=$DEPS:$ROOT/lib/xml-apis.jar
 DEPS=$DEPS:$ROOT/lib/logback-classic-0.9.9.jar
 DEPS=$DEPS:$ROOT/lib/logback-core-0.9.9.jar
 

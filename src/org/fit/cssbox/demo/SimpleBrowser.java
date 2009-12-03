@@ -2,19 +2,18 @@
  * SimpleBrowser.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
@@ -25,7 +24,6 @@ import java.awt.event.MouseListener;
 import java.io.*;
 import java.net.*;
 import org.w3c.dom.*;
-import org.w3c.tidy.*;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -130,13 +128,9 @@ public class SimpleBrowser extends javax.swing.JFrame
         	URLConnection con = url.openConnection();
             InputStream is = con.getInputStream();
             
-            //Parse the input document using jTidy
-            Tidy tidy = new Tidy();
-            tidy.setTrimEmptyElements(false);
-            tidy.setAsciiChars(false);
-            tidy.setInputEncoding("iso-8859-2");
-            tidy.setXHTML(true);
-            Document doc = tidy.parseDOM(is, null);
+            //Parse the input document
+            DOMSource parser = new DOMSource(is);
+            Document doc = parser.parse();
             
             //Create the CSS analyzer
             DOMAnalyzer da = new DOMAnalyzer(doc, url);

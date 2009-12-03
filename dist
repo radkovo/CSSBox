@@ -22,7 +22,7 @@ cp ../CSSParser/lib/slf4j-api-1.5.2.jar $FDIR/lib
 cp ../CSSParser/lib/logback-classic-0.9.9.jar $FDIR/lib
 cp ../CSSParser/lib/logback-core-0.9.9.jar $FDIR/lib
 cp -r doc $FDIR
-cp CHANGELOG LICENSE README $FDIR
+cp CHANGELOG COPYING COPYING.LESSER README $FDIR
 (cd bin; jar cvf $FDIR/CSSBox.jar *)
 (cd ../CSSParser/bin; jar cvf $FDIR/lib/jStyleParser_SNAPSHOT.jar *)
 

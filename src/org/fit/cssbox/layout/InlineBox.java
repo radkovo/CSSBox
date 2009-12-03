@@ -2,19 +2,18 @@
  * InlineBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 5. únor 2006, 13:38
  */
@@ -346,6 +345,13 @@ public class InlineBox extends ElementBox
         return maxLineHeight;
     }
     
+    @Override
+    public int totalHeight()
+    {
+        //for inline boxes, the top and bottom margins don't apply
+        return border.top + padding.top + content.height + padding.bottom + border.bottom;
+    }
+    
     //=======================================================================
     
     /**
@@ -420,10 +426,47 @@ public class InlineBox extends ElementBox
     	return false; //depends on the contents
     }
     
-    /**
+    @Override
+    public void computeEfficientMargins()
+    {
+        emargin.top = margin.top; //no collapsing is applied to inline boxes
+        emargin.bottom = margin.bottom;
+    }
+
+    @Override
+	public boolean marginsAdjoin()
+	{
+    	if (padding.top > 0 || padding.bottom > 0 ||
+    		border.top > 0 || border.bottom > 0)
+    	{
+    		//margins are separated by padding or border
+    		return false;
+    	}
+    	else
+    	{
+    		//margins can be separated by contents
+	        for (int i = startChild; i < endChild; i++)
+	        {
+	        	Box box = getSubBox(i);
+	        	if (box instanceof ElementBox) //all child boxes must have adjoining margins
+	        	{
+	        		if (!((ElementBox) box).marginsAdjoin())
+	        			return false;
+	        	}
+	        	else
+	        	{
+	        		if (!box.isWhitespace()) //text boxes must be whitespace
+	        			return false;
+	        	}
+	        }
+	        return true;
+    	}
+	}
+
+	/**
      * Vertically aligns the boxes placed relatively to the line box (vertical-align:top or bottom).
      * @param top the top y coordinate relatively to this box
-     * @param bootom the bottom y coordinate relatively to this box
+     * @param bottom the bottom y coordinate relatively to this box
      */
     public void alignLineBoxes(int top, int bottom)
     {

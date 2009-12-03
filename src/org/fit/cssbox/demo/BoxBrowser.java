@@ -2,19 +2,18 @@
  * BoxBrowser.java 
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 package org.fit.cssbox.demo;
@@ -35,7 +34,8 @@ import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.InlineBox;
 import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
-import org.w3c.tidy.Tidy;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -59,6 +59,7 @@ import java.awt.event.MouseListener;
 import java.awt.FlowLayout;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTabbedPane;
 
 /**
  * This demo implements a browser that displays the rendered box tree and the
@@ -87,14 +88,18 @@ public class BoxBrowser
     private JToolBar showToolBar = null;
     private JButton redrawButton = null;
     private JPanel toolPanel = null;
-    private JScrollPane treeScroll = null;
-    private JTree domTree = null;
+    private JScrollPane boxScroll = null;
+    private JTree boxTree = null;
     private JSplitPane infoSplitter = null;
     private JPanel infoPanel = null;
     private JScrollPane infoScroll = null;
     private JTable infoTable = null;
     private JScrollPane styleScroll = null;
     private JTextArea styleText = null;
+    private JTabbedPane treeTabs = null;
+    private JPanel DOMPanel = null;
+    private JScrollPane domScroll = null;
+    private JTree domTree = null;
     /**
      * Reads the document, creates the layout and displays it
      */
@@ -113,8 +118,10 @@ public class BoxBrowser
             con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; BoxBrowserTest/2.x; Linux) CSSBox/2.x (like Gecko)");
             InputStream is = con.getInputStream();
             
-            Tidy tidy = createTidy();
-            Document doc = tidy.parseDOM(is, null);
+            System.out.println("Parsing: " + url); 
+            DOMSource parser = new DOMSource(is);
+            parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
+            Document doc = parser.parse();
             
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
             da.attributesToStyles();
@@ -141,7 +148,10 @@ public class BoxBrowser
             //box tree
             Viewport viewport = ((BrowserCanvas) contentCanvas).getViewport();
             root = createBoxTree(viewport);
-            domTree.setModel(new DefaultTreeModel(root));
+            boxTree.setModel(new DefaultTreeModel(root));
+            
+            //dom tree
+            domTree.setModel(new DefaultTreeModel(createDomTree(doc)));
             
             //=============================================================================
            
@@ -151,20 +161,6 @@ public class BoxBrowser
         }
     }
     
-	
-	/**
-	 * Creates and initializes the jTidy parser
-	 */
-	protected Tidy createTidy()
-	{
-        Tidy tidy = new Tidy();
-        tidy.setTrimEmptyElements(false);
-        tidy.setAsciiChars(false);
-        tidy.setInputEncoding("utf-8");
-        tidy.setXHTML(true);
-        return tidy;
-	}
-	
 	/**
 	 * Recursively creates a tree from the box tree
 	 */
@@ -182,6 +178,18 @@ public class BoxBrowser
 	    return ret;
 	}
 	
+    /**
+     * Recursively creates a tree from the dom tree
+     */
+    private DefaultMutableTreeNode createDomTree(Node root)
+    {
+        DefaultMutableTreeNode ret = new DefaultMutableTreeNode(root);
+        NodeList child = root.getChildNodes();
+        for (int i = 0; i < child.getLength(); i++)
+            ret.add(createDomTree(child.item(i)));
+        return ret;
+    }
+    
 	/**
 	 * Locates a box from its position
 	 */
@@ -224,9 +232,9 @@ public class BoxBrowser
         if (node != null)
         {
             TreePath select = new TreePath(node.getPath());
-            domTree.setSelectionPath(select);
-            domTree.expandPath(select);
-            domTree.scrollPathToVisible(select);
+            boxTree.setSelectionPath(select);
+            boxTree.expandPath(select);
+            boxTree.scrollPathToVisible(select);
         }
     }
 
@@ -242,6 +250,8 @@ public class BoxBrowser
         vals.add(infoTableData("Class", box.getClass().getSimpleName()));
         vals.add(infoTableData("Displayed", "" + box.isDisplayed()));
         vals.add(infoTableData("Visible", "" + box.isVisible()));
+        vals.add(infoTableData("Empty", "" + box.isEmpty()));
+        vals.add(infoTableData("Whitespace", "" + box.isWhitespace()));
         vals.add(infoTableData("Bounds", boundString(box.getBounds())));
         vals.add(infoTableData("AbsBounds", boundString(box.getAbsoluteBounds())));
         vals.add(infoTableData("Content", boundString(box.getContentBounds())));
@@ -279,6 +289,7 @@ public class BoxBrowser
             vals.add(infoTableData("Overflow", eb.getOverflowString()));
             vals.add(infoTableData("Clear", eb.getClearingString()));
             vals.add(infoTableData("Reference", (eb.getAbsReference() == null) ? "- none -" : eb.getAbsReference().toString()));
+            vals.add(infoTableData("floatY", String.valueOf(eb.getFloatY())));
         }
         
         DefaultTableModel tab = new DefaultTableModel(vals, cols);
@@ -447,7 +458,7 @@ public class BoxBrowser
             structurePanel = new JPanel();
             structurePanel.setPreferredSize(new Dimension(200, 408));
             structurePanel.setLayout(gridLayout);
-            structurePanel.add(getTreeScroll(), null);
+            structurePanel.add(getBoxScroll(), null);
         }
         return structurePanel;
     }
@@ -554,7 +565,7 @@ public class BoxBrowser
                         contentScroll.repaint();
                         //new box tree
                         root = createBoxTree(((BrowserCanvas) contentCanvas).getRootBox());
-                        domTree.setModel(new DefaultTreeModel(root));
+                        boxTree.setModel(new DefaultTreeModel(root));
                     }
                 }
             });
@@ -586,7 +597,7 @@ public class BoxBrowser
         if (mainSplitter == null)
         {
             mainSplitter = new JSplitPane();
-            mainSplitter.setLeftComponent(getStructurePanel());
+            mainSplitter.setLeftComponent(getTreeTabs());
             mainSplitter.setRightComponent(getInfoSplitter());
         }
         return mainSplitter;
@@ -651,36 +662,36 @@ public class BoxBrowser
     }
 
     /**
-     * This method initializes treeScroll	
+     * This method initializes boxScroll	
      * 	
      * @return javax.swing.JScrollPane	
      */
-    private JScrollPane getTreeScroll()
+    private JScrollPane getBoxScroll()
     {
-        if (treeScroll == null)
+        if (boxScroll == null)
         {
-            treeScroll = new JScrollPane();
-            treeScroll.setViewportView(getDomTree());
+            boxScroll = new JScrollPane();
+            boxScroll.setViewportView(getBoxTree());
         }
-        return treeScroll;
+        return boxScroll;
     }
 
     /**
-     * This method initializes domTree	
+     * This method initializes boxTree	
      * 	
      * @return javax.swing.JTree	
      */
-    private JTree getDomTree()
+    private JTree getBoxTree()
     {
-        if (domTree == null)
+        if (boxTree == null)
         {
-            domTree = new JTree();
-            domTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("(box tree)")));
-            domTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener()
+            boxTree = new JTree();
+            boxTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("(box tree)")));
+            boxTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener()
             {
                 public void valueChanged(javax.swing.event.TreeSelectionEvent e)
                 {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) domTree.getLastSelectedPathComponent();
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) boxTree.getLastSelectedPathComponent();
                     if (node != null)
                     {
                         Box box = (Box) node.getUserObject();
@@ -694,7 +705,7 @@ public class BoxBrowser
                 }
             });
         }
-        return domTree;
+        return boxTree;
     }
 
     /**
@@ -791,6 +802,71 @@ public class BoxBrowser
             styleText.setEditable(false);
         }
         return styleText;
+    }
+
+    /**
+     * This method initializes treeTabs	
+     * 	
+     * @return javax.swing.JTabbedPane	
+     */
+    private JTabbedPane getTreeTabs()
+    {
+        if (treeTabs == null)
+        {
+            treeTabs = new JTabbedPane();
+            treeTabs.addTab("Box Tree", getStructurePanel());
+            treeTabs.addTab("DOM Tree", null, getDOMPanel(), null);
+        }
+        return treeTabs;
+    }
+
+    /**
+     * This method initializes DOMPanel	
+     * 	
+     * @return javax.swing.JPanel	
+     */
+    private JPanel getDOMPanel()
+    {
+        if (DOMPanel == null)
+        {
+            GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
+            gridBagConstraints8.fill = GridBagConstraints.BOTH;
+            gridBagConstraints8.weighty = 1.0;
+            gridBagConstraints8.weightx = 1.0;
+            DOMPanel = new JPanel();
+            DOMPanel.setLayout(new GridBagLayout());
+            DOMPanel.add(getDomScroll(), gridBagConstraints8);
+        }
+        return DOMPanel;
+    }
+
+    /**
+     * This method initializes domScroll	
+     * 	
+     * @return javax.swing.JScrollPane	
+     */
+    private JScrollPane getDomScroll()
+    {
+        if (domScroll == null)
+        {
+            domScroll = new JScrollPane();
+            domScroll.setViewportView(getDomTree());
+        }
+        return domScroll;
+    }
+
+    /**
+     * This method initializes domTree	
+     * 	
+     * @return javax.swing.JTree	
+     */
+    private JTree getDomTree()
+    {
+        if (domTree == null)
+        {
+            domTree = new JTree();
+        }
+        return domTree;
     }
 
     /**

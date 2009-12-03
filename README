@@ -5,15 +5,18 @@ An XHTML/CSS rendering engine library
 http://cssbox.sourceforge.net/
 
 All the source code of the CSSBox itself is licensed under the GNU Lesser General
-Public License (LGPL), version 2.1. A copy of the LGPL can be found in the LICENSE file.
+Public License (LGPL), version 3. A copy of the LGPL can be found 
+in the COPYING.LESSER and COPYING files.
 
 CSSBox relies on the jStyleParser open source CSS parser 
 (http://cssbox.sourceforge.net/jstyleparser). A snaphsot from its SVN which is tested
 with this CSSBox version is provided in the distribution as a jar file. See the
 jStyleParser documentation for the additional dependencies.
 
-The jTidy parser (http://jtidy.sourceforge.net/) is used for creating the HTML DOM tree.
-An official snapshot is included in this distribution as a .jar file.
+Any DOM and DOM Traversal implementation can be used as an input of the layout engine.
+In the demos contained in the org.fit.cssbox.demo package, the NekoHTML parser 
+(http://nekohtml.sourceforge.net/) is used for creating the DOM tree. An official 
+release of this parser is included in this distribution as a .jar file.
 
 Package contents:
 src/ - CSSBox source files

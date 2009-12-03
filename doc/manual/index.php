@@ -11,21 +11,22 @@ how the basic information about the individual parts can be obtained.</p><p>More
 from the <a href="../api/index.html" class="api">API documentation</a>.</p><p>Any feedback to CSSBox and/or this manual is welcome via the
 <a href="http://cssbox.sourceforge.net/">CSSBox website</a>.</p></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="basic"><h2>Basic usage</h2><p>The input of the rendering engine is a document DOM tree. The engine is able to
 automatically load the style sheets referenced in the document and it computes the
-efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>In the examples, the <a href="http://jtidy.sourceforge.net/">JTidy</a> HTML parser
-is used. However, any other DOM parser can be used. For creating the DOM tree using
-JTidy, following code can be used:</p><div class="code"><pre>
+efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>In the examples, the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
+is used that is based on <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>.
+However, any other DOM parser with DOM Traversal support can be used. For our demos,
+we have created a simple <a href="../api/org/fit/cssbox/demo/DOMSource.html" class="api">DOMSource</a>
+class that hides the detail of document parsing implementation. See the 
+<a href="../api/org/fit/cssbox/demo/DOMSource.html" class="api">DOMSource</a> source code for
+more details.</p><div class="code"><pre>
 <em>//Open the network connection</em> 
 URL url = new URL("http://cssbox.sf.net");
 URLConnection con = url.openConnection();
 InputStream is = con.getInputStream();
 
-<em>//Parse the input document using jTidy</em>
-Tidy tidy = new Tidy();
-tidy.setTrimEmptyElements(false);
-tidy.setInputEncoding("utf-8");
-Document doc = tidy.parseDOM(is, null);
-</pre></div><p>Note that JTidy has many configuration options that can be found in the
-documentation.</p><p>For the initial DOM and style sheet processing, a
+<em>//Parse the input document (replace this with your own parser)</em>
+DOMSource parser = new DOMSource(is);
+Document doc = parser.parse();
+</pre></div><p>For the initial DOM and style sheet processing, a
 <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used. It is
 initialized with the DOM tree and the base URL:</p><div class="code"><pre>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
@@ -51,11 +52,10 @@ Otherwise, the presentation attributes will not be considered in the resulting s
 the document code together with the associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object. The layout is
 computed automatically by creating an instance of this object. The constructor arguments are
-the root DOM element (normally, it is the <code>&lt;body&gt;</code> element), the DOMAnalyzer used
-for obtaining the element styles, the initial viewport dimensions and the document base URL used
-for loading images and other referenced content.</p><div class="code"><pre>
+the root DOM element, the DOMAnalyzer used for obtaining the element styles, the initial viewport 
+dimensions and the document base URL used for loading images and other referenced content.</p><div class="code"><pre>
 BrowserCanvas browser = 
-        new BrowserCanvas(da.getBody(),
+        new BrowserCanvas(da.getRoot(),
                           da,
                           new java.awt.Dimension(1000, 600),
                           url);

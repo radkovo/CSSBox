@@ -2,19 +2,18 @@
  * TableBox.java
  * Copyright (c) 2005-2007 Radek Burget
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * CSSBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * CSSBox is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ *  
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
  * Created on 29.9.2006, 13:52:23 by burgetr
  */
@@ -38,7 +37,6 @@ public class TableBox extends BlockBox
 {
 	private final int DEFAULT_SPACING = 2;
 	
-    protected TableCaptionBox caption;
     protected TableBodyBox header;
     protected TableBodyBox footer;
     protected Vector<TableBodyBox> bodies;
@@ -65,7 +63,6 @@ public class TableBox extends BlockBox
     {
         super(n, g, ctx);
         isblock = true;
-        loadTableStyle();
     }
     
     /**
@@ -75,9 +72,18 @@ public class TableBox extends BlockBox
     {
         super(src);
         isblock = true;
-        loadTableStyle();
     }
 
+    /**
+     * Create a new table from a block box
+     */
+    public TableBox(BlockBox src)
+    {
+        super(src.el, src.g, src.ctx);
+        copyValues(src);
+        isblock = true;
+    }
+    
     /**
      * Determine the number of columns for the whole table
      * @return the column number
@@ -98,18 +104,17 @@ public class TableBox extends BlockBox
     @Override
     public void initBox()
     {
+        loadTableStyle();
         organizeContent(); //organize the child elements according to their display property
     }
 	
     @Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
-        int y = 0;
+        setAvailableWidth(widthlimit);
+        int wlimit = getAvailableContentWidth();
         int maxw = 0;
-        
-        /* Always try to use the full width. If the box is not in flow, its width
-         * is updated after the layout */
-        setAvailableWidth(totalWidth());
+        int y = 0;
 
         //calculate the column widths
         calculateColumns();
@@ -118,7 +123,7 @@ public class TableBox extends BlockBox
         if (header != null)
         {
         	header.setSpacing(spacing);
-            header.doLayout(widthlimit, columns);
+            header.doLayout(wlimit, columns);
             header.setPosition(0, y);
             if (header.getWidth() > maxw)
                 maxw = header.getWidth();
@@ -127,7 +132,7 @@ public class TableBox extends BlockBox
         if (footer != null)
         {
         	footer.setSpacing(spacing);
-            footer.doLayout(widthlimit, columns);
+            footer.doLayout(wlimit, columns);
             footer.setPosition(0, y);
             if (footer.getWidth() > maxw)
                 maxw = footer.getWidth();
@@ -137,7 +142,7 @@ public class TableBox extends BlockBox
         {
             TableBodyBox body = it.next();
             body.setSpacing(spacing);
-            body.doLayout(widthlimit, columns);
+            body.doLayout(wlimit, columns);
             body.setPosition(0, y);
             if (body.getWidth() > maxw)
                 maxw = body.getWidth();
@@ -183,7 +188,80 @@ public class TableBox extends BlockBox
      * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
-    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    @Override
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    {
+        CSSDecoder dec = new CSSDecoder(ctx);
+
+        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
+        if (cblock == null && cblock.getContainingBlock() != null)
+            { System.err.println(toString() + " has no cblock"); return; }
+        contw = cblock.getContainingBlock().getContentWidth();
+        
+        if (width == null) auto = true;
+        if (exact) wset = !auto;
+        if (wset && exact && width.isPercentage()) wrelative = true;
+        preferredWidth = -1;
+        margin.left = margin.right = 0; //margins are provided by the anonymous table box
+        
+        //if column widths haven't been calculated yet,
+        //we can reload everything from scratch
+        if (!columnsCalculated) update = false;
+        
+        if (!wset && !update) //width unknown and the content size unknown
+        {
+            /* For the first time, we always try to use the maximal width even for the table.
+             * That means: 'auto' margins are taken as 0, width comes from the parent element. */
+            content.width = availwidth - margin.left - border.left - padding.left
+                              - padding.right - border.right - margin.right;
+        }
+        else
+        {
+            if (!update)
+                content.width = dec.getLength(width, auto, 0, 0, contw);
+
+            if (isInFlow()) 
+            {
+                //compute the right margin
+                preferredWidth = margin.left + border.left + padding.left + content.width +
+                                    padding.right + border.right + margin.right;
+                /*margin.right = contw - content.width - border.left - padding.left
+                                - padding.right - border.right - margin.left;
+                if (margin.right < 0) margin.right = 0;*/
+            }
+        }
+    }
+    
+    @Override
+    protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
+    {
+        CSSDecoder dec = new CSSDecoder(ctx);
+        
+        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
+        if (cblock == null && cblock.getContainingBlock() != null)
+            { System.err.println(toString() + " has no cblock"); return; }
+        contw = cblock.getContainingBlock().getContentWidth();
+        conth = cblock.getContainingBlock().getContentHeight();
+        
+        if (height == null) auto = true; //no value behaves as "auto"
+        margin.top = margin.bottom = 0; //margins are provided by the anonymous table box
+        
+        //compute height when set. If not, it will be computed during the layout
+        if (cblock != null && cblock.hset)
+        {
+            hset = (exact && !auto && height != null);
+            if (!update)
+                content.height = dec.getLength(height, auto, 0, 0, conth);
+        }
+        else
+        {
+            hset = (exact && !auto && height != null && !height.isPercentage());
+            if (!update)
+                content.height = dec.getLength(height, auto, 0, 0, 0);
+        }
+    }
+    
+    protected void computeWidthsInFlowXXX(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -481,9 +559,19 @@ public class TableBox extends BlockBox
         columnsCalculated = true;
     }
     
+    @Override
+	protected void loadBlockStyle()
+	{
+		super.loadBlockStyle();
+		//Ignore the settings of position and float.
+		//These properties are implemented by the containing BlockTableBox
+		position = POS_STATIC;
+		floating = FLOAT_NONE;
+	}
+
     //====================================================================================
 
-    /**
+	/**
      * Loads the table-specific features from the style
      */
     private void loadTableStyle()
@@ -514,17 +602,42 @@ public class TableBox extends BlockBox
             if (box instanceof ElementBox)
             {
                 ElementBox subbox = (ElementBox) box;
-                if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
+                if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP)
+                {
+                    header = (TableBodyBox) subbox;
+                    header.setOwnerTable(this);
+                }
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
+                {
+                    footer = (TableBodyBox) subbox;
+                    footer.setOwnerTable(this);
+                }
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP)
+                {
+                    bodies.add((TableBodyBox) subbox);
+                    ((TableBodyBox) subbox).setOwnerTable(this);
+                }
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
+                {
+                    for (int i = 0; i < ((TableColumn) subbox).getSpan(); i++)
+                        columns.add((TableColumn) subbox);
+                }
+                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
+                {
+                    for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
+                        columns.add(((TableColumnGroup) subbox).getColumn(i));
+                }
+                else if (!subbox.isEmpty()) //other non-empty element (usually TABLE_ROW), create the anonymous body for it and continue
                 {
                     if (anonbody == null)
                     {
                         //the table itself may not have an owner document if it is an anonymous box itself
                         //therefore, we're using the parent's owner document
-                        Element anonelem = createAnonymousBody(getParent().getElement().getOwnerDocument()); 
+                        Element anonelem = createAnonymousElement(getParent().getElement().getOwnerDocument(), "tbody", "table-row-group"); 
                         anonbody = new TableBodyBox(anonelem, g, ctx);
-                        anonbody.setContainingBlock(this);
-                        anonbody.setParent(this);
-                        anonbody.loadSizes();
+                        anonbody.setStyle(createAnonymousBoxStyle("table-row-group"));
+                        anonbody.adoptParent(this);
+                        anonbody.setOwnerTable(this);
                         bodies.add(anonbody);
                     }
                     anonbody.addSubBox(subbox);
@@ -534,22 +647,6 @@ public class TableBox extends BlockBox
                     it.remove();
                     endChild--;
                 }
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
-                    caption = (TableCaptionBox) subbox;
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP)
-                    header = (TableBodyBox) subbox;
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
-                    footer = (TableBodyBox) subbox;
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP)
-                    bodies.add((TableBodyBox) subbox);
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
-                    for (int i = 0; i < ((TableColumn) subbox).getSpan(); i++)
-                        columns.add((TableColumn) subbox);
-                else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
-                    for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
-                        columns.add(((TableColumnGroup) subbox).getColumn(i));
-                else
-                    System.err.println("TableBox: Warning: Element ignored: " + subbox);
             }
         }
         if (anonbody != null)
@@ -559,19 +656,6 @@ public class TableBox extends BlockBox
         }
     }
 
-    /**
-     * Creates a new <tbody> element that represents an anonymous table body
-     * @param doc the document
-     * @return the new element
-     */
-    private static Element createAnonymousBody(Document doc)
-    {
-        Element div = doc.createElement("tbody");
-        div.setAttribute("class", "Xanonymous");
-        div.setAttribute("style", "display:table-row-group;");
-        return div;
-    }
-    
     /**
      * Creates a new <col> element that represents an anonymous column
      * @param doc the document
