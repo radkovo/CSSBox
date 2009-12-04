@@ -84,6 +84,7 @@ public class ImageRenderer
         InputStream is = con.getInputStream();
         
         DOMSource parser = new DOMSource(is);
+        parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
         Document doc = parser.parse();
         
         DOMAnalyzer da = new DOMAnalyzer(doc, url);
