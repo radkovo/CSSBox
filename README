@@ -16,7 +16,9 @@ jStyleParser documentation for the additional dependencies.
 Any DOM and DOM Traversal implementation can be used as an input of the layout engine.
 In the demos contained in the org.fit.cssbox.demo package, the NekoHTML parser 
 (http://nekohtml.sourceforge.net/) is used for creating the DOM tree. An official 
-release of this parser is included in this distribution as a .jar file.
+release of this parser is included in this distribution as a .jar file. As an alternative,
+the The Validator.nu HTML Parser (http://about.validator.nu/htmlparser/) has been tested 
+with CSSBox too.
 
 Package contents:
 src/ - CSSBox source files
