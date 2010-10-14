@@ -21,15 +21,9 @@
 package org.fit.cssbox.layout;
 
 import java.net.URL;
-import java.util.*;
 import java.awt.*;
 
-import cz.vutbr.web.css.*;
-
 import org.w3c.dom.*;
-
-import org.fit.cssbox.css.CSSUnits;
-import org.fit.cssbox.css.DOMAnalyzer;
 
 /**
  * A visual formatting box. It can be of two types: an inline box
@@ -45,8 +39,6 @@ abstract public class Box
     protected static final short DRAW_BOTH = 0; //drawing modes
     protected static final short DRAW_FG = 1;
     protected static final short DRAW_BG = 2;
-    
-    protected static int next_order = 0;
     
     /** Is this a box for the root element? */
     protected boolean rootelem;
@@ -69,9 +61,6 @@ abstract public class Box
     
     /** The order of the node in the code (first node is 0) */
     protected int order;
-    
-    /** The style of the node (for element nodes only) */
-    protected NodeData style;
     
     /** Box position on the screen relatively to the containing content box.
      * Coordinates of the whole box including margin. */
@@ -127,7 +116,6 @@ abstract public class Box
         node = n;
         rootelem = false;
         isblock = false;
-        style = null;
         isempty = true;
 
         bounds = new Rectangle();
@@ -147,7 +135,6 @@ abstract public class Box
         rootelem = src.rootelem;
         isblock = src.isblock;
         order = src.order;
-        style = src.style;
         isempty = src.isempty;
         availwidth = src.availwidth;
         viewport = src.viewport;
@@ -161,6 +148,14 @@ abstract public class Box
         visible = src.visible;
         splitted = src.splitted;
         rest = src.rest;
+    }
+    
+    /**
+     * This method is called for all the element boxes once the box tree is finished.
+     * It is the right place for internal object initializing, content organization, etc. 
+     */
+    public void initBox()
+    {
     }
     
     /**
@@ -179,479 +174,6 @@ abstract public class Box
         setClipBlock(parent.getClipBlock());
     }
     
-    /** 
-     * Creates a box tree from a DOM node. Recursively creates the child boxes 
-     * from the child nodes. If the element is inline, we try to create
-     * an inline box. When a block box occures inside, everything is
-     * converted to blocks.
-     * @param n DOM tree root node
-     * @param g graphics context to render on
-     * @param ctx visual context to render on
-     * @param decoder a CSS style decoder
-     * @param baseurl the base URL of the document
-     * @param viewport current viewport
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param absbox the containing box of the new box when absolutley positioned
-     * @param clipbox the clipping block of this subtree
-     * @return the root node of the created tree of boxes
-     */
-    public static Box createBoxTree(Node n, Graphics2D g, VisualContext ctx,
-                                    DOMAnalyzer decoder, URL baseurl,
-                                    Viewport viewport,
-                                    BlockBox contbox, BlockBox absbox, BlockBox clipbox,
-                                    ElementBox parent)
-    {
-        //-- Text nodes --
-        if (n.getNodeType() == Node.TEXT_NODE)
-        {
-            TextBox text = new TextBox((Text) n, g, ctx);
-            text.setOrder(next_order++);
-            text.setContainingBlock(contbox);
-            text.setClipBlock(clipbox);
-            return text;
-        }
-        //-- Element nodes --
-        else
-        {
-            //Create the new box
-            ElementBox root = createBox((Element) n, g, ctx, decoder, baseurl, viewport, parent, null);
-            if (root.toString().contains("abColumn"))
-                System.out.println("jo!");
-            
-            //Determine the containing boxes
-            BlockBox newcont = contbox;
-            BlockBox newabs = absbox;
-            BlockBox newclip = clipbox;
-            if (root.isBlock())
-            {
-                BlockBox block = (BlockBox) root; 
-                //Setup my containing box
-                if (block.position == BlockBox.POS_ABSOLUTE ||
-                    block.position == BlockBox.POS_FIXED)
-                    root.setContainingBlock(absbox);
-                else    
-                    root.setContainingBlock(contbox);
-                //A positioned box forms a content box for following absolutely
-                //positioned boxes
-                if (block.position == BlockBox.POS_ABSOLUTE ||
-                    block.position == BlockBox.POS_RELATIVE ||
-                    block.position == BlockBox.POS_FIXED)
-                    newabs = block;
-                //Any block box forms a containing box for not positioned elements
-                newcont = block;
-                //A box with overflow:hidden creates a clipping box
-                if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
-                    newclip = block;
-            }
-            else    
-                root.setContainingBlock(contbox);
-            
-            //Set the clipping block
-            root.setClipBlock(clipbox);
-            
-            //process the subtree
-            if (root.isDisplayed())
-            {
-                NodeList children = n.getChildNodes();
-                
-                //Check if anonymous inline boxes should be created
-                boolean textonly = true;
-                for (int i = 0; i < children.getLength(); i++)
-                    if (children.item(i).getNodeType() == Node.ELEMENT_NODE)
-                        textonly = false;
-                
-                //a reference box for possible absolutely positioned boxes
-                //normally, it is the previous in-flow box, or null, if this is the first box
-                Box inflowReference = null;
-                
-                //Create child boxes
-                for (int i = 0; i < children.getLength(); i++)
-                {
-                    Node cn = children.item(i);
-                    
-                    if (cn.getNodeType() == Node.ELEMENT_NODE ||
-                        cn.getNodeType() == Node.TEXT_NODE)
-                    {
-                        //Create a new subtree
-                        Box newbox = createBoxTree(cn, (Graphics2D) g.create(), ctx.create(), 
-                                                    decoder, baseurl, viewport,
-                                                    newcont, newabs, newclip, root);
-                        //If the new box is block, it's parent box must be block too
-                        //This is not true for positioned boxes (they are moved to their containing block)
-                        boolean inflow = true;
-                        if (newbox.isBlock())
-                        {
-                            BlockBox newblock = (BlockBox) newbox;
-                            //if the box contains in-flow block boxes, it must be a block box
-                            //this should happen by error only (a block inside of inline element)
-                            if (newblock.isInFlow())
-                            {
-                                if (!root.isBlock())
-                                    root = new BlockBox((InlineBox) root);
-                                ((BlockBox) root).contblock = true;
-                                updateContainingBoxes(root, contbox, absbox);
-                                updateContainingBoxes((ElementBox) newbox, (BlockBox) root, newabs);
-                            }
-                            else
-                                inflow = false;
-                        }
-                        //Add the new child
-                        if (inflow) //box in flow (inline or block) - add it to it's parent
-                        {
-                            if (root.isDisplayed() && !newbox.isEmpty())
-                            	root.isempty = false;
-                            if (root.isBlock() && newbox.isInFlow())
-                            	((BlockBox) root).anyinflow = true;
-                            if (cn.getNodeType() == Node.TEXT_NODE && !textonly)
-                            {
-                                //create anonymous inline box for the text
-                                Element anelem = createAnonymousElement(root.getElement().getOwnerDocument(), "Xspan", "inline");
-                                ElementBox anbox = createBox(anelem, g, ctx, decoder, baseurl, viewport, root, "intline");
-                                newbox.setParent(anbox);
-                                anbox.addSubBox(newbox);
-                                anbox.isempty = false;
-                                anbox.setParent(root);
-                                anbox.setContainingBlock(newcont);
-                                anbox.setClipBlock(newclip);
-                                root.addSubBox(anbox);
-                            }
-                            else
-                            {
-                                //insert directly
-                                newbox.setParent(root);
-                                root.addSubBox(newbox);
-                            }
-                            inflowReference = newbox;
-                        }
-                        else //positioned or floating (block only) - add it to its containing block
-                        {
-                            BlockBox newcblock = newbox.getContainingBlock();
-                            if (newcblock.isDisplayed() && !newbox.isEmpty())
-                                newcblock.isempty = false;
-                            newbox.setParent(newcblock);
-                            newcblock.addSubBox(newbox);
-                            ((BlockBox) newbox).absReference = inflowReference; //set the reference box for computing the static position
-                        }
-                    }
-                }
-            }
-            
-            createAnonymousBlocks(root);
-            createAnonymousBoxes(root, decoder,
-                                 ElementBox.DISPLAY_TABLE_CELL,
-                                 ElementBox.DISPLAY_TABLE_ROW, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY, 
-                                 "tr", "table-row");
-            createAnonymousBoxes(root, decoder,
-                                 ElementBox.DISPLAY_TABLE_ROW,
-                                 ElementBox.DISPLAY_TABLE_ROW_GROUP, ElementBox.DISPLAY_TABLE_HEADER_GROUP, ElementBox.DISPLAY_TABLE_FOOTER_GROUP, 
-                                 "tbody", "table-row-group");
-            createAnonymousBoxes(root, decoder,
-                                 ElementBox.DISPLAY_TABLE_COLUMN,
-                                 ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_TABLE_COLUMN_GROUP, ElementBox.DISPLAY_ANY,
-                                 "table", "table");
-            createAnonymousBoxes(root, decoder,
-                                 ElementBox.DISPLAY_TABLE_ROW_GROUP,
-                                 ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY,
-                                 "table", "table");
-            
-            return root;
-        }
-    }
-
-    /**
-     * Creates anonymous block boxes as the a block box contains both the inline
-     * and the block child boxes. The child boxes of the specified root
-     * are processed and the inline boxes are grouped in a newly created
-     * anonymous <code>div</code> boxes.
-     * @param root the root box
-     */
-    private static void createAnonymousBlocks(ElementBox root)
-    {
-        if (root.isBlock() && ((BlockBox) root).containsBlocks())
-        {
-            Vector<Box> nest = new Vector<Box>();
-            BlockBox adiv = null;
-            for (int i = 0; i < root.getSubBoxNumber(); i++)
-            {
-                Box sub = root.getSubBox(i);
-                if (sub.isblock)
-                {
-                    adiv = null;
-                    nest.add(sub);
-                }
-                else if (!sub.isWhitespace()) //omit whitespace boxes
-                {
-                    if (adiv == null)
-                    {
-                        Element anelem = createAnonymousElement(root.getElement().getOwnerDocument(), "div", "block");
-                        adiv = new BlockBox(anelem, root.getGraphics(), root.getVisualContext());
-                        adiv.setStyle(createAnonymousBoxStyle("block"));
-                        computeInheritedStyle(adiv, root);
-                        adiv.isblock = true;
-                        adiv.contblock = false;
-                        adiv.isempty = true;
-                        adiv.setViewport(root.getViewport());
-                        adiv.setParent(root);
-                        adiv.setContainingBlock(sub.getContainingBlock());
-                        adiv.setClipBlock(sub.getClipBlock());
-                        nest.add(adiv);
-                    }
-                    if (sub.isDisplayed() && !sub.isEmpty()) 
-                    { 
-                        adiv.isempty = false;
-                        adiv.displayed = true;
-                    }
-                    sub.setParent(adiv);
-                    adiv.addSubBox(sub);
-                }
-            }
-            root.nested = nest;
-            root.endChild = nest.size();
-        }
-    }
-    
-    /**
-     * Checks the child boxes of the specified root box wheter they require creating an anonymous
-     * parent box.
-     * @param root the box whose child boxes are checked
-     * @param decoder DOM style decoder used for obtaining the efficient node styles
-     * @param type the required display type of the child boxes. The remaining child boxes are skipped.
-     * @param reqtype1 the first required display type of the root. If the root type doesn't correspond
-     * 		to any of the required types, an anonymous parent is created for the selected children.
-     * @param reqtype3 the second required display type of the root.
-     * @param reqtype4 the third required display type of the root.
-     * @param the element name of the created anonymous box
-     * @param the display type of the created anonymous box
-     */
-    private static void createAnonymousBoxes(ElementBox root, DOMAnalyzer decoder, 
-                                             CSSProperty.Display type,
-                                             CSSProperty.Display reqtype1, 
-                                             CSSProperty.Display reqtype2, 
-                                             CSSProperty.Display reqtype3, 
-    		                                 String name, String display)
-    {
-    	if (root.getDisplay() != reqtype1 && root.getDisplay() != reqtype2 && root.getDisplay() != reqtype3)
-    	{
-	        Vector<Box> nest = new Vector<Box>();
-	        ElementBox adiv = null;
-	        for (int i = 0; i < root.getSubBoxNumber(); i++)
-	        {
-	            Box sub = root.getSubBox(i);
-	            if (sub instanceof ElementBox)
-	            {
-	            	ElementBox subel = (ElementBox) sub;
-		            if (subel.getDisplay() != type)
-		            {
-		                adiv = null;
-		                nest.add(sub);
-		            }
-		            else
-		            {
-		                if (adiv == null)
-		                {
-		                	Element elem = createAnonymousElement(root.getElement().getOwnerDocument(), name, display);
-		                	adiv = createBox(elem, root.getGraphics(), root.getVisualContext(), decoder, root.getBase(), root.getViewport(), root, display);
-		                    adiv.isblock = true;
-		                    adiv.isempty = true;
-		                    adiv.setViewport(root.getViewport());
-		                    adiv.setParent(root);
-		                    adiv.setContainingBlock(sub.getContainingBlock());
-                            adiv.setClipBlock(sub.getClipBlock());
-		                    nest.add(adiv);
-		                }
-		                if (sub.isDisplayed() && !sub.isEmpty()) 
-		                { 
-		                    adiv.isempty = false;
-		                    adiv.displayed = true;
-		                }
-		                sub.setParent(adiv);
-		                sub.setContainingBlock((BlockBox) adiv);
-		                adiv.addSubBox(sub);
-		            }
-	            }
-	            else
-	            	return; //first box is TextBox => all the boxes are TextBox, nothing to do. 
-	        }
-	        root.nested = nest;
-	        root.endChild = nest.size();
-    	}
-    }
-    
-    /**
-     * Creates a new box from an element.
-     * @param n The source DOM element
-     * @param g Graphics context
-     * @param ctx Visual context
-     * @param decoder The CSS style analyzer
-     * @param baseurl The base URL of the document
-     * @param viewport The used viewport
-     * @param parent the root element from which the style will be inherited
-     * @param display the display: property value that is used when the box style is not known (e.g. anonymous boxes)
-     * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
-     */
-    public static ElementBox createBox(Element n, Graphics2D g, VisualContext ctx, 
-                                       DOMAnalyzer decoder, URL baseurl, Viewport viewport,
-                                       ElementBox parent, String display)
-    {
-	    ElementBox root;
-        
-        //New box style
-        NodeData style = decoder.getElementStyleInherited(n);
-        if (style == null)
-        		style = createAnonymousBoxStyle(display);
-        
-        //Special tag names
-        if (n.getNodeName().equals("img"))
-        {
-        	InlineReplacedBox rbox = new InlineReplacedBox((Element) n, g, ctx);
-            rbox.setStyle(style);
-        	rbox.setContentObj(new ReplacedImage(rbox, ctx, baseurl));
-        	root = rbox;
-        	if (root.isBlock())
-        		root = new BlockReplacedBox(rbox);
-        }
-        //Create a box according to the <code>display</code> value
-        else
-        {
-    	    root = createBoxInstance(n, g, ctx, style);
-        }
-        root.setBase(baseurl);
-        root.setViewport(viewport);
-        root.setOrder(next_order++);
-    	return root;
-    }
-
-    /**
-     * Creates an instance of ElementBox. According to the display: property of the style, the appropriate
-     * subclass of ElementBox is created (e.g. BlockBox, TableBox, etc.)
-     * @param n The source DOM element
-     * @param g Graphics context
-     * @param ctx Visual context
-     * @param style Style definition for the node
-     * @return The created instance of ElementBox
-     */
-    private static ElementBox createBoxInstance(Element n, Graphics2D g, VisualContext ctx, NodeData style)
-    {
-        ElementBox root = new InlineBox((Element) n, g, ctx);
-        root.setStyle(style);
-        if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
-            root = new ListItemBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
-            root = new BlockTableBox((InlineBox) root);
-        /*else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
-            root = new InlineTableBox((InlineBox) root);*/
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
-            root = new TableCaptionBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP
-                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_HEADER_GROUP
-                 || root.getDisplay() == ElementBox.DISPLAY_TABLE_FOOTER_GROUP)
-            root = new TableBodyBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
-            root = new TableRowBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CELL)
-            root = new TableCellBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
-            root = new TableColumn((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
-            root = new TableColumnGroup((InlineBox) root);
-        else if (root.isBlock())
-            root = new BlockBox((InlineBox) root);
-        return root;
-    }
-    
-    /**
-     * Creates a new <div> element that represents an anonymous box in a document.
-     * @param doc the document
-     * @param name the anonymous element name (generally arbitrary)
-     * @param display the display style value for the block
-     * @return the new element
-     */
-    protected static Element createAnonymousElement(Document doc, String name, String display)
-    {
-        Element div = doc.createElement(name);
-        div.setAttribute("class", "Xanonymous");
-        div.setAttribute("style", "display:" + display);
-        return div;
-    }
-    
-    /**
-     * Creates the style definition for an anonymous box. It contains only the class name set to "Xanonymous"
-     * and the display: property set according to the parametres.
-     * @param display display: property value of the resulting style.
-     * @return Resulting style definition
-     */
-    protected static NodeData createAnonymousBoxStyle(String display)
-    {
-        NodeData ret = CSSFactory.createNodeData();
-        
-        Declaration cls = CSSFactory.getRuleFactory().createDeclaration();
-        cls.unlock();
-        cls.setProperty("class");
-        cls.add(CSSFactory.getTermFactory().createString("Xanonymous"));
-        ret.push(cls);
-        
-        Declaration disp = CSSFactory.getRuleFactory().createDeclaration();
-        disp.unlock();
-        disp.setProperty("display");
-        disp.add(CSSFactory.getTermFactory().createIdent(display));
-        ret.push(disp);
-        
-        return ret;
-    }
-    
-    /**
-     * Computes the style of a node based on its parent using the CSS inheritance.
-     * @param dest the box whose style should be computed
-     * @param parent the parent box
-     */ 
-    private static void computeInheritedStyle(ElementBox dest, ElementBox parent)
-    {
-    	NodeData newstyle = dest.getStyle().inheritFrom(parent.getStyle()); 
-    	dest.setStyle(newstyle);
-    }
-   
-    /**
-     * Recursively determines the containing boxes for all boxes in a (sub)tree
-     * @param root the (sub)tree root
-     * @param contbox the containing box of the root box when not absolutly positioned
-     * @param absbox the containing box of the root box when absolutly positioned
-     */
-    private static void updateContainingBoxes(ElementBox root, BlockBox contbox, BlockBox absbox)
-    {
-        BlockBox newcont = contbox;
-        BlockBox newabs = absbox;
-        
-        if (root.isBlock())
-        {
-            BlockBox block = (BlockBox) root;
-            //My containing box
-            if (block.position == BlockBox.POS_ABSOLUTE ||
-                block.position == BlockBox.POS_FIXED)    
-                root.setContainingBlock(absbox);
-            else    
-                root.setContainingBlock(contbox);
-            //A positioned box forms a content box for following absolutely
-            //positioned boxes
-            if (block.position == BlockBox.POS_ABSOLUTE ||
-                block.position == BlockBox.POS_RELATIVE ||
-                block.position == BlockBox.POS_FIXED)
-                newabs = block;
-            //Any block box forms a containing box for not positioned elements
-            newcont = block;
-        }
-        else
-            root.setContainingBlock(contbox);
-
-        for (int i = 0; i < root.getSubBoxNumber(); i++)
-        {
-                Box sub = root.getSubBox(i);
-                if (sub instanceof ElementBox)
-                    updateContainingBoxes((ElementBox) sub, newcont, newabs);
-                else
-                    sub.setContainingBlock(contbox);
-        }        
-    }
-    
     //========================================================================
         
     /**
@@ -662,7 +184,7 @@ abstract public class Box
     {
         return node;
     }
-
+    
     /**
      * Gets the order of the node in the document.
 	 * @return the order
@@ -681,45 +203,6 @@ abstract public class Box
 		this.order = order;
 	}
 
-	/**
-     * Returns the style of the DOM node that forms this box.
-     * @return the style declaration
-     */
-    public NodeData getStyle()
-    {
-    	return style;
-    }
-    
-    public String getStyleString()
-    {
-        if (style != null)
-            return style.toString();
-        else
-            return "";
-    }
-    
-    /**
-     * Assign a new style to this box
-     * @param s the new style declaration
-     */
-    public void setStyle(NodeData s)
-    {
-    	style = s;
-    }
-    
-    /**
-     *
-     */
-    public String getStylePropertyValue(String property)
-    {
-        Object t = style.getValue(Term.class, property);
-        if (t == null)
-            return "";
-        else
-            return t.toString();
-    }
-    
-    
     /**
      * Returns the graphics context that is used for rendering.
      * @return the graphics context
@@ -1169,39 +652,6 @@ abstract public class Box
     protected Box getRest()
     {
         return rest;
-    }
-    
-    /**
-     * Reads a CSS length value of a style property of the box.
-     * @param name property name
-     * @return the length value
-     */
-    public TermLengthOrPercent getLengthValue(String name)
-    {
-        if (style != null)
-            return style.getValue(TermLengthOrPercent.class, name);
-        else
-            return null;
-    }
-    
-    /**
-     * Reads the value of a border width specified by a CSS property.
-     * @param dec a CSS decoder used for converting the values
-     * @param property the property name, e.g. "border-top-width"
-     * @return the border width in pixels
-     */
-    public int getBorderWidth(CSSDecoder dec, String property)
-    {
-    	if (style != null)
-    	{
-    		CSSProperty.BorderWidth prop = style.getProperty(property);
-    		if (prop == CSSProperty.BorderWidth.length)
-    			return dec.getLength(style.getValue(TermLengthOrPercent.class, property), false, CSSUnits.MEDIUM_BORDER, 0, 0);
-    		else
-    			return CSSUnits.convertBorderWidth(prop);
-    	}
-    	else
-    		return 0;
     }
     
     //========================================================================

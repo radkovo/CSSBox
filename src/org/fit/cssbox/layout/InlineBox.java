@@ -55,8 +55,8 @@ public class InlineBox extends ElementBox
         valign = src.valign;
     }
     
-    /** Create a new box from the same DOM node in the same context */
-    public InlineBox copyInlineBox()
+    @Override
+    public InlineBox copyBox()
     {
         InlineBox ret = new InlineBox(el, g, ctx);
         ret.copyValues(this);
@@ -168,7 +168,7 @@ public class InlineBox extends ElementBox
                 }
                 if (subbox.getRest() != null) //is there anything remaining?
                 {
-                    InlineBox rbox = copyInlineBox();
+                    InlineBox rbox = copyBox();
                     rbox.splitted = true;
                     rbox.setStartChild(i); //next starts with me...
                     rbox.nested.setElementAt(subbox.getRest(), i); //..but only with the rest
@@ -187,7 +187,7 @@ public class InlineBox extends ElementBox
                 }
                 else //some children have been placed, contintue the next time
                 {
-                    InlineBox rbox = copyInlineBox();
+                    InlineBox rbox = copyBox();
                     rbox.splitted = true;
                     rbox.setStartChild(lastbreak); //next time start from the last break
                     rbox.adoptChildren();
@@ -537,7 +537,7 @@ public class InlineBox extends ElementBox
                 else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
                 {
                     CSSDecoder dec = new CSSDecoder(sub.getVisualContext());
-                    int len = dec.getLength(sub.getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
+                    int len = dec.getLength(((ElementBox) sub).getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
                     dif = baseshift - len;
                 }
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.

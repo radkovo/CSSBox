@@ -206,6 +206,8 @@ public class TableColumn extends BlockBox
     protected void loadSizes(boolean update)
     {
         bounds = new Rectangle(0, 0, 0, 0);
+        min_size = new Dimension();
+        max_size = new Dimension();
         margin = new LengthSet();
         emargin = margin;
         padding = new LengthSet();

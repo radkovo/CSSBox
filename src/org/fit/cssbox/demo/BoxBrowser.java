@@ -295,7 +295,8 @@ public class BoxBrowser
         DefaultTableModel tab = new DefaultTableModel(vals, cols);
         infoTable.setModel(tab);
         
-        styleText.setText(box.getStyleString());
+        if (box instanceof ElementBox)
+            styleText.setText(((ElementBox) box).getStyleString());
     }
     
     private Vector<String> infoTableData(String prop, String value)
@@ -564,7 +565,7 @@ public class BoxBrowser
                         ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize());
                         contentScroll.repaint();
                         //new box tree
-                        root = createBoxTree(((BrowserCanvas) contentCanvas).getRootBox());
+                        root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());
                         boxTree.setModel(new DefaultTreeModel(root));
                     }
                 }

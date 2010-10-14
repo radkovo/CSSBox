@@ -22,6 +22,9 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 import java.awt.geom.*;
+
+import cz.vutbr.web.css.CSSProperty;
+
 import org.w3c.dom.*;
 
 /**
@@ -32,7 +35,10 @@ import org.w3c.dom.*;
 public class TextBox extends Box
 {
     /** Assigned text node */
-    protected Text text;
+    protected Text textNode;
+    
+    /** Text string after whitespace processing */
+    protected String text;
     
     /** The start index of the text substring to be displayed */
     protected int textStart;
@@ -57,11 +63,9 @@ public class TextBox extends Box
     public TextBox(Text n, Graphics2D g, VisualContext ctx)
     {
         super(n, g, ctx);
-        text = n;
+        textNode = n;
+        setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
-        textStart = 0;
-        textEnd = node.getNodeValue().length();
-        isempty = (node.getNodeValue().length() == 0); //not trimming, space cannot be omited
         ctx.updateForGraphics(null, g);
 
         minwidth = computeMinimalWidth();
@@ -75,6 +79,7 @@ public class TextBox extends Box
     public void copyValues(TextBox src)
     {
         super.copyValues(src);
+        text = new String(src.text);
     }
     
     /** 
@@ -83,14 +88,26 @@ public class TextBox extends Box
      */
     public TextBox copyTextBox()
     {
-        TextBox ret = new TextBox(text, g, ctx);
+        TextBox ret = new TextBox(textNode, g, ctx);
         ret.copyValues(this);
         return ret;
     }
     
     public String toString()
     {
-        return "Text: " + node.getNodeValue();
+        return "Text: " + text;
+    }
+    
+    @Override
+    public void initBox()
+    {
+        if (getParent() != null)
+        {
+            //reset the whitespace processing according to the parent settings
+            CSSProperty.WhiteSpace ws = getParent().getWhiteSpace();
+            if (ws != ElementBox.WHITESPACE_NORMAL)
+                setWhiteSpace(ws);
+        }
     }
 
     /**
@@ -99,9 +116,8 @@ public class TextBox extends Box
     @Override
     public String getText()
     {
-        String ret = node.getNodeValue();
-        if (ret != null)
-            return ret.substring(textStart, textEnd);
+        if (text != null)
+            return text.substring(textStart, textEnd);
         else
             return "";
     }
@@ -132,6 +148,51 @@ public class TextBox extends Box
     
     //=======================================================================
 
+    /**
+     * Sets the whitespace processing for this box. The text content is then treated accordingly. The text start and text end
+     * indices are reset to their initial values.
+     */
+    public void setWhiteSpace(CSSProperty.WhiteSpace value)
+    {
+        if (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE)
+            text = collapseWhitespaces(node.getNodeValue());
+        else
+            text = node.getNodeValue();
+        
+        textStart = 0;
+        textEnd = text.length();
+        isempty = (textEnd == 0); //not trimming, space cannot be omited
+    }
+    
+    /**
+     * Applies the whitespace removal rules used in HTML
+     * @param src source string
+     * @return a new string with additional whitespaces removed
+     */
+    private String collapseWhitespaces(String src)
+    {
+        StringBuffer ret = new StringBuffer();
+        boolean inws = false;
+        for (int i = 0; i < src.length(); i++)
+        {
+            char ch = src.charAt(i);
+            if (Character.isWhitespace(ch))
+            {
+                if (!inws)
+                {
+                    ret.append(' ');
+                    inws = true;
+                }
+            }
+            else
+            {
+                inws = false;
+                ret.append(ch);
+            }
+        }
+        return new String(ret);
+    }
+    
     /**
      * @return the start offset in the text string
      */ 
@@ -329,7 +390,6 @@ public class TextBox extends Box
         
         boolean split = false;
         int wlimit = getAvailableContentWidth();
-        String text = node.getNodeValue();
         boolean empty = (text.trim().length() == 0);
         int end = text.length();
         FontMetrics fm = g.getFontMetrics();
@@ -420,20 +480,20 @@ public class TextBox extends Box
     {
         //returns the length of the longest word
         int ret = 0;
-        String text = getText();
-        if (text.length() > 0)
+        String t = getText();
+        if (t.length() > 0)
         {
             FontMetrics fm = g.getFontMetrics();
             int s1 = 0;
-            int s2 = text.indexOf(' ');
+            int s2 = t.indexOf(' ');
             do
             {
-                if (s2 == -1) s2 = text.length();
-                int w = fm.stringWidth(text.substring(s1, s2));
+                if (s2 == -1) s2 = t.length();
+                int w = fm.stringWidth(t.substring(s1, s2));
                 if (w > ret) ret = w;
                 s1 = s2 + 1;
-                s2 = text.indexOf(' ', s1);
-            } while (s1 < text.length() && s2 < text.length());
+                s2 = t.indexOf(' ', s1);
+            } while (s1 < t.length() && s2 < t.length());
         }
         return ret;
     }
@@ -464,12 +524,12 @@ public class TextBox extends Box
         //Draw the string
         if (textEnd > textStart)
         {
-            String text = node.getNodeValue().substring(textStart, textEnd);
+            String t = text.substring(textStart, textEnd);
             FontMetrics fm = g.getFontMetrics();
-            Rectangle2D rect = fm.getStringBounds(text, g);
+            Rectangle2D rect = fm.getStringBounds(t, g);
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getAbsoluteContentBounds());
-            g.drawString(text, x + (int) rect.getX(), y - (int) rect.getY());
+            g.drawString(t, x + (int) rect.getX(), y - (int) rect.getY());
             g.setClip(oldclip);
         }
     }
@@ -492,6 +552,18 @@ public class TextBox extends Box
         //draw the full box
         g.setColor(Color.ORANGE);
         g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
+        for (int i = 0; i < getText().length(); i++)
+        {
+            if (i != 0) System.out.print(" : ");
+            char ch = getText().charAt(i);
+            System.out.print(ch);
+            System.out.print((int) ch);
+            if (Character.isWhitespace(ch))
+                System.out.print("!");
+            if (Character.isSpaceChar(ch))
+                System.out.print("*");
+        }
+        System.out.println();
     }
-        
+
 }

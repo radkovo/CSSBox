@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. únor 2006, 13:40
+ * Created on 5. ï¿½nor 2006, 13:40
  */
 
 package org.fit.cssbox.layout;
@@ -258,15 +258,32 @@ public class BlockBox extends ElementBox
         topstatic = src.topstatic;
     }
     
-    /** Create a new box from the same DOM node in the same context */
-    public BlockBox copyBlockBox()
+    @Override
+    public BlockBox copyBox()
     {
         BlockBox ret = new BlockBox(el, g, ctx);
         ret.copyValues(this);
         return ret;
     }
     
-    //========================================================================
+    @Override
+    public void addSubBox(Box box)
+    {
+        super.addSubBox(box);
+        if (box.isInFlow())
+        {
+            anyinflow = true;
+            if (box.isBlock())
+                contblock = true;
+        }
+    }
+
+    @Override
+    public void setStyle(NodeData s)
+    {
+    	super.setStyle(s);
+    	loadBlockStyle();
+    }
     
     @Override
     public String toString()
@@ -275,12 +292,7 @@ public class BlockBox extends ElementBox
                "\" class=\""  + el.getAttribute("class") + "\">";
     }
     
-    @Override
-    public void setStyle(NodeData s)
-    {
-    	super.setStyle(s);
-    	loadBlockStyle();
-    }
+    //========================================================================
     
     public boolean containsBlocks()
     {
@@ -582,7 +594,7 @@ public class BlockBox extends ElementBox
                 else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
                 {
                     CSSDecoder dec = new CSSDecoder(subbox.getVisualContext());
-                    int len = dec.getLength(subbox.getLengthValue("vertical-align"), false, 0, 0, subbox.getLineHeight());
+                    int len = dec.getLength(((ElementBox) subbox).getLengthValue("vertical-align"), false, 0, 0, subbox.getLineHeight());
                     dif = baseshift - len;
                 }
                 
@@ -605,9 +617,6 @@ public class BlockBox extends ElementBox
     @Override
     public void computeEfficientMargins()
     {
-        if (this.toString().contains("mojo"))
-            System.out.println("jo!");
-
         //minimal margins
         emargin.top = margin.top;
         emargin.bottom = margin.bottom;
@@ -837,6 +846,7 @@ public class BlockBox extends ElementBox
                     //go to the new line
                     if (x > maxw) maxw = x;
                     y += getLineHeight();
+                    curline.setY(y);
                     maxh = 0;
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
@@ -1160,7 +1170,10 @@ public class BlockBox extends ElementBox
                 else if (position == POS_ABSOLUTE || position == POS_FIXED)
                 {
                     if (topstatic || leftstatic)
+                    {
+                        System.out.println(this + " : static");
                         updateStaticPosition();
+                    }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
                     y = cblock.getAbsoluteBackgroundBounds().y + coords.top;
                 }
@@ -1205,9 +1218,13 @@ public class BlockBox extends ElementBox
      * from the reference box (if any) */
     private void updateStaticPosition()
     {
-        if (absReference != null)
+        if (absReference != null && cblock != null)
         {
-            Rectangle ab = absReference.getBounds();
+            //compute the bounds of the reference box relatively to our containing block
+            Rectangle ab = new Rectangle(absReference.getAbsoluteBounds());
+            Rectangle cb = cblock.getAbsoluteBounds();
+            ab.x = ab.x - cb.x;
+            ab.y = ab.y - cb.y;
             if (ab != null)
             {
                 if (topstatic)

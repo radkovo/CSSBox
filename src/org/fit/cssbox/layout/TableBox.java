@@ -633,9 +633,9 @@ public class TableBox extends BlockBox
                     {
                         //the table itself may not have an owner document if it is an anonymous box itself
                         //therefore, we're using the parent's owner document
-                        Element anonelem = createAnonymousElement(getParent().getElement().getOwnerDocument(), "tbody", "table-row-group"); 
+                        Element anonelem = BoxFactory.getInstance().createAnonymousElement(getParent().getElement().getOwnerDocument(), "tbody", "table-row-group"); 
                         anonbody = new TableBodyBox(anonelem, g, ctx);
-                        anonbody.setStyle(createAnonymousBoxStyle("table-row-group"));
+                        anonbody.setStyle(BoxFactory.getInstance().createAnonymousStyle("table-row-group"));
                         anonbody.adoptParent(this);
                         anonbody.setOwnerTable(this);
                         bodies.add(anonbody);

@@ -36,15 +36,20 @@ public class Viewport extends BlockBox
 {
 	private int width;
 	private int height;
+	private BoxFactory factory;
+	private Element root; //the DOM root
+	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
     protected ElementBox lastbox = null;
     protected ElementBox lastparent = null;
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
 
     
-    public Viewport(Element root, Graphics2D g, VisualContext ctx, int width, int height)
+    public Viewport(Element e, Graphics2D g, VisualContext ctx, BoxFactory factory, Element root, int width, int height)
 	{
-		super(root, g, ctx);
+		super(e, g, ctx);
+		this.factory = factory;
+		this.root = root;
 		style = CSSFactory.createNodeData(); //Viewport starts with an empty style
         nested = new Vector<Box>();
         startChild = 0;
@@ -53,6 +58,7 @@ public class Viewport extends BlockBox
 		this.height = height;
         isblock = true;
         contblock = true;
+        root = null;
         setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
 		loadSizes();
 	}
@@ -61,13 +67,57 @@ public class Viewport extends BlockBox
     {
         return "Viewport " + width + "x" + height;
     }
+    
+    public BoxFactory getFactory()
+    {
+        return factory;
+    }
 
     public int getMinimalWidthLimit()
     {
     	return width;
     }
+    
+    /**
+     * Obtains the DOM root element.
+     * @return The root element of the document.
+     */
+    public Element getRootElement()
+    {
+        return root;
+    }
 
+    /**
+     * Obtains the child box the corresponds to the DOM root element.
+     * @return the corresponding element box or <code>null</code> if the viewport is empty.
+     */
+    public ElementBox getRootBox()
+    {
+        return rootBox;
+    }
+    
+    public ElementBox getElementBoxByName(String name, boolean case_sensitive)
+    {
+        if (rootBox == null)
+            return null;
+        else
+            return recursiveFindElementBoxByName(rootBox, name, case_sensitive);
+    }
+    
 	@Override
+    public void addSubBox(Box box)
+    {
+        super.addSubBox(box);
+        if (box instanceof ElementBox && ((ElementBox) box).getElement() == root)
+        {
+            if (rootBox != null)
+                System.err.println("Viewport warning: another root box '" + box + "' in addition to previous '" + rootBox + "'");
+            box.makeRoot();
+            rootBox = (ElementBox) box;
+        }
+    }
+
+    @Override
 	public boolean hasFixedHeight()
 	{
 		return false;
@@ -130,7 +180,33 @@ public class Viewport extends BlockBox
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
+	@Override
+    protected void loadBackground()
+    {
+	    bgcolor = null; //during the initialization, the background is not known
+    }
+
 	/**
+	 * Use the root box or the body box (for HTML documents) for obtaining the backgrounds.
+	 */
+	private void loadBackgroundFromContents()
+	{
+	    //TODO: consider background images
+	    if (rootBox != null)
+	    {
+    	    ElementBox src = rootBox;
+    	    if (src.getBgcolor() == null && factory.getUseHTML()) //for HTML, try to use the body
+    	        src = getElementBoxByName("body", false);
+    	    
+    	    if (src.getBgcolor() != null)
+    	    {
+    	        bgcolor = src.getBgcolor();
+    	        src.setBgcolor(null);
+    	    }
+	    }
+	}
+	
+    /**
 	 * Calculates the absolute positions and updates the viewport size
 	 * in order to enclose all the boxes.
 	 */
@@ -165,13 +241,8 @@ public class Viewport extends BlockBox
 	public void initBoxes()
 	{
 		for (int i = 0; i < getSubBoxNumber(); i++)
-		{
-			ElementBox box = (ElementBox) getSubBox(i);
-			recursiveInitBoxes(box);
-			box.computeEfficientMargins();
-			if (box instanceof BlockBox)
-			    ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
-		}
+			recursiveInitBoxes(getSubBox(i));
+		loadBackgroundFromContents();
 	}
 
 	/**
@@ -187,17 +258,45 @@ public class Viewport extends BlockBox
 	
     //===================================================================================
     
-    private void recursiveInitBoxes(ElementBox box)
+    private void recursiveInitBoxes(Box box)
     {
         box.initBox();
-        box.loadSizes();
-        for (int i = 0; i < box.getSubBoxNumber(); i++)
+        if (box instanceof ElementBox)
         {
-            Box child = box.getSubBox(i);
-            if (child instanceof ElementBox)
-                recursiveInitBoxes((ElementBox) child);
+            ElementBox ebox = (ElementBox) box;
+            ebox.loadSizes();
+            
+            for (int i = 0; i < ebox.getSubBoxNumber(); i++)
+                recursiveInitBoxes(ebox.getSubBox(i));
+            
+            ebox.computeEfficientMargins();
+            if (box instanceof BlockBox)
+                ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
         }
     }
 
+    private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
+    {
+        boolean eq;
+        if (case_sensitive)
+            eq = ebox.getElement().getTagName().equals(name);
+        else
+            eq = ebox.getElement().getTagName().equalsIgnoreCase(name);
+        
+        if (eq)
+            return ebox;
+        else
+        {
+            ElementBox ret = null;
+            for (int i = 0; i < ebox.getSubBoxNumber() && ret == null; i++)
+            {
+                Box child = ebox.getSubBox(i);
+                if (child instanceof ElementBox)
+                    ret = recursiveFindElementBoxByName((ElementBox) child, name, case_sensitive);
+            }
+            return ret;
+        }
+    }
+    
 }
 

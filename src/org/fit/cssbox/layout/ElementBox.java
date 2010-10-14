@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. únor 2006, 21:32
+ * Created on 5. ï¿½nor 2006, 21:32
  */
 
 package org.fit.cssbox.layout;
@@ -24,6 +24,8 @@ import java.util.*;
 import java.awt.*;
 
 import cz.vutbr.web.css.*;
+
+import org.fit.cssbox.css.CSSUnits;
 import org.w3c.dom.*;
 
 /**
@@ -53,14 +55,41 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
     
+    public static final CSSProperty.WhiteSpace WHITESPACE_NORMAL = CSSProperty.WhiteSpace.NORMAL;
+    public static final CSSProperty.WhiteSpace WHITESPACE_PRE = CSSProperty.WhiteSpace.PRE;
+    public static final CSSProperty.WhiteSpace WHITESPACE_NOWRAP = CSSProperty.WhiteSpace.NOWRAP;
+    public static final CSSProperty.WhiteSpace WHITESPACE_PRE_WRAP = CSSProperty.WhiteSpace.PRE_WRAP;
+    public static final CSSProperty.WhiteSpace WHITESPACE_PRE_LINE = CSSProperty.WhiteSpace.PRE_LINE;
+    
     /** Default line height if nothing or 'normal' is specified */
     private static final float DEFAULT_LINE_HEIGHT = 1.12f;
     
     /** Assigned element */
     protected Element el;
 
+    /** First DOM child node index covered by this box (inclusive) */
+    protected int firstDOMChild;
+    
+    /** First DOM child node index covered by this box (exclusive) */
+    protected int lastDOMChild;
+    
+    /** Previous copy of the same box if the box has been split */
+    protected ElementBox previousTwin;
+    
+    /** Next copy of the same box if the box has been split */
+    protected ElementBox nextTwin;
+    
+    /** The style of the node (for element nodes only) with no pseudo classes */
+    protected NodeData style;
+    
+    /** Efficient styles for the pseudo classes */
+    protected Map<Selector.PseudoDeclaration, NodeData> pseudoStyle;
+    
     /** The display property value */
     protected CSSProperty.Display display;
+    
+    /** The white-space property value */
+    protected CSSProperty.WhiteSpace whitespace;
     
     /** Background color or null when transparent */
     protected Color bgcolor;
@@ -69,6 +98,12 @@ abstract public class ElementBox extends Box
      * only block boxes or only inline boxes. The inline boxes can only
      * contain inline boxes */
     protected Vector<Box> nested;
+    
+    /** Set to true when the element box contains only text boxes */
+    protected boolean textonly;
+    
+    /** The map of related pseudo-elements (if any) */
+    protected Map<Selector.PseudoDeclaration, ElementBox> pseudoElements;
     
     /** Margin widths */
     protected LengthSet margin;
@@ -112,14 +147,22 @@ abstract public class ElementBox extends Box
     {
         super(n, g, ctx);
         minAbsBounds = null;
+        style = null;
+        pseudoStyle = new HashMap<Selector.PseudoDeclaration, NodeData>();
         if (n != null)
         {
 	        el = n;
+	        firstDOMChild = 0;
+	        lastDOMChild = n.getChildNodes().getLength();
+	        previousTwin = null;
+	        nextTwin = null;
 	        
 	        nested = new Vector<Box>();
+	        pseudoElements = new HashMap<Selector.PseudoDeclaration, ElementBox>();
 	        startChild = 0;
 	        endChild = 0;
 	        isblock = false;
+	        textonly = true;
         }
     }
     
@@ -131,6 +174,10 @@ abstract public class ElementBox extends Box
     {
         super.copyValues(src);
         nested.addAll(src.nested);
+        textonly = src.textonly;
+        pseudoElements = new HashMap<Selector.PseudoDeclaration, ElementBox>(src.pseudoElements);
+        style = src.style; 
+        pseudoStyle = new HashMap<Selector.PseudoDeclaration, NodeData>(src.pseudoStyle);
         startChild = src.startChild;
         endChild = src.endChild;
         isblock = src.isblock;
@@ -139,12 +186,41 @@ abstract public class ElementBox extends Box
         lineHeight = src.lineHeight;
         baseline = src.baseline;
         
-        margin = new LengthSet(src.margin);
-        emargin = new LengthSet(src.emargin);
-        border = new LengthSet(src.border);
-        padding = new LengthSet(src.padding);
-        content = new Dimension(src.content);
+        if (src.margin != null)
+            margin = new LengthSet(src.margin);
+        if (src.emargin != null)
+            emargin = new LengthSet(src.emargin);
+        if (src.border != null)
+            border = new LengthSet(src.border);
+        if (src.padding != null)
+            padding = new LengthSet(src.padding);
+        if (src.content != null)
+            content = new Dimension(src.content);
     }
+    
+    /** Create a new box from the same DOM node in the same context */
+    abstract public ElementBox copyBox();
+    
+    /**
+     * Creates a new element box by splitting this one. The original box will end before the specified child.
+     * The new box will start at the specified child
+     * @param index index of the first child in the split box
+     * @return the new box
+     */
+    /*public ElementBox split(int index)
+    {
+        ElementBox ret = copyBox();
+        
+        nested.subList(0, index).clear();
+        endChild = index;
+        pseudoElements.remove(PseudoDeclaration.AFTER);
+        
+        ret.nested.subList(index, ret.nested.size()).clear();
+        ret.startChild = 0;
+        ret.endChild = ret.nested.size();
+        ret.pseudoElements.remove(PseudoDeclaration.BEFORE);
+        return ret;
+    }*/
     
     //=======================================================================
     
@@ -157,12 +233,81 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * Set the new element style
+     * Assign a new style to this box
+     * @param s the new style declaration
      */
     public void setStyle(NodeData s)
     {
-    	super.setStyle(s);
+    	style = s;
     	loadBasicStyle();
+    }
+    
+    /**
+     * Returns the style of the DOM node that forms this box.
+     * @return the style declaration
+     */
+    public NodeData getStyle()
+    {
+        return style;
+    }
+    
+    /**
+     * Obtains the string representation of the current style of the box in the CSS syntax.
+     * @return The style string representation.
+     */
+    public String getStyleString()
+    {
+        if (style != null)
+            return style.toString();
+        else
+            return "";
+    }
+    
+    /**
+     * Reads the string value of the specified property of the element style.
+     * @param property the property name
+     * @return the property value
+     */
+    public String getStylePropertyValue(String property)
+    {
+        Object t = style.getValue(Term.class, property);
+        if (t == null)
+            return "";
+        else
+            return t.toString();
+    }
+    
+    /**
+     * Reads a CSS length value of a style property of the box.
+     * @param name property name
+     * @return the length value
+     */
+    public TermLengthOrPercent getLengthValue(String name)
+    {
+        if (style != null)
+            return style.getValue(TermLengthOrPercent.class, name);
+        else
+            return null;
+    }
+    
+    /**
+     * Reads the value of a border width specified by a CSS property.
+     * @param dec a CSS decoder used for converting the values
+     * @param property the property name, e.g. "border-top-width"
+     * @return the border width in pixels
+     */
+    public int getBorderWidth(CSSDecoder dec, String property)
+    {
+        if (style != null)
+        {
+            CSSProperty.BorderWidth prop = style.getProperty(property);
+            if (prop == CSSProperty.BorderWidth.length)
+                return dec.getLength(style.getValue(TermLengthOrPercent.class, property), false, CSSUnits.MEDIUM_BORDER, 0, 0);
+            else
+                return CSSUnits.convertBorderWidth(prop);
+        }
+        else
+            return 0;
     }
     
     /**
@@ -180,6 +325,15 @@ abstract public class ElementBox extends Box
             return display.toString();
         else
             return "";
+    }
+    
+    /**
+     * Returns the value of the white-space property
+     * @return one of the ElementBox.WHITESPACE_XXX constants
+     */
+    public CSSProperty.WhiteSpace getWhiteSpace()
+    {
+        return whitespace;
     }
     
     /**
@@ -221,8 +375,33 @@ abstract public class ElementBox extends Box
      */
     public void addSubBox(Box box)
     {
+        box.setParent(this);
         nested.add(box);
         endChild++;
+        if (isDisplayed() && !box.isEmpty())
+            isempty = false;
+        if (!(box instanceof TextBox))
+            textonly = false;
+    }
+    
+    /**
+     * Removes a sub box from the subbox list
+     * @param box the new sub box to add
+     */
+    public void removeSubBox(Box box)
+    {
+        if (nested.remove(box))
+            endChild--;
+    }
+    
+    /**
+     * Removes all sub boxes from the subbox list
+     * @param box the new sub box to add
+     */
+    public void removeAllSubBoxes()
+    {
+        nested.removeAllElements();
+        endChild = 0;
     }
     
     /**
@@ -258,6 +437,36 @@ abstract public class ElementBox extends Box
     {
         nested.insertElementAt(what, index);
         endChild++;
+    }
+    
+    /**
+     * Sets related pseudo-element boxes
+     * @param pseudo the name of the pseudo-element
+     * @param boxes the corresponding pseudo-element box
+     */
+    public void setPseudoElement(Selector.PseudoDeclaration pseudo, ElementBox box)
+    {
+        pseudoElements.put(pseudo, box);
+    }
+    
+    /**
+     * Gets the list of related pseudo-element boxes
+     * @param pseudo the name of the pseudo-element
+     * @return the related box
+     */
+    public ElementBox getPseudoElement(Selector.PseudoDeclaration pseudo)
+    {
+        return pseudoElements.get(pseudo);
+    }
+    
+    /**
+     * Checks whether the element box has a related pseudo-element box
+     * @param pseudo the name of the pseudo-element
+     * @return the related box
+     */
+    public boolean hasPseudoElement(Selector.PseudoDeclaration pseudo)
+    {
+        return pseudoElements.containsKey(pseudo);
     }
     
     /**
@@ -365,14 +574,6 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
 
-    /**
-     * This method is called for all the element boxes once the box tree is finished.
-     * It is the right place for internal object initializing, content organization, etc. 
-     */
-    public void initBox()
-    {
-    }
-    
     /**
      * Computes the distance of the content from the left edge of the whole box
      * (a convenience function for margin + border + padding).
@@ -524,6 +725,39 @@ abstract public class ElementBox extends Box
             if (getSubBox(i).getMaxBaselineOffset() > max)
                 max = getSubBox(i).getMaxBaselineOffset();
         return max;
+    }
+    
+    /**
+     * Checks if the element contains only text boxes (no nested elements)
+     * @return <code>true</code> when only text boxes are contained in this element
+     */
+    public boolean containsTextOnly()
+    {
+        for (Box child : nested)
+            if (!(child instanceof TextBox))
+                return false;
+        return true;
+    }
+    
+    /**
+     * Checks if the element contains the mix of text boxes and elements
+     * @return <code>true</code> when both text boxes and elements are directly contained in this element
+     */
+    public boolean containsMixedContent()
+    {
+        boolean ctext = false;
+        boolean celem = false;
+        for (Box child : nested)
+        {
+            if (child instanceof TextBox)
+                ctext = true;
+            else
+                celem = true;
+            
+            if (ctext && celem)
+                return true;
+        }
+        return false;
     }
     
     //=======================================================================
@@ -740,6 +974,10 @@ abstract public class ElementBox extends Box
         }
         baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
 
+        //whitespace
+        whitespace = style.getProperty("white-space");
+        if (whitespace == null) whitespace = WHITESPACE_NORMAL;
+        
         //background
         loadBackground();
     }

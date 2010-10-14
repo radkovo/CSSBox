@@ -30,7 +30,9 @@ import cz.vutbr.web.css.CSSException;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.StyleSheet;
+import cz.vutbr.web.css.Selector.PseudoDeclaration;
 import cz.vutbr.web.domassign.Analyzer;
+import cz.vutbr.web.domassign.StyleMap;
 
 
 /**
@@ -49,8 +51,8 @@ public class DOMAnalyzer
     private Vector<StyleSheet> styles;  //vector of StyleSheet sheets
     private StyleSheet mainsheet; //the stylesheet containing all the rules, if it is null, it must be recomputed
     private Analyzer analyzer; //style sheet analyzer
-    private Map<Element, NodeData> stylemap; //style map for DOM nodes
-    private Map<Element, NodeData> istylemap; //style map with inheritance
+    private StyleMap stylemap; //style map for DOM nodes
+    private StyleMap istylemap; //style map with inheritance
     
     /**
      * Creates a new DOM analyzer.
@@ -248,6 +250,21 @@ public class DOMAnalyzer
     }
     
     /**
+     * Checks whether the inhetited style has been computed and computes it when necessary.
+     */
+    private void checkStylesInherited()
+    {
+        if (mainsheet == null)
+        {
+            mainsheet = computeMainSheet();
+            analyzer = new Analyzer(mainsheet);
+        }
+        
+        if (istylemap == null)
+            istylemap = analyzer.evaluateDOM(doc, media, true);
+    }
+    
+    /**
      * Gets all the style declarations for a particular element and computes 
      * the resulting element style including the inheritance from the parent.
      * @param el the element for which the style should be computed
@@ -255,16 +272,45 @@ public class DOMAnalyzer
      */
     public NodeData getElementStyleInherited(Element el)
     {
-    	if (mainsheet == null)
-    	{
-    		mainsheet = computeMainSheet();
-    		analyzer = new Analyzer(mainsheet);
-    	}
-    	
-    	if (istylemap == null)
-    		istylemap = analyzer.evaluateDOM(doc, media, true);
-    	
+        checkStylesInherited();
     	return istylemap.get(el);
+    }
+    
+    /**
+     * Gets all the style declarations for a particular element and a particular pseudo-element and computes 
+     * the resulting pseudo-element style including the inheritance from the parent.
+     * @param el the element for which the style should be computed
+     * @param pseudo the pseudo class or element used for style computation
+     * @return the resulting style declaration 
+     */
+    public NodeData getElementStyleInherited(Element el, PseudoDeclaration pseudo)
+    {
+        checkStylesInherited();
+        return istylemap.get(el, pseudo);
+    }
+    
+    /**
+     * Checks whether the element has some style defined for a specified pseudo-element. 
+     * @param el The element to be checked
+     * @param pseudo The pseudo element specification
+     * @return <code>true</code> if there is some style defined for the given pseudo-element
+     */
+    public boolean hasPseudoDef(Element el, PseudoDeclaration pseudo)
+    {
+        checkStylesInherited();
+        return istylemap.hasPseudo(el, pseudo);
+    }
+    
+    /**
+     * Assigns the given style for the specified pseudo-element.
+     * @param el the element to be assigned the style
+     * @param pseudo The pseudo-element or <code>null</code> if none is required
+     * @param style the assigned style
+     */
+    public void useStyle(Element el, PseudoDeclaration pseudo, NodeData style)
+    {
+        checkStylesInherited();
+        istylemap.put(el, pseudo, style);
     }
     
     //====================================================================

@@ -96,7 +96,7 @@ public class TextBoxes
             BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
             
             //Display the result
-            printTextBoxes(browser.getRootBox());
+            printTextBoxes(browser.getViewport());
             
             is.close();
             

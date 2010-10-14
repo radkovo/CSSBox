@@ -97,8 +97,8 @@ public class CSSNorm
         "ol ul, ul ol,"+
         "ul ul, ol ol    { margin-top: 0; margin-bottom: 0 }"+
         "u, ins          { text-decoration: underline }"+
-        "br:before       { content: \"\\A\" }"+
-        ":before, :after { white-space: pre-line }"+
+        //"br:before       { content: \"\\A\" }"+
+        //":before, :after { white-space: pre-line }"+
         "center          { text-align: center }"+
         "abbr, acronym   { font-variant: small-caps; letter-spacing: 0.1em }"+
         ":link, :visited { text-decoration: underline }"+

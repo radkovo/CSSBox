@@ -44,7 +44,6 @@ public class BrowserCanvas extends JPanel
     protected DOMAnalyzer decoder;
     protected URL baseurl;
     protected Viewport viewport;
-    protected ElementBox box;
 
     protected BufferedImage img;
     
@@ -67,11 +66,14 @@ public class BrowserCanvas extends JPanel
     
     /**
      * After creating the layout, the root box of the document can be accessed through this method.
-     * @return the root box of the rendered document. Normally, it corresponds to the &lt;body&gt; element
+     * @return the root box of the rendered document. Normally, it corresponds to the &lt;html&gt; element
      */
     public ElementBox getRootBox()
     {
-        return box;
+        if (viewport == null)
+            return null;
+        else
+            return viewport.getRootBox();
     }
     
     /**
@@ -97,20 +99,16 @@ public class BrowserCanvas extends JPanel
         
         VisualContext ctx = new VisualContext(null);
         
-        viewport = new Viewport(root, ig, ctx, dim.width, dim.height);
-        
         System.err.println("Creating boxes");
-        Box.next_order = 0;
-        box = (ElementBox) Box.createBoxTree(root, ig, ctx, decoder, baseurl, viewport, viewport, viewport, viewport, null);
-        System.err.println("We have " + Box.next_order + " boxes, root is " + box);
-        box.makeRoot();
-        viewport.addSubBox(box);
+        BoxFactory factory = new BoxFactory(decoder, baseurl);
+        factory.reset();
+        viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
+        System.err.println("We have " + factory.next_order + " boxes");
         viewport.initBoxes();
         viewport.loadSizes();
         
         System.err.println("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
-        System.err.println("Resulting size: " + box.getWidth() + "x" + box.getHeight() + " (" + box + ")");
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
         System.err.println("Updating viewport size");
@@ -146,7 +144,7 @@ public class BrowserCanvas extends JPanel
     public void clearCanvas()
     {
         Graphics2D ig = img.createGraphics();
-        Color bg = box.getBgcolor();
+        Color bg = viewport.getBgcolor();
         if (bg == null) bg = Color.white;
         ig.setColor(bg);
         ig.fillRect(0, 0, img.getWidth(), img.getHeight());
