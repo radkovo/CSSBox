@@ -754,12 +754,11 @@ public class BlockBox extends ElementBox
             {
                 BlockBox sb = (BlockBox) subbox;
                 BlockLayoutStatus stat = new BlockLayoutStatus();
+                stat.inlineWidth = x - x1;
                 stat.y = y;
+                stat.maxh = maxh;
                 
-                //when the line has already started, the floating boxes should start below this line
-                boolean atstart = (x <= x1);
-                if (!atstart)
-                    stat.y += Math.max(maxh, getLineHeight());
+                boolean atstart = (x <= x1); //check if the line has already started
                 
                 //clear set - try to find the first possible Y value
                 if (sb.getClearing() != CLEAR_NONE)
@@ -775,9 +774,24 @@ public class BlockBox extends ElementBox
                 }
                 
                 if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
+                {
                     layoutBlockFloating(sb, wlimit, stat);
+                    //if there were some boxes before the float on the line, move them behind
+                    if (stat.inlineWidth > 0 && curline.getStart() < i)
+                    {
+                        for (int j = curline.getStart(); j < i; j++)
+                        {
+                            Box child = getSubBox(j);
+                            if (!child.isBlock())
+                                child.moveRight(sb.getWidth());
+                        }
+                        x += sb.getWidth();
+                    }
+                }
                 else //absolute or fixed positioning
+                {
                     layoutBlockPositioned(sb, wlimit, stat);
+                }
                 
                 //preferred width
                 if (stat.prefw > prefw) prefw = stat.prefw;
@@ -1087,6 +1101,12 @@ public class BlockBox extends ElementBox
             stat.prefw = pref;
     }
     
+    /**
+     * Calculates the position for a floating box in the given context.
+     * @param subbox the box to be placed
+     * @param wlimit the width limit for placing all the boxes
+     * @param stat status of the layout that should be updated
+     */
     protected void layoutBlockFloating(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
     {
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
@@ -1108,19 +1128,19 @@ public class BlockBox extends ElementBox
         if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
 
         //moving the floating box down until it fits
-        while (fx > floatX //if we're not already at the left/right border
-               && (fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
+        while ((fx > floatX || stat.inlineWidth > 0) //if we're not already at the left/right border
+               && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
             int nexty1 = f.getNextY(fy);
             int nexty2 = of.getNextY(fy);
             if (nexty1 != -1 && nexty2 != -1)
                 fy = Math.min(f.getNextY(fy), of.getNextY(fy));
-            else if (nexty1 == -1)
+            else if (nexty2 != -1)
                 fy = nexty2;
-            else if (nexty2 == -1)
+            else if (nexty1 != -1)
                 fy = nexty1;
             else
-                fy++; //we don't know, increase by one and try again
+                fy += Math.max(stat.maxh, getLineHeight()); //we don't know, try increasing by one line
             //recompute the limits for the new fy
             fx = f.getWidth(fy);
             if (fx < floatX) fx = floatX;
@@ -1128,6 +1148,8 @@ public class BlockBox extends ElementBox
             ofx = of.getWidth(fy);
             if (ofx < oFloatX) ofx = oFloatX;
             if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
+            //do not consider current line below
+            stat.inlineWidth = 0;
         }
 
         subbox.setPosition(fx, fy);
@@ -2115,6 +2137,9 @@ public class BlockBox extends ElementBox
  */
 class BlockLayoutStatus
 {
+    /** width of inline boxes currently placed on the line */
+    public int inlineWidth;
+    
     /** current <em>y</em> coordinate relatively to the content box */
     public int y;
     
@@ -2123,6 +2148,9 @@ class BlockLayoutStatus
     
     /** preferred width of the boxes laid out */
     public int prefw;
+    
+    /** maximal height of the boxes laid out on current line */
+    public int maxh;
     
     /** first placed non-empty box for collapsing margins */
     public BlockBox firstseparated;
@@ -2136,9 +2164,11 @@ class BlockLayoutStatus
     /** Creates a new initialized layout status */
     public BlockLayoutStatus()
     {
+        inlineWidth = 0;
         y = 0;
         maxw = 0;
         prefw = 0;
+        maxh = 0;
         firstseparated = null;
         lastseparated = null;
         lastinflow = null;
