@@ -52,6 +52,9 @@ public class TextBox extends Box
     /** Minimal total width */
     protected int minwidth;
     
+    /** Indicates whether to ignore initial whitespaces */
+    protected boolean ignoreinitialws;
+    
     //===================================================================
     
     /**
@@ -336,10 +339,9 @@ public class TextBox extends Box
     @Override
     public boolean canSplitBefore()
     {
-        String s = node.getNodeValue();
         if (textEnd > textStart)
-        	return (s.charAt(textStart) == ' ' ||
-        			(textStart > 0 && s.charAt(textStart-1) == ' '));
+        	return (text.charAt(textStart) == ' ' ||
+        			(textStart > 0 && text.charAt(textStart-1) == ' '));
         else
         	return false;
     }
@@ -347,12 +349,35 @@ public class TextBox extends Box
     @Override
     public boolean canSplitAfter()
     {
-        String s = node.getNodeValue();
         if (textEnd > textStart)
-	        return (s.charAt(textEnd-1) == ' ' ||
-	                (textEnd < s.length() && s.charAt(textEnd) == ' '));
+	        return (text.charAt(textEnd-1) == ' ' ||
+	                (textEnd < text.length() && text.charAt(textEnd) == ' '));
         else
         	return false;
+    }
+    
+    @Override
+    public boolean startsWithWhitespace()
+    {
+        if (textEnd > textStart)
+            return (Character.isWhitespace(text.charAt(textStart)));
+        else
+            return false;
+    }
+    
+    @Override
+    public boolean endsWithWhitespace()
+    {
+        if (textEnd > textStart)
+            return (Character.isWhitespace(text.charAt(textEnd-1)));
+        else
+            return false;
+    }
+    
+    @Override
+    public void setIgnoreInitialWhitespace(boolean b)
+    {
+        this.ignoreinitialws = b;
     }
     
 	@Override
@@ -397,7 +422,7 @@ public class TextBox extends Box
         if (!empty || !linestart) //ignore empty text elements at the begining of a line
         {
             //ignore spaces at the begining of a line
-            if (linestart)
+            if (linestart || ignoreinitialws)
                 while (textStart < end && text.charAt(textStart) == ' ')
                     textStart++;
             //try to place the text

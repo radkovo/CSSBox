@@ -454,6 +454,23 @@ public class BlockBox extends ElementBox
         return true;
     }
 
+    @Override
+    public boolean startsWithWhitespace()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean endsWithWhitespace()
+    {
+        return false;
+    }
+    
+    @Override
+    public void setIgnoreInitialWhitespace(boolean b)
+    {
+    }
+    
     /**
      * If none of the width parts is "auto", returns the total preferred width. Otherwise,
      * -1 is returned.
@@ -735,6 +752,7 @@ public class BlockBox extends ElementBox
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
         boolean someinflow = false; //there has been any in-flow inline element?
+        boolean lastwhite = false; //last inline element ends with a whitespace?
 
         //line boxes
         Vector<LineBox> lines = new Vector<LineBox>();
@@ -820,6 +838,8 @@ public class BlockBox extends ElementBox
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
+                //if the previous box ends with a whitespace, ignore initial whitespaces here
+                if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
                 //do the layout
                 boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
                 if (fit) //positioning succeeded, at least a part fit
@@ -905,6 +925,7 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                 }
+                lastwhite = subbox.endsWithWhitespace();
             } while (split);
             
             if (subbox.canSplitAfter())

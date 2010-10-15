@@ -147,6 +147,7 @@ public class InlineBox extends ElementBox
         rest = null;
 
         int lastbreak = startChild; //last possible position of a line break
+        boolean lastwhite = false; //last box ends with a whitespace
         
         for (int i = startChild; i < endChild; i++)
         {
@@ -156,6 +157,7 @@ public class InlineBox extends ElementBox
             //when forcing, force the first child only and the children before
             //the first possible break
             boolean f = force && (i == startChild || lastbreak == startChild);
+            if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
             boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
             if (fit) //something has been placed
             {
@@ -197,6 +199,7 @@ public class InlineBox extends ElementBox
                 }
             }
             
+            lastwhite = subbox.endsWithWhitespace();
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }
@@ -312,6 +315,25 @@ public class InlineBox extends ElementBox
     public boolean canSplitAfter()
     {
         return (endChild > startChild) && getSubBox(endChild-1).canSplitAfter();
+    }
+    
+    @Override
+    public boolean startsWithWhitespace()
+    {
+        return (endChild > startChild) && getSubBox(startChild).startsWithWhitespace();
+    }
+    
+    @Override
+    public boolean endsWithWhitespace()
+    {
+        return (endChild > startChild) && getSubBox(startChild).endsWithWhitespace();
+    }
+    
+    @Override
+    public void setIgnoreInitialWhitespace(boolean b)
+    {
+        if (endChild > startChild)
+            getSubBox(startChild).setIgnoreInitialWhitespace(b);
     }
     
     /** Draw the specified stage (DRAW_*) */

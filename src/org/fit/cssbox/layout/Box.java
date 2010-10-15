@@ -319,6 +319,24 @@ abstract public class Box
     abstract public boolean canSplitAfter();
     
     /**
+     * Checks whether the box content starts with a whitespace character
+     * @return <code>true</code> if the box content is not empty and it starts with a whitespace character
+     */
+    abstract public boolean startsWithWhitespace();
+    
+    /**
+     * Checks whether the box content ends with a whitespace character
+     * @return <code>true</code> if the box content is not empty and it starts with a whitespace character
+     */
+    abstract public boolean endsWithWhitespace();
+    
+    /**
+     * Switches ignoring the initial whitespace during the box layout on/off
+     * @param b when set to <code>true</code> the initial whitespace characters will be ignored
+     */
+    abstract public void setIgnoreInitialWhitespace(boolean b);
+    
+    /**
      * Set the box position.
      * @param x the x coordinate
      * @param y the y coordinate
