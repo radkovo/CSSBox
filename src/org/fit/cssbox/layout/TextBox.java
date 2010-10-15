@@ -55,6 +55,9 @@ public class TextBox extends Box
     /** Indicates whether to ignore initial whitespaces */
     protected boolean ignoreinitialws;
     
+    /** Indicates whether to collapse whitespaces at all */
+    protected boolean collapsews;
+    
     //===================================================================
     
     /**
@@ -73,6 +76,8 @@ public class TextBox extends Box
 
         minwidth = computeMinimalWidth();
         maxwidth = computeMaximalWidth();
+        ignoreinitialws = false;
+        collapsews = true;
     }
 
     /**
@@ -83,6 +88,8 @@ public class TextBox extends Box
     {
         super.copyValues(src);
         text = new String(src.text);
+        ignoreinitialws = false; //only the first box should ignore
+        collapsews = src.collapsews;
     }
     
     /** 
@@ -158,9 +165,15 @@ public class TextBox extends Box
     public void setWhiteSpace(CSSProperty.WhiteSpace value)
     {
         if (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE)
+        {
             text = collapseWhitespaces(node.getNodeValue());
+            collapsews = true;
+        }
         else
+        {
             text = node.getNodeValue();
+            collapsews = false;
+        }
         
         textStart = 0;
         textEnd = text.length();
@@ -422,7 +435,7 @@ public class TextBox extends Box
         if (!empty || !linestart) //ignore empty text elements at the begining of a line
         {
             //ignore spaces at the begining of a line
-            if (linestart || ignoreinitialws)
+            if ((linestart || ignoreinitialws) && collapsews)
                 while (textStart < end && text.charAt(textStart) == ' ')
                     textStart++;
             //try to place the text
