@@ -694,7 +694,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    	if (getElement() != null && getElement().getAttribute("id").equals("footer"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
