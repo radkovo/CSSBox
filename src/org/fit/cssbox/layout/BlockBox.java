@@ -739,11 +739,15 @@ public class BlockBox extends ElementBox
      */
     protected void layoutInline()
     {
-        int x1 = fleft.getWidth(floatY) - floatXl;
+        int x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats 
         int x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
         int wlimit = getAvailableContentWidth();
+        int minx1 = 0 - floatXl;   //maximal available width if there were no floats
+        int minx2 = 0 - floatXr;
+        if (minx1 < 0) minx1 = 0;
+        if (minx2 < 0) minx2 = 0;
         int x = x1; //current x
         int y = 0; //current y
         int maxw = 0; //width of the longest line found
@@ -834,7 +838,7 @@ public class BlockBox extends ElementBox
             {
                 split = false;
                 int space = wlimit - x1 - x2; //total space on the line
-                boolean narrowed = (x1 > 0 || x2 > 0); //the space is narrowed by floats
+                boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
