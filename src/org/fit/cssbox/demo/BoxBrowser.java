@@ -290,6 +290,7 @@ public class BoxBrowser
             vals.add(infoTableData("Clear", eb.getClearingString()));
             vals.add(infoTableData("Reference", (eb.getAbsReference() == null) ? "- none -" : eb.getAbsReference().toString()));
             vals.add(infoTableData("floatY", String.valueOf(eb.getFloatY())));
+            vals.add(infoTableData("prefWidth", String.valueOf(eb.getPreferredWidth())));
         }
         
         DefaultTableModel tab = new DefaultTableModel(vals, cols);

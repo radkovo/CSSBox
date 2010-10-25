@@ -81,7 +81,7 @@ public class TableCaptionBox extends BlockBox
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
             if (!update || isInFlow())
             {
-                content.width = availwidth - margin.left - border.left - padding.left
+                content.width = contw - margin.left - border.left - padding.left
                                   - padding.right - border.right - margin.right;
                 if (content.width < 0) content.width = 0;
             }
@@ -114,7 +114,7 @@ public class TableCaptionBox extends BlockBox
             {
                 if (mleftauto && mrightauto)
                 {
-                    int rest = availwidth - content.width - border.left - padding.left
+                    int rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
                     if (rest < 0) rest = 0;
                     margin.left = (rest + 1) / 2;
@@ -122,19 +122,19 @@ public class TableCaptionBox extends BlockBox
                 }
                 else if (mleftauto)
                 {
-                    margin.left = availwidth - content.width - border.left - padding.left
+                    margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
                     //if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
                 else if (mrightauto)
                 {
-                    margin.right = availwidth - content.width - border.left - padding.left
+                    margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
                 }
                 else //everything specified, ignore right margin
                 {
-                    margin.right = availwidth - content.width - border.left - padding.left
+                    margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
                 }

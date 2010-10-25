@@ -212,7 +212,7 @@ public class TableBox extends BlockBox
         {
             /* For the first time, we always try to use the maximal width even for the table.
              * That means: 'auto' margins are taken as 0, width comes from the parent element. */
-            content.width = availwidth - margin.left - border.left - padding.left
+            content.width = contw - margin.left - border.left - padding.left
                               - padding.right - border.right - margin.right;
         }
         else

@@ -1623,6 +1623,9 @@ public class BlockBox extends ElementBox
      */  
     protected void loadSizes(boolean update)
     {
+    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    		System.out.println("jo!");
+    	
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes

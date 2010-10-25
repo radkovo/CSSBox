@@ -173,14 +173,16 @@ public class TableRowBox extends BlockBox
     	{
 	        content = new Dimension(0, 0);
 	        bounds = new Rectangle(0, 0, 0, 0);
-	        margin = new LengthSet();
+	        margin = new LengthSet(); //internal table cells do not have margins
 	        emargin = margin;
 	        padding = new LengthSet();
-	        border = new LengthSet();
+	        border = new LengthSet(); //borders are ignored for rows
             min_size = new Dimension(-1, -1);
             max_size = new Dimension(-1, -1);
             coords = new LengthSet();
     	}
+    	//row occupies the whole body width
+    	content.width = cblock.getContentWidth();
     }
     
     //=====================================================================================
