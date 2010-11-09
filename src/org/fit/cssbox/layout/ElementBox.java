@@ -22,10 +22,12 @@ package org.fit.cssbox.layout;
 
 import java.util.*;
 import java.awt.*;
+import java.awt.geom.Line2D;
 
 import cz.vutbr.web.css.*;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.fit.cssbox.misc.CSSStroke;
 import org.w3c.dom.*;
 
 /**
@@ -764,14 +766,12 @@ abstract public class ElementBox extends Box
         //top left corner
         int x = absbounds.x;
         int y = absbounds.y;
-        int x2 = absbounds.x + absbounds.width - 1;
-        int y2 = absbounds.y + absbounds.height - 1;
 
         //border bounds
         int bx1 = x + margin.left;
         int by1 = y + margin.top;
-        int bx2 = x2 - margin.right;
-        int by2 = y2 - margin.bottom;
+        int bx2 = bx1 + border.left + padding.left + content.width + padding.right + border.right;
+        int by2 = by1 + border.top + padding.top + content.height + padding.bottom + border.bottom;
         
         //draw the border
         if (border.top > 0)
@@ -782,15 +782,15 @@ abstract public class ElementBox extends Box
             drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom/2 + 1, "bottom"); 
         if (border.left > 0)
             drawBorder(g, bx1, by1, bx1, by2, border.left, border.left/2, 0, "left"); 
-        
+
         //Background
         int bgx = x + margin.left + border.left;
         int bgy = y + margin.top + border.top;
         int bgw = padding.left + content.width + padding.right;
         int bgh = padding.top + content.height + padding.bottom;
         //clip to computed absolute size
-        if (bgx + bgw - 1 > x2) bgw = x2 - bgx + 1;
-        if (bgy + bgh - 1 > y2) bgh = y2 - bgy + 1;
+        //if (bgx + bgw - 1 > x2) bgw = x2 - bgx + 1;
+        //if (bgy + bgh - 1 > y2) bgh = y2 - bgy + 1;
         //draw the color
         if (bgcolor != null)
         {
@@ -814,6 +814,8 @@ abstract public class ElementBox extends Box
             
             if (bst == CSSProperty.BorderStyle.SOLID)
             {
+                //g.setStroke(new CSSStroke(width));
+                //g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
                 g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
                 g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
             }
