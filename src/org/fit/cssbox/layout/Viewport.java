@@ -257,23 +257,6 @@ public class Viewport extends BlockBox
 	
     //===================================================================================
     
-    private void recursiveInitBoxes(Box box)
-    {
-        box.initBox();
-        if (box instanceof ElementBox)
-        {
-            ElementBox ebox = (ElementBox) box;
-            ebox.loadSizes();
-            
-            for (int i = 0; i < ebox.getSubBoxNumber(); i++)
-                recursiveInitBoxes(ebox.getSubBox(i));
-            
-            ebox.computeEfficientMargins();
-            if (box instanceof BlockBox)
-                ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
-        }
-    }
-
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
     {
         boolean eq;
