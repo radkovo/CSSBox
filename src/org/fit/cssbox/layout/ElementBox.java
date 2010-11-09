@@ -770,19 +770,19 @@ abstract public class ElementBox extends Box
         //border bounds
         int bx1 = x + margin.left;
         int by1 = y + margin.top;
-        int bx2 = bx1 + border.left + padding.left + content.width + padding.right + border.right;
-        int by2 = by1 + border.top + padding.top + content.height + padding.bottom + border.bottom;
+        int bx2 = bx1 + border.left + padding.left + content.width + padding.right + border.right - 1;
+        int by2 = by1 + border.top + padding.top + content.height + padding.bottom + border.bottom - 1;
         
         //draw the border
         if (border.top > 0)
-            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, border.top/2, "top");
+            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
         if (border.right > 0)
-            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right/2 + 1, 0, "right"); 
+            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right + 1, 0, "right", true); 
         if (border.bottom > 0)
-            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom/2 + 1, "bottom"); 
+            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom + 1, "bottom", true); 
         if (border.left > 0)
-            drawBorder(g, bx1, by1, bx1, by2, border.left, border.left/2, 0, "left"); 
-
+            drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
+        
         //Background
         int bgx = x + margin.left + border.left;
         int bgy = y + margin.top + border.top;
@@ -802,7 +802,7 @@ abstract public class ElementBox extends Box
     }
     
     private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 
-                            int right, int down, String side)
+                            int right, int down, String side, boolean reverse)
     {
         TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
@@ -811,41 +811,8 @@ abstract public class ElementBox extends Box
             Color clr = tclr.getValue();
             if (clr == null) clr = Color.BLACK;
             g.setColor(clr);
-            
-            if (bst == CSSProperty.BorderStyle.SOLID)
-            {
-                //g.setStroke(new CSSStroke(width));
-                //g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DOTTED)
-            {
-                float dash[] = {width, width};
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DASHED)
-            {
-                float dash[] = {3*width, width};
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DOUBLE)
-            {
-                int sw = (width + 2) / 3;
-                int gw = width - 2 * sw;
-                int gwr = (right == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
-                int gwd = (down == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
-                g.setStroke(new BasicStroke(sw, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right - gwr, y1 + down - gwd, x2 + right - gwr, y2 + down - gwd);
-                g.drawLine(x1 + right + gwr, y1 + down + gwd, x2 + right + gwr, y2 + down + gwd);
-            }
-            else //default or unsupported - draw a solid line
-            {
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
+            g.setStroke(new CSSStroke(width, bst, reverse));
+            g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
         }
     }
 

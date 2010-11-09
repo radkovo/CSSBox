@@ -20,28 +20,144 @@
 package org.fit.cssbox.misc;
 
 import java.awt.*;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+
+import cz.vutbr.web.css.CSSProperty;
 
 /**
- *
+ * Stroke for drawing the CSS borders.
+ * 
  * @author burgetr
  */
 public class CSSStroke implements Stroke
 {
-    private BasicStroke bas;
-
-    public CSSStroke(int width)
+    private int width;
+    private CSSProperty.BorderStyle style;
+    private boolean reverse;
+    
+    /**
+     * Creates a new CSS stroke.
+     * @param width Border width
+     * @param style Border css style
+     * @param reverse Should be true for right and bottom border - used for reversing the shape of 'double' style border.
+     */
+    public CSSStroke(int width, CSSProperty.BorderStyle style, boolean reverse)
     {
-        bas = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1);
-        System.out.println("creating");
+    	this.width = width;
+    	this.style = style;
+    	this.reverse = reverse;
     }
     
     public Shape createStrokedShape(Shape s)
     {
-        Shape ret = bas.createStrokedShape(s);
-        System.out.println("src="+s+" dest="+ret);
-        return s;
+    	if (s instanceof Line2D)
+    	{
+    		Line2D l = (Line2D) s;
+    		int x1 = (int) l.getX1();
+    		int y1 = (int) l.getY1();
+    		int x2 = (int) l.getX2();
+    		int y2 = (int) l.getY2();
+    		if (y1 == y2)
+    			return sideShape(x1, y1, x2 - x1 + 1 , width, false);
+    		else if (x1 == x2)
+    			return sideShape(x1, y1, y2 - y1 + 1, width, true);
+    		else
+    			return basicStrokeShape(s);
+    	}
+    	else
+    		return basicStrokeShape(s);
     }
 
+    private GeneralPath sideShape(int x, int y, int len, int width, boolean vert)
+    {
+    	GeneralPath ret;
+    	if (!vert)
+    	{
+    		if (style == CSSProperty.BorderStyle.DASHED || style == CSSProperty.BorderStyle.DOTTED)
+    		{
+    			int r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
+    			ret = null;
+    			int i = 0;
+    			while (i < len)
+    			{
+    				int l = width * r;
+    				if (x + i + l >= len) l = len - x - i;
+    				ret = append(ret, new Rectangle(x + i, y, l, width));
+    				i += width * (r + 1);
+    			}
+    		}
+    		else if (style == CSSProperty.BorderStyle.DOUBLE && width >= 3)
+    		{
+    			int w = (width + 2) / 3;
+    			int space = width - 2 * w;
+    			if (!reverse)
+    			{
+	    			ret = new GeneralPath(new Rectangle(x, y, len, w));
+	    			ret.append(new Rectangle(x + w + space, y + w + space, len - 2 * (w + space), w), false);
+    			}
+    			else
+    			{
+	    			ret = new GeneralPath(new Rectangle(x + w + space, y, len - 2 * (w + space), w));
+	    			ret.append(new Rectangle(x, y + w + space, len, w), false);
+    			}
+    		}
+    		else
+    			ret = new GeneralPath(new Rectangle(x, y, len, width));
+    	}
+    	else
+    	{
+    		if (style == CSSProperty.BorderStyle.DASHED || style == CSSProperty.BorderStyle.DOTTED)
+    		{
+    			int r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
+    			ret = null;
+    			int i = 0;
+    			while (i < len)
+    			{
+    				int l = width * r;
+    				if (x + i + l >= len) l = len - x - i;
+    				ret = append(ret, new Rectangle(x, y + i, width, l));
+    				i += width * (r + 1);
+    			}
+    		}
+    		else if (style == CSSProperty.BorderStyle.DOUBLE && width >= 3)
+    		{
+    			int w = (width + 2) / 3;
+    			int space = width - 2 * w;
+    			if (!reverse)
+    			{
+	    			ret = new GeneralPath(new Rectangle(x, y, w, len));
+	    			ret.append(new Rectangle(x + w + space, y + w + space, w, len - 2 * (w + space)), false);
+    			}
+    			else
+    			{
+	    			ret = new GeneralPath(new Rectangle(x, y + w + space, w, len - 2 * (w + space)));
+	    			ret.append(new Rectangle(x + w + space, y, w, len), false);
+    			}
+    		}
+    		else
+    			ret = new GeneralPath(new Rectangle(x, y, width, len));
+    	}
+    	
+		return ret;
+    }
     
+    private GeneralPath append(GeneralPath src, Shape s)
+    {
+    	if (src == null)
+    		return new GeneralPath(s);
+    	else
+    	{
+    		src.append(s, false);
+    		return src;
+    	}
+    }
+    
+    private Shape basicStrokeShape(Shape s)
+    {
+    	System.err.println("Warning: CSSStroke: fallback to BasicStroke");
+		BasicStroke bas = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, width);
+		return bas.createStrokedShape(s);
+    }
     
 }
