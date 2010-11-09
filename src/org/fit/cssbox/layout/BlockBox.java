@@ -265,7 +265,13 @@ public class BlockBox extends ElementBox
         ret.copyValues(this);
         return ret;
     }
-    
+
+    @Override
+    public void initBox()
+    {
+        setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
+    }
+
     @Override
     public void addSubBox(Box box)
     {

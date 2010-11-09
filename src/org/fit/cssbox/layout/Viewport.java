@@ -59,10 +59,16 @@ public class Viewport extends BlockBox
         isblock = true;
         contblock = true;
         root = null;
-        setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
-		loadSizes();
 	}
     
+    @Override
+    public void initSubtree()
+    {
+        super.initSubtree();
+        loadBackgroundFromContents();
+    }
+    
+    @Override
     public String toString()
     {
         return "Viewport " + width + "x" + height;
@@ -236,13 +242,6 @@ public class Viewport extends BlockBox
 	{
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).draw(g, turn, mode);
-	}
-
-	public void initBoxes()
-	{
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			recursiveInitBoxes(getSubBox(i));
-		loadBackgroundFromContents();
 	}
 
 	/**

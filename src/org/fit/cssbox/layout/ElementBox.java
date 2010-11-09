@@ -201,26 +201,17 @@ abstract public class ElementBox extends Box
     /** Create a new box from the same DOM node in the same context */
     abstract public ElementBox copyBox();
     
-    /**
-     * Creates a new element box by splitting this one. The original box will end before the specified child.
-     * The new box will start at the specified child
-     * @param index index of the first child in the split box
-     * @return the new box
-     */
-    /*public ElementBox split(int index)
+    @Override
+    public void initSubtree()
     {
-        ElementBox ret = copyBox();
+        initBox();
+        loadSizes();
         
-        nested.subList(0, index).clear();
-        endChild = index;
-        pseudoElements.remove(PseudoDeclaration.AFTER);
+        for (int i = 0; i < getSubBoxNumber(); i++)
+            getSubBox(i).initSubtree();
         
-        ret.nested.subList(index, ret.nested.size()).clear();
-        ret.startChild = 0;
-        ret.endChild = ret.nested.size();
-        ret.pseudoElements.remove(PseudoDeclaration.BEFORE);
-        return ret;
-    }*/
+        computeEfficientMargins();
+    }
     
     //=======================================================================
     

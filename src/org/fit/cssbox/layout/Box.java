@@ -151,11 +151,21 @@ abstract public class Box
     }
     
     /**
-     * This method is called for all the element boxes once the box tree is finished.
-     * It is the right place for internal object initializing, content organization, etc. 
+     * Provides the internal object initialization, after the box tree has been completed. 
+     * Should be used fpr subtree content organization, etc. Called from {@link #initSubtree()} during
+     * the tree initialization. 
      */
-    public void initBox()
+    protected void initBox()
     {
+    }
+    
+    /**
+     * Provides the initialization of the box and the corresponding subtree (if any).
+     * Loads the basic CSS properties and computes the sizes.
+     */
+    public void initSubtree()
+    {
+        initBox(); //default implementation - just initialize this box
     }
     
     /**

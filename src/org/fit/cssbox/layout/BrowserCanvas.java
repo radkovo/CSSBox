@@ -104,8 +104,7 @@ public class BrowserCanvas extends JPanel
         factory.reset();
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
         System.err.println("We have " + factory.next_order + " boxes");
-        viewport.initBoxes();
-        viewport.loadSizes();
+        viewport.initSubtree();
         
         System.err.println("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
