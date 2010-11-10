@@ -770,8 +770,17 @@ abstract public class ElementBox extends Box
         //border bounds
         int bx1 = x + margin.left;
         int by1 = y + margin.top;
-        int bx2 = bx1 + border.left + padding.left + content.width + padding.right + border.right - 1;
-        int by2 = by1 + border.top + padding.top + content.height + padding.bottom + border.bottom - 1;
+        int bw = border.left + padding.left + content.width + padding.right + border.right;
+        int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
+        int bx2 = bx1 + bw - 1;
+        int by2 = by1 + bh - 1;
+        
+        //draw the background - it should be visible below the border too
+        if (bgcolor != null)
+        {
+            g.setColor(bgcolor);
+            g.fillRect(bx1, by1, bw, bh);
+        }
         
         //draw the border
         if (border.top > 0)
@@ -783,21 +792,6 @@ abstract public class ElementBox extends Box
         if (border.left > 0)
             drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
         
-        //Background
-        int bgx = x + margin.left + border.left;
-        int bgy = y + margin.top + border.top;
-        int bgw = padding.left + content.width + padding.right;
-        int bgh = padding.top + content.height + padding.bottom;
-        //clip to computed absolute size
-        //if (bgx + bgw - 1 > x2) bgw = x2 - bgx + 1;
-        //if (bgy + bgh - 1 > y2) bgh = y2 - bgy + 1;
-        //draw the color
-        if (bgcolor != null)
-        {
-            g.setColor(bgcolor);
-            g.fillRect(bgx, bgy, bgw, bgh);
-        }
-
         g.setColor(color); //restore original color
     }
     

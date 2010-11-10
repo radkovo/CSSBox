@@ -82,7 +82,7 @@ public class CSSStroke implements Stroke
     			while (i < len)
     			{
     				int l = width * r;
-    				if (x + i + l >= len) l = len - x - i;
+    				if (i + l >= len) l = len - i;
     				ret = append(ret, new Rectangle(x + i, y, l, width));
     				i += width * (r + 1);
     			}
@@ -115,7 +115,7 @@ public class CSSStroke implements Stroke
     			while (i < len)
     			{
     				int l = width * r;
-    				if (x + i + l >= len) l = len - x - i;
+    				if (i + l >= len) l = len - i;
     				ret = append(ret, new Rectangle(x, y + i, width, l));
     				i += width * (r + 1);
     			}
