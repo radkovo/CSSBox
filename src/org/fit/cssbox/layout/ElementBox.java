@@ -859,6 +859,42 @@ abstract public class ElementBox extends Box
     abstract public boolean marginsAdjoin();
     
     /**
+     * @return <code>true</code> if the box has a visible border around
+     */
+    protected boolean borderVisible(String dir)
+    {
+        CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
+        return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
+    }
+    
+    /**
+     * Loads the border sizes from the style.
+     * 
+     * @param dec CSS decoder used for decoding the style
+     * @param contw containing block width for decoding percentages
+     */
+    protected void loadBorders(CSSDecoder dec, int contw)
+    {
+        border = new LengthSet();
+        if (borderVisible("top"))
+            border.top = getBorderWidth(dec, "border-top-width");
+        else
+            border.top = 0;
+        if (borderVisible("right"))
+            border.right = getBorderWidth(dec, "border-right-width");
+        else
+            border.right = 0;
+        if (borderVisible("bottom"))
+            border.bottom = getBorderWidth(dec, "border-bottom-width");
+        else
+            border.bottom = 0;
+        if (borderVisible("left"))
+            border.left = getBorderWidth(dec, "border-left-width");
+        else
+            border.left = 0;
+    }
+    
+    /**
      * Load the basic style from the CSS properties. This includes the display
      * properties, floating, positioning, color and font properties.
      */

@@ -402,24 +402,8 @@ public class InlineBox extends ElementBox
         margin.right = dec.getLength(getLengthValue("margin-right"), style.getProperty("margin-right") == CSSProperty.Margin.AUTO, 0, 0, contw);
         margin.left = dec.getLength(getLengthValue("margin-left"), style.getProperty("margin-left") == CSSProperty.Margin.AUTO, 0, 0, contw);
         emargin = new LengthSet(margin);
-        
-        border = new LengthSet();
-        if (borderVisible("top"))
-        		border.top = getBorderWidth(dec, "border-top-width");
-        else
-        		border.top = 0;
-        if (borderVisible("right"))
-        		border.right = getBorderWidth(dec, "border-right-width");
-	    else
-	    		border.right = 0;
-	    if (borderVisible("bottom"))
-        		border.bottom = getBorderWidth(dec, "border-bottom-width");
-	    else
-	    		border.bottom = 0;
-	    if (borderVisible("left"))
-        		border.left = getBorderWidth(dec, "border-left-width");
-	    else
-	    		border.left = 0;
+
+        loadBorders(dec, contw);
         
         padding = new LengthSet();
         padding.top = dec.getLength(getLengthValue("padding-top"), false, null, null, contw);
@@ -507,12 +491,6 @@ public class InlineBox extends ElementBox
     }
     
     //=====================================================================================================
-    
-    protected boolean borderVisible(String dir)
-    {
-        CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
-        return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
-    }
     
     private void computeMaxLineHeight()
     {
