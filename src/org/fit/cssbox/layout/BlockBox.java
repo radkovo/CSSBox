@@ -476,6 +476,16 @@ public class BlockBox extends ElementBox
     public void setIgnoreInitialWhitespace(boolean b)
     {
     }
+
+    /**
+     * Checks if the width of the block may be increase to enclose the children. This is true for special blocks
+     * only such as table cells.
+     * @return <code>true</code> if the width may be increased
+     */
+    public boolean canIncreaseWidth()
+    {
+        return false;
+    }
     
     /**
      * If none of the width parts is "auto", returns the total preferred width. Otherwise,
@@ -700,7 +710,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("footer"))
+    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
