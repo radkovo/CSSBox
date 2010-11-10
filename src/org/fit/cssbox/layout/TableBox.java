@@ -118,8 +118,6 @@ public class TableBox extends BlockBox
 
         //calculate the column widths
         calculateColumns();
-        for (int i = 0; i < getColumnCount(); i++)
-            System.out.println("Col " + i + ": " + columns.elementAt(i).getContentWidth());
         
         //layout the bodies
         if (header != null)
@@ -365,20 +363,25 @@ public class TableBox extends BlockBox
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
             updateColumns(it.next());
 
-        //for (int i = 0; i < columns.size(); i++)
-        //    System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth());
+        System.out.println("Start:");
+        for (int i = 0; i < columns.size(); i++)
+            System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
+            					+ " min=" + columns.elementAt(i).getMinimalWidth()
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());
         
         
         //now, the columns are at minimal widths
         //gather column statistics
         int sumabs = 0; //total length of absolute columns
         int sumperc = 0; //total percentage
+        int mintotalw = 0;  //total minimal length of all the columns
         int sumnonemin = 0; //total minimal length of the columns with no width specified
         int sumnonemax = 0; //total maximal length of the columns with no width specified
         int totalwperc = 0; //total table width computed from percentage columns
         for (int i = 0; i < columns.size(); i++) //compute the sums
         {
             TableColumn col = columns.elementAt(i);
+            mintotalw += col.getMinimalWidth();
             if (col.wrelative)
             {
             	sumperc += col.percent;
@@ -407,7 +410,6 @@ public class TableBox extends BlockBox
             totalwabs = (abspart == 0) ? wlimit : (sumabs + sumnonemax) * 100 / abspart; //what is 100%
         }
         
-        int mintotalw = getMinimalContentWidth();
         int totalw = Math.max(totalwperc, totalwabs); //desired width
         if (wset && totalw < wlimit)    //if the width is set explicitly, ensure the width
             totalw = wlimit;
@@ -485,6 +487,12 @@ public class TableBox extends BlockBox
                 }
             }
         }
+        
+        System.out.println("Result:");
+        for (int i = 0; i < columns.size(); i++)
+            System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
+            					+ " min=" + columns.elementAt(i).getMinimalWidth()
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());
         
         columnsCalculated = true;
     }
