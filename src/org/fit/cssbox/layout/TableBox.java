@@ -118,6 +118,8 @@ public class TableBox extends BlockBox
 
         //calculate the column widths
         calculateColumns();
+        for (int i = 0; i < getColumnCount(); i++)
+            System.out.println("Col " + i + ": " + columns.elementAt(i).getContentWidth());
         
         //layout the bodies
         if (header != null)

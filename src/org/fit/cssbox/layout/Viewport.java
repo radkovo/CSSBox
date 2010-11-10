@@ -135,6 +135,12 @@ public class Viewport extends BlockBox
 		return false;
 	}
 
+	@Override
+    public boolean canIncreaseWidth()
+    {
+        return true;
+    }
+
     @Override
     public boolean isVisible()
     {

@@ -1828,12 +1828,16 @@ public class BlockBox extends ElementBox
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    if (margin.right < 0 && cblock.canIncreaseWidth())
+                        margin.right = 0;
                 }
                 else //everything specified, ignore right margin
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    if (margin.right < 0 && cblock.canIncreaseWidth())
+                        margin.right = 0;
                 }
             }
         }
