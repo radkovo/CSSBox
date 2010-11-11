@@ -187,6 +187,7 @@ abstract public class ElementBox extends Box
         display = src.display;
         lineHeight = src.lineHeight;
         baseline = src.baseline;
+        whitespace = src.whitespace;
         
         if (src.margin != null)
             margin = new LengthSet(src.margin);
