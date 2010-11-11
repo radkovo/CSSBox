@@ -91,7 +91,13 @@ public class BlockTableBox extends BlockBox
         organizeContent(); //organize the child elements according to their display property
         loadCaptionStyle();
     }
-    
+
+    @Override
+    public boolean canIncreaseWidth()
+    {
+        return true;
+    }
+
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {

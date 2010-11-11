@@ -86,7 +86,8 @@ public class TableColumn extends BlockBox
     }
 
     /**
-     * @return the width of the column(s)
+     * If the box width has been specified explicitly, this function obtains the specifiaction string.
+     * @return the width specification of the column(s)
      */
     public String getSpecifiedWidth()
     {

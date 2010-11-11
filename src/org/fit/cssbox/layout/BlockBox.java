@@ -701,7 +701,7 @@ public class BlockBox extends ElementBox
         
     }
     
-    /** Compute the width and height of this element. Layout the sub-elements.
+    /** Layout the sub-elements.
      * @param availw Maximal width available to the child elements
      * @param force Use the area even if the used width is greater than maxwidth
      * @param linestart Indicates whether the element is placed at the line start
@@ -723,12 +723,12 @@ public class BlockBox extends ElementBox
         //remove previously splitted children from possible previous layout
         clearSplitted();
 
+        //shrink-to-fit when the width is not given by containing box or specified explicitly
         if (!hasFixedWidth())
         {
             int min = getMinimalContentWidthLimit();
             int max = getMaximalContentWidth();
             int pref = Math.min(max, availw);
-            //System.out.println(this + " prefers " + pref + " min=" + min);
             if (pref < min) pref = min;
             setContentWidth(pref);
             updateChildSizes();
@@ -1440,7 +1440,6 @@ public class BlockBox extends ElementBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-		//return (wset && !wrelative) || ((isInFlow() || isRelative()) && cblock.hasFixedWidth());
 	    return wset || isInFlow();
 	}
 
