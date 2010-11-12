@@ -119,10 +119,10 @@ public class BlockBox extends ElementBox
      * and the width shouldn't be changed anymore */
     protected boolean widthComputed = false;
     
-    /** Originally declared width of the right margin. This property
-     * saves the original value where the efficient right margin may
+    /** Originally declared margin. This property saves the original values
+     * where the efficient left and right margin may
      * be computed from the containing box */
-    protected int marginRightDecl; 
+    protected LengthSet declMargin; 
     
     //============================== Computed style ======================
     
@@ -256,6 +256,8 @@ public class BlockBox extends ElementBox
         bottomset = src.bottomset;
         rightset = src.rightset;
         topstatic = src.topstatic;
+        if (src.declMargin != null)
+        	declMargin = new LengthSet(src.declMargin);
     }
     
     @Override
@@ -1319,8 +1321,8 @@ public class BlockBox extends ElementBox
         else
             ret = getMinimalContentWidth();
         //increase by margin, padding, border
-        ret += margin.left + padding.left + border.left +
-               margin.right + padding.right + border.right;
+        ret += declMargin.left + padding.left + border.left +
+               declMargin.right + padding.right + border.right;
         return ret;
     }
 
@@ -1361,8 +1363,8 @@ public class BlockBox extends ElementBox
         else
             ret = getMaximalContentWidth();
         //increase by margin, padding, border
-        ret += margin.left + padding.left + border.left +
-               marginRightDecl + padding.right + border.right;
+        ret += declMargin.left + padding.left + border.left +
+               declMargin.right + padding.right + border.right;
         return ret;
     }
 
@@ -1415,8 +1417,8 @@ public class BlockBox extends ElementBox
     public int getMinimalContentWidthLimit()
     {
     	int ret;
-    	int dif = margin.left + padding.left + border.left +
-               	  margin.right + padding.right + border.right;
+    	int dif = declMargin.left + padding.left + border.left +
+               	  declMargin.right + padding.right + border.right;
     	if (wset)
     		ret = content.width;
     	else if (min_size.width != -1)
@@ -1664,6 +1666,7 @@ public class BlockBox extends ElementBox
         {
         	content = new Dimension(0, 0);
         	margin = new LengthSet();
+        	declMargin = new LengthSet();
         }
             
         //Margins, widths and heights
@@ -1772,7 +1775,8 @@ public class BlockBox extends ElementBox
         	if (exact) wset = false;
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
             if (!update || isInFlow())
@@ -1793,7 +1797,8 @@ public class BlockBox extends ElementBox
           	content.width = dec.getLength(width, auto, 0, 0, contw);
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
@@ -1912,6 +1917,9 @@ public class BlockBox extends ElementBox
                 margin.right = dec.getLength(mright, false, 0, 0, contw);
     	    }
     	}
+    	//for absolute positions, the declared margins correspond to computed ones
+    	declMargin.left = margin.left;
+    	declMargin.right = margin.right;
     	
     	//compute the letf and right positions
 	    if (!leftset && !rightset)
@@ -1956,6 +1964,9 @@ public class BlockBox extends ElementBox
         }
         else
             computeHeightsInFlow(height, auto, exact, cblock.getContentWidth(), cblock.getContentHeight(), update);
+        //the computed margins allways correspond to the declared ones
+        declMargin.top = margin.top;
+        declMargin.bottom = margin.bottom;
     }
     
     protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)

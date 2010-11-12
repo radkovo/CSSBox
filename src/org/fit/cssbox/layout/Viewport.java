@@ -180,6 +180,7 @@ public class Viewport extends BlockBox
 		{
 			margin = new LengthSet();
 			emargin = new LengthSet();
+			declMargin = new LengthSet();
 			border = new LengthSet();
 			padding = new LengthSet(1, 1, 1, 1);
 			content = new Dimension(0, 0);
