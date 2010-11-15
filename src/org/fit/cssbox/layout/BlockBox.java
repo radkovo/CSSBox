@@ -783,6 +783,8 @@ public class BlockBox extends ElementBox
         
         //TODO: If it only has inline-level children, the height is the distance between the top of the topmost line box and the bottom of the bottommost line box.
         // http://www.w3.org/TR/CSS21/visudet.html#normal-block
+        if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+            System.out.println("jo!");
         
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
@@ -859,11 +861,13 @@ public class BlockBox extends ElementBox
                 boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
-                boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
+                boolean f = (x == x1 || lastbreak == lnstr) && !narrowed;
                 //if the previous box ends with a whitespace, ignore initial whitespaces here
                 if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
-                //do the layout
-                boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
+                //do the layout                
+                boolean fit = false;
+                if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
+                    fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
                 if (fit) //positioning succeeded, at least a part fit
                 {
                     if (subbox.isInFlow())
@@ -915,6 +919,7 @@ public class BlockBox extends ElementBox
                 else if (((!fit || x > wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
+                    //System.out.println("Rest: " + ((ElementBox) subbox.getRest()).getSubBox(0));
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
