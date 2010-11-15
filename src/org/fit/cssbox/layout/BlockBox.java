@@ -63,7 +63,7 @@ public class BlockBox extends ElementBox
     
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
-    protected static final int INFLOW_SPACE_THRESHOLD = 20;
+    protected static final int INFLOW_SPACE_THRESHOLD = 15;
     
     /** Does this box contain blocks? */
     protected boolean contblock;
@@ -901,7 +901,7 @@ public class BlockBox extends ElementBox
                 }
                 
                 //check line overflows
-                if (!fit && space < INFLOW_SPACE_THRESHOLD && narrowed) //failed because of no space caused by floats
+                if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
                 {
                     //go to the new line
                     if (x > maxw) maxw = x;
@@ -919,7 +919,6 @@ public class BlockBox extends ElementBox
                 else if (((!fit || x > wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
-                    //System.out.println("Rest: " + ((ElementBox) subbox.getRest()).getSubBox(0));
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
