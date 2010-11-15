@@ -59,10 +59,16 @@ public class Viewport extends BlockBox
         isblock = true;
         contblock = true;
         root = null;
-        setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
-		loadSizes();
 	}
     
+    @Override
+    public void initSubtree()
+    {
+        super.initSubtree();
+        loadBackgroundFromContents();
+    }
+    
+    @Override
     public String toString()
     {
         return "Viewport " + width + "x" + height;
@@ -129,6 +135,12 @@ public class Viewport extends BlockBox
 		return false;
 	}
 
+	@Override
+    public boolean canIncreaseWidth()
+    {
+        return true;
+    }
+
     @Override
     public boolean isVisible()
     {
@@ -168,6 +180,7 @@ public class Viewport extends BlockBox
 		{
 			margin = new LengthSet();
 			emargin = new LengthSet();
+			declMargin = new LengthSet();
 			border = new LengthSet();
 			padding = new LengthSet(1, 1, 1, 1);
 			content = new Dimension(0, 0);
@@ -238,13 +251,6 @@ public class Viewport extends BlockBox
 			getSubBox(i).draw(g, turn, mode);
 	}
 
-	public void initBoxes()
-	{
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			recursiveInitBoxes(getSubBox(i));
-		loadBackgroundFromContents();
-	}
-
 	/**
 	 * Updates the maximal viewport size according to the element bounds
 	 */
@@ -258,23 +264,6 @@ public class Viewport extends BlockBox
 	
     //===================================================================================
     
-    private void recursiveInitBoxes(Box box)
-    {
-        box.initBox();
-        if (box instanceof ElementBox)
-        {
-            ElementBox ebox = (ElementBox) box;
-            ebox.loadSizes();
-            
-            for (int i = 0; i < ebox.getSubBoxNumber(); i++)
-                recursiveInitBoxes(ebox.getSubBox(i));
-            
-            ebox.computeEfficientMargins();
-            if (box instanceof BlockBox)
-                ((BlockBox) box).setFloats(new FloatList((BlockBox) box), new FloatList((BlockBox) box), 0, 0, 0);
-        }
-    }
-
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
     {
         boolean eq;

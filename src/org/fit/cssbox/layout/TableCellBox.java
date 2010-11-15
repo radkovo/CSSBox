@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 
 import cz.vutbr.web.css.*;
-import cz.vutbr.web.css.TermNumeric.Unit;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Element;
@@ -147,6 +146,7 @@ public class TableCellBox extends BlockBox
         return percent;
     }
 
+    @Override
     public String toString()
     {
         return super.toString() + "[" + column + "," + row + "]";
@@ -154,6 +154,7 @@ public class TableCellBox extends BlockBox
     
     //====================================================================================
 
+    @Override
     public int getMinimalWidth()
     {
         int ret = getMinimalContentWidth();
@@ -164,6 +165,7 @@ public class TableCellBox extends BlockBox
         return ret;
     }
 
+    @Override
     public int getMaximalWidth()
     {
         int ret = getMaximalContentWidth();
@@ -185,37 +187,12 @@ public class TableCellBox extends BlockBox
             { System.err.println(toString() + " has no cblock"); return; }
         int contw = cblock.getContentWidth();
         
-        TermLength zero = CSSFactory.getTermFactory().createLength(0.0F, Unit.px);
-        
         //Borders
         if (!update) //borders needn't be updated
-        {
-            TermLength medium = CSSFactory.getTermFactory().createLength(3.0F, Unit.px);
-            border = new LengthSet();
-            if (borderVisible("top"))
-                    border.top = dec.getLength(getLengthValue("border-top-width"), false, medium, zero, 0);
-            else
-                    border.top = 0;
-            if (borderVisible("right"))
-                    border.right = dec.getLength(getLengthValue("border-right-width"), false, medium, zero, 0);
-            else
-                    border.right = 0;
-            if (borderVisible("bottom"))
-                    border.bottom = dec.getLength(getLengthValue("border-bottom-width"), false, medium, zero, 0);
-            else
-                    border.bottom = 0;
-            if (borderVisible("left"))
-                    border.left = dec.getLength(getLengthValue("border-left-width"), false, medium, zero, 0);
-            else
-                    border.left = 0;
-        }
+            loadBorders(dec, contw);
         
         //Padding
-        padding = new LengthSet();
-        padding.top = dec.getLength(getLengthValue("padding-top"), false, zero, zero, contw);
-        padding.right = dec.getLength(getLengthValue("padding-right"), false, zero, zero, contw);
-        padding.bottom = dec.getLength(getLengthValue("padding-bottom"), false, zero, zero, contw);
-        padding.left = dec.getLength(getLengthValue("padding-left"), false, zero, zero, contw);
+        loadPadding(dec, contw);
         
         //Content and margins
         if (!update)
@@ -305,6 +282,12 @@ public class TableCellBox extends BlockBox
 		return false;
 	}
 	
+    @Override
+	public boolean canIncreaseWidth()
+    {
+        return true;
+    }
+    
 	/**
      * Loads the important values from the element attributes.
      */

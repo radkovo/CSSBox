@@ -23,6 +23,7 @@ import java.awt.*;
 
 import cz.vutbr.web.css.*;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -58,7 +59,7 @@ public class TableColumn extends BlockBox
     //====================================================================================
     
     /**
-     * Create a new table column
+     * Creates a new table column
      */
     public TableColumn(Element n, Graphics2D g, VisualContext ctx)
     {
@@ -68,7 +69,7 @@ public class TableColumn extends BlockBox
     }
     
     /**
-     * Create a new table cell from an inline box
+     * Creates a new table cell from an inline box
      */
     public TableColumn(InlineBox src)
     {
@@ -77,6 +78,28 @@ public class TableColumn extends BlockBox
         loadAttributes();
     }
 
+    public void copyValues(TableColumn src)
+    {
+        super.copyValues(src);
+        span = src.span;
+        colwidth = (src.colwidth == null) ? null : new String(src.colwidth);
+        mincwidth = src.mincwidth;
+        maxcwidth = src.maxcwidth;
+        wrelative = src.wrelative;
+        percent = src.percent;
+        abswidth = src.abswidth;
+    }
+    
+    /**
+     * Creates a copy of the column
+     */
+    public TableColumn copyBox()
+    {
+        TableColumn ret = new TableColumn(el, g, ctx);
+        ret.copyValues(this);
+        return ret;
+    }
+    
     /**
      * @return the column span
      */
@@ -86,7 +109,8 @@ public class TableColumn extends BlockBox
     }
 
     /**
-     * @return the width of the column(s)
+     * If the box width has been specified explicitly, this function obtains the specifiaction string.
+     * @return the width specification of the column(s)
      */
     public String getSpecifiedWidth()
     {
@@ -254,4 +278,17 @@ public class TableColumn extends BlockBox
         setSpecifiedWidth(el.getAttribute("width"));
     }
 
+    /**
+     * Creates a new <col> element that represents an anonymous column
+     * @param doc the document
+     * @return the new element
+     */
+    public static Element createAnonymousColumn(Document doc)
+    {
+        Element div = doc.createElement("col");
+        div.setAttribute("class", "Xanonymous");
+        div.setAttribute("style", "display:table-column;");
+        return div;
+    }
+    
 }

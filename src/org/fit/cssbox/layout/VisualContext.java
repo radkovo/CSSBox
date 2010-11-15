@@ -292,11 +292,11 @@ public class VisualContext
             }
             else if (unit == TermLength.Unit.em)
             {
-                ret = em * nval;
+                ret = (em * nval * 72) / dpi; //em is in pixels
             }
             else if (unit == TermLength.Unit.ex)
             {
-                ret = ex * nval;
+                ret = (ex * nval * 72) / dpi;
             }
             return ret;
         }
@@ -354,11 +354,11 @@ public class VisualContext
             }
             else if (unit == TermLength.Unit.em)
             {
-                ret = (em * nval * dpi) / 72; //em is in pt
+                ret = em * nval; //em is in pixels
             }
             else if (unit == TermLength.Unit.ex)
             {
-                ret = (ex * nval * dpi) / 72;
+                ret = ex * nval;
             }
             return ret;
         }

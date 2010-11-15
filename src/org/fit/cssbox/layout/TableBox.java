@@ -23,7 +23,6 @@ import java.awt.Graphics2D;
 import java.util.*;
 
 import org.fit.cssbox.css.HTMLNorm;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import cz.vutbr.web.css.*;
 
@@ -211,24 +210,16 @@ public class TableBox extends BlockBox
         if (!wset && !update) //width unknown and the content size unknown
         {
             /* For the first time, we always try to use the maximal width even for the table.
-             * That means: 'auto' margins are taken as 0, width comes from the parent element. */
-            content.width = contw - margin.left - border.left - padding.left
-                              - padding.right - border.right - margin.right;
+             * That means, the width comes from the parent element. */
+            content.width = contw - border.left - padding.left - padding.right - border.right;
         }
-        else
+        else  //explicitly specified content width
         {
+            //load the content width
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, contw);
-
-            if (isInFlow()) 
-            {
-                //compute the right margin
-                preferredWidth = margin.left + border.left + padding.left + content.width +
-                                    padding.right + border.right + margin.right;
-                /*margin.right = contw - content.width - border.left - padding.left
-                                - padding.right - border.right - margin.left;
-                if (margin.right < 0) margin.right = 0;*/
-            }
+            //preferred width is derived from the
+            preferredWidth = border.left + padding.left + content.width + padding.right + border.right;
         }
     }
     
@@ -258,78 +249,6 @@ public class TableBox extends BlockBox
             hset = (exact && !auto && height != null && !height.isPercentage());
             if (!update)
                 content.height = dec.getLength(height, auto, 0, 0, 0);
-        }
-    }
-    
-    protected void computeWidthsInFlowXXX(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
-    {
-        CSSDecoder dec = new CSSDecoder(ctx);
-        
-        if (width == null) auto = true;
-        if (exact) wset = !auto;
-        if (wset && exact && width.isPercentage()) wrelative = true;
-        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
-        TermLengthOrPercent mleft = getLengthValue("margin-left");
-        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
-        TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
-        
-        //if column widths haven't been calculated yet,
-        //we can reload everything from scratch
-        if (!columnsCalculated) update = false;
-        
-        if (!wset && !update) //width unknown and the content size unknown
-        {
-            /* For the first time, we always try to use the maximal width even for the table.
-             * That means: 'auto' margins are taken as 0, width comes from the parent element. */
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            content.width = contw - margin.left - border.left - padding.left
-                              - padding.right - border.right - margin.right;
-        }
-        else
-        {
-        	if (!update)
-        		content.width = dec.getLength(width, auto, 0, 0, contw);
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-
-            if (isInFlow()) 
-            {
-                if (mleftauto && mrightauto)
-                {
-                    preferredWidth = border.left + padding.left + content.width +
-                                     padding.right + border.right;
-                    int rest = contw - content.width - border.left - padding.left
-                                     - padding.right - border.right;
-                    margin.left = (rest + 1) / 2;
-                    margin.right = rest / 2;
-                }
-                else if (mleftauto)
-                {
-                    preferredWidth = border.left + padding.left + content.width +
-                                     padding.right + border.right + margin.right;
-                    margin.left = contw - content.width - border.left - padding.left
-                                        - padding.right - border.right - margin.right;
-                    if (margin.left < 0) margin.left = 0; //"treated as zero"
-                }
-                else if (mrightauto)
-                {
-                    preferredWidth = margin.left + border.left + padding.left + content.width +
-                                     padding.right + border.right;
-                    margin.right = contw - content.width - border.left - padding.left
-                                    - padding.right - border.right - margin.left;
-                    if (margin.right < 0) margin.right = 0; //"treated as zero"
-                }
-                else //everything specified, ignore right margin
-                {
-                    preferredWidth = margin.left + border.left + padding.left + content.width +
-                                        padding.right + border.right + margin.right;
-                    margin.right = contw - content.width - border.left - padding.left
-                                    - padding.right - border.right - margin.left;
-                    if (margin.right < 0) margin.right = 0; //"treated as zero"
-                }
-            }
         }
     }
     
@@ -425,7 +344,7 @@ public class TableBox extends BlockBox
         //create the columns that haven't been specified explicitely
         determineColumnCount();
         while (columns.size() < columnCount)
-            columns.add(new TableColumn(createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx));
+            columns.add(new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx));
         
         //load the parametres and ensure the minimal column widths
         if (header != null)
@@ -435,20 +354,25 @@ public class TableBox extends BlockBox
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
             updateColumns(it.next());
 
-        //for (int i = 0; i < columns.size(); i++)
-        //    System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth());
+        System.out.println("Start:");
+        for (int i = 0; i < columns.size(); i++)
+            System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
+            					+ " min=" + columns.elementAt(i).getMinimalWidth()
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());
         
         
         //now, the columns are at minimal widths
         //gather column statistics
         int sumabs = 0; //total length of absolute columns
         int sumperc = 0; //total percentage
+        int mintotalw = 0;  //total minimal length of all the columns
         int sumnonemin = 0; //total minimal length of the columns with no width specified
         int sumnonemax = 0; //total maximal length of the columns with no width specified
         int totalwperc = 0; //total table width computed from percentage columns
         for (int i = 0; i < columns.size(); i++) //compute the sums
         {
             TableColumn col = columns.elementAt(i);
+            mintotalw += col.getMinimalWidth();
             if (col.wrelative)
             {
             	sumperc += col.percent;
@@ -468,7 +392,7 @@ public class TableBox extends BlockBox
             }
         }
         
-        //guess the total table width (not including spacing now)
+        //guess the total width available for columns (not including spacing now)
         if (totalwperc > wlimit) totalwperc = wlimit;
         int totalwabs = 0; //from absolute fields
         if (sumabs + sumnonemax > 0)
@@ -476,13 +400,19 @@ public class TableBox extends BlockBox
             int abspart = 100 - sumperc; //the absolute part is how many percent
             totalwabs = (abspart == 0) ? wlimit : (sumabs + sumnonemax) * 100 / abspart; //what is 100%
         }
+        int totalw = Math.max(totalwperc, totalwabs); //desired width taken from the columns
         
-        int mintotalw = getMinimalContentWidth();
-        int totalw = Math.max(totalwperc, totalwabs); //desired width
-        if (wset && totalw < wlimit)    //if the width is set explicitly, ensure the width
-            totalw = wlimit;
-        if (totalw > wlimit) totalw = wlimit; //we would like not to exceed the limit
-        if (totalw < mintotalw) totalw = mintotalw; //but we cannot be below the minimal width
+        //apply the table limits
+        if (wset)
+        {
+            totalw = content.width - (columns.size() + 1) * spacing; //total space obtained from definition
+        }
+        else
+        {
+            if (totalw > wlimit)
+                totalw = wlimit; //we would not like to exceed the limit
+        }
+        if (totalw < mintotalw) totalw = mintotalw; //we cannot be below the minimal width
         
         /*System.out.println("Percent: " + totalwperc);
         System.out.println("Abs+%: " + totalwabs);
@@ -556,6 +486,12 @@ public class TableBox extends BlockBox
             }
         }
         
+        System.out.println("Result:");
+        for (int i = 0; i < columns.size(); i++)
+            System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
+            					+ " min=" + columns.elementAt(i).getMinimalWidth()
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());
+        
         columnsCalculated = true;
     }
     
@@ -620,7 +556,12 @@ public class TableBox extends BlockBox
                 else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN)
                 {
                     for (int i = 0; i < ((TableColumn) subbox).getSpan(); i++)
-                        columns.add((TableColumn) subbox);
+                    {
+                        if (i == 0)
+                            columns.add((TableColumn) subbox);
+                        else
+                            columns.add(((TableColumn) subbox).copyBox());
+                    }
                 }
                 else if (subbox.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
                 {
@@ -656,17 +597,5 @@ public class TableBox extends BlockBox
         }
     }
 
-    /**
-     * Creates a new <col> element that represents an anonymous column
-     * @param doc the document
-     * @return the new element
-     */
-    private static Element createAnonymousColumn(Document doc)
-    {
-        Element div = doc.createElement("col");
-        div.setAttribute("class", "Xanonymous");
-        div.setAttribute("style", "display:table-column;");
-        return div;
-    }
     
 }

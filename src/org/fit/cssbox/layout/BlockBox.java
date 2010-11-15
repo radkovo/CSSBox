@@ -63,7 +63,7 @@ public class BlockBox extends ElementBox
     
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
-    protected static final int INFLOW_SPACE_THRESHOLD = 20;
+    protected static final int INFLOW_SPACE_THRESHOLD = 15;
     
     /** Does this box contain blocks? */
     protected boolean contblock;
@@ -119,10 +119,10 @@ public class BlockBox extends ElementBox
      * and the width shouldn't be changed anymore */
     protected boolean widthComputed = false;
     
-    /** Originally declared width of the right margin. This property
-     * saves the original value where the efficient right margin may
+    /** Originally declared margin. This property saves the original values
+     * where the efficient left and right margin may
      * be computed from the containing box */
-    protected int marginRightDecl; 
+    protected LengthSet declMargin; 
     
     //============================== Computed style ======================
     
@@ -256,6 +256,8 @@ public class BlockBox extends ElementBox
         bottomset = src.bottomset;
         rightset = src.rightset;
         topstatic = src.topstatic;
+        if (src.declMargin != null)
+        	declMargin = new LengthSet(src.declMargin);
     }
     
     @Override
@@ -265,7 +267,13 @@ public class BlockBox extends ElementBox
         ret.copyValues(this);
         return ret;
     }
-    
+
+    @Override
+    public void initBox()
+    {
+        setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
+    }
+
     @Override
     public void addSubBox(Box box)
     {
@@ -469,6 +477,16 @@ public class BlockBox extends ElementBox
     @Override
     public void setIgnoreInitialWhitespace(boolean b)
     {
+    }
+
+    /**
+     * Checks if the width of the block may be increase to enclose the children. This is true for special blocks
+     * only such as table cells.
+     * @return <code>true</code> if the width may be increased
+     */
+    public boolean canIncreaseWidth()
+    {
+        return false;
     }
     
     /**
@@ -685,7 +703,7 @@ public class BlockBox extends ElementBox
         
     }
     
-    /** Compute the width and height of this element. Layout the sub-elements.
+    /** Layout the sub-elements.
      * @param availw Maximal width available to the child elements
      * @param force Use the area even if the used width is greater than maxwidth
      * @param linestart Indicates whether the element is placed at the line start
@@ -694,7 +712,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("footer"))
+    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -707,12 +725,12 @@ public class BlockBox extends ElementBox
         //remove previously splitted children from possible previous layout
         clearSplitted();
 
+        //shrink-to-fit when the width is not given by containing box or specified explicitly
         if (!hasFixedWidth())
         {
             int min = getMinimalContentWidthLimit();
             int max = getMaximalContentWidth();
             int pref = Math.min(max, availw);
-            //System.out.println(this + " prefers " + pref + " min=" + min);
             if (pref < min) pref = min;
             setContentWidth(pref);
             updateChildSizes();
@@ -841,11 +859,13 @@ public class BlockBox extends ElementBox
                 boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
-                boolean f = (x == x1 || lastbreak == lnstr) && (space >= INFLOW_SPACE_THRESHOLD || !narrowed);
+                boolean f = (x == x1 || lastbreak == lnstr) && !narrowed;
                 //if the previous box ends with a whitespace, ignore initial whitespaces here
                 if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
-                //do the layout
-                boolean fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
+                //do the layout                
+                boolean fit = false;
+                if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
+                    fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
                 if (fit) //positioning succeeded, at least a part fit
                 {
                     if (subbox.isInFlow())
@@ -879,7 +899,7 @@ public class BlockBox extends ElementBox
                 }
                 
                 //check line overflows
-                if (!fit && space < INFLOW_SPACE_THRESHOLD && narrowed) //failed because of no space caused by floats
+                if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
                 {
                     //go to the new line
                     if (x > maxw) maxw = x;
@@ -1303,8 +1323,8 @@ public class BlockBox extends ElementBox
         else
             ret = getMinimalContentWidth();
         //increase by margin, padding, border
-        ret += margin.left + padding.left + border.left +
-               margin.right + padding.right + border.right;
+        ret += declMargin.left + padding.left + border.left +
+               declMargin.right + padding.right + border.right;
         return ret;
     }
 
@@ -1345,8 +1365,8 @@ public class BlockBox extends ElementBox
         else
             ret = getMaximalContentWidth();
         //increase by margin, padding, border
-        ret += margin.left + padding.left + border.left +
-               marginRightDecl + padding.right + border.right;
+        ret += declMargin.left + padding.left + border.left +
+               declMargin.right + padding.right + border.right;
         return ret;
     }
 
@@ -1399,8 +1419,8 @@ public class BlockBox extends ElementBox
     public int getMinimalContentWidthLimit()
     {
     	int ret;
-    	int dif = margin.left + padding.left + border.left +
-               	  margin.right + padding.right + border.right;
+    	int dif = declMargin.left + padding.left + border.left +
+               	  declMargin.right + padding.right + border.right;
     	if (wset)
     		ret = content.width;
     	else if (min_size.width != -1)
@@ -1424,7 +1444,6 @@ public class BlockBox extends ElementBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-		//return (wset && !wrelative) || ((isInFlow() || isRelative()) && cblock.hasFixedWidth());
 	    return wset || isInFlow();
 	}
 
@@ -1649,6 +1668,7 @@ public class BlockBox extends ElementBox
         {
         	content = new Dimension(0, 0);
         	margin = new LengthSet();
+        	declMargin = new LengthSet();
         }
             
         //Margins, widths and heights
@@ -1656,33 +1676,6 @@ public class BlockBox extends ElementBox
         
         if (!update)
         	emargin = new LengthSet(margin);
-    }
-    
-    /**
-     * Loads the border sizes from the style.
-     * 
-     * @param dec CSS decoder used for decoding the style
-     * @param contw containing block width for decoding percentages
-     */
-    protected void loadBorders(CSSDecoder dec, int contw)
-    {
-        border = new LengthSet();
-        if (borderVisible("top"))
-            border.top = getBorderWidth(dec, "border-top-width");
-        else
-            border.top = 0;
-        if (borderVisible("right"))
-            border.right = getBorderWidth(dec, "border-right-width");
-        else
-            border.right = 0;
-        if (borderVisible("bottom"))
-            border.bottom = getBorderWidth(dec, "border-bottom-width");
-        else
-            border.bottom = 0;
-        if (borderVisible("left"))
-            border.left = getBorderWidth(dec, "border-left-width");
-        else
-            border.left = 0;
     }
     
     /**
@@ -1784,7 +1777,8 @@ public class BlockBox extends ElementBox
         	if (exact) wset = false;
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
             if (!update || isInFlow())
@@ -1805,7 +1799,8 @@ public class BlockBox extends ElementBox
           	content.width = dec.getLength(width, auto, 0, 0, contw);
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
@@ -1839,12 +1834,16 @@ public class BlockBox extends ElementBox
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    if (margin.right < 0 && cblock.canIncreaseWidth())
+                        margin.right = 0;
                 }
                 else //everything specified, ignore right margin
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
                     //if (margin.right < 0) margin.right = 0; //"treated as zero"
+                    if (margin.right < 0 && cblock.canIncreaseWidth())
+                        margin.right = 0;
                 }
             }
         }
@@ -1920,6 +1919,9 @@ public class BlockBox extends ElementBox
                 margin.right = dec.getLength(mright, false, 0, 0, contw);
     	    }
     	}
+    	//for absolute positions, the declared margins correspond to computed ones
+    	declMargin.left = margin.left;
+    	declMargin.right = margin.right;
     	
     	//compute the letf and right positions
 	    if (!leftset && !rightset)
@@ -1964,6 +1966,9 @@ public class BlockBox extends ElementBox
         }
         else
             computeHeightsInFlow(height, auto, exact, cblock.getContentWidth(), cblock.getContentHeight(), update);
+        //the computed margins allways correspond to the declared ones
+        declMargin.top = margin.top;
+        declMargin.bottom = margin.bottom;
     }
     
     protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
@@ -2117,15 +2122,6 @@ public class BlockBox extends ElementBox
     	}
     }
    
-    /**
-     * @return <code>true</code> if the box has a visible border around
-     */
-    protected boolean borderVisible(String dir)
-    {
-    		CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
-    		return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
-    }
-    
     /**
      * Checks if the box content is separated from the top margin by a border or padding.
      */

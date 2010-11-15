@@ -22,7 +22,10 @@ package org.fit.cssbox.layout;
 import java.awt.Graphics2D;
 import java.util.Iterator;
 
+import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
 
 import org.w3c.dom.Element;
 
@@ -91,7 +94,13 @@ public class BlockTableBox extends BlockBox
         organizeContent(); //organize the child elements according to their display property
         loadCaptionStyle();
     }
-    
+
+    @Override
+    public boolean canIncreaseWidth()
+    {
+        return true;
+    }
+
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
@@ -101,14 +110,17 @@ public class BlockTableBox extends BlockBox
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
         int wlimit = getAvailableContentWidth() - x1 - x2;
+        int tabwidth = 0;
         int tabheight = 0;
         int capheight = 0;
+        int capwidth = 0;
         
         //format the table
         BlockLayoutStatus stat = new BlockLayoutStatus();
         table.setAvailableWidth(wlimit);
         table.updateSizes();
         layoutBlockInFlow(table, wlimit, stat);
+        tabwidth = stat.maxw;
         tabheight = stat.y;
 
         //format the caption
@@ -118,6 +130,7 @@ public class BlockTableBox extends BlockBox
             caption.setAvailableWidth(stat.maxw);
             caption.updateSizes();
             layoutBlockInFlow(caption, stat.maxw, stat);
+            capwidth = stat.maxw;
             capheight = stat.y;
             if (captionbottom) //place the caption below or above
             {
@@ -133,7 +146,10 @@ public class BlockTableBox extends BlockBox
         else
             table.setPosition(x1, 0);
         
+        setContentWidth(Math.max(tabwidth, capwidth));
         setContentHeight(tabheight + capheight);
+        widthComputed = true;
+        updateSizes();
         setSize(totalWidth(), totalHeight());
         return true;
     }
@@ -177,8 +193,19 @@ public class BlockTableBox extends BlockBox
         padding = new LengthSet();
     }
     
+    @Override
+    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, BlockBox cblock, boolean update)
+    {
+        //anonymous table box has always an 'auto' width in the beginning. After the layout, the width is updated according
+        //the resulting table (and caption) width
+        if (!widthComputed)
+            super.computeWidths(null, true, exact, cblock, update);
+        else
+            super.computeWidths(CSSFactory.getTermFactory().createLength((float) content.width, TermLength.Unit.px), false, exact, cblock, update);
+    }
+    
+    
     //======================================================================================================
-
 
     protected void loadCaptionStyle()
     {

@@ -77,16 +77,21 @@ public class TableColumnGroup extends TableColumn
                 if (col.getSpecifiedWidth().equals(""))
                     col.setSpecifiedWidth(colwidth); //when column width is not set, use the group width
                 for (int i = 0; i < col.getSpan(); i++)
-                    columns.add(col);
+                {
+                    if (i == 0)
+                        columns.add(col);
+                    else
+                        columns.add(col.copyBox());
+                }
             }
         }
         //when there are no <col> elements, use the span attribute
         if (columns.isEmpty())
         {
-            TableColumn col = new TableColumn(null, g, ctx);
+            TableColumn col = new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx);
             col.setSpecifiedWidth(colwidth);
             for (int i = 0; i < span; i++)
-                columns.add(col);
+                columns.add(col.copyBox());
         }
     }
 

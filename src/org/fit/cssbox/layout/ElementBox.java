@@ -22,10 +22,12 @@ package org.fit.cssbox.layout;
 
 import java.util.*;
 import java.awt.*;
+import java.awt.geom.Line2D;
 
 import cz.vutbr.web.css.*;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.fit.cssbox.misc.CSSStroke;
 import org.w3c.dom.*;
 
 /**
@@ -185,6 +187,7 @@ abstract public class ElementBox extends Box
         display = src.display;
         lineHeight = src.lineHeight;
         baseline = src.baseline;
+        whitespace = src.whitespace;
         
         if (src.margin != null)
             margin = new LengthSet(src.margin);
@@ -201,26 +204,17 @@ abstract public class ElementBox extends Box
     /** Create a new box from the same DOM node in the same context */
     abstract public ElementBox copyBox();
     
-    /**
-     * Creates a new element box by splitting this one. The original box will end before the specified child.
-     * The new box will start at the specified child
-     * @param index index of the first child in the split box
-     * @return the new box
-     */
-    /*public ElementBox split(int index)
+    @Override
+    public void initSubtree()
     {
-        ElementBox ret = copyBox();
+        initBox();
+        loadSizes();
         
-        nested.subList(0, index).clear();
-        endChild = index;
-        pseudoElements.remove(PseudoDeclaration.AFTER);
+        for (int i = 0; i < getSubBoxNumber(); i++)
+            getSubBox(i).initSubtree();
         
-        ret.nested.subList(index, ret.nested.size()).clear();
-        ret.startChild = 0;
-        ret.endChild = ret.nested.size();
-        ret.pseudoElements.remove(PseudoDeclaration.BEFORE);
-        return ret;
-    }*/
+        computeEfficientMargins();
+    }
     
     //=======================================================================
     
@@ -773,45 +767,37 @@ abstract public class ElementBox extends Box
         //top left corner
         int x = absbounds.x;
         int y = absbounds.y;
-        int x2 = absbounds.x + absbounds.width - 1;
-        int y2 = absbounds.y + absbounds.height - 1;
 
         //border bounds
         int bx1 = x + margin.left;
         int by1 = y + margin.top;
-        int bx2 = x2 - margin.right;
-        int by2 = y2 - margin.bottom;
+        int bw = border.left + padding.left + content.width + padding.right + border.right;
+        int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
+        int bx2 = bx1 + bw - 1;
+        int by2 = by1 + bh - 1;
         
-        //draw the border
-        if (border.top > 0)
-            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, border.top/2, "top");
-        if (border.right > 0)
-            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right/2 + 1, 0, "right"); 
-        if (border.bottom > 0)
-            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom/2 + 1, "bottom"); 
-        if (border.left > 0)
-            drawBorder(g, bx1, by1, bx1, by2, border.left, border.left/2, 0, "left"); 
-        
-        //Background
-        int bgx = x + margin.left + border.left;
-        int bgy = y + margin.top + border.top;
-        int bgw = padding.left + content.width + padding.right;
-        int bgh = padding.top + content.height + padding.bottom;
-        //clip to computed absolute size
-        if (bgx + bgw - 1 > x2) bgw = x2 - bgx + 1;
-        if (bgy + bgh - 1 > y2) bgh = y2 - bgy + 1;
-        //draw the color
+        //draw the background - it should be visible below the border too
         if (bgcolor != null)
         {
             g.setColor(bgcolor);
-            g.fillRect(bgx, bgy, bgw, bgh);
+            g.fillRect(bx1, by1, bw, bh);
         }
-
+        
+        //draw the border
+        if (border.top > 0)
+            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
+        if (border.right > 0)
+            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right + 1, 0, "right", true); 
+        if (border.bottom > 0)
+            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom + 1, "bottom", true); 
+        if (border.left > 0)
+            drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
+        
         g.setColor(color); //restore original color
     }
     
     private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 
-                            int right, int down, String side)
+                            int right, int down, String side, boolean reverse)
     {
         TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
@@ -820,39 +806,8 @@ abstract public class ElementBox extends Box
             Color clr = tclr.getValue();
             if (clr == null) clr = Color.BLACK;
             g.setColor(clr);
-            
-            if (bst == CSSProperty.BorderStyle.SOLID)
-            {
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DOTTED)
-            {
-                float dash[] = {width, width};
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DASHED)
-            {
-                float dash[] = {3*width, width};
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dash, 0));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
-            else if (bst == CSSProperty.BorderStyle.DOUBLE)
-            {
-                int sw = (width + 2) / 3;
-                int gw = width - 2 * sw;
-                int gwr = (right == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
-                int gwd = (down == 0) ? 0 : (gw+1) / 2 + (sw+1) / 2;
-                g.setStroke(new BasicStroke(sw, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right - gwr, y1 + down - gwd, x2 + right - gwr, y2 + down - gwd);
-                g.drawLine(x1 + right + gwr, y1 + down + gwd, x2 + right + gwr, y2 + down + gwd);
-            }
-            else //default or unsupported - draw a solid line
-            {
-                g.setStroke(new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1));
-                g.drawLine(x1 + right, y1 + down, x2 + right, y2 + down);
-            }
+            g.setStroke(new CSSStroke(width, bst, reverse));
+            g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
         }
     }
 
@@ -897,6 +852,42 @@ abstract public class ElementBox extends Box
      * @return <code>true</code> if the margins are adjoining
      */
     abstract public boolean marginsAdjoin();
+    
+    /**
+     * @return <code>true</code> if the box has a visible border around
+     */
+    protected boolean borderVisible(String dir)
+    {
+        CSSProperty.BorderStyle st = style.getProperty("border-"+dir+"-style");
+        return (st != null && st != CSSProperty.BorderStyle.NONE  && st != CSSProperty.BorderStyle.HIDDEN); 
+    }
+    
+    /**
+     * Loads the border sizes from the style.
+     * 
+     * @param dec CSS decoder used for decoding the style
+     * @param contw containing block width for decoding percentages
+     */
+    protected void loadBorders(CSSDecoder dec, int contw)
+    {
+        border = new LengthSet();
+        if (borderVisible("top"))
+            border.top = getBorderWidth(dec, "border-top-width");
+        else
+            border.top = 0;
+        if (borderVisible("right"))
+            border.right = getBorderWidth(dec, "border-right-width");
+        else
+            border.right = 0;
+        if (borderVisible("bottom"))
+            border.bottom = getBorderWidth(dec, "border-bottom-width");
+        else
+            border.bottom = 0;
+        if (borderVisible("left"))
+            border.left = getBorderWidth(dec, "border-left-width");
+        else
+            border.left = 0;
+    }
     
     /**
      * Load the basic style from the CSS properties. This includes the display

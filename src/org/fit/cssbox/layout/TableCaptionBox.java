@@ -76,7 +76,8 @@ public class TableCaptionBox extends BlockBox
             if (exact) wset = false;
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
             if (!update || isInFlow())
@@ -97,7 +98,8 @@ public class TableCaptionBox extends BlockBox
             content.width = dec.getLength(width, auto, 0, 0, contw);
             margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
             margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
-            marginRightDecl = margin.right;
+            declMargin.left = margin.left;
+            declMargin.right = margin.right;
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
