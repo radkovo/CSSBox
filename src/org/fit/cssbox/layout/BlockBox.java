@@ -362,11 +362,23 @@ public class BlockBox extends ElementBox
     }
     
     /** Returns true if the box is in the normal text flow (not absolutely
-     * positioned nor floating */
+     * positioned nor floating) */
     @Override
     public boolean isInFlow()
     {
         return (displayed && floating == FLOAT_NONE && position != POS_ABSOLUTE && position != POS_FIXED);
+    }
+    
+    /** Returns true if the box is absolutely positioned. */
+    public boolean isPositioned()
+    {
+        return (displayed && (position == POS_ABSOLUTE && position == POS_FIXED));
+    }
+    
+    /** Returns true if the box is floating. */
+    public boolean isFloating()
+    {
+        return (displayed && floating != FLOAT_NONE);
     }
     
 	@Override

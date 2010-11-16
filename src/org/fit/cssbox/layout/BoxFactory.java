@@ -219,7 +219,7 @@ public class BoxFactory
         //Add the new box to the parent according to its type
         if (newbox.isBlock())  
         {
-            if (newbox.isInFlow())
+            if (!((BlockBox) newbox).isPositioned())
             {
                 if (parent.isBlock()) //block in block
                 {
@@ -243,7 +243,7 @@ public class BoxFactory
                         System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
                 }
             }
-            else //out-of-flow box
+            else //positioned box
             {
                 newbox.getContainingBlock().addSubBox(newbox);
                 ((BlockBox) newbox).absReference = inflow_reference; //set the reference box for computing the static position
