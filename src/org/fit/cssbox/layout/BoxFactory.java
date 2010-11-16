@@ -205,8 +205,12 @@ public class BoxFactory
     {
         //Create the new box for the child
         Box newbox;
+        boolean istext = false;
         if (n.getNodeType() == Node.TEXT_NODE)
+        {
             newbox = createTextBox(parent, (Text) n, contbox, clipbox);
+            istext = true;
+        }
         else
             newbox = createElementBox(parent, (Element) n, contbox, absbox, clipbox);
         
@@ -248,7 +252,8 @@ public class BoxFactory
         else //inline elements -- always in flow
         {
             parent.addSubBox(newbox);
-            inflow_reference = newbox;
+            if (!(istext && newbox.isWhitespace())) //do not use whitespace text boxes -- they may be eliminated during layout
+                inflow_reference = newbox;
         }
 
         if (newbox instanceof ElementBox) 
