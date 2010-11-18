@@ -165,7 +165,7 @@ public class InlineBox extends ElementBox
                 {
                     subbox.setPosition(x,  0); //the y position will be updated later
                     x += subbox.getWidth();
-                    if (subbox.getHeight() > maxh)
+                    if (subbox.getContentHeight() > maxh) //content heights are 
                         maxh = subbox.getHeight();
                 }
                 if (subbox.getRest() != null) //is there anything remaining?
@@ -204,13 +204,11 @@ public class InlineBox extends ElementBox
             	lastbreak = i+1;
         }
         
+        
         //compute the vertical positions of the boxes
-        computeMaxLineHeight();
-        alignBoxes();
-        
+        updateLineMetrics();
         content.width = x;
-        content.height = lineHeight;
-        
+        content.height = alignBoxes();
         setSize(totalWidth(), totalHeight());
         
         return ret;
@@ -491,34 +489,42 @@ public class InlineBox extends ElementBox
     }
     
     //=====================================================================================================
-    
-    private void computeMaxLineHeight()
+
+
+    /**
+     * Computes the baseline position and the maximal line height from the subboxes.
+     */
+    private void updateLineMetrics()
     {
-        int max = lineHeight; //shouldn't be smaller than our own height
-        for (int i = startChild; i < endChild; i++)
+        maxLineHeight = lineHeight; //default line height
+        if (startChild == endChild)
+            baseline = ctx.getBaselineOffset(); //empty box - standard font baseline
+        else
         {
-            Box sub = getSubBox(i);
-            int h;
-            if (sub instanceof InlineBox)
-                h = ((InlineBox) sub).getMaxLineHeight();
-            else
-                h = sub.getLineHeight();
-            if (h > max) max = h;
+            baseline = 0; //use the greatest baseline
+            for (int i = startChild; i < endChild; i++)
+            {
+            	Box sub = getSubBox(i);
+                baseline = Math.max(baseline, sub.getBaselineOffset());
+                if (sub instanceof InlineBox)
+                    maxLineHeight = Math.max(maxLineHeight, ((InlineBox) sub).getMaxLineHeight());
+            }
         }
-        maxLineHeight = max;
     }
     
     /**
      * Vertically aligns the contained boxes according to their vertical-align properties.
+     * @return the total content height after alignment
      */
-    private void alignBoxes()
+    private int alignBoxes()
     {
-        int base = getBaselineOffset();
+        int mintop = 0;
+        int maxbottom = 0;
         for (int i = startChild; i < endChild; i++)
         {
             int dif = 0;
             Box sub = getSubBox(i);
-            int baseshift = base - sub.getBaselineOffset(); 
+            int baseshift = baseline - sub.getBaselineOffset(); 
             if (sub instanceof InlineBox)
             {
                 CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
@@ -550,10 +556,11 @@ public class InlineBox extends ElementBox
             
             
             if (dif != 0)
-            {
                 sub.moveDown(dif);
-            }
+            mintop = Math.min(mintop, sub.getContentY());
+            maxbottom = Math.max(maxbottom, sub.getContentY() + sub.getContentHeight());
         }
+        return maxbottom - mintop;
     }
     
 }

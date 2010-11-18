@@ -31,7 +31,7 @@ public class LineBox
     /** Index of the first box at this line (from all the subboxes of the block) */
     private int start;
     
-    /** The Y position of this line */
+    /** The Y position of this line top */
     private int y;
     
     /** Index of the last box at this line (excl.) */
@@ -46,8 +46,11 @@ public class LineBox
     /** Right offset caused by floating boxes */
     private int right;
     
-    /** Maximal height of the content boxes */
+    /** Maximal content height of the boxes on the line */
     private int maxh;
+
+    /** Maximal line-height of the boxes on the line */
+    private int lineheight;
     
     /** Maximal baseline offset for the line */
     private int baseline;
@@ -66,7 +69,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " maxh=" + maxh;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " maxh=" + maxh + " maxlineh=" + lineheight + " baseline=" + baseline;
     }
 
     public BlockBox getParent()
@@ -159,14 +162,39 @@ public class LineBox
         return maxh;
     }
     
+    public void setMaxLineHeight(int lineheight)
+    {
+        this.lineheight = lineheight;
+    }
+    
+    public int getMaxLineHeight()
+    {
+        return lineheight;
+    }
+    
     /**
      * Updates the baseline value if the new value is greater than the current one
      * @param baseline the new baseline value
      */
-    public void considerBaseline(int baseline)
+    public void considerBox(Box box)
     {
-    	if (this.baseline < baseline)
-    		this.baseline = baseline;
+        //update baseline offset
+    	if (baseline < box.getBaselineOffset())
+    		baseline = box.getBaselineOffset();
+    	//update maximal height
+    	if (maxh < box.getContentHeight())
+    	    maxh = box.getContentHeight();
+    	//update line height
+    	if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
+    	{
+        	if (lineheight < ((InlineBox) box).getMaxLineHeight())
+        	    lineheight = ((InlineBox) box).getMaxLineHeight();
+    	}
+    	else
+    	{
+    	    if (lineheight < box.getContentHeight())
+    	        lineheight = box.getContentHeight();
+    	}
     }
     
     public int getBaselineOffset()

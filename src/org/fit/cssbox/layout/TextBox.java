@@ -308,12 +308,6 @@ public class TextBox extends Box
     }
     
     @Override
-    public int getMaxBaselineOffset()
-    {
-        return ctx.getBaselineOffset();
-    }
-    
-    @Override
     public int totalHeight() 
     {
         return bounds.width;

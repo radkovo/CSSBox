@@ -129,7 +129,7 @@ abstract public class ElementBox extends Box
     protected int lineHeight;
     
     /** baseline offset */
-    private int baseline;
+    protected int baseline;
     
     /** First valid child */
     protected int startChild;
@@ -710,17 +710,6 @@ abstract public class ElementBox extends Box
         return baseline;
     }
     
-    @Override
-    public int getMaxBaselineOffset()
-    {
-        int max = baseline; //current box offset is the minimum
-        //find the maximum of the baseline offsets of the subboxes
-        for (int i = startChild; i < endChild; i++)
-            if (getSubBox(i).getMaxBaselineOffset() > max)
-                max = getSubBox(i).getMaxBaselineOffset();
-        return max;
-    }
-    
     /**
      * Checks if the element contains only text boxes (no nested elements)
      * @return <code>true</code> when only text boxes are contained in this element
@@ -963,7 +952,8 @@ abstract public class ElementBox extends Box
                 r = ((TermNumber) len).getValue();
             lineHeight = (int) Math.round(r * ctx.getFontHeight());
         }
-        baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
+        //baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
+        baseline = ctx.getBaselineOffset();
 
         //whitespace
         whitespace = style.getProperty("white-space");

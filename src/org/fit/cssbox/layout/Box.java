@@ -520,12 +520,6 @@ abstract public class Box
     abstract public int getBaselineOffset();
     
     /**
-     * Obtains the maximal distance from the line top to the baseline of this box.
-     * @return the <em>y</em> offset of the baseline in this box and all its subboxes.
-     */
-    abstract public int getMaxBaselineOffset();
-    
-    /**
      * @return maximal available width of the content during the layout
      */
     abstract public int getAvailableContentWidth();
