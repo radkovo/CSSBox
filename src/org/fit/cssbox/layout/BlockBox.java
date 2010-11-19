@@ -623,14 +623,14 @@ public class BlockBox extends ElementBox
                 if (subbox instanceof ElementBox)
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
 
-                System.out.println("dif="+dif);
+                System.out.println("line=" + line);
+                System.out.println("dif="+dif+" hlead="+line.getHalfLead()+" Y="+line.getY());
                 
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)
                     ((InlineBox) subbox).setLineBox(line);
                 
-                int hlead = (line.getMaxLineHeight() - line.getTotalHeight()) / 2;
-                int y = line.getY() + dif + hlead;
+                int y = line.getY() + line.getHalfLead() + dif;
                 subbox.moveDown(y);
             }
         }
@@ -866,21 +866,6 @@ public class BlockBox extends ElementBox
                         x += subbox.getWidth();
                     }
                     //update current line metrics
-                    /*if (subbox instanceof InlineBox)
-                    {
-                        if (!subbox.isWhitespace()) //do not consider empty and whitespace boxes
-                        {
-                            InlineBox isubbox = (InlineBox) subbox;
-                            curline.considerBox(isubbox);
-                        }
-                    }
-                    else
-                    {
-                        if (subbox.getHeight() > curline.getMaxHeight())
-                            curline.setMaxHeight(subbox.getHeight());
-                        if (subbox.getHeight() > curline.getMaxLineHeight())
-                            curline.setMaxLineHeight(subbox.getLineHeight());
-                    }*/
                     if (!subbox.isWhitespace())
                         curline.considerBox(subbox);
                     

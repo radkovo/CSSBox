@@ -182,10 +182,15 @@ public class LineBox
         return maxbaseline;
     }
     
+    public int getHalfLead()
+    {
+    	return (lineheight - (above + below)) / 2;
+    }
+    
     public void considerBox(Box box)
     {
         int a = box.getBaselineOffset();
-        int b = box.getContentHeight() - a;
+        int b = box.getLineHeight() - a;
     	if (box instanceof InlineBox)
     	{
 	        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
@@ -227,7 +232,7 @@ public class LineBox
 	        {
 	            return 0;
 	        }
-	        else if (va != VerticalAlign.BOTTOM)
+	        else if (va == VerticalAlign.BOTTOM)
 	        {
 	            return getTotalHeight() - box.getContentHeight() + 1;
 	        }
