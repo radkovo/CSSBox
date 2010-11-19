@@ -129,6 +129,8 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
             return true;
         }
 
+        baseline = boxh;
+        
         setAvailableWidth(availw);
         int wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)

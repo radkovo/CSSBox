@@ -612,40 +612,13 @@ public class BlockBox extends ElementBox
     
     private void alignLineVertically(LineBox line)
     {
-        int lead = (line.getMaxLineHeight() - line.getMaxHeight()) / 2;
-        int baseline = line.getBaselineOffset() + line.getY() + lead;
-        
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
             Box subbox = getSubBox(i);
             System.out.println("Box: " + subbox);
             if (!subbox.isBlock())
             {
-                CSSProperty.VerticalAlign va = VerticalAlign.BASELINE; 
-                if (subbox instanceof InlineBox)    
-                    va = ((InlineBox) subbox).getVerticalAlign();
-                System.out.println("va=" + va);
-                
-                int dif = 0;
-                int baseshift = baseline - subbox.getBaselineOffset();
-                if (va == CSSProperty.VerticalAlign.BASELINE)
-                    dif = baseshift;
-                else if (va == CSSProperty.VerticalAlign.MIDDLE)
-                    dif = baseshift - (int) (ctx.getEx() / 2);
-                else if (va == CSSProperty.VerticalAlign.SUB)
-                    dif = baseshift + (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.SUPER)
-                    dif = baseshift - (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
-                    dif = 0;
-                else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
-                    dif = line.getMaxLineHeight() - subbox.getContentHeight();
-                else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
-                {
-                    CSSDecoder dec = new CSSDecoder(subbox.getVisualContext());
-                    int len = dec.getLength(((ElementBox) subbox).getLengthValue("vertical-align"), false, 0, 0, subbox.getLineHeight());
-                    dif = baseshift - len;
-                }
+                int dif = line.alignBox(subbox);
                 
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
                 if (subbox instanceof ElementBox)

@@ -19,6 +19,9 @@
  */
 package org.fit.cssbox.layout;
 
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.VerticalAlign;
+
 /**
  * This class describes a single line of the content in a block box.
  * @author burgetr
@@ -46,14 +49,20 @@ public class LineBox
     /** Right offset caused by floating boxes */
     private int right;
     
-    /** Maximal content height of the boxes on the line */
+    /** Maximal height above the baseline (including baseline) */
+    private int above;
+    
+    /** Maximal height below the baseline (excluding baseline) */
+    private int below;
+    
+    /** Maximal content height of the boxes */
     private int maxh;
-
+    
     /** Maximal line-height of the boxes on the line */
     private int lineheight;
     
     /** Maximal baseline offset for the line */
-    private int baseline;
+    private int maxbaseline;
 
     public LineBox(BlockBox parent, int start, int y)
     {
@@ -63,13 +72,14 @@ public class LineBox
         width = 0;
         left = 0;
         right = 0;
-        maxh = 0;
+        above = 0;
+        below = 0;
     }
 
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " maxh=" + maxh + " maxlineh=" + lineheight + " baseline=" + baseline;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + lineheight + " baseline=" + maxbaseline;
     }
 
     public BlockBox getParent()
@@ -152,14 +162,9 @@ public class LineBox
         this.right = right;
     }
 
-    public void setMaxHeight(int maxh)
+    public int getTotalHeight()
     {
-        this.maxh = maxh;
-    }
-
-    public int getMaxHeight()
-    {
-        return maxh;
+        return above + below;
     }
     
     public void setMaxLineHeight(int lineheight)
@@ -172,34 +177,100 @@ public class LineBox
         return lineheight;
     }
     
-    /**
-     * Updates the baseline value if the new value is greater than the current one
-     * @param baseline the new baseline value
-     */
-    public void considerBox(Box box)
+    public int getMaxBaselineOffset()
     {
-        //update baseline offset
-    	if (baseline < box.getBaselineOffset())
-    		baseline = box.getBaselineOffset();
-    	//update maximal height
-    	if (maxh < box.getContentHeight())
-    	    maxh = box.getContentHeight();
-    	//update line height
-    	if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
-    	{
-        	if (lineheight < ((InlineBox) box).getMaxLineHeight())
-        	    lineheight = ((InlineBox) box).getMaxLineHeight();
-    	}
-    	else
-    	{
-    	    if (lineheight < box.getContentHeight())
-    	        lineheight = box.getContentHeight();
-    	}
+        return maxbaseline;
     }
     
-    public int getBaselineOffset()
+    public void considerBox(Box box)
     {
-    	return baseline;
+        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
+        if (va != VerticalAlign.TOP && va != VerticalAlign.BOTTOM) //the box influences 'a' and 'b'
+        {
+            int a = box.getBaselineOffset();
+            int b = box.getContentHeight() - a;
+
+            int dif = computeBaselineDifference(box);
+            a -= dif; //what from the box is above our baseline
+            b += dif; //what from the box is below
+            above = Math.max(above, a);
+            below = Math.max(below, b);
+        }
+
+        //update other statistics
+        maxbaseline = Math.max(maxbaseline, box.getBaselineOffset());
+        maxh = Math.max(maxh, box.getContentHeight());
+        if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
+            lineheight  = Math.max(lineheight, ((InlineBox) box).getMaxLineHeight());
+        else
+            lineheight =  Math.max(lineheight, box.getContentHeight());
+    }
+    
+    /**
+     * Aligns a new box and updates the line metrics. 
+     * @param box the box to be placed on the line
+     * @return the Y distance of the box top content edge from top of this line
+     */
+    public int alignBox(Box box)
+    {
+        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
+        if (va == VerticalAlign.TOP)
+        {
+            return 0;
+        }
+        else if (va != VerticalAlign.BOTTOM)
+        {
+            return getTotalHeight() - box.getContentHeight() + 1;
+        }
+        else
+        {
+            return above + computeBaselineDifference(box) - box.getBaselineOffset();
+        }
+    }
+    
+    /** 
+     * Computes the difference between the box baseline and our baseline according to the vertical alignment of the box.
+     * @param box The box whose baseline should be considered
+     * @return the vertical difference betweein baselines, positive dif means the box baseline is below our baseline 
+     */
+    private int computeBaselineDifference(Box box)
+    {
+        int a = box.getBaselineOffset();
+        int b = box.getContentHeight() - a;
+        CSSProperty.VerticalAlign va = ((InlineBox) box).getVerticalAlign();
+        
+        int dif = 0;
+
+        if (va == CSSProperty.VerticalAlign.BASELINE)
+            dif = 0; //just sits on the baseline
+        else if (va == CSSProperty.VerticalAlign.MIDDLE)
+        {
+            int midbox = (a + b) / 2;
+            int halfex = (int) Math.round(parent.getVisualContext().getEx() / 2);
+            int na = midbox + halfex;
+            dif = a - na;
+        }
+        else if (va == CSSProperty.VerticalAlign.SUB)
+            dif = (int) Math.round(0.3 * parent.getLineHeight());
+        else if (va == CSSProperty.VerticalAlign.SUPER)
+            dif = - (int) Math.round(0.3 * parent.getLineHeight());  
+        else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
+        {
+            int na = parent.getVisualContext().getBaselineOffset();
+            dif = a - na;
+        }
+        else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
+        {
+            int nb = parent.getVisualContext().getFontHeight() - parent.getVisualContext().getBaselineOffset();
+            dif = nb - b;
+        }
+        else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
+        {
+            CSSDecoder dec = new CSSDecoder(box.getVisualContext());
+            int len = dec.getLength(((ElementBox) box).getLengthValue("vertical-align"), false, 0, 0, box.getLineHeight());
+            dif = -len;
+        }
+        return dif;
     }
     
 }

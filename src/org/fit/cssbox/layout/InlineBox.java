@@ -228,7 +228,7 @@ public class InlineBox extends ElementBox
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxHeight() - getContentHeight() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getTotalHeight() - getContentHeight() - getContentOffsetY();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
