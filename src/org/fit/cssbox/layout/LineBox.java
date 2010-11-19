@@ -29,7 +29,7 @@ import cz.vutbr.web.css.CSSProperty.VerticalAlign;
 public class LineBox
 {
     /** The BlockBox containing the lines */
-    private BlockBox parent;
+    private ElementBox parent;
     
     /** Index of the first box at this line (from all the subboxes of the block) */
     private int start;
@@ -64,7 +64,7 @@ public class LineBox
     /** Maximal baseline offset for the line */
     private int maxbaseline;
 
-    public LineBox(BlockBox parent, int start, int y)
+    public LineBox(ElementBox parent, int start, int y)
     {
         this.parent = parent;
         this.start = start;
@@ -82,7 +82,7 @@ public class LineBox
         return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + lineheight + " baseline=" + maxbaseline;
     }
 
-    public BlockBox getParent()
+    public ElementBox getParent()
     {
         return parent;
     }
@@ -162,12 +162,17 @@ public class LineBox
         this.right = right;
     }
 
-    public int getTotalHeight()
+    public int getMaxHeight()
+    {
+    	return maxh;
+    }
+    
+    public int getLineHeight()
     {
         return above + below;
     }
     
-    public void setMaxLineHeight(int lineheight)
+    /*public void setMaxLineHeight(int lineheight)
     {
         this.lineheight = lineheight;
     }
@@ -175,6 +180,11 @@ public class LineBox
     public int getMaxLineHeight()
     {
         return lineheight;
+    }*/
+    
+    public int getBaselineOffset()
+    {
+    	return above;
     }
     
     public int getMaxBaselineOffset()
@@ -234,7 +244,7 @@ public class LineBox
 	        }
 	        else if (va == VerticalAlign.BOTTOM)
 	        {
-	            return getTotalHeight() - box.getContentHeight() + 1;
+	            return getLineHeight() - box.getContentHeight() + 1;
 	        }
 	        else
 	        {
