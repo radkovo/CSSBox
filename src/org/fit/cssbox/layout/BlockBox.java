@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import cz.vutbr.web.css.*;
-import cz.vutbr.web.css.CSSProperty.VerticalAlign;
 
 import org.w3c.dom.*;
 
@@ -630,7 +629,9 @@ public class BlockBox extends ElementBox
                 if (subbox instanceof InlineBox)
                     ((InlineBox) subbox).setLineBox(line);
                 
-                subbox.moveDown(dif);
+                int hlead = (line.getMaxLineHeight() - line.getTotalHeight()) / 2;
+                int y = line.getY() + dif + hlead;
+                subbox.moveDown(y);
             }
         }
     }
