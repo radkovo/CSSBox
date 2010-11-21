@@ -32,7 +32,7 @@ import org.w3c.dom.*;
  *
  * @author  radek
  */
-public class TextBox extends Box
+public class TextBox extends Box implements Inline
 {
     /** Assigned text node */
     protected Text textNode;
@@ -295,16 +295,19 @@ public class TextBox extends Box
         return availwidth;
     }
     
-    @Override
-    public int getLineHeight()
+    public int getTotalLineHeight()
     {
         return ctx.getFontHeight();
     }
 
-    @Override
     public int getBaselineOffset()
     {
         return ctx.getBaselineOffset();
+    }
+    
+    public int getBelowBaseline()
+    {
+        return ctx.getFontHeight() - ctx.getBaselineOffset();
     }
     
     @Override

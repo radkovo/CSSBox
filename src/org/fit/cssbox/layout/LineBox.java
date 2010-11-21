@@ -167,7 +167,7 @@ public class LineBox
     	return maxh;
     }
     
-    public int getLineHeight()
+    public int getTotalLineHeight()
     {
         return above + below;
     }
@@ -186,6 +186,11 @@ public class LineBox
     {
     	return above;
     }
+
+    public int getBelowBaseline()
+    {
+    	return below;
+    }
     
     public int getMaxBaselineOffset()
     {
@@ -197,10 +202,10 @@ public class LineBox
     	return (lineheight - (above + below)) / 2;
     }
     
-    public void considerBox(Box box)
+    public void considerBox(Inline box)
     {
         int a = box.getBaselineOffset();
-        int b = box.getLineHeight() - a;
+        int b = box.getBelowBaseline();
     	if (box instanceof InlineBox)
     	{
 	        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
@@ -220,12 +225,13 @@ public class LineBox
     	}
 
         //update other statistics
-        maxbaseline = Math.max(maxbaseline, box.getBaselineOffset());
-        maxh = Math.max(maxh, box.getContentHeight());
-        if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
+        //maxbaseline = Math.max(maxbaseline, box.getBaselineOffset());
+        //maxh = Math.max(maxh, box.getContentHeight());
+        /*if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
             lineheight  = Math.max(lineheight, ((InlineBox) box).getMaxLineHeight());
         else
-            lineheight =  Math.max(lineheight, box.getContentHeight());
+            lineheight =  Math.max(lineheight, box.getContentHeight());*/
+    	lineheight = Math.max(lineheight, box.getTotalLineHeight());
     }
     
     /**
@@ -233,7 +239,7 @@ public class LineBox
      * @param box the box to be placed on the line
      * @return the Y distance of the box top content edge from top of this line
      */
-    public int alignBox(Box box)
+    public int alignBox(Inline box)
     {
     	if (box instanceof InlineBox)
     	{
@@ -244,7 +250,7 @@ public class LineBox
 	        }
 	        else if (va == VerticalAlign.BOTTOM)
 	        {
-	            return getLineHeight() - box.getContentHeight() + 1;
+	            return getTotalLineHeight() - ((InlineBox) box).getContentHeight() + 1;
 	        }
 	        else
 	        {

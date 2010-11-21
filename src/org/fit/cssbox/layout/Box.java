@@ -509,17 +509,6 @@ abstract public class Box
     abstract public int totalHeight();
     
     /**
-     * @return the computed line height for the box
-     */
-    abstract public int getLineHeight();
-    
-    /**
-     * Obtains the distance from the whole content top to the baseline of this box.
-     * @return the <em>y</em> offset of the baseline in this box
-     */
-    abstract public int getBaselineOffset();
-    
-    /**
      * @return maximal available width of the content during the layout
      */
     abstract public int getAvailableContentWidth();

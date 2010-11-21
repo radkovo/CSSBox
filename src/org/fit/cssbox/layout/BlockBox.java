@@ -617,7 +617,7 @@ public class BlockBox extends ElementBox
             System.out.println("Box: " + subbox);
             if (!subbox.isBlock())
             {
-                int dif = line.alignBox(subbox);
+                int dif = line.alignBox((Inline) subbox);
                 
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
                 if (subbox instanceof ElementBox)
@@ -867,7 +867,7 @@ public class BlockBox extends ElementBox
                     }
                     //update current line metrics
                     if (!subbox.isWhitespace())
-                        curline.considerBox(subbox);
+                        curline.considerBox((Inline) subbox);
                     
                 }
                 
@@ -894,7 +894,7 @@ public class BlockBox extends ElementBox
                     curline.setLimits(x1, x2);
                     //go to the new line
                     if (x > maxw) maxw = x;
-                    y += curline.getLineHeight();
+                    y += curline.getTotalLineHeight();
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
                     if (x1 < 0) x1 = 0;
@@ -937,7 +937,7 @@ public class BlockBox extends ElementBox
         if (!hasFixedHeight())
         {
                 if (curline.getMaxHeight() > 0)  //possible unfinished line
-                    y += curline.getLineHeight();
+                    y += curline.getTotalLineHeight();
                 if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
                 {
                     //enclose all floating boxes we own

@@ -30,16 +30,16 @@ import cz.vutbr.web.css.*;
  *
  * @author  radek
  */
-public class InlineBox extends ElementBox
+public class InlineBox extends ElementBox implements Inline
 {
     /** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;
     
-    /** maximal line height of the contained boxes */
-    private int maxLineHeight;
-    
     /** parent LineBox assigned during layout */
     private LineBox linebox;
+    
+    /** line box describing the children layout */
+    private LineBox curline;
     
     //========================================================================
     
@@ -109,6 +109,32 @@ public class InlineBox extends ElementBox
     
     //========================================================================
     
+    public int getBaselineOffset()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getBaselineOffset();
+    }
+    
+    public int getBelowBaseline()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getBelowBaseline();
+    }
+    
+    public int getTotalLineHeight()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getTotalLineHeight();
+    }
+    
+    //========================================================================
+    
 	@Override
     public boolean isInFlow()
 	{
@@ -140,7 +166,7 @@ public class InlineBox extends ElementBox
 
         setAvailableWidth(availw);
         
-        LineBox curline = new LineBox(this, startChild, 0);
+        curline = new LineBox(this, startChild, 0);
         int wlimit = getAvailableContentWidth();
         int x = 0; //current x
         boolean ret = true;
@@ -161,13 +187,15 @@ public class InlineBox extends ElementBox
             boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
             if (fit) //something has been placed
             {
-                if (subbox.isInFlow())
+                if (subbox instanceof Inline)
                 {
                     subbox.setPosition(x,  0); //the y position will be updated later
                     x += subbox.getWidth();
                     if (!subbox.isWhitespace())
-                        curline.considerBox(subbox);
+                        curline.considerBox((Inline) subbox);
                 }
+                else
+                	System.err.println("Warning: doLayout(): subbox is not inline: " + subbox);
                 if (subbox.getRest() != null) //is there anything remaining?
                 {
                     InlineBox rbox = copyBox();
@@ -207,7 +235,6 @@ public class InlineBox extends ElementBox
         
         //compute the vertical positions of the boxes
         //updateLineMetrics();
-        baseline = curline.getBaselineOffset();
         alignBoxes(curline);
         content.width = x;
         content.height = ctx.getFontHeight();
@@ -230,7 +257,7 @@ public class InlineBox extends ElementBox
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getLineHeight() - getContentHeight() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getTotalLineHeight() - getContentHeight() - getContentOffsetY();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
@@ -362,10 +389,10 @@ public class InlineBox extends ElementBox
     /**
      * @return the maximal line height of the contained sub-boxes
      */
-    public int getMaxLineHeight()
+    /*public int getMaxLineHeight()
     {
         return maxLineHeight;
-    }
+    }*/
     
     @Override
     public int totalHeight()
@@ -471,28 +498,6 @@ public class InlineBox extends ElementBox
     
     //=====================================================================================================
 
-
-    /**
-     * Computes the baseline position and the maximal line height from the subboxes.
-     */
-    private void updateLineMetrics()
-    {
-        maxLineHeight = lineHeight; //default line height
-        if (startChild == endChild)
-            baseline = ctx.getBaselineOffset(); //empty box - standard font baseline
-        else
-        {
-            baseline = 0; //use the greatest baseline
-            for (int i = startChild; i < endChild; i++)
-            {
-            	Box sub = getSubBox(i);
-                baseline = Math.max(baseline, sub.getBaselineOffset());
-                if (sub instanceof InlineBox)
-                    maxLineHeight = Math.max(maxLineHeight, ((InlineBox) sub).getMaxLineHeight());
-            }
-        }
-    }
-    
     /**
      * Vertically aligns the contained boxes according to their vertical-align properties.
      */
@@ -501,7 +506,7 @@ public class InlineBox extends ElementBox
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
-            int dif = line.alignBox(sub);
+            int dif = line.alignBox((Inline) sub);
             //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
             if (sub instanceof InlineBox)
                 dif = dif - ((InlineBox) sub).getContentOffsetY(); 

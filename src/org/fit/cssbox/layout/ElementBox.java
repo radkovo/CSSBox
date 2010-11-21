@@ -128,9 +128,6 @@ abstract public class ElementBox extends Box
     /** the computed value of line-height */
     protected int lineHeight;
     
-    /** baseline offset */
-    protected int baseline;
-    
     /** First valid child */
     protected int startChild;
     
@@ -186,7 +183,6 @@ abstract public class ElementBox extends Box
         style = src.style;
         display = src.display;
         lineHeight = src.lineHeight;
-        baseline = src.baseline;
         whitespace = src.whitespace;
         
         if (src.margin != null)
@@ -479,7 +475,10 @@ abstract public class ElementBox extends Box
     	return content.height;
     }
     
-    @Override
+    /**
+     * Obtains the computed value of the declared line height of the element.
+     * @return the line height in pixels
+     */
     public int getLineHeight()
     {
         return lineHeight;
@@ -704,12 +703,6 @@ abstract public class ElementBox extends Box
         return true;
     }
         
-    @Override
-    public int getBaselineOffset()
-    {
-        return baseline;
-    }
-    
     /**
      * Checks if the element contains only text boxes (no nested elements)
      * @return <code>true</code> when only text boxes are contained in this element
@@ -952,8 +945,6 @@ abstract public class ElementBox extends Box
                 r = ((TermNumber) len).getValue();
             lineHeight = (int) Math.round(r * ctx.getFontHeight());
         }
-        //baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
-        baseline = ctx.getBaselineOffset();
 
         //whitespace
         whitespace = style.getProperty("white-space");

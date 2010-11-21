@@ -83,12 +83,6 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     }
 
     @Override
-    public int getMaxLineHeight()
-    {
-        return boxh;
-    }
-
-    @Override
     public boolean isWhitespace()
     {
         return false;
@@ -119,6 +113,24 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     }
 
     @Override
+	public int getBaselineOffset()
+	{
+    	return boxh;
+	}
+
+	@Override
+	public int getBelowBaseline()
+	{
+		return 0;
+	}
+
+	@Override
+	public int getTotalLineHeight()
+	{
+		return boxh;
+	}
+
+	@Override
     public boolean doLayout(int availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
@@ -129,8 +141,6 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
             return true;
         }
 
-        baseline = boxh;
-        
         setAvailableWidth(availw);
         int wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
