@@ -624,13 +624,13 @@ public class BlockBox extends ElementBox
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
 
                 System.out.println("line=" + line);
-                System.out.println("dif="+dif+" hlead="+line.getHalfLead()+" Y="+line.getY());
+                System.out.println("dif="+dif+" lead="+line.getLead()+" Y="+line.getY());
                 
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)
                     ((InlineBox) subbox).setLineBox(line);
                 
-                int y = line.getY() + line.getHalfLead() + dif;
+                int y = line.getY() + (line.getLead() / 2) + dif;
                 subbox.moveDown(y);
             }
         }
@@ -936,8 +936,7 @@ public class BlockBox extends ElementBox
         //block height
         if (!hasFixedHeight())
         {
-                if (curline.getMaxHeight() > 0)  //possible unfinished line
-                    y += curline.getTotalLineHeight();
+                y += curline.getTotalLineHeight(); //last unfinished line
                 if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
                 {
                     //enclose all floating boxes we own

@@ -26,24 +26,29 @@ package org.fit.cssbox.layout;
  */
 public interface Inline
 {
+    
+    /**
+     * Returns the declared line height
+     * @return Declared line height in pixels
+     */
+    public int getLineHeight();
 
     /**
-     * Obtains the distance from the whole content top to the baseline of this box.
-     * This corresponds to the total required space above the baseline.
-     * @return the <em>y</em> offset of the baseline in this box
+     * Obtains the distance from the line box top to the baseline of this box.
+     * This corresponds to the total required space above the baseline of this box in the parent line box.
+     * @return the <em>y</em> offset of the baseline in the parent line box
      */
     public int getBaselineOffset();
     
 	/**
-	 * Obtains the height of the box below the baseline.
-	 * @return the total required space below the baseline
+	 * Obtains the required height of the parent line box below the baseline.
+	 * @return the total required space below the baseline in pixels
 	 */
 	public int getBelowBaseline();
 	
 	/**
-	 * Obtains the total line height obtained for this box and its
-	 * subboxes during the layout. It consists of two parts:
-	 * baselineOffset + belowBaseline.
+	 * Obtains the total line box height obtained for this box and its
+	 * subboxes during the layout. It consists of two parts: baselineOffset + belowBaseline.
 	 * @return the total required height of the line in pixels
 	 */
 	public int getTotalLineHeight();

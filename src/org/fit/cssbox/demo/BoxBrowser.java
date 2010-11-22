@@ -284,6 +284,7 @@ public class BoxBrowser
         if (box instanceof InlineBox)
         {
             InlineBox ib = (InlineBox) box;
+            vals.add(infoTableData("LineboxOfs", String.valueOf(ib.getLineboxOffset()) + "px"));
             vals.add(infoTableData("VAlign", ib.getVerticalAlign().toString()));
         }
         

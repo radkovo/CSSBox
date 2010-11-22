@@ -56,14 +56,11 @@ public class LineBox
     private int below;
     
     /** Maximal content height of the boxes */
-    private int maxh;
+    private int maxh; //TODO: makes sense? subboxes?
     
-    /** Maximal line-height of the boxes on the line */
+    /** Maximal declared line-height of the boxes on the line */
     private int lineheight;
     
-    /** Maximal baseline offset for the line */
-    private int maxbaseline;
-
     public LineBox(ElementBox parent, int start, int y)
     {
         this.parent = parent;
@@ -79,7 +76,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + lineheight + " baseline=" + maxbaseline;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + lineheight;
     }
 
     public ElementBox getParent()
@@ -172,15 +169,10 @@ public class LineBox
         return above + below;
     }
     
-    /*public void setMaxLineHeight(int lineheight)
-    {
-        this.lineheight = lineheight;
-    }
-    
     public int getMaxLineHeight()
     {
         return lineheight;
-    }*/
+    }
     
     public int getBaselineOffset()
     {
@@ -192,14 +184,9 @@ public class LineBox
     	return below;
     }
     
-    public int getMaxBaselineOffset()
+    public int getLead()
     {
-        return maxbaseline;
-    }
-    
-    public int getHalfLead()
-    {
-    	return (lineheight - (above + below)) / 2;
+    	return lineheight - (above + below);
     }
     
     public void considerBox(Inline box)
@@ -231,7 +218,7 @@ public class LineBox
             lineheight  = Math.max(lineheight, ((InlineBox) box).getMaxLineHeight());
         else
             lineheight =  Math.max(lineheight, box.getContentHeight());*/
-    	lineheight = Math.max(lineheight, box.getTotalLineHeight());
+    	lineheight = Math.max(lineheight, box.getLineHeight());
     }
     
     /**
@@ -254,7 +241,7 @@ public class LineBox
 	        }
 	        else
 	        {
-	            return above + computeBaselineDifference((InlineBox) box) - box.getBaselineOffset();
+	            return above + computeBaselineDifference((InlineBox) box) - box.getBaselineOffset() + ((InlineBox) box).getLineboxOffset();
 	        }
     	}
     	else
@@ -269,7 +256,7 @@ public class LineBox
     private int computeBaselineDifference(InlineBox box)
     {
         int a = box.getBaselineOffset();
-        int b = box.getContentHeight() - a;
+        int b = box.getBelowBaseline();
         CSSProperty.VerticalAlign va = box.getVerticalAlign();
         
         int dif = 0;

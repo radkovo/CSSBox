@@ -295,6 +295,11 @@ public class TextBox extends Box implements Inline
         return availwidth;
     }
     
+    public int getLineHeight()
+    {
+        return ctx.getFontHeight();
+    }
+    
     public int getTotalLineHeight()
     {
         return ctx.getFontHeight();
