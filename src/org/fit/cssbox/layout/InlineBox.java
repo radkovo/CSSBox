@@ -256,7 +256,7 @@ public class InlineBox extends ElementBox implements Inline
         //compute the vertical positions of the boxes
         //updateLineMetrics();
         content.width = x;
-        content.height = ctx.getFontHeight();
+        content.height = (int) Math.round(ctx.getFontHeight() * 1.2); //based on browser behaviour observations
         alignBoxes();
         setSize(totalWidth(), totalHeight());
         
