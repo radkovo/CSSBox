@@ -59,7 +59,7 @@ public class LineBox
     private int maxh; //TODO: makes sense? subboxes?
     
     /** Maximal declared line-height of the boxes on the line */
-    private int lineheight;
+    private int maxlineheight;
     
     public LineBox(ElementBox parent, int start, int y)
     {
@@ -76,7 +76,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + lineheight;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + maxlineheight;
     }
 
     public ElementBox getParent()
@@ -171,7 +171,7 @@ public class LineBox
     
     public int getMaxLineHeight()
     {
-        return lineheight;
+        return maxlineheight;
     }
     
     public int getBaselineOffset()
@@ -186,7 +186,7 @@ public class LineBox
     
     public int getLead()
     {
-    	return lineheight - (above + below);
+    	return maxlineheight - (above + below);
     }
     
     public void considerBox(Inline box)
@@ -218,7 +218,7 @@ public class LineBox
             lineheight  = Math.max(lineheight, ((InlineBox) box).getMaxLineHeight());
         else
             lineheight =  Math.max(lineheight, box.getContentHeight());*/
-    	lineheight = Math.max(lineheight, box.getLineHeight());
+    	maxlineheight = Math.max(maxlineheight, box.getMaxLineHeight());
     }
     
     /**

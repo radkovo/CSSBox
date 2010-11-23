@@ -300,6 +300,11 @@ public class TextBox extends Box implements Inline
         return ctx.getFontHeight();
     }
     
+    public int getMaxLineHeight()
+    {
+        return ctx.getFontHeight();
+    }
+    
     public int getTotalLineHeight()
     {
         return ctx.getFontHeight();

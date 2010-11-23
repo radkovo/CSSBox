@@ -133,6 +133,14 @@ public class InlineBox extends ElementBox implements Inline
     		return curline.getTotalLineHeight();
     }
     
+    public int getMaxLineHeight()
+    {
+        if (curline == null)
+            return lineHeight;
+        else
+            return Math.max(lineHeight, curline.getMaxLineHeight());
+    }
+    
     /**
      * Obtains the offset of the content edge from the baseline top
      * @return the difference between the content edge and the top of the line box in pixels. Positive numbers mean the content box is inside the line box.  

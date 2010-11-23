@@ -32,6 +32,13 @@ public interface Inline
      * @return Declared line height in pixels
      */
     public int getLineHeight();
+    
+    
+    /**
+     * Returns the maximal declared line height of this box and its children.
+     * @return Maximal line height in pixels
+     */
+    public int getMaxLineHeight();
 
     /**
      * Obtains the distance from the line box top to the baseline of this box.

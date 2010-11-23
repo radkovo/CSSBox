@@ -26,6 +26,7 @@ import java.net.URLConnection;
 import java.util.Vector;
 
 import org.fit.cssbox.css.CSSNorm;
+import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.BrowserCanvas;
@@ -258,7 +259,7 @@ public class BoxBrowser
         vals.add(infoTableData("Content", boundString(box.getContentBounds())));
         vals.add(infoTableData("Color", box.getVisualContext().getColor().toString()));
         vals.add(infoTableData("Font name", box.getVisualContext().getFont().getFontName()));
-        vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "px"));
+        vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "pt (" + CSSUnits.pixels(box.getVisualContext().getFont().getSize()) + "px)"));
         //vals.add(infoTableData("MaxBaseline", String.valueOf(box.getMaxBaselineOffset())));
 
         if (box instanceof ElementBox)
@@ -276,6 +277,7 @@ public class BoxBrowser
         if (box instanceof Inline)
         {
         	Inline ib = (Inline) box;
+            vals.add(infoTableData("MaxLineH", String.valueOf(ib.getMaxLineHeight())));
             vals.add(infoTableData("TotalLine", String.valueOf(ib.getTotalLineHeight())));
             vals.add(infoTableData("Baseline", String.valueOf(ib.getBaselineOffset())));
             vals.add(infoTableData("Below base", String.valueOf(ib.getBelowBaseline())));
