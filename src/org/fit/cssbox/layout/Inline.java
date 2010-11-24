@@ -60,4 +60,6 @@ public interface Inline
 	 */
 	public int getTotalLineHeight();
 	
+	public int getHalfLead();
+	
 }

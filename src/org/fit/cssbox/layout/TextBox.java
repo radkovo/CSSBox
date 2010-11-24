@@ -297,12 +297,12 @@ public class TextBox extends Box implements Inline
     
     public int getLineHeight()
     {
-        return ctx.getFontHeight();
+        return parent.getLineHeight();
     }
     
     public int getMaxLineHeight()
     {
-        return ctx.getFontHeight();
+        return parent.getLineHeight();
     }
     
     public int getTotalLineHeight()
@@ -318,6 +318,11 @@ public class TextBox extends Box implements Inline
     public int getBelowBaseline()
     {
         return ctx.getFontHeight() - ctx.getBaselineOffset();
+    }
+    
+    public int getHalfLead()
+    {
+        return 0;
     }
     
     @Override

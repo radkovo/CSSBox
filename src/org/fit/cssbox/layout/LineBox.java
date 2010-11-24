@@ -224,7 +224,7 @@ public class LineBox
     /**
      * Aligns a new box and updates the line metrics. 
      * @param box the box to be placed on the line
-     * @return the Y distance of the box top content edge from top of this line
+     * @return the Y distance of the box top content edge from top of this line box
      */
     public int alignBox(Inline box)
     {

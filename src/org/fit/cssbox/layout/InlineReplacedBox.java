@@ -129,7 +129,19 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
 	{
 		return boxh;
 	}
-
+	
+	/*@Override
+	public int getLineboxOffset()
+	{
+	    return boxh - ctx.getBaselineOffset();
+	}*/
+	
+	@Override
+	public int getMaxLineHeight()
+	{
+	    return boxh;
+	}
+	
 	@Override
     public boolean doLayout(int availw, boolean force, boolean linestart) 
     {

@@ -41,12 +41,16 @@ public class InlineBox extends ElementBox implements Inline
     /** line box describing the children layout */
     private LineBox curline;
     
+    /** half-lead after layout */
+    private int halflead;
+    
     //========================================================================
     
     /** Creates a new instance of InlineBox */
     public InlineBox(Element n, Graphics2D g, VisualContext ctx) 
     {
         super(n, g, ctx);
+        halflead = 0;
     }
     
     public void copyValues(InlineBox src)
@@ -142,7 +146,7 @@ public class InlineBox extends ElementBox implements Inline
     }
     
     /**
-     * Obtains the offset of the content edge from the baseline top
+     * Obtains the offset of the content edge from the line box top
      * @return the difference between the content edge and the top of the line box in pixels. Positive numbers mean the content box is inside the line box.  
      */
     public int getLineboxOffset()
@@ -150,7 +154,12 @@ public class InlineBox extends ElementBox implements Inline
         if (curline == null)
             return 0;
         else
-            return  curline.getBaselineOffset() - ctx.getBaselineOffset();
+            return  curline.getBaselineOffset() - ctx.getBaselineOffset() - halflead;
+    }
+    
+    public int getHalfLead()
+    {
+        return halflead;
     }
     
     //========================================================================
@@ -257,6 +266,7 @@ public class InlineBox extends ElementBox implements Inline
         //updateLineMetrics();
         content.width = x;
         content.height = (int) Math.round(ctx.getFontHeight() * 1.2); //based on browser behaviour observations
+        halflead = (content.height - curline.getTotalLineHeight()) / 2;
         alignBoxes();
         setSize(totalWidth(), totalHeight());
         
@@ -523,14 +533,16 @@ public class InlineBox extends ElementBox implements Inline
      */
     private void alignBoxes()
     {
-        //int offset = curline.getBaselineOffset() - ctx.getBaselineOffset();
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
+            //position relative to the line box
             int dif = curline.alignBox((Inline) sub);
-            //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
+            //recompute to the content box
+            dif = dif - getLineboxOffset();
+            //recompute to the bounding box
             if (sub instanceof InlineBox)
-                dif = dif - ((InlineBox) sub).getContentOffsetY() - getLineboxOffset(); 
+                dif = dif - ((InlineBox) sub).getContentOffsetY();
             
             if (dif != 0)
                 sub.moveDown(dif);
