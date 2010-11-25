@@ -624,7 +624,7 @@ public class BlockBox extends ElementBox
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
 
                 System.out.println("line=" + line);
-                System.out.println("dif="+dif+" lead="+line.getLead()+" Y="+line.getY());
+                System.out.println("dif="+dif+" line="+line);
                 
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)

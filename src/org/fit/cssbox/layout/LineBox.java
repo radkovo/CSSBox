@@ -76,7 +76,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " maxlineh=" + maxlineheight;
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " total=" + (above+below) + " maxlineh=" + maxlineheight;
     }
 
     public ElementBox getParent()

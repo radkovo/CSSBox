@@ -536,16 +536,19 @@ public class InlineBox extends ElementBox implements Inline
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
-            //position relative to the line box
-            int dif = curline.alignBox((Inline) sub);
-            //recompute to the content box
-            dif = dif - getLineboxOffset();
-            //recompute to the bounding box
-            if (sub instanceof InlineBox)
-                dif = dif - ((InlineBox) sub).getContentOffsetY();
-            
-            if (dif != 0)
-                sub.moveDown(dif);
+            if (!sub.isblock)
+            {
+                //position relative to the line box
+                int dif = curline.alignBox((Inline) sub);
+                //recompute to the content box
+                dif = dif - getLineboxOffset();
+                //recompute to the bounding box
+                if (sub instanceof InlineBox)
+                    dif = dif - ((InlineBox) sub).getContentOffsetY();
+                
+                if (dif != 0)
+                    sub.moveDown(dif);
+            }
         }
     }
     
