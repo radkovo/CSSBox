@@ -55,9 +55,6 @@ public class LineBox
     /** Maximal height below the baseline (excluding baseline) */
     private int below;
     
-    /** Maximal content height of the boxes */
-    private int maxh; //TODO: makes sense? subboxes?
-    
     /** Maximal declared line-height of the boxes on the line */
     private int maxlineheight;
     
@@ -159,11 +156,6 @@ public class LineBox
         this.right = right;
     }
 
-    public int getMaxHeight()
-    {
-    	return maxh;
-    }
-    
     public int getTotalLineHeight()
     {
         return above + below;
@@ -211,13 +203,6 @@ public class LineBox
 	        below = Math.max(below, b);
     	}
 
-        //update other statistics
-        //maxbaseline = Math.max(maxbaseline, box.getBaselineOffset());
-        //maxh = Math.max(maxh, box.getContentHeight());
-        /*if (box instanceof InlineBox && box.getContentHeight() > 0) //only for non-empty boxes
-            lineheight  = Math.max(lineheight, ((InlineBox) box).getMaxLineHeight());
-        else
-            lineheight =  Math.max(lineheight, box.getContentHeight());*/
     	maxlineheight = Math.max(maxlineheight, box.getMaxLineHeight());
     }
     

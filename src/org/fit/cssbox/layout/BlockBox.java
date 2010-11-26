@@ -614,7 +614,6 @@ public class BlockBox extends ElementBox
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
             Box subbox = getSubBox(i);
-            System.out.println("Box: " + subbox);
             if (!subbox.isBlock())
             {
                 int dif = line.alignBox((Inline) subbox);
@@ -623,9 +622,6 @@ public class BlockBox extends ElementBox
                 if (subbox instanceof ElementBox)
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
 
-                System.out.println("line=" + line);
-                System.out.println("dif="+dif+" line="+line);
-                
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)
                     ((InlineBox) subbox).setLineBox(line);
@@ -770,11 +766,6 @@ public class BlockBox extends ElementBox
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = new LineBox(this, 0, 0);
         lines.add(curline);
-        
-        //TODO: If it only has inline-level children, the height is the distance between the top of the topmost line box and the bottom of the bottommost line box.
-        // http://www.w3.org/TR/CSS21/visudet.html#normal-block
-        if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-            System.out.println("jo!");
         
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
@@ -1612,9 +1603,6 @@ public class BlockBox extends ElementBox
      */  
     protected void loadSizes(boolean update)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-    		System.out.println("jo!");
-    	
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes
