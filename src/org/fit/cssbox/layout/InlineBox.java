@@ -156,7 +156,10 @@ public class InlineBox extends ElementBox implements Inline
         else
             return  curline.getBaselineOffset() - ctx.getBaselineOffset() - halflead;
     }
-    
+    /**
+     * Returns the half-lead value used for positioning the nested boxes within this inline box
+     * @return half-lead value in pixels
+     */
     public int getHalfLead()
     {
         return halflead;
