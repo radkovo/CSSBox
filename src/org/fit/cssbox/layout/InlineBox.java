@@ -386,7 +386,7 @@ public class InlineBox extends ElementBox implements Inline
     @Override
     public boolean endsWithWhitespace()
     {
-        return (endChild > startChild) && getSubBox(startChild).endsWithWhitespace();
+        return (endChild > startChild) && getSubBox(endChild - 1).endsWithWhitespace();
     }
     
     @Override
