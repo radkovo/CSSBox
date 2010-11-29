@@ -371,7 +371,7 @@ public class BlockBox extends ElementBox
     /** Returns true if the box is absolutely positioned. */
     public boolean isPositioned()
     {
-        return (displayed && (position == POS_ABSOLUTE && position == POS_FIXED));
+        return (displayed && (position == POS_ABSOLUTE || position == POS_FIXED));
     }
     
     /** Returns true if the box is floating. */
@@ -1253,13 +1253,11 @@ public class BlockBox extends ElementBox
             Rectangle cb = cblock.getAbsoluteBounds();
             ab.x = ab.x - cb.x;
             ab.y = ab.y - cb.y;
-            if (ab != null)
-            {
-                if (topstatic)
-                    coords.top = ab.y + ab.height - 1;
-                if (leftstatic)
-                    coords.left = ab.x;
-            }
+            //position relatively to the border edge
+            if (topstatic)
+                coords.top = ab.y + ab.height - 1 - cblock.margin.top - cblock.border.top;
+            if (leftstatic)
+                coords.left = ab.x - cblock.margin.left - cblock.border.left;
         }
     }
 
