@@ -857,8 +857,7 @@ public class BlockBox extends ElementBox
                         x += subbox.getWidth();
                     }
                     //update current line metrics
-                    if (!subbox.isWhitespace())
-                        curline.considerBox((Inline) subbox);
+                    curline.considerBox((Inline) subbox);
                     
                 }
                 
@@ -1255,9 +1254,9 @@ public class BlockBox extends ElementBox
             ab.y = ab.y - cb.y;
             //position relatively to the border edge
             if (topstatic)
-                coords.top = ab.y + ab.height - 1 - cblock.margin.top - cblock.border.top;
+                coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
             if (leftstatic)
-                coords.left = ab.x - cblock.margin.left - cblock.border.left;
+                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
         }
     }
 

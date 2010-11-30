@@ -327,6 +327,15 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Checks whether the whitespaces should be collapsed within in the element according to its style.
+     * @return <code>true</code> if the whitespace sequences should be collapsed.
+     */
+    public boolean collapsesSpaces()
+    {
+        return (whitespace != WHITESPACE_PRE && whitespace != WHITESPACE_PRE_WRAP);
+    }
+    
+    /**
      * @return the background color or null when transparent
      */
     public Color getBgcolor()

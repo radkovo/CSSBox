@@ -223,8 +223,7 @@ public class InlineBox extends ElementBox implements Inline
                 {
                     subbox.setPosition(x,  0); //the y position will be updated later
                     x += subbox.getWidth();
-                    if (!subbox.isWhitespace())
-                        curline.considerBox((Inline) subbox);
+                    curline.considerBox((Inline) subbox);
                 }
                 else
                 	System.err.println("Warning: doLayout(): subbox is not inline: " + subbox);
