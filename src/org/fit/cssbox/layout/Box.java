@@ -309,6 +309,12 @@ abstract public class Box
      * @return <code>true</code> if the box only contains whitespaces
      */
     abstract public boolean isWhitespace();
+
+    /**
+     * Checks whether the whitespaces should be collapsed within in the box according to its style.
+     * @return <code>true</code> if the whitespace sequences should be collapsed.
+     */
+    abstract public boolean collapsesSpaces();
     
     /**
      * @return <code>true</code> if the box can be split in two or more boxes

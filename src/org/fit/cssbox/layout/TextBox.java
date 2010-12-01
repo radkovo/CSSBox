@@ -111,6 +111,12 @@ public class TextBox extends Box implements Inline
     @Override
     public void initBox()
     {
+    }
+    
+    @Override
+    public void setParent(ElementBox parent)
+    {
+        super.setParent(parent);
         if (getParent() != null)
         {
             //reset the whitespace processing according to the parent settings
@@ -251,6 +257,12 @@ public class TextBox extends Box implements Inline
     public boolean isWhitespace()
     {
         return getText().trim().length() == 0;
+    }
+    
+    @Override
+    public boolean collapsesSpaces()
+    {
+        return collapsews;
     }
     
 	@Override
