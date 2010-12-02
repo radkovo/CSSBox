@@ -276,7 +276,6 @@ public class BoxFactory
         else //inline elements -- always in flow
         {
             System.out.println("For " + newbox + " lastinflow is " + lastinflow);
-            //TODO: collapsing of text boxes during layout must be revised
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
             boolean lastwhite = (lastinflow != null) && lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces();
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace

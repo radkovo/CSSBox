@@ -909,7 +909,7 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                 }
-                lastwhite = subbox.endsWithWhitespace();
+                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace();
             } while (split);
             
             if (subbox.canSplitAfter())
