@@ -275,16 +275,11 @@ public class BoxFactory
         }
         else //inline elements -- always in flow
         {
-            System.out.println("For " + newbox + " lastinflow is " + lastinflow);
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
             boolean lastwhite = (lastinflow != null) && lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces();
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
             boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
-            if (collapse)
-            {
-                System.out.println("Ignoring " + newbox);
-            }
-            else
+            if (!collapse)
             {
                 parent.addSubBox(newbox);
                 lastinflow = newbox;
