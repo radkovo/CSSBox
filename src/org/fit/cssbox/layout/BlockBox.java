@@ -766,7 +766,7 @@ public class BlockBox extends ElementBox
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = new LineBox(this, 0, 0);
         lines.add(curline);
-        
+
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
             Box subbox = getSubBox(i);

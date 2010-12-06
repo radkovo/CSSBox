@@ -105,7 +105,7 @@ public class TextBox extends Box implements Inline
     
     public String toString()
     {
-        return "Text: " + text;
+        return "Text: " + text + "<" + textStart + "," + textEnd + ">";
     }
     
     @Override
@@ -170,20 +170,28 @@ public class TextBox extends Box implements Inline
      */
     public void setWhiteSpace(CSSProperty.WhiteSpace value)
     {
-        if (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE)
-        {
+        
+        collapsews = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE);
+        //When this is the original box, apply the whitespace. For the copied boxes, the whitespace has been already applied (they contain
+        //a copy of the original, already processed content). 
+        if (!splitted)
+            applyWhiteSpace(); 
+    }
+    
+    /**
+     * Applies the whitespace processing represented by the {@link #collapsews} property to the text content. The text start and text end
+     * indices are reset to their initial values.
+     */
+    private void applyWhiteSpace()
+    {
+        if (collapsews)
             text = collapseWhitespaces(node.getNodeValue());
-            collapsews = true;
-        }
         else
-        {
             text = node.getNodeValue();
-            collapsews = false;
-        }
         
         textStart = 0;
         textEnd = text.length();
-        isempty = (textEnd == 0); //not trimming, space cannot be omited
+        isempty = (textEnd == 0);
     }
     
     /**
