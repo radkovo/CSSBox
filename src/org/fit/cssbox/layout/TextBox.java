@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. únor 2006, 13:42
+ * Created on 5. ï¿½nor 2006, 13:42
  */
 
 package org.fit.cssbox.layout;

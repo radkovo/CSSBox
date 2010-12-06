@@ -151,14 +151,14 @@ public class BoxFactory
      * @param absbox the containing box of the new box when absolutley positioned
      * @param clipbox the clipping block of this subtree
      */
-    public void createBoxTree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox)
+    public Box createBoxTree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box lastinflow)
     {
         NodeList children = parent.getElement().getChildNodes();
         if (parent.isDisplayed())
         {
             //a reference box for possible absolutely positioned boxes
             //normally, it is the previous in-flow box, or null, if this is the first box
-            Box lastinflow = null;
+            //Box lastinflow = null;
             
             //create :before elements
             if (parent.previousTwin == null)
@@ -186,6 +186,7 @@ public class BoxFactory
             
             normalizeBox(parent);
         }
+        return lastinflow;
     }
 
     /**
@@ -235,11 +236,15 @@ public class BoxFactory
                 //A box with overflow:hidden creates a clipping box
                 if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
                     newclip = block;
+                //create the subtree
+                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, null);
             }
-            createBoxTree((ElementBox) newbox, newcont, newabs, newclip);
+            else
+                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, lastinflow);
         }
 
         //Add the new box to the parent according to its type
+        System.out.println("Box: " + newbox);
         ElementBox newparent = null;
         if (newbox.isBlock())  
         {
@@ -275,8 +280,9 @@ public class BoxFactory
         }
         else //inline elements -- always in flow
         {
+            System.out.println("For " + newbox + " lastbox is " + lastinflow);
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
-            boolean lastwhite = (lastinflow != null) && lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces();
+            boolean lastwhite = (lastinflow == null) || (lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
             boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
             if (!collapse)
@@ -293,7 +299,7 @@ public class BoxFactory
             parent.nextTwin = newparent;
             newparent.previousTwin = parent;
             //process the new parent
-            createBoxTree(newparent, contbox, absbox, clipbox);
+            createBoxTree(newparent, contbox, absbox, clipbox, null);
             //if the new parent generated no children, remove it again
             if (newparent.getSubBoxNumber() == 0)
                 parent.getParent().removeSubBox(newparent);
