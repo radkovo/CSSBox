@@ -21,6 +21,7 @@
 package org.fit.cssbox.layout;
 
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 import java.awt.geom.Line2D;
 
@@ -358,6 +359,14 @@ abstract public class ElementBox extends Box
     public int getSubBoxNumber()
     {
         return nested.size();
+    }
+
+    /**
+     * @return list of all the subboxes 
+     */
+    public List<Box> getSubBoxList()
+    {
+        return nested;
     }
     
     /**

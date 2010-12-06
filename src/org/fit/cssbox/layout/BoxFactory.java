@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.net.URL;
+import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -238,6 +239,8 @@ public class BoxFactory
                     newclip = block;
                 //create the subtree
                 createBoxTree((ElementBox) newbox, newcont, newabs, newclip, null);
+                //remove trailing whitespaces in blocks
+                removeTrailingWhitespaces(block);
             }
             else
                 createBoxTree((ElementBox) newbox, newcont, newabs, newclip, lastinflow);
@@ -308,6 +311,29 @@ public class BoxFactory
         return lastinflow;
     }
 
+    /**
+     * Removes the block box trailing inline whitespace child boxes if allowed by the white-space values. 
+     * @param block the block box to be processed
+     */
+    private void removeTrailingWhitespaces(BlockBox block)
+    {
+        if (block.collapsesSpaces())
+        {
+            for (ListIterator<Box> it = block.getSubBoxList().listIterator(block.getSubBoxNumber()); it.hasPrevious();)
+            {
+                Box subbox = it.previous();
+                if (subbox.isInFlow())
+                {
+                    if (!subbox.isBlock() && subbox.collapsesSpaces() && subbox.isWhitespace())
+                        it.remove();
+                    else
+                        break;
+                }
+            }
+            block.setEndChild(block.getSubBoxList().size());
+        }
+    }
+    
     /**
      * Creates a new box for an element node and sets the containing boxes accordingly.
      * @param parent the parent box of the created box
