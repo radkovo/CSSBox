@@ -315,7 +315,7 @@ public class BoxFactory
      * Removes the block box trailing inline whitespace child boxes if allowed by the white-space values. 
      * @param block the block box to be processed
      */
-    private void removeTrailingWhitespaces(BlockBox block)
+    private void removeTrailingWhitespaces(ElementBox block)
     {
         if (block.collapsesSpaces())
         {
@@ -324,8 +324,13 @@ public class BoxFactory
                 Box subbox = it.previous();
                 if (subbox.isInFlow())
                 {
-                    if (!subbox.isBlock() && subbox.collapsesSpaces() && subbox.isWhitespace())
-                        it.remove();
+                    if (!subbox.isBlock() && subbox.collapsesSpaces())
+                    {
+                        if (subbox.isWhitespace())
+                            it.remove();
+                        else if (subbox instanceof ElementBox)
+                            removeTrailingWhitespaces((ElementBox) subbox);
+                    }
                     else
                         break;
                 }
