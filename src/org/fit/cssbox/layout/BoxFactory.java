@@ -328,7 +328,7 @@ public class BoxFactory
                     {
                         if (subbox.isWhitespace())
                             it.remove();
-                        else if (subbox instanceof ElementBox)
+                        else if (subbox instanceof ElementBox) //TODO: text boxes too?
                             removeTrailingWhitespaces((ElementBox) subbox);
                     }
                     else
