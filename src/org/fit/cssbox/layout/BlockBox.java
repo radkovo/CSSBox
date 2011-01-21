@@ -698,7 +698,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("class").equals("main"))
+    	if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -1133,7 +1133,7 @@ public class BlockBox extends ElementBox
         if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
 
         //moving the floating box down until it fits
-        while ((fx > floatX || stat.inlineWidth > 0) //if we're not already at the left/right border
+        while ((fx > floatX || ofx > oFloatX || stat.inlineWidth > 0) //if the space can be narrower at least at one side
                && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
             int nexty1 = f.getNextY(fy);
