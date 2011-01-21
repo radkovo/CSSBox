@@ -1198,7 +1198,7 @@ public class BlockBox extends ElementBox
                 {
                     if (topstatic || leftstatic)
                     {
-                        System.out.println(this + " : static");
+                        //System.out.println(this + " : static");
                         updateStaticPosition();
                     }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
