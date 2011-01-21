@@ -549,10 +549,10 @@ public class BlockBox extends ElementBox
         if (border.top == 0 && border.bottom == 0 &&
             padding.top == 0 && padding.bottom == 0 &&
             content.height == 0) /* no content - margin collapsing applies */
-            return Math.max(margin.top, margin.bottom);
+            return Math.max(emargin.top, emargin.bottom);
         else
-            return margin.top + border.top + padding.top + content.height +
-                padding.bottom + border.bottom + margin.bottom;
+            return emargin.top + border.top + padding.top + content.height +
+                padding.bottom + border.bottom + emargin.bottom;
     }
     
     @Override
@@ -698,7 +698,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    	if (getElement() != null && getElement().getAttribute("class").equals("main"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -999,7 +999,7 @@ public class BlockBox extends ElementBox
                 	//the border edge of the parent or the last placed box
                 	int borderY = stat.y;
                 	if (stat.lastinflow != null)
-                	    borderY -= stat.lastinflow.margin.bottom; //do not consider the margin applied by the layout
+                	    borderY -= stat.lastinflow.emargin.bottom; //do not consider the margin applied by the layout
                 	
                 	//update expected top margin
                 	if (subbox.emargin.top > mtop)
