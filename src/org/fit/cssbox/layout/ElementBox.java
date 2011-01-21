@@ -21,6 +21,7 @@
 package org.fit.cssbox.layout;
 
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 import java.awt.geom.Line2D;
 
@@ -128,9 +129,6 @@ abstract public class ElementBox extends Box
     /** the computed value of line-height */
     protected int lineHeight;
     
-    /** baseline offset */
-    private int baseline;
-    
     /** First valid child */
     protected int startChild;
     
@@ -186,7 +184,7 @@ abstract public class ElementBox extends Box
         style = src.style;
         display = src.display;
         lineHeight = src.lineHeight;
-        baseline = src.baseline;
+        whitespace = src.whitespace;
         whitespace = src.whitespace;
         
         if (src.margin != null)
@@ -331,6 +329,16 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Checks whether the whitespaces should be collapsed within in the element according to its style.
+     * @return <code>true</code> if the whitespace sequences should be collapsed.
+     */
+    @Override
+    public boolean collapsesSpaces()
+    {
+        return (whitespace != WHITESPACE_PRE && whitespace != WHITESPACE_PRE_WRAP);
+    }
+    
+    /**
      * @return the background color or null when transparent
      */
     public Color getBgcolor()
@@ -352,6 +360,14 @@ abstract public class ElementBox extends Box
     public int getSubBoxNumber()
     {
         return nested.size();
+    }
+
+    /**
+     * @return list of all the subboxes 
+     */
+    public List<Box> getSubBoxList()
+    {
+        return nested;
     }
     
     /**
@@ -479,7 +495,10 @@ abstract public class ElementBox extends Box
     	return content.height;
     }
     
-    @Override
+    /**
+     * Obtains the computed value of the declared line height of the element.
+     * @return the line height in pixels
+     */
     public int getLineHeight()
     {
         return lineHeight;
@@ -704,23 +723,6 @@ abstract public class ElementBox extends Box
         return true;
     }
         
-    @Override
-    public int getBaselineOffset()
-    {
-        return baseline;
-    }
-    
-    @Override
-    public int getMaxBaselineOffset()
-    {
-        int max = baseline; //current box offset is the minimum
-        //find the maximum of the baseline offsets of the subboxes
-        for (int i = startChild; i < endChild; i++)
-            if (getSubBox(i).getMaxBaselineOffset() > max)
-                max = getSubBox(i).getMaxBaselineOffset();
-        return max;
-    }
-    
     /**
      * Checks if the element contains only text boxes (no nested elements)
      * @return <code>true</code> when only text boxes are contained in this element
@@ -963,7 +965,6 @@ abstract public class ElementBox extends Box
                 r = ((TermNumber) len).getValue();
             lineHeight = (int) Math.round(r * ctx.getFontHeight());
         }
-        baseline = ctx.getBaselineOffset() + ((lineHeight - ctx.getFontHeight()) / 2);  //add half-leading to the baseline
 
         //whitespace
         whitespace = style.getProperty("white-space");

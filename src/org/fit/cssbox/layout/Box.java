@@ -309,6 +309,12 @@ abstract public class Box
      * @return <code>true</code> if the box only contains whitespaces
      */
     abstract public boolean isWhitespace();
+
+    /**
+     * Checks whether the whitespaces should be collapsed within in the box according to its style.
+     * @return <code>true</code> if the whitespace sequences should be collapsed.
+     */
+    abstract public boolean collapsesSpaces();
     
     /**
      * @return <code>true</code> if the box can be split in two or more boxes
@@ -507,23 +513,6 @@ abstract public class Box
      * @return the expected height of the box according to the CSS property values
      */ 
     abstract public int totalHeight();
-    
-    /**
-     * @return the computed line height for the box
-     */
-    abstract public int getLineHeight();
-    
-    /**
-     * Obtains the distance from the whole content top to the baseline of this box.
-     * @return the <em>y</em> offset of the baseline in this box
-     */
-    abstract public int getBaselineOffset();
-    
-    /**
-     * Obtains the maximal distance from the line top to the baseline of this box.
-     * @return the <em>y</em> offset of the baseline in this box and all its subboxes.
-     */
-    abstract public int getMaxBaselineOffset();
     
     /**
      * @return maximal available width of the content during the layout

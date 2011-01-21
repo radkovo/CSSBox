@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.net.URL;
+import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -151,21 +152,21 @@ public class BoxFactory
      * @param absbox the containing box of the new box when absolutley positioned
      * @param clipbox the clipping block of this subtree
      */
-    public void createBoxTree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox)
+    public Box createBoxTree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box lastinflow)
     {
         NodeList children = parent.getElement().getChildNodes();
         if (parent.isDisplayed())
         {
             //a reference box for possible absolutely positioned boxes
             //normally, it is the previous in-flow box, or null, if this is the first box
-            Box inflow_reference = null;
+            //Box lastinflow = null;
             
             //create :before elements
             if (parent.previousTwin == null)
             {
                 Node n = createPseudoElement(parent, PseudoDeclaration.BEFORE);
                 if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
-                    inflow_reference = createSubtree(parent, contbox, absbox, clipbox, inflow_reference, n, -1);
+                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, -1);
             }
             
             //create normal elements
@@ -173,7 +174,7 @@ public class BoxFactory
             {
                 Node n = children.item(child);
                 if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
-                    inflow_reference = createSubtree(parent, contbox, absbox, clipbox, inflow_reference, n, child);
+                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, child);
             }
             
             //create :after elements
@@ -181,11 +182,12 @@ public class BoxFactory
             {
                 Node n = createPseudoElement(parent, PseudoDeclaration.AFTER);
                 if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
-                    inflow_reference = createSubtree(parent, contbox, absbox, clipbox, inflow_reference, n, children.getLength());
+                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, children.getLength());
             }
             
             normalizeBox(parent);
         }
+        return lastinflow;
     }
 
     /**
@@ -196,62 +198,26 @@ public class BoxFactory
      * @param contbox the containing box of the new box when not absolutley positioned
      * @param absbox the containing box of the new box when absolutley positioned
      * @param clipbox the clipping block of this subtree
-     * @param inflow_reference the last in-flow box before this subree
+     * @param lastinflow the last in-flow box before this subree
      * @param n the root DOM node of the subtree being created
      * @param child_index the index of the DOM node within its parent node
-     * @return the new value of inflow_reference, i.e. the last in-flow box
+     * @return the new value of the last in-flow box
      */
-    private Box createSubtree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box inflow_reference, Node n, int child_index)
+    private Box createSubtree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box lastinflow, Node n, int child_index)
     {
         //Create the new box for the child
         Box newbox;
+        boolean istext = false;
         if (n.getNodeType() == Node.TEXT_NODE)
+        {
             newbox = createTextBox(parent, (Text) n, contbox, clipbox);
+            istext = true;
+        }
         else
             newbox = createElementBox(parent, (Element) n, contbox, absbox, clipbox);
         
-        ElementBox newparent = null;
-        
-        //Add the new box to the parent according to its type
-        if (newbox.isBlock())  
-        {
-            if (newbox.isInFlow())
-            {
-                if (parent.isBlock()) //block in block
-                {
-                    parent.addSubBox(newbox);
-                    inflow_reference = newbox;
-                }
-                else //block in inline box -- split the inline box
-                {
-                    ElementBox grandpa = parent.getParent();
-                    if (grandpa != null)
-                    {
-                        //finish inline parent and create another one
-                        parent.lastDOMChild = child_index; //this will finish the iteration just now
-                        newparent = parent.copyBox();
-                        newparent.removeAllSubBoxes();
-                        newparent.firstDOMChild = child_index + 1;
-                        //put the new block at the same level as the parent
-                        grandpa.addSubBox(newbox);
-                    }
-                    else
-                        System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
-                }
-            }
-            else //out-of-flow box
-            {
-                newbox.getContainingBlock().addSubBox(newbox);
-                ((BlockBox) newbox).absReference = inflow_reference; //set the reference box for computing the static position
-            }
-        }
-        else //inline elements -- always in flow
-        {
-            parent.addSubBox(newbox);
-            inflow_reference = newbox;
-        }
-
-        if (newbox instanceof ElementBox) 
+        //Create the child subtree
+        if (!istext) 
         {
             //Determine the containing boxes of the children
             BlockBox newcont = contbox;
@@ -271,8 +237,61 @@ public class BoxFactory
                 //A box with overflow:hidden creates a clipping box
                 if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
                     newclip = block;
+                //create the subtree
+                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, null);
+                //remove trailing whitespaces in blocks
+                removeTrailingWhitespaces(block);
             }
-            createBoxTree((ElementBox) newbox, newcont, newabs, newclip);
+            else
+                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, lastinflow);
+        }
+
+        //Add the new box to the parent according to its type
+        ElementBox newparent = null;
+        if (newbox.isBlock())  
+        {
+            if (!((BlockBox) newbox).isPositioned())
+            {
+                if (parent.isBlock()) //block in block
+                {
+                    parent.addSubBox(newbox);
+                    lastinflow = newbox;
+                }
+                else //block in inline box -- split the inline box
+                {
+                    ElementBox grandpa = parent.getParent();
+                    if (grandpa != null)
+                    {
+                        //finish inline parent and create another one
+                        parent.lastDOMChild = child_index; //this will finish the iteration just now
+                        newparent = parent.copyBox();
+                        newparent.removeAllSubBoxes();
+                        newparent.firstDOMChild = child_index + 1;
+                        //put the new block at the same level as the parent
+                        grandpa.addSubBox(newbox);
+                    }
+                    else
+                        System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
+                }
+            }
+            else //positioned box
+            {
+                newbox.getContainingBlock().addSubBox(newbox);
+                ((BlockBox) newbox).absReference = lastinflow; //set the reference box for computing the static position
+            }
+        }
+        else //inline elements -- always in flow
+        {
+            //System.out.println("For " + newbox + " lastbox is " + lastinflow);
+            //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
+            boolean lastwhite = (lastinflow == null) || (lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces());
+            //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
+            boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
+            if (!collapse)
+            {
+                parent.addSubBox(newbox);
+                lastinflow = newbox;
+            }
         }
 
         if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
@@ -282,15 +301,43 @@ public class BoxFactory
             parent.nextTwin = newparent;
             newparent.previousTwin = parent;
             //process the new parent
-            createBoxTree(newparent, contbox, absbox, clipbox);
+            createBoxTree(newparent, contbox, absbox, clipbox, null);
             //if the new parent generated no children, remove it again
             if (newparent.getSubBoxNumber() == 0)
                 parent.getParent().removeSubBox(newparent);
         }
         
-        return inflow_reference;
+        return lastinflow;
     }
 
+    /**
+     * Removes the block box trailing inline whitespace child boxes if allowed by the white-space values. 
+     * @param block the block box to be processed
+     */
+    private void removeTrailingWhitespaces(ElementBox block)
+    {
+        if (block.collapsesSpaces())
+        {
+            for (ListIterator<Box> it = block.getSubBoxList().listIterator(block.getSubBoxNumber()); it.hasPrevious();)
+            {
+                Box subbox = it.previous();
+                if (subbox.isInFlow())
+                {
+                    if (!subbox.isBlock() && subbox.collapsesSpaces())
+                    {
+                        if (subbox.isWhitespace())
+                            it.remove();
+                        else if (subbox instanceof ElementBox) //TODO: text boxes too?
+                            removeTrailingWhitespaces((ElementBox) subbox);
+                    }
+                    else
+                        break;
+                }
+            }
+            block.setEndChild(block.getSubBoxList().size());
+        }
+    }
+    
     /**
      * Creates a new box for an element node and sets the containing boxes accordingly.
      * @param parent the parent box of the created box

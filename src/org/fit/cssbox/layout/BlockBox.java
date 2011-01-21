@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import cz.vutbr.web.css.*;
-import cz.vutbr.web.css.CSSProperty.VerticalAlign;
 
 import org.w3c.dom.*;
 
@@ -362,11 +361,23 @@ public class BlockBox extends ElementBox
     }
     
     /** Returns true if the box is in the normal text flow (not absolutely
-     * positioned nor floating */
+     * positioned nor floating) */
     @Override
     public boolean isInFlow()
     {
         return (displayed && floating == FLOAT_NONE && position != POS_ABSOLUTE && position != POS_FIXED);
+    }
+    
+    /** Returns true if the box is absolutely positioned. */
+    public boolean isPositioned()
+    {
+        return (displayed && (position == POS_ABSOLUTE || position == POS_FIXED));
+    }
+    
+    /** Returns true if the box is floating. */
+    public boolean isFloating()
+    {
+        return (displayed && floating != FLOAT_NONE);
     }
     
 	@Override
@@ -538,10 +549,10 @@ public class BlockBox extends ElementBox
         if (border.top == 0 && border.bottom == 0 &&
             padding.top == 0 && padding.bottom == 0 &&
             content.height == 0) /* no content - margin collapsing applies */
-            return Math.max(margin.top, margin.bottom);
+            return Math.max(emargin.top, emargin.bottom);
         else
-            return margin.top + border.top + padding.top + content.height +
-                padding.bottom + border.bottom + margin.bottom;
+            return emargin.top + border.top + padding.top + content.height +
+                padding.bottom + border.bottom + emargin.bottom;
     }
     
     @Override
@@ -600,48 +611,23 @@ public class BlockBox extends ElementBox
     
     private void alignLineVertically(LineBox line)
     {
-    	int baseline = Math.max(getBaselineOffset(), line.getBaselineOffset()) + line.getY(); //strut baseline
-    	int top = baseline - getBaselineOffset(); //box top
-    	
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
             Box subbox = getSubBox(i);
             if (!subbox.isBlock())
             {
-                CSSProperty.VerticalAlign va = VerticalAlign.BASELINE; 
-                if (subbox instanceof InlineBox)    
-                    va = ((InlineBox) subbox).getVerticalAlign();
-                
-                int dif = 0;
-                int baseshift = baseline - subbox.getBaselineOffset();
-                if (va == CSSProperty.VerticalAlign.BASELINE)
-                    dif = baseshift;
-                else if (va == CSSProperty.VerticalAlign.MIDDLE)
-                    dif = baseshift - (int) (ctx.getEx() / 2);
-                else if (va == CSSProperty.VerticalAlign.SUB)
-                    dif = baseshift + (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.SUPER)
-                    dif = baseshift - (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
-                    dif = top;
-                else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
-                    dif = top + getLineHeight() - subbox.getLineHeight();
-                else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
-                {
-                    CSSDecoder dec = new CSSDecoder(subbox.getVisualContext());
-                    int len = dec.getLength(((ElementBox) subbox).getLengthValue("vertical-align"), false, 0, 0, subbox.getLineHeight());
-                    dif = baseshift - len;
-                }
+                int dif = line.alignBox((Inline) subbox);
                 
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
                 if (subbox instanceof ElementBox)
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
-                
+
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
                 if (subbox instanceof InlineBox)
                     ((InlineBox) subbox).setLineBox(line);
                 
-                subbox.moveDown(dif);
+                int y = line.getY() + (line.getLead() / 2) + dif;
+                subbox.moveDown(y);
             }
         }
     }
@@ -712,7 +698,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    	if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -769,7 +755,7 @@ public class BlockBox extends ElementBox
         int x = x1; //current x
         int y = 0; //current y
         int maxw = 0; //width of the longest line found
-        int maxh = 0; //maximal height on the line
+        //int maxh = 0; //maximal height on the linebox
         int prefw = 0; //preferred width of the not-in-flow boxes
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
@@ -780,10 +766,7 @@ public class BlockBox extends ElementBox
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = new LineBox(this, 0, 0);
         lines.add(curline);
-        
-        //TODO: If it only has inline-level children, the height is the distance between the top of the topmost line box and the bottom of the bottommost line box.
-        // http://www.w3.org/TR/CSS21/visudet.html#normal-block
-        
+
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
             Box subbox = getSubBox(i);
@@ -796,7 +779,7 @@ public class BlockBox extends ElementBox
                 BlockLayoutStatus stat = new BlockLayoutStatus();
                 stat.inlineWidth = x - x1;
                 stat.y = y;
-                stat.maxh = maxh;
+                stat.maxh = 0;
                 
                 boolean atstart = (x <= x1); //check if the line has already started
                 
@@ -873,28 +856,8 @@ public class BlockBox extends ElementBox
                         subbox.setPosition(x,  0); //y position will be determined during the line box vertical alignment
                         x += subbox.getWidth();
                     }
-                    //update the maximal line height
-                    if (subbox instanceof InlineBox)
-                    {
-                        if (!subbox.isWhitespace()) //do not consider empty and whitespace boxes
-                        {
-                            InlineBox isubbox = (InlineBox) subbox;
-                            //update the maximal height
-                            int prefh = 0;
-                            if (isubbox.getHeight() > 0) //subbox is not rendered as empty, consider the line height
-                                //prefh = Math.max(isubbox.getMaxLineHeight(), isubbox.getHeight());
-                                prefh = isubbox.getMaxLineHeight();
-                            if (prefh > maxh) 
-                                maxh = prefh;
-                            //update current baseline
-                            curline.considerBaseline(isubbox.getMaxBaselineOffset());
-                        }
-                    }
-                    else
-                    {
-                        if (subbox.getHeight() > maxh)
-                            maxh = subbox.getHeight();
-                    }
+                    //update current line metrics
+                    curline.considerBox((Inline) subbox);
                     
                 }
                 
@@ -905,7 +868,6 @@ public class BlockBox extends ElementBox
                     if (x > maxw) maxw = x;
                     y += getLineHeight();
                     curline.setY(y);
-                    maxh = 0;
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
                     if (x1 < 0) x1 = 0;
@@ -920,11 +882,9 @@ public class BlockBox extends ElementBox
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
-                    curline.setMaxHeight(maxh);
                     //go to the new line
                     if (x > maxw) maxw = x;
-                    y += Math.max(maxh, getLineHeight()); //line-height is the minimal line box height: http://www.w3.org/TR/CSS21/visudet.html#propdef-line-height
-                    maxh = 0;
+                    y += curline.getMaxLineHeight();
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
                     if (x1 < 0) x1 = 0;
@@ -949,7 +909,7 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                 }
-                lastwhite = subbox.endsWithWhitespace();
+                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace();
             } while (split);
             
             if (subbox.canSplitAfter())
@@ -963,10 +923,10 @@ public class BlockBox extends ElementBox
             if (maxw > prefw) prefw = maxw; //update preferred width with in-flow elements
         }
         lastPreferredWidth = prefw;
+        //block height
         if (!hasFixedHeight())
         {
-                if (maxh > 0)  //possible unfinished line
-                    y += Math.max(maxh, getLineHeight());
+                y += curline.getMaxLineHeight(); //last unfinished line
                 if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
                 {
                     //enclose all floating boxes we own
@@ -981,11 +941,11 @@ public class BlockBox extends ElementBox
         }
         setSize(totalWidth(), totalHeight());
         
-        //align the lines according to the real box width
-        curline.setWidth(x); //last line width
+        //finish the last line
+        curline.setWidth(x); 
         curline.setLimits(x1, x2);
-        curline.setMaxHeight(maxh);
         curline.setEnd(getSubBoxNumber());
+        //align the lines according to the real box width
         for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
             LineBox line = it.next();
@@ -1039,7 +999,7 @@ public class BlockBox extends ElementBox
                 	//the border edge of the parent or the last placed box
                 	int borderY = stat.y;
                 	if (stat.lastinflow != null)
-                	    borderY -= stat.lastinflow.margin.bottom; //do not consider the margin applied by the layout
+                	    borderY -= stat.lastinflow.emargin.bottom; //do not consider the margin applied by the layout
                 	
                 	//update expected top margin
                 	if (subbox.emargin.top > mtop)
@@ -1173,7 +1133,7 @@ public class BlockBox extends ElementBox
         if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
 
         //moving the floating box down until it fits
-        while ((fx > floatX || stat.inlineWidth > 0) //if we're not already at the left/right border
+        while ((fx > floatX || ofx > oFloatX || stat.inlineWidth > 0) //if the space can be narrower at least at one side
                && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
             int nexty1 = f.getNextY(fy);
@@ -1238,7 +1198,7 @@ public class BlockBox extends ElementBox
                 {
                     if (topstatic || leftstatic)
                     {
-                        System.out.println(this + " : static");
+                        //System.out.println(this + " : static");
                         updateStaticPosition();
                     }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
@@ -1292,13 +1252,11 @@ public class BlockBox extends ElementBox
             Rectangle cb = cblock.getAbsoluteBounds();
             ab.x = ab.x - cb.x;
             ab.y = ab.y - cb.y;
-            if (ab != null)
-            {
-                if (topstatic)
-                    coords.top = ab.y + ab.height - 1;
-                if (leftstatic)
-                    coords.left = ab.x;
-            }
+            //position relatively to the border edge
+            if (topstatic)
+                coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
+            if (leftstatic)
+                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
         }
     }
 
@@ -1642,9 +1600,6 @@ public class BlockBox extends ElementBox
      */  
     protected void loadSizes(boolean update)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-    		System.out.println("jo!");
-    	
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes

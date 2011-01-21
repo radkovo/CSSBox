@@ -354,11 +354,11 @@ public class TableBox extends BlockBox
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
             updateColumns(it.next());
 
-        System.out.println("Start:");
+        /*System.out.println("Start:");
         for (int i = 0; i < columns.size(); i++)
             System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
             					+ " min=" + columns.elementAt(i).getMinimalWidth()
-            					+ " max=" + columns.elementAt(i).getMaximalWidth());
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());*/
         
         
         //now, the columns are at minimal widths
@@ -486,11 +486,11 @@ public class TableBox extends BlockBox
             }
         }
         
-        System.out.println("Result:");
+        /*System.out.println("Result:");
         for (int i = 0; i < columns.size(); i++)
             System.out.println("Col " + i + " : " + columns.elementAt(i).getWidth()
             					+ " min=" + columns.elementAt(i).getMinimalWidth()
-            					+ " max=" + columns.elementAt(i).getMaximalWidth());
+            					+ " max=" + columns.elementAt(i).getMaximalWidth());*/
         
         columnsCalculated = true;
     }

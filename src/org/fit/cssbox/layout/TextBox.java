@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. únor 2006, 13:42
+ * Created on 5. ï¿½nor 2006, 13:42
  */
 
 package org.fit.cssbox.layout;
@@ -32,7 +32,7 @@ import org.w3c.dom.*;
  *
  * @author  radek
  */
-public class TextBox extends Box
+public class TextBox extends Box implements Inline
 {
     /** Assigned text node */
     protected Text textNode;
@@ -105,12 +105,18 @@ public class TextBox extends Box
     
     public String toString()
     {
-        return "Text: " + text;
+        return "Text: " + text + "<" + textStart + "," + textEnd + ">";
     }
     
     @Override
     public void initBox()
     {
+    }
+    
+    @Override
+    public void setParent(ElementBox parent)
+    {
+        super.setParent(parent);
         if (getParent() != null)
         {
             //reset the whitespace processing according to the parent settings
@@ -164,20 +170,28 @@ public class TextBox extends Box
      */
     public void setWhiteSpace(CSSProperty.WhiteSpace value)
     {
-        if (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE)
-        {
+        
+        collapsews = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE);
+        //When this is the original box, apply the whitespace. For the copied boxes, the whitespace has been already applied (they contain
+        //a copy of the original, already processed content). 
+        if (!splitted)
+            applyWhiteSpace(); 
+    }
+    
+    /**
+     * Applies the whitespace processing represented by the {@link #collapsews} property to the text content. The text start and text end
+     * indices are reset to their initial values.
+     */
+    private void applyWhiteSpace()
+    {
+        if (collapsews)
             text = collapseWhitespaces(node.getNodeValue());
-            collapsews = true;
-        }
         else
-        {
             text = node.getNodeValue();
-            collapsews = false;
-        }
         
         textStart = 0;
         textEnd = text.length();
-        isempty = (textEnd == 0); //not trimming, space cannot be omited
+        isempty = (textEnd == 0);
     }
     
     /**
@@ -253,6 +267,12 @@ public class TextBox extends Box
         return getText().trim().length() == 0;
     }
     
+    @Override
+    public boolean collapsesSpaces()
+    {
+        return collapsews;
+    }
+    
 	@Override
     public int getContentX() 
     {
@@ -295,22 +315,34 @@ public class TextBox extends Box
         return availwidth;
     }
     
-    @Override
     public int getLineHeight()
+    {
+        return parent.getLineHeight();
+    }
+    
+    public int getMaxLineHeight()
+    {
+        return parent.getLineHeight();
+    }
+    
+    public int getTotalLineHeight()
     {
         return ctx.getFontHeight();
     }
 
-    @Override
     public int getBaselineOffset()
     {
         return ctx.getBaselineOffset();
     }
     
-    @Override
-    public int getMaxBaselineOffset()
+    public int getBelowBaseline()
     {
-        return ctx.getBaselineOffset();
+        return ctx.getFontHeight() - ctx.getBaselineOffset();
+    }
+    
+    public int getHalfLead()
+    {
+        return 0;
     }
     
     @Override

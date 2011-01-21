@@ -30,16 +30,19 @@ import cz.vutbr.web.css.*;
  *
  * @author  radek
  */
-public class InlineBox extends ElementBox
+public class InlineBox extends ElementBox implements Inline
 {
     /** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;
     
-    /** maximal line height of the contained boxes */
-    private int maxLineHeight;
-    
     /** parent LineBox assigned during layout */
     private LineBox linebox;
+    
+    /** line box describing the children layout */
+    private LineBox curline;
+    
+    /** half-lead after layout */
+    private int halflead;
     
     //========================================================================
     
@@ -47,6 +50,7 @@ public class InlineBox extends ElementBox
     public InlineBox(Element n, Graphics2D g, VisualContext ctx) 
     {
         super(n, g, ctx);
+        halflead = 0;
     }
     
     public void copyValues(InlineBox src)
@@ -109,6 +113,60 @@ public class InlineBox extends ElementBox
     
     //========================================================================
     
+    public int getBaselineOffset()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getBaselineOffset();
+    }
+    
+    public int getBelowBaseline()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getBelowBaseline();
+    }
+    
+    public int getTotalLineHeight()
+    {
+    	if (curline == null)
+    		return 0;
+    	else
+    		return curline.getTotalLineHeight();
+    }
+    
+    public int getMaxLineHeight()
+    {
+        if (curline == null)
+            return lineHeight;
+        else
+            return Math.max(lineHeight, curline.getMaxLineHeight());
+    }
+    
+    /**
+     * Obtains the offset of the content edge from the line box top
+     * @return the difference between the content edge and the top of the line box in pixels. Positive numbers mean the content box is inside the line box.  
+     */
+    public int getLineboxOffset()
+    {
+        if (curline == null)
+            return 0;
+        else
+            return  curline.getBaselineOffset() - ctx.getBaselineOffset() - halflead;
+    }
+    /**
+     * Returns the half-lead value used for positioning the nested boxes within this inline box
+     * @return half-lead value in pixels
+     */
+    public int getHalfLead()
+    {
+        return halflead;
+    }
+    
+    //========================================================================
+    
 	@Override
     public boolean isInFlow()
 	{
@@ -140,9 +198,9 @@ public class InlineBox extends ElementBox
 
         setAvailableWidth(availw);
         
+        curline = new LineBox(this, startChild, 0);
         int wlimit = getAvailableContentWidth();
         int x = 0; //current x
-        int maxh = 0;
         boolean ret = true;
         rest = null;
 
@@ -161,13 +219,14 @@ public class InlineBox extends ElementBox
             boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
             if (fit) //something has been placed
             {
-                if (subbox.isInFlow())
+                if (subbox instanceof Inline)
                 {
                     subbox.setPosition(x,  0); //the y position will be updated later
                     x += subbox.getWidth();
-                    if (subbox.getHeight() > maxh)
-                        maxh = subbox.getHeight();
+                    curline.considerBox((Inline) subbox);
                 }
+                else
+                	System.err.println("Warning: doLayout(): subbox is not inline: " + subbox);
                 if (subbox.getRest() != null) //is there anything remaining?
                 {
                     InlineBox rbox = copyBox();
@@ -199,18 +258,18 @@ public class InlineBox extends ElementBox
                 }
             }
             
-            lastwhite = subbox.endsWithWhitespace();
+            lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }
         
+        
         //compute the vertical positions of the boxes
-        computeMaxLineHeight();
-        alignBoxes();
-        
+        //updateLineMetrics();
         content.width = x;
-        content.height = lineHeight;
-        
+        content.height = (int) Math.round(ctx.getFontHeight() * 1.2); //based on browser behaviour observations
+        halflead = (content.height - curline.getTotalLineHeight()) / 2;
+        alignBoxes();
         setSize(totalWidth(), totalHeight());
         
         return ret;
@@ -226,11 +285,11 @@ public class InlineBox extends ElementBox
             //y coordinate -- depends on the vertical alignment
             if (valign == CSSProperty.VerticalAlign.TOP)
             {
-                absbounds.y = linebox.getAbsoluteY() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxHeight() - getContentHeight() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getTotalLineHeight() - getContentHeight() - getContentOffsetY();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
@@ -326,7 +385,7 @@ public class InlineBox extends ElementBox
     @Override
     public boolean endsWithWhitespace()
     {
-        return (endChild > startChild) && getSubBox(startChild).endsWithWhitespace();
+        return (endChild > startChild) && getSubBox(endChild - 1).endsWithWhitespace();
     }
     
     @Override
@@ -362,10 +421,10 @@ public class InlineBox extends ElementBox
     /**
      * @return the maximal line height of the contained sub-boxes
      */
-    public int getMaxLineHeight()
+    /*public int getMaxLineHeight()
     {
         return maxLineHeight;
-    }
+    }*/
     
     @Override
     public int totalHeight()
@@ -468,90 +527,29 @@ public class InlineBox extends ElementBox
 	        return true;
     	}
 	}
-
-	/**
-     * Vertically aligns the boxes placed relatively to the line box (vertical-align:top or bottom).
-     * @param top the top y coordinate relatively to this box
-     * @param bottom the bottom y coordinate relatively to this box
-     */
-    public void alignLineBoxes(int top, int bottom)
-    {
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box sub = getSubBox(i);
-            if (sub instanceof InlineBox)
-            {
-                CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
-                if (va == CSSProperty.VerticalAlign.TOP)
-                    sub.moveDown(top);
-                else if (va == CSSProperty.VerticalAlign.BOTTOM)
-                    sub.moveDown(bottom);
-            }
-        }
-    }
     
     //=====================================================================================================
-    
-    private void computeMaxLineHeight()
-    {
-        int max = lineHeight; //shouldn't be smaller than our own height
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box sub = getSubBox(i);
-            int h;
-            if (sub instanceof InlineBox)
-                h = ((InlineBox) sub).getMaxLineHeight();
-            else
-                h = sub.getLineHeight();
-            if (h > max) max = h;
-        }
-        maxLineHeight = max;
-    }
-    
+
     /**
      * Vertically aligns the contained boxes according to their vertical-align properties.
      */
     private void alignBoxes()
     {
-        int base = getBaselineOffset();
         for (int i = startChild; i < endChild; i++)
         {
-            int dif = 0;
             Box sub = getSubBox(i);
-            int baseshift = base - sub.getBaselineOffset(); 
-            if (sub instanceof InlineBox)
+            if (!sub.isblock)
             {
-                CSSProperty.VerticalAlign va = ((InlineBox) sub).getVerticalAlign();
-                if (va == CSSProperty.VerticalAlign.BASELINE)
-                    dif = baseshift;
-                else if (va == CSSProperty.VerticalAlign.MIDDLE)
-                    dif = baseshift - (int) (ctx.getEx() / 2);
-                else if (va == CSSProperty.VerticalAlign.SUB)
-                    dif = baseshift + (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.SUPER)
-                    dif = baseshift - (int) (0.3 * getLineHeight());  
-                else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
-                    dif = 0;
-                else if (va == CSSProperty.VerticalAlign.TEXT_BOTTOM)
-                    dif = getLineHeight() - sub.getLineHeight();
-                else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
-                {
-                    CSSDecoder dec = new CSSDecoder(sub.getVisualContext());
-                    int len = dec.getLength(((ElementBox) sub).getLengthValue("vertical-align"), false, 0, 0, sub.getLineHeight());
-                    dif = baseshift - len;
-                }
-                //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
-                dif = dif - ((InlineBox) sub).getContentOffsetY(); 
-            }
-            else if (sub instanceof TextBox) //use baseline
-            {
-                dif = baseshift;
-            }
-            
-            
-            if (dif != 0)
-            {
-                sub.moveDown(dif);
+                //position relative to the line box
+                int dif = curline.alignBox((Inline) sub);
+                //recompute to the content box
+                dif = dif - getLineboxOffset();
+                //recompute to the bounding box
+                if (sub instanceof InlineBox)
+                    dif = dif - ((InlineBox) sub).getContentOffsetY();
+                
+                if (dif != 0)
+                    sub.moveDown(dif);
             }
         }
     }
