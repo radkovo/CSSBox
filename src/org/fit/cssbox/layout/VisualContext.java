@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 7. záøí 2005, 15:33
+ * Created on 7. zï¿½ï¿½ï¿½ 2005, 15:33
  */
 
 package org.fit.cssbox.layout;
@@ -171,7 +171,7 @@ public class VisualContext
             if (lenspec != null)
             {
                 em = psize;
-                size = ptLength(lenspec, psize);
+                size = pxLength(lenspec, psize); //pixels are ok here (java is fixed to 72 dpi for font sizes)
             }
             else
                 size = em;
