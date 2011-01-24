@@ -1,3 +1,19 @@
+2011-01-24 - Version 3.1
+- table layout algorithm fixes
+- line height computation reworked
+- vertical alignment reworked
+- new box tree creation algorithm
+- whitespace processing improvements
+- border rendering reworked
+- static position determination fixed
+
+2009-12-03 - Version 3.0
+- new margin collapsing algorithm
+- removed the jTidy dependency. Now, any DOM Traversal capable DOM implementation may be used.
+- visibility inheritance fixed
+- font-weight processing updated
+- license change to LGPLv3
+
 2009-03-04 - Version 2.2
 - New ImageRenderer tools that stores the rendered document in PNG or SVG
 - New box clipping implementation (overflow: hidden)
