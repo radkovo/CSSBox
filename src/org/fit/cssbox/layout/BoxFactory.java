@@ -148,50 +148,63 @@ public class BoxFactory
      * Creates the box subtrees for all the child nodes of the DOM node corresponding to the box creatin status. Recursively creates the child boxes 
      * from the child nodes.
      * @param parent the parent box
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param absbox the containing box of the new box when absolutley positioned
-     * @param clipbox the clipping block of this subtree
+     * @param stat current tree creation status
      */
     public void createBoxTree(BoxTreeCreationStatus stat)
     {
-        NodeList children = stat.parent.getElement().getChildNodes();
-        if (stat.parent.isDisplayed())
+        boolean generated = false;
+        do
         {
-            //create :before elements
-            if (stat.parent.previousTwin == null)
+            if (stat.parent.isDisplayed())
             {
-                Node n = createPseudoElement(stat.parent, PseudoDeclaration.BEFORE);
-                if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
+                //create :before elements
+                if (stat.parent.previousTwin == null)
                 {
-                    stat.curchild = -1;
-                    createSubtree(n, stat);
+                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.BEFORE);
+                    if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
+                    {
+                        stat.curchild = -1;
+                        createSubtree(n, stat);
+                    }
                 }
+                
+                //create normal elements
+                NodeList children = stat.parent.getElement().getChildNodes();
+                for (int child = stat.parent.firstDOMChild; child < stat.parent.lastDOMChild; child++)
+                {
+                    Node n = children.item(child);
+                    if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
+                    {
+                        stat.curchild = child;
+                        createSubtree(n, stat);
+                    }
+                }
+                
+                //create :after elements
+                if (stat.parent.nextTwin == null)
+                {
+                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.AFTER);
+                    if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
+                    {
+                        stat.curchild = children.getLength();
+                        createSubtree(n, stat);
+                    }
+                }
+                
+                normalizeBox(stat.parent);
             }
             
-            //create normal elements
-            for (int child = stat.parent.firstDOMChild; child < stat.parent.lastDOMChild; child++)
+            if (stat.newparent != null)
             {
-                Node n = children.item(child);
-                if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
-                {
-                    stat.curchild = child;
-                    createSubtree(n, stat);
-                }
+                stat.parent = stat.newparent;
+                stat.newparent = null;
+                generated = true;
+                System.out.println("Next for " + stat.parent);
             }
+            else
+                generated = false;
             
-            //create :after elements
-            if (stat.parent.nextTwin == null)
-            {
-                Node n = createPseudoElement(stat.parent, PseudoDeclaration.AFTER);
-                if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
-                {
-                    stat.curchild = children.getLength();
-                    createSubtree(n, stat);
-                }
-            }
-            
-            normalizeBox(stat.parent);
-        }
+        } while (generated);
     }
 
     /**
@@ -245,7 +258,7 @@ public class BoxFactory
         }
 
         //Add the new box to the parent according to its type
-        ElementBox newparent = null;
+        stat.newparent = null;
         if (newbox.isBlock())  
         {
             if (!((BlockBox) newbox).isPositioned())
@@ -262,11 +275,12 @@ public class BoxFactory
                     {
                         //finish inline parent and create another one
                         stat.parent.lastDOMChild = stat.curchild; //this will finish the iteration just now
-                        newparent = stat.parent.copyBox();
-                        newparent.removeAllSubBoxes();
-                        newparent.firstDOMChild = stat.curchild + 1;
+                        stat.newparent = stat.parent.copyBox();
+                        stat.newparent.removeAllSubBoxes();
+                        stat.newparent.firstDOMChild = stat.curchild + 1;
                         //put the new block at the same level as the parent
                         grandpa.addSubBox(newbox);
+                        grandpa.addSubBox(stat.newparent);
                     }
                     else
                         System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
@@ -292,7 +306,7 @@ public class BoxFactory
             }
         }
 
-        if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
+        /*if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
         {
             //put another parent for the rest on the same level
             stat.parent.getParent().addSubBox(newparent);
@@ -306,7 +320,7 @@ public class BoxFactory
             //if the new parent generated no children, remove it again
             if (newparent.getSubBoxNumber() == 0)
                 stat.parent.getParent().removeSubBox(newparent);
-        }
+        }*/
     }
 
     /**
@@ -791,6 +805,8 @@ class BoxTreeCreationStatus
     
     /** Last in-flow box */
     public Box lastinflow;
+    
+    public ElementBox newparent; //TODO: can be replaced by parent.nextTwin?
     
     /** The index of the DOM node within its parent node */
     int curchild;
