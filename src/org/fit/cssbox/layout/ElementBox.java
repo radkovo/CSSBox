@@ -76,6 +76,9 @@ abstract public class ElementBox extends Box
     /** First DOM child node index covered by this box (exclusive) */
     protected int lastDOMChild;
     
+    /** Current DOM child during the tree creation */
+    protected BoxTreeCreationStatus curstat;
+    
     /** Previous copy of the same box if the box has been split */
     protected ElementBox previousTwin;
     

@@ -194,10 +194,9 @@ public class BoxFactory
                 normalizeBox(stat.parent);
             }
             
-            if (stat.newparent != null)
+            if (stat.parent.nextTwin != null)
             {
-                stat.parent = stat.newparent;
-                stat.newparent = null;
+                stat.parent = stat.parent.nextTwin;
                 generated = true;
                 System.out.println("Next for " + stat.parent);
             }
@@ -215,6 +214,9 @@ public class BoxFactory
      */
     private void createSubtree(Node n, BoxTreeCreationStatus stat)
     {
+        //store current status for the parent
+        stat.parent.curstat = new BoxTreeCreationStatus(stat);
+        
         //Create the new box for the child
         Box newbox;
         boolean istext = false;
@@ -258,7 +260,6 @@ public class BoxFactory
         }
 
         //Add the new box to the parent according to its type
-        stat.newparent = null;
         if (newbox.isBlock())  
         {
             if (!((BlockBox) newbox).isPositioned())
@@ -270,17 +271,32 @@ public class BoxFactory
                 }
                 else //block in inline box -- split the inline box
                 {
-                    ElementBox grandpa = stat.parent.getParent();
-                    if (grandpa != null)
+                    ElementBox iparent = null; //last inline ancestor
+                    ElementBox grandpa = stat.parent; //first block ancestor
+                    ElementBox prev = null;
+                    do
                     {
+                        //start next level
+                        iparent = grandpa;
+                        grandpa = iparent.getParent();
                         //finish inline parent and create another one
-                        stat.parent.lastDOMChild = stat.curchild; //this will finish the iteration just now
-                        stat.newparent = stat.parent.copyBox();
-                        stat.newparent.removeAllSubBoxes();
-                        stat.newparent.firstDOMChild = stat.curchild + 1;
+                        System.out.println("Split: " + iparent);
+                        iparent.lastDOMChild = iparent.curstat.curchild; //this will finish the iteration just now
+                        ElementBox newparent = iparent.copyBox();
+                        newparent.removeAllSubBoxes();
+                        newparent.firstDOMChild = iparent.curstat.curchild + 1;
+                        iparent.nextTwin = newparent;
+                        newparent.previousTwin = iparent;
+                        if (prev != null)
+                            newparent.addSubBox(prev);
+                        prev = newparent;
+                    } while (grandpa != null && !grandpa.isBlock());
+                        
+                    if (grandpa != null && iparent.nextTwin != null)
+                    {
                         //put the new block at the same level as the parent
-                        grandpa.addSubBox(newbox);
-                        grandpa.addSubBox(stat.newparent);
+                        grandpa.addSubBox(newbox); //TODO toto je moc brzo, predchozi boxy jsou vkladany az pri vynorovani
+                        grandpa.addSubBox(iparent.nextTwin);
                     }
                     else
                         System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
@@ -306,6 +322,7 @@ public class BoxFactory
             }
         }
 
+        
         /*if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
         {
             //put another parent for the rest on the same level
@@ -805,8 +822,6 @@ class BoxTreeCreationStatus
     
     /** Last in-flow box */
     public Box lastinflow;
-    
-    public ElementBox newparent; //TODO: can be replaced by parent.nextTwin?
     
     /** The index of the DOM node within its parent node */
     int curchild;
