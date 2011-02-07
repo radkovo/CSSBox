@@ -157,6 +157,10 @@ public class BoxFactory
         {
             if (stat.parent.isDisplayed())
             {
+                //add previously created boxes (the rest from the last twin)
+                if (stat.parent.preadd != null)
+                    addToTree(stat.parent.preadd, stat);
+                
                 //create :before elements
                 if (stat.parent.previousTwin == null)
                 {
@@ -194,11 +198,11 @@ public class BoxFactory
                 normalizeBox(stat.parent);
             }
             
+            //if a twin box has been created, continue creating the unprocessed boxes in the twin box
             if (stat.parent.nextTwin != null)
             {
                 stat.parent = stat.parent.nextTwin;
                 generated = true;
-                System.out.println("Next for " + stat.parent);
             }
             else
                 generated = false;
@@ -260,6 +264,16 @@ public class BoxFactory
         }
 
         //Add the new box to the parent according to its type
+        addToTree(newbox, stat);
+    }
+    
+    /**
+     * Adds a bew box to the tree according to its type and the tree creation status.
+     * @param newbox the box to be added
+     * @param stat current box tree creation status used for determining the appropriate parent boxes
+     */
+    private void addToTree(Box newbox, BoxTreeCreationStatus stat)
+    {
         if (newbox.isBlock())  
         {
             if (!((BlockBox) newbox).isPositioned())
@@ -280,23 +294,28 @@ public class BoxFactory
                         iparent = grandpa;
                         grandpa = iparent.getParent();
                         //finish inline parent and create another one
-                        System.out.println("Split: " + iparent);
+                        int lastchild = iparent.lastDOMChild;
                         iparent.lastDOMChild = iparent.curstat.curchild; //this will finish the iteration just now
-                        ElementBox newparent = iparent.copyBox();
-                        newparent.removeAllSubBoxes();
-                        newparent.firstDOMChild = iparent.curstat.curchild + 1;
-                        iparent.nextTwin = newparent;
-                        newparent.previousTwin = iparent;
-                        if (prev != null)
-                            newparent.addSubBox(prev);
-                        prev = newparent;
+                        if (iparent.curstat.curchild + 1 < lastchild || prev != null) //some children are remaning or there is some content already created -- split the inline boxes up to the block level
+                        {
+                            ElementBox newparent = iparent.copyBox();
+                            newparent.removeAllSubBoxes();
+                            newparent.firstDOMChild = iparent.curstat.curchild + 1;
+                            iparent.nextTwin = newparent;
+                            newparent.previousTwin = iparent;
+                            if (prev != null) //queue the previously created child to be added to the new box
+                                newparent.preadd = prev;
+                            prev = newparent;
+                        }
                     } while (grandpa != null && !grandpa.isBlock());
                         
-                    if (grandpa != null && iparent.nextTwin != null)
+                    if (grandpa != null)
                     {
-                        //put the new block at the same level as the parent
-                        grandpa.addSubBox(newbox); //TODO toto je moc brzo, predchozi boxy jsou vkladany az pri vynorovani
-                        grandpa.addSubBox(iparent.nextTwin);
+                        //queue the block box and the next twin to be put to the block level
+                        iparent.postadd = new Vector<Box>(2);
+                        iparent.postadd.add(newbox);
+                        if (iparent.nextTwin != null)
+                            iparent.postadd.add(iparent.nextTwin);
                     }
                     else
                         System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
@@ -312,7 +331,7 @@ public class BoxFactory
         {
             //System.out.println("For " + newbox + " lastbox is " + lastinflow);
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
-            boolean lastwhite = (stat.lastinflow == null) || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
+            boolean lastwhite = (stat.lastinflow == null) || stat.lastinflow.isBlock() || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
             boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
             if (!collapse)
@@ -321,25 +340,16 @@ public class BoxFactory
                 stat.lastinflow = newbox;
             }
         }
-
         
-        /*if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
+        //Recursively process the eventual boxes that should be added tohether with the new box
+        if (newbox instanceof ElementBox && ((ElementBox) newbox).postadd != null)
         {
-            //put another parent for the rest on the same level
-            stat.parent.getParent().addSubBox(newparent);
-            stat.parent.nextTwin = newparent;
-            newparent.previousTwin = stat.parent;
-            //process the new parent
-            BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
-            newstat.parent = newparent;
-            newstat.lastinflow = null;
-            createBoxTree(stat);
-            //if the new parent generated no children, remove it again
-            if (newparent.getSubBoxNumber() == 0)
-                stat.parent.getParent().removeSubBox(newparent);
-        }*/
+            for (Box box : ((ElementBox) newbox).postadd)
+                addToTree(box, stat);
+        }
+        
     }
-
+    
     /**
      * Removes the block box trailing inline whitespace child boxes if allowed by the white-space values. 
      * @param block the block box to be processed
