@@ -137,92 +137,107 @@ public class BoxFactory
     {
         Element vp = createAnonymousElement(root.getOwnerDocument(), "Xdiv", "block");
         viewport = new Viewport(vp, g, ctx, this, root, width, height);
-        
-        createSubtree(viewport, viewport, viewport, viewport, null, root, 0);
+        BoxTreeCreationStatus stat = new BoxTreeCreationStatus(viewport);
+        createSubtree(root, stat);
         System.out.println("Root box is: " + viewport.getRootBox());
         
         return viewport;
     }
     
     /**
-     * Creates the box subtrees for all the child nodes of the DOM node corresponding to the specified parent box. Recursively creates the child boxes 
+     * Creates the box subtrees for all the child nodes of the DOM node corresponding to the box creatin status. Recursively creates the child boxes 
      * from the child nodes.
      * @param parent the parent box
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param absbox the containing box of the new box when absolutley positioned
-     * @param clipbox the clipping block of this subtree
+     * @param stat current tree creation status
      */
-    public Box createBoxTree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box lastinflow)
+    public void createBoxTree(BoxTreeCreationStatus stat)
     {
-        NodeList children = parent.getElement().getChildNodes();
-        if (parent.isDisplayed())
+        boolean generated = false;
+        do
         {
-            //a reference box for possible absolutely positioned boxes
-            //normally, it is the previous in-flow box, or null, if this is the first box
-            //Box lastinflow = null;
-            
-            //create :before elements
-            if (parent.previousTwin == null)
+            if (stat.parent.isDisplayed())
             {
-                Node n = createPseudoElement(parent, PseudoDeclaration.BEFORE);
-                if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
-                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, -1);
+                //add previously created boxes (the rest from the last twin)
+                if (stat.parent.preadd != null)
+                    addToTree(stat.parent.preadd, stat);
+                
+                //create :before elements
+                if (stat.parent.previousTwin == null)
+                {
+                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.BEFORE);
+                    if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
+                    {
+                        stat.curchild = -1;
+                        createSubtree(n, stat);
+                    }
+                }
+                
+                //create normal elements
+                NodeList children = stat.parent.getElement().getChildNodes();
+                for (int child = stat.parent.firstDOMChild; child < stat.parent.lastDOMChild; child++)
+                {
+                    Node n = children.item(child);
+                    if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
+                    {
+                        stat.curchild = child;
+                        createSubtree(n, stat);
+                    }
+                }
+                
+                //create :after elements
+                if (stat.parent.nextTwin == null)
+                {
+                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.AFTER);
+                    if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
+                    {
+                        stat.curchild = children.getLength();
+                        createSubtree(n, stat);
+                    }
+                }
+                
+                normalizeBox(stat.parent);
             }
             
-            //create normal elements
-            for (int child = parent.firstDOMChild; child < parent.lastDOMChild; child++)
+            //if a twin box has been created, continue creating the unprocessed boxes in the twin box
+            if (stat.parent.nextTwin != null)
             {
-                Node n = children.item(child);
-                if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
-                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, child);
+                stat.parent = stat.parent.nextTwin;
+                generated = true;
             }
+            else
+                generated = false;
             
-            //create :after elements
-            if (parent.nextTwin == null)
-            {
-                Node n = createPseudoElement(parent, PseudoDeclaration.AFTER);
-                if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
-                    lastinflow = createSubtree(parent, contbox, absbox, clipbox, lastinflow, n, children.getLength());
-            }
-            
-            normalizeBox(parent);
-        }
-        return lastinflow;
+        } while (generated);
     }
 
     /**
-     * Creates a subtree of a parent box that corresponds to a single child DOM node of this box. During the creation, the in-flow boxes
-     * are tracked for computing the static positions of absolutely positioned boxes.
+     * Creates a subtree of a parent box that corresponds to a single child DOM node of this box and adds the subtree to the complete tree.
      * 
-     * @param parent parent node of the subtree being created
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param absbox the containing box of the new box when absolutley positioned
-     * @param clipbox the clipping block of this subtree
-     * @param lastinflow the last in-flow box before this subree
      * @param n the root DOM node of the subtree being created
-     * @param child_index the index of the DOM node within its parent node
-     * @return the new value of the last in-flow box
+     * @param stat curent box creation status for obtaining the containing boxes 
      */
-    private Box createSubtree(ElementBox parent, BlockBox contbox, BlockBox absbox, BlockBox clipbox, Box lastinflow, Node n, int child_index)
+    private void createSubtree(Node n, BoxTreeCreationStatus stat)
     {
+        //store current status for the parent
+        stat.parent.curstat = new BoxTreeCreationStatus(stat);
+        
         //Create the new box for the child
         Box newbox;
         boolean istext = false;
         if (n.getNodeType() == Node.TEXT_NODE)
         {
-            newbox = createTextBox(parent, (Text) n, contbox, clipbox);
+            newbox = createTextBox((Text) n, stat);
             istext = true;
         }
         else
-            newbox = createElementBox(parent, (Element) n, contbox, absbox, clipbox);
+            newbox = createElementBox((Element) n, stat);
         
         //Create the child subtree
         if (!istext) 
         {
             //Determine the containing boxes of the children
-            BlockBox newcont = contbox;
-            BlockBox newabs = absbox;
-            BlockBox newclip = clipbox;
+            BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
+            newstat.parent = (ElementBox) newbox;
             if (newbox.isBlock())
             {
                 BlockBox block = (BlockBox) newbox;
@@ -231,44 +246,76 @@ public class BoxFactory
                 if (block.position == BlockBox.POS_ABSOLUTE ||
                     block.position == BlockBox.POS_RELATIVE ||
                     block.position == BlockBox.POS_FIXED)
-                     newabs = block;                
+                     newstat.absbox = block;                
                 //Any block box forms a containing box for not positioned elements
-                newcont = block;
+                newstat.contbox = block;
                 //A box with overflow:hidden creates a clipping box
                 if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
-                    newclip = block;
+                    newstat.clipbox = block;
+                //Last inflow box is local for block boxes
+                newstat.lastinflow = null;
                 //create the subtree
-                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, null);
+                createBoxTree(newstat);
                 //remove trailing whitespaces in blocks
                 removeTrailingWhitespaces(block);
             }
             else
-                createBoxTree((ElementBox) newbox, newcont, newabs, newclip, lastinflow);
+                createBoxTree(newstat);
         }
 
         //Add the new box to the parent according to its type
-        ElementBox newparent = null;
+        addToTree(newbox, stat);
+    }
+    
+    /**
+     * Adds a bew box to the tree according to its type and the tree creation status.
+     * @param newbox the box to be added
+     * @param stat current box tree creation status used for determining the appropriate parent boxes
+     */
+    private void addToTree(Box newbox, BoxTreeCreationStatus stat)
+    {
         if (newbox.isBlock())  
         {
             if (!((BlockBox) newbox).isPositioned())
             {
-                if (parent.isBlock()) //block in block
+                if (stat.parent.isBlock()) //block in block
                 {
-                    parent.addSubBox(newbox);
-                    lastinflow = newbox;
+                    stat.parent.addSubBox(newbox);
+                    stat.lastinflow = newbox;
                 }
                 else //block in inline box -- split the inline box
                 {
-                    ElementBox grandpa = parent.getParent();
+                    ElementBox iparent = null; //last inline ancestor
+                    ElementBox grandpa = stat.parent; //first block ancestor
+                    ElementBox prev = null;
+                    do
+                    {
+                        //start next level
+                        iparent = grandpa;
+                        grandpa = iparent.getParent();
+                        //finish inline parent and create another one
+                        int lastchild = iparent.lastDOMChild;
+                        iparent.lastDOMChild = iparent.curstat.curchild; //this will finish the iteration just now
+                        if (iparent.curstat.curchild + 1 < lastchild || prev != null) //some children are remaning or there is some content already created -- split the inline boxes up to the block level
+                        {
+                            ElementBox newparent = iparent.copyBox();
+                            newparent.removeAllSubBoxes();
+                            newparent.firstDOMChild = iparent.curstat.curchild + 1;
+                            iparent.nextTwin = newparent;
+                            newparent.previousTwin = iparent;
+                            if (prev != null) //queue the previously created child to be added to the new box
+                                newparent.preadd = prev;
+                            prev = newparent;
+                        }
+                    } while (grandpa != null && !grandpa.isBlock());
+                        
                     if (grandpa != null)
                     {
-                        //finish inline parent and create another one
-                        parent.lastDOMChild = child_index; //this will finish the iteration just now
-                        newparent = parent.copyBox();
-                        newparent.removeAllSubBoxes();
-                        newparent.firstDOMChild = child_index + 1;
-                        //put the new block at the same level as the parent
-                        grandpa.addSubBox(newbox);
+                        //queue the block box and the next twin to be put to the block level
+                        iparent.postadd = new Vector<Box>(2);
+                        iparent.postadd.add(newbox);
+                        if (iparent.nextTwin != null)
+                            iparent.postadd.add(iparent.nextTwin);
                     }
                     else
                         System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
@@ -277,39 +324,32 @@ public class BoxFactory
             else //positioned box
             {
                 newbox.getContainingBlock().addSubBox(newbox);
-                ((BlockBox) newbox).absReference = lastinflow; //set the reference box for computing the static position
+                ((BlockBox) newbox).absReference = stat.lastinflow; //set the reference box for computing the static position
             }
         }
         else //inline elements -- always in flow
         {
             //System.out.println("For " + newbox + " lastbox is " + lastinflow);
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
-            boolean lastwhite = (lastinflow == null) || (lastinflow.endsWithWhitespace() && lastinflow.collapsesSpaces());
+            boolean lastwhite = (stat.lastinflow == null) || stat.lastinflow.isBlock() || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
             boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
             if (!collapse)
             {
-                parent.addSubBox(newbox);
-                lastinflow = newbox;
+                stat.parent.addSubBox(newbox);
+                stat.lastinflow = newbox;
             }
         }
-
-        if (newparent != null && newparent.firstDOMChild < newparent.lastDOMChild)
+        
+        //Recursively process the eventual boxes that should be added tohether with the new box
+        if (newbox instanceof ElementBox && ((ElementBox) newbox).postadd != null)
         {
-            //put another parent for the rest on the same level
-            parent.getParent().addSubBox(newparent);
-            parent.nextTwin = newparent;
-            newparent.previousTwin = parent;
-            //process the new parent
-            createBoxTree(newparent, contbox, absbox, clipbox, null);
-            //if the new parent generated no children, remove it again
-            if (newparent.getSubBoxNumber() == 0)
-                parent.getParent().removeSubBox(newparent);
+            for (Box box : ((ElementBox) newbox).postadd)
+                addToTree(box, stat);
         }
         
-        return lastinflow;
     }
-
+    
     /**
      * Removes the block box trailing inline whitespace child boxes if allowed by the white-space values. 
      * @param block the block box to be processed
@@ -347,40 +387,38 @@ public class BoxFactory
      * @param clipbox the clipping block of this subtree
      * @return the newly created element box
      */
-    public ElementBox createElementBox(ElementBox parent, Element n, BlockBox contbox, BlockBox absbox, BlockBox clipbox)
+    public ElementBox createElementBox(Element n, BoxTreeCreationStatus stat)
     {
-        ElementBox ret = createBox(parent, (Element) n, null);
-        ret.setClipBlock(clipbox);
+        ElementBox ret = createBox(stat.parent, (Element) n, null);
+        ret.setClipBlock(stat.clipbox);
         if (ret.isBlock())
         {
             BlockBox block = (BlockBox) ret; 
             //Setup my containing box
             if (block.position == BlockBox.POS_ABSOLUTE || block.position == BlockBox.POS_FIXED)
-                ret.setContainingBlock(absbox);
+                ret.setContainingBlock(stat.absbox);
             else    
-                ret.setContainingBlock(contbox);
+                ret.setContainingBlock(stat.contbox);
         }
         else    
-            ret.setContainingBlock(contbox);
+            ret.setContainingBlock(stat.contbox);
         
         return ret;
     }
     
     /**
      * Creates a new box for a text node and sets the containing boxes accordingly.
-     * @param parent the parent box of the created box
      * @param n The element node
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param clipbox the clipping block of this subtree
+     * @param stat Current box tree creation status for obtaining the containing boxes
      * @return the newly created text box
      */
-    private TextBox createTextBox(ElementBox parent, Text n, BlockBox contbox, BlockBox clipbox)
+    private TextBox createTextBox(Text n, BoxTreeCreationStatus stat)
     {
         //TODO: in some whitespace processing modes, multiple boxes may be created
-        TextBox text = new TextBox(n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        TextBox text = new TextBox(n, (Graphics2D) stat.parent.getGraphics().create(), stat.parent.getVisualContext().create());
         text.setOrder(next_order++);
-        text.setContainingBlock(contbox);
-        text.setClipBlock(clipbox);
+        text.setContainingBlock(stat.contbox);
+        text.setClipBlock(stat.clipbox);
         text.setViewport(viewport);
         text.setBase(baseurl);
         return text;
@@ -768,6 +806,59 @@ public class BoxFactory
     {
         NodeData newstyle = dest.getStyle().inheritFrom(parent.getStyle()); 
         dest.setStyle(newstyle);
+    }
+    
+}
+
+/**
+ * The box tree creation status holds all the ancestor boxes that might be necessary for creating the child boxes
+ * and adding them to the resulting tree
+ *
+ * @author burgetr
+ */
+class BoxTreeCreationStatus
+{
+    /** Normal flow parent box */
+    public ElementBox parent;
+    
+    /** Containing block for normal flow */
+    public BlockBox contbox;
+    
+    /** Containing block for absolutely positioned boxes */
+    public BlockBox absbox;
+    
+    /** Clipping box based on overflow property */
+    public BlockBox clipbox;
+    
+    /** Last in-flow box */
+    public Box lastinflow;
+    
+    /** The index of the DOM node within its parent node */
+    int curchild;
+    
+    /** 
+     * Creates a new initial creation status
+     * @param viewport the root viewport box
+     */
+    public BoxTreeCreationStatus(Viewport viewport)
+    {
+        parent = contbox = absbox = clipbox = viewport;
+        lastinflow = null;
+        curchild = 0;
+    }
+    
+    /** 
+     * Creates a copy of the status
+     * @param stat original status
+     */
+    public BoxTreeCreationStatus(BoxTreeCreationStatus stat)
+    {
+        this.parent = stat.parent;
+        this.contbox = stat.contbox;
+        this.absbox = stat.absbox;
+        this.clipbox = stat.clipbox;
+        this.lastinflow = stat.lastinflow;
+        this.curchild = stat.curchild;
     }
     
 }

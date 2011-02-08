@@ -76,6 +76,15 @@ abstract public class ElementBox extends Box
     /** First DOM child node index covered by this box (exclusive) */
     protected int lastDOMChild;
     
+    /** Pre-created box to be added to this box before the DOM nodes are processed. Used during the box tree creation only. */
+    protected Box preadd;
+    
+    /** Other boxes to be added to the tree after this one. Used during the box tree creation only. */
+    protected Vector<Box> postadd;
+    
+    /** Current DOM child during the tree creation */
+    protected BoxTreeCreationStatus curstat;
+    
     /** Previous copy of the same box if the box has been split */
     protected ElementBox previousTwin;
     

@@ -698,8 +698,8 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
-    		System.out.println("jo!");
+    	//if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
+    	//	System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
@@ -1198,7 +1198,6 @@ public class BlockBox extends ElementBox
                 {
                     if (topstatic || leftstatic)
                     {
-                        //System.out.println(this + " : static");
                         updateStaticPosition();
                     }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
@@ -1257,6 +1256,13 @@ public class BlockBox extends ElementBox
                 coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
             if (leftstatic)
                 coords.left = ab.x - cblock.emargin.left - cblock.border.left;
+        }
+        else //no reference box - use the top/left content corner
+        {
+            if (topstatic)
+                coords.top = cblock.padding.top;
+            if (leftstatic)
+                coords.left = cblock.padding.left;
         }
     }
 
