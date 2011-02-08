@@ -147,8 +147,7 @@ public class BoxFactory
     /**
      * Creates the box subtrees for all the child nodes of the DOM node corresponding to the box creatin status. Recursively creates the child boxes 
      * from the child nodes.
-     * @param parent the parent box
-     * @param stat current tree creation status
+     * @param stat current tree creation status used for determining the parents
      */
     public void createBoxTree(BoxTreeCreationStatus stat)
     {
@@ -380,11 +379,8 @@ public class BoxFactory
     
     /**
      * Creates a new box for an element node and sets the containing boxes accordingly.
-     * @param parent the parent box of the created box
      * @param n The element node
-     * @param contbox the containing box of the new box when not absolutley positioned
-     * @param absbox the containing box of the new box when absolutley positioned
-     * @param clipbox the clipping block of this subtree
+     * @param stat The box tree creation status used for obtaining the containing boxes
      * @return the newly created element box
      */
     public ElementBox createElementBox(Element n, BoxTreeCreationStatus stat)

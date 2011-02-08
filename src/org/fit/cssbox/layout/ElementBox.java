@@ -415,7 +415,6 @@ abstract public class ElementBox extends Box
     
     /**
      * Removes all sub boxes from the subbox list
-     * @param box the new sub box to add
      */
     public void removeAllSubBoxes()
     {
@@ -461,7 +460,7 @@ abstract public class ElementBox extends Box
     /**
      * Sets related pseudo-element boxes
      * @param pseudo the name of the pseudo-element
-     * @param boxes the corresponding pseudo-element box
+     * @param box the corresponding pseudo-element box
      */
     public void setPseudoElement(Selector.PseudoDeclaration pseudo, ElementBox box)
     {
