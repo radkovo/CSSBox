@@ -698,8 +698,8 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
-    		System.out.println("jo!");
+    	//if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
+    	//	System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
