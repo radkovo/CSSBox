@@ -33,12 +33,12 @@ import org.w3c.dom.*;
  */
 abstract public class Box
 {
-    protected static final short DRAW_ALL = 0; //drawing stages
-    protected static final short DRAW_NONFLOAT = 1;
-    protected static final short DRAW_FLOAT = 2;
-    protected static final short DRAW_BOTH = 0; //drawing modes
-    protected static final short DRAW_FG = 1;
-    protected static final short DRAW_BG = 2;
+    public static final short DRAW_ALL = 0; //drawing stages
+    public static final short DRAW_NONFLOAT = 1;
+    public static final short DRAW_FLOAT = 2;
+    public static final short DRAW_BOTH = 0; //drawing modes
+    public static final short DRAW_FG = 1;
+    public static final short DRAW_BG = 2;
     
     /** Is this a box for the root element? */
     protected boolean rootelem;
