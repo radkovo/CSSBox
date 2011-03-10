@@ -767,10 +767,11 @@ abstract public class ElementBox extends Box
     //=======================================================================
     
     /** 
-     * Draw the background and border of this box (no subboxes)
+     * Draw the background and border of this box (no subboxes).
+     * This method is normally called automatically from {@link Box#draw()}.
      * @param g the graphics context used for drawing 
      */
-    protected void drawBackground(Graphics2D g)
+    public void drawBackground(Graphics2D g)
     {
         Color color = g.getColor(); //original color
 
