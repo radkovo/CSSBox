@@ -21,10 +21,13 @@
 package org.fit.cssbox.layout;
 
 import java.awt.*;
+import java.util.List;
+import java.util.Vector;
 
 import org.fit.cssbox.css.CSSUnits;
 
 import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty.TextDecoration;
 
 /**
  * The visual context represents the context of the element - the current font properties, EM and EX values,
@@ -40,7 +43,7 @@ public class VisualContext
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
-    private CSSProperty.TextDecoration textDecoration;
+    private Vector<CSSProperty.TextDecoration> textDecoration;
     private double em; //number of pixels in 1em
     private double ex; //number of pixels in 1ex
     private double dpi; //number of pixels in 1 inch
@@ -54,7 +57,7 @@ public class VisualContext
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
-        textDecoration = CSSProperty.TextDecoration.NONE;
+        textDecoration = new Vector<CSSProperty.TextDecoration>();
         em = CSSUnits.medium_font;
         ex = 0.6 * em;
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
@@ -71,7 +74,7 @@ public class VisualContext
         ret.fontWeight = fontWeight;
         ret.fontStyle = fontStyle;
         ret.fontVariant = fontVariant;
-        ret.textDecoration = textDecoration;
+        ret.textDecoration = new Vector<CSSProperty.TextDecoration>(textDecoration);
         ret.color = color;
         return ret;
     }
@@ -103,11 +106,32 @@ public class VisualContext
     
     /**
      * Returns the text decoration used for the box.
-     * @return <code>none</code>, <code>underline</code>, <code>overline</code>, <code>line-through</code> or <code>blink</code>
+     * @return <code>none</code> or a string of space separated keywords <code>underline</code>, <code>overline</code>, <code>line-through</code> or <code>blink</code>
      */
-    public String getTextDecoration()
+    public String getTextDecorationString()
     {
-        return textDecoration.toString();
+        if (textDecoration.isEmpty())
+            return "none";
+        else
+        {
+            StringBuilder ret = new StringBuilder();
+            for (CSSProperty.TextDecoration dec : textDecoration)
+            {
+                if (ret.length() > 0)
+                    ret.append(' ');
+                ret.append(dec.toString());
+            }
+            return ret.toString();
+        }
+    }
+    
+    /**
+     * Returns the text decoration used for the box.
+     * @return a list of TextDecoration values
+     */
+    public List<CSSProperty.TextDecoration> getTextDecoration()
+    {
+        return textDecoration;
     }
     
     /**
@@ -195,7 +219,21 @@ public class VisualContext
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
         if (variant != null) fontVariant = variant;
         CSSProperty.TextDecoration decor = style.getProperty("text-decoration");
-        if (decor != null) textDecoration = decor;
+        textDecoration.removeAllElements();
+        if (decor != null)
+        {
+            if (decor == TextDecoration.list_values)
+            {
+                TermList list = style.getValue(TermList.class, "text-decoration");
+                for (Term<?> t : list)
+                {
+                    if (t.getValue() instanceof CSSProperty.TextDecoration)
+                        textDecoration.add((CSSProperty.TextDecoration) t.getValue());
+                }
+            }
+            else if (decor != TextDecoration.NONE)
+                textDecoration.add(decor);
+        }
         
         //color
         TermColor clr = style.getValue(TermColor.class, "color");
