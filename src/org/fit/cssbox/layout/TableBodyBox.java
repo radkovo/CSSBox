@@ -70,6 +70,7 @@ public class TableBodyBox extends BlockBox
     public void addRow(TableRowBox row)
     {
         rows.add(row);
+        row.setOwnerBody(this);
     }
     
     /**
@@ -206,6 +207,7 @@ public class TableBodyBox extends BlockBox
             TableCellBox cell = cells[c][r];
             if (cell != null)
             {
+            	cell.setOwnerColumn(col);
                 //minimal width
                 int min = cell.getMinimalWidth() / cell.getColspan();
                 if (min > col.getMinimalWidth())
@@ -367,9 +369,16 @@ public class TableBodyBox extends BlockBox
         return true;
     }
     
+    @Override
+	public void drawBackground(Graphics2D g)
+	{
+    	//table body cannot have borders
+    	//the background is drawn in the individual cells
+	}
+    
     //====================================================================================
     
-    /**
+	/**
      * Goes through the list of child boxes and creates the anonymous rows if necessary.
      */
     private void organizeContent()

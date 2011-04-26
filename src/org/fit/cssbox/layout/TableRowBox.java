@@ -32,6 +32,7 @@ public class TableRowBox extends BlockBox
 {
     protected Vector<TableCellBox> cells;
     protected Iterator<TableCellBox> cursor;
+    protected TableBodyBox ownerBody;
 
     //====================================================================================
     
@@ -62,6 +63,7 @@ public class TableRowBox extends BlockBox
         if (cells == null) 
             organizeContent();
         cells.add(cell);
+        cell.setOwnerRow(this);
     }
     
     /**
@@ -111,9 +113,25 @@ public class TableRowBox extends BlockBox
         return cursor.hasNext();
     }
     
+    /**
+	 * @return the ownerBody
+	 */
+	public TableBodyBox getOwnerBody()
+	{
+		return ownerBody;
+	}
+
+	/**
+	 * @param ownerBody the ownerBody to set
+	 */
+	public void setOwnerBody(TableBodyBox ownerBody)
+	{
+		this.ownerBody = ownerBody;
+	}
+
     //=====================================================================================
     
-    @Override
+	@Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
         //do nothing (table line must be laid out other way, through the table body)
@@ -184,6 +202,13 @@ public class TableRowBox extends BlockBox
     	//row occupies the whole body width
     	content.width = cblock.getContentWidth();
     }
+
+    @Override
+	public void drawBackground(Graphics2D g)
+	{
+    	//table body cannot have borders
+    	//the background is drawn in the individual cells
+	}
     
     //=====================================================================================
     

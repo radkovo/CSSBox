@@ -795,6 +795,13 @@ abstract public class ElementBox extends Box
         }
         
         //draw the border
+        drawBorders(g, bx1, by1, bx2, by2);
+        
+        g.setColor(color); //restore original color
+    }
+    
+    protected void drawBorders(Graphics2D g, int bx1, int by1, int bx2, int by2)
+    {
         if (border.top > 0)
             drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
         if (border.right > 0)
@@ -803,8 +810,6 @@ abstract public class ElementBox extends Box
             drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom + 1, "bottom", true); 
         if (border.left > 0)
             drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
-        
-        g.setColor(color); //restore original color
     }
     
     private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 

@@ -19,6 +19,7 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 
@@ -40,6 +41,11 @@ public class TableCellBox extends BlockBox
     protected int row;
     /** first collumn of this cell in the row */
     protected int column; 
+    
+    /** the owner row */
+    protected TableRowBox ownerRow;
+    /** the owner column */
+    protected TableColumn ownerColumn;
     
     /** relative width [%] when used */
     protected int percent;
@@ -105,6 +111,38 @@ public class TableCellBox extends BlockBox
     }
 
     /**
+	 * @return the ownerRow
+	 */
+	public TableRowBox getOwnerRow()
+	{
+		return ownerRow;
+	}
+
+	/**
+	 * @param ownerRow the ownerRow to set
+	 */
+	public void setOwnerRow(TableRowBox ownerRow)
+	{
+		this.ownerRow = ownerRow;
+	}
+
+	/**
+	 * @return the ownerColumn
+	 */
+	public TableColumn getOwnerColumn()
+	{
+		return ownerColumn;
+	}
+
+	/**
+	 * @param ownerColumn the ownerColumn to set
+	 */
+	public void setOwnerColumn(TableColumn ownerColumn)
+	{
+		this.ownerColumn = ownerColumn;
+	}
+
+	/**
      * Set the index of the first row and column of this cell in the row
      * @param column the column index to set
      * @param row the row index to set
@@ -289,6 +327,46 @@ public class TableCellBox extends BlockBox
     {
         return true;
     }
+
+    @Override
+    public void drawBackground(Graphics2D g)
+    {
+        Color color = g.getColor(); //original color
+
+        //top left corner
+        int x = absbounds.x;
+        int y = absbounds.y;
+
+        //border bounds
+        int bx1 = x + margin.left;
+        int by1 = y + margin.top;
+        int bw = border.left + padding.left + content.width + padding.right + border.right;
+        int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
+        int bx2 = bx1 + bw - 1;
+        int by2 = by1 + bh - 1;
+        
+        //draw the background - it should be visible below the border too
+        //if no background is specified for the cell, we try to use the row, row group, column, column group
+        Color bg = bgcolor;
+        if (bg == null)
+        	bg = getOwnerRow().getBgcolor();
+        if (bg == null)
+        	bg = getOwnerColumn().getBgcolor();
+        if (bg == null)
+        	bg = getOwnerRow().getOwnerBody().getBgcolor();
+        
+        if (bg != null)
+        {
+            g.setColor(bg);
+            g.fillRect(bx1, by1, bw, bh);
+        }
+        
+        //draw the border
+        drawBorders(g, bx1, by1, bx2, by2);
+        
+        g.setColor(color); //restore original color
+    }
+    
     
 	/**
      * Loads the important values from the element attributes.
