@@ -69,8 +69,8 @@ public class ListItemBox extends BlockBox
      */
     private void drawBullet(Graphics2D g)
     {
-    	int x = (int) Math.round(getContentX() - 1.2 * ctx.getEm());
-    	int y = (int) Math.round(getContentY() + 0.4 * ctx.getEm());
+    	int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
+    	int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
     	int r = (int) Math.round(0.6 * ctx.getEm());
     	CSSProperty.ListStyleType type = style.getProperty("list-style-type");
     	if (type == CSSProperty.ListStyleType.CIRCLE) 
