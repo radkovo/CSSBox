@@ -21,6 +21,7 @@
 package org.fit.cssbox.layout;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -43,7 +44,7 @@ public class VisualContext
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
-    private Vector<CSSProperty.TextDecoration> textDecoration;
+    private List<CSSProperty.TextDecoration> textDecoration;
     private double em; //number of pixels in 1em
     private double ex; //number of pixels in 1ex
     private double dpi; //number of pixels in 1 inch
@@ -57,7 +58,7 @@ public class VisualContext
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
-        textDecoration = new Vector<CSSProperty.TextDecoration>();
+        textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
         em = CSSUnits.medium_font;
         ex = 0.6 * em;
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
@@ -74,7 +75,7 @@ public class VisualContext
         ret.fontWeight = fontWeight;
         ret.fontStyle = fontStyle;
         ret.fontVariant = fontVariant;
-        ret.textDecoration = new Vector<CSSProperty.TextDecoration>(textDecoration);
+        ret.textDecoration = new ArrayList<CSSProperty.TextDecoration>(textDecoration);
         ret.color = color;
         return ret;
     }
@@ -219,7 +220,7 @@ public class VisualContext
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
         if (variant != null) fontVariant = variant;
         CSSProperty.TextDecoration decor = style.getProperty("text-decoration");
-        textDecoration.removeAllElements();
+        textDecoration.clear();
         if (decor != null)
         {
             if (decor == TextDecoration.list_values)
