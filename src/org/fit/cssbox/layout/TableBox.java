@@ -423,6 +423,7 @@ public class TableBox extends BlockBox
         
         //set the percentage columns to their values, if possible
         int remain = totalw;
+        int remainmin = mintotalw;
         if (sumperc > 0)
         {
             for (int i = 0; i < columns.size(); i++) //set the column sizes
@@ -430,16 +431,20 @@ public class TableBox extends BlockBox
                 TableColumn col = columns.elementAt(i);
                 if (col.wrelative)
                 {
+                    int mincw = col.getMinimalWidth();
+                    remainmin -= mincw; //how much we must leave for the remaining columns
+                    
                     int neww = col.percent * totalw / 100;
                     if (neww > remain) neww = remain;
-                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
+                    if (neww < mincw) neww = mincw;
                     //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
                     remain -= neww;
                 }
             }
         }
-        //System.out.println("remain2:" + remain);
+        //System.out.println("remain2:" + remain + " min:" + remainmin);
         
         //set the absolute columns
         if (sumabs > 0)
@@ -453,17 +458,21 @@ public class TableBox extends BlockBox
                 TableColumn col = columns.elementAt(i);
                 if (col.wset && !col.wrelative)
                 {
+                    int mincw = col.getMinimalWidth();
+                    remainmin -= mincw; //how much we must leave for the remaining columns
+                    
                     //System.out.println("Col " + i + " : " + col.abswidth);
                     int neww = (int) (col.abswidth * factor);
                     if (neww > remain) neww = remain;
-                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
+                    if (neww < mincw) neww = mincw;
                     //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
                     remain -= neww;
                 }
             }
         }
-        //System.out.println("remain3:" + remain);
+        //System.out.println("remain3:" + remain + " min:" + remainmin);
         
         //set the remaining columns
         if (sumnonemin > 0)
@@ -474,17 +483,22 @@ public class TableBox extends BlockBox
             for (int i = 0; i < columns.size(); i++) //set the column sizes
             {
                 TableColumn col = columns.elementAt(i);
+                int mincw = col.getMinimalWidth();
+                remainmin -= mincw; //how much we must leave for the remaining columns
+                
                 if (!col.wset)
                 {
                     int neww = (int) (col.getMaximalWidth() * factor);
                     if (neww > remain) neww = remain;
-                    if (neww < col.getMinimalWidth()) neww = col.getMinimalWidth();
+                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
+                    if (neww < mincw) neww = mincw;
                     //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
                     remain -= neww;
                 }
             }
         }
+        //System.out.println("remain4:" + remain + " min:" + remainmin);
         
         /*System.out.println("Result:");
         for (int i = 0; i < columns.size(); i++)
