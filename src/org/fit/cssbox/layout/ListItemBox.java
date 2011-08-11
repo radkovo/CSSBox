@@ -65,6 +65,16 @@ public class ListItemBox extends BlockBox
     }
     
     /**
+     * Checks whether the list item has a visible bullet.
+     * @return <code>true</code> when the bullet type is set to other value than <code>none</code>.
+     */
+    public boolean hasVisibleBullet()
+    {
+        CSSProperty.ListStyleType type = style.getProperty("list-style-type");
+        return type != CSSProperty.ListStyleType.NONE;
+    }
+    
+    /**
      * Draw a bullet
      */
     private void drawBullet(Graphics2D g)
