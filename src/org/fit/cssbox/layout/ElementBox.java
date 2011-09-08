@@ -194,7 +194,7 @@ abstract public class ElementBox extends Box
         display = src.display;
         lineHeight = src.lineHeight;
         whitespace = src.whitespace;
-        whitespace = src.whitespace;
+        bgcolor = (src.bgcolor == null) ? null : new Color(src.bgcolor.getRed(), src.bgcolor.getGreen(), src.bgcolor.getBlue(), src.bgcolor.getAlpha());
         
         if (src.margin != null)
             margin = new LengthSet(src.margin);
