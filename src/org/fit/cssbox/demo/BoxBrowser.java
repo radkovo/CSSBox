@@ -71,37 +71,37 @@ import javax.swing.JTabbedPane;
  */
 public class BoxBrowser
 {
-    private DefaultMutableTreeNode root;
+    protected DefaultMutableTreeNode root;
     public static BoxBrowser browser;
     
-    private JFrame mainWindow = null;  //  @jve:decl-index=0:visual-constraint="67,17"
-    private JPanel mainPanel = null;
-    private JPanel urlPanel = null;
-    private JPanel contentPanel = null;
-    private JPanel structurePanel = null;
-    private JPanel statusPanel = null;
-    private JTextField statusText = null;
-    private JLabel jLabel = null;
-    private JTextField urlText = null;
-    private JButton okButton = null;
-    private JScrollPane contentScroll = null;
-    private JPanel contentCanvas = null;
-    private JSplitPane mainSplitter = null;
-    private JToolBar showToolBar = null;
-    private JButton redrawButton = null;
-    private JPanel toolPanel = null;
-    private JScrollPane boxScroll = null;
-    private JTree boxTree = null;
-    private JSplitPane infoSplitter = null;
-    private JPanel infoPanel = null;
-    private JScrollPane infoScroll = null;
-    private JTable infoTable = null;
-    private JScrollPane styleScroll = null;
-    private JTextArea styleText = null;
-    private JTabbedPane treeTabs = null;
-    private JPanel DOMPanel = null;
-    private JScrollPane domScroll = null;
-    private JTree domTree = null;
+    protected JFrame mainWindow = null;  //  @jve:decl-index=0:visual-constraint="67,17"
+    protected JPanel mainPanel = null;
+    protected JPanel urlPanel = null;
+    protected JPanel contentPanel = null;
+    protected JPanel structurePanel = null;
+    protected JPanel statusPanel = null;
+    protected JTextField statusText = null;
+    protected JLabel jLabel = null;
+    protected JTextField urlText = null;
+    protected JButton okButton = null;
+    protected JScrollPane contentScroll = null;
+    protected JPanel contentCanvas = null;
+    protected JSplitPane mainSplitter = null;
+    protected JToolBar showToolBar = null;
+    protected JButton redrawButton = null;
+    protected JPanel toolPanel = null;
+    protected JScrollPane boxScroll = null;
+    protected JTree boxTree = null;
+    protected JSplitPane infoSplitter = null;
+    protected JPanel infoPanel = null;
+    protected JScrollPane infoScroll = null;
+    protected JTable infoTable = null;
+    protected JScrollPane styleScroll = null;
+    protected JTextArea styleText = null;
+    protected JTabbedPane treeTabs = null;
+    protected JPanel DOMPanel = null;
+    protected JScrollPane domScroll = null;
+    protected JTree domTree = null;
     /**
      * Reads the document, creates the layout and displays it
      */
@@ -166,7 +166,7 @@ public class BoxBrowser
 	/**
 	 * Recursively creates a tree from the box tree
 	 */
-	private DefaultMutableTreeNode createBoxTree(Box root)
+	protected DefaultMutableTreeNode createBoxTree(Box root)
 	{
 	    DefaultMutableTreeNode ret = new DefaultMutableTreeNode(root);
 	    if (root instanceof ElementBox)
@@ -183,7 +183,7 @@ public class BoxBrowser
     /**
      * Recursively creates a tree from the dom tree
      */
-    private DefaultMutableTreeNode createDomTree(Node root)
+    protected DefaultMutableTreeNode createDomTree(Node root)
     {
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(root);
         NodeList child = root.getChildNodes();
@@ -228,7 +228,7 @@ public class BoxBrowser
     /** 
      * This is called when the browser canvas is clicked
      */
-    private void canvasClick(int x, int y)
+    public void canvasClick(int x, int y)
     {
         DefaultMutableTreeNode node = locateBox(root, x, y);
         if (node != null)
