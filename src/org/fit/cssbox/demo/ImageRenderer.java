@@ -113,7 +113,7 @@ public class ImageRenderer
         return true;
     }
     
-    private void writeSVG(Viewport vp, PrintWriter out) throws IOException
+    protected void writeSVG(Viewport vp, PrintWriter out) throws IOException
     {
         int w = vp.getContentWidth();
         int h = vp.getContentHeight();
@@ -131,7 +131,7 @@ public class ImageRenderer
         out.println("</svg>");    
     }
     
-    private void writeBoxSVG(Box box, PrintWriter out) throws IOException
+    protected void writeBoxSVG(Box box, PrintWriter out) throws IOException
     {
         if (box.isVisible())
         {
@@ -144,7 +144,7 @@ public class ImageRenderer
         }
     }
     
-    private void writeBoxSVG(Box box, PrintWriter out, int turn, int mode) throws IOException
+    protected void writeBoxSVG(Box box, PrintWriter out, int turn, int mode) throws IOException
     {
         if (box instanceof TextBox)
             writeTextBoxSVG((TextBox) box, out, turn, mode);
@@ -152,7 +152,7 @@ public class ImageRenderer
             writeElementBoxSVG((ElementBox) box, out, turn, mode);
     }
 
-    private void writeTextBoxSVG(TextBox t, PrintWriter out, int turn, int mode) throws IOException
+    protected void writeTextBoxSVG(TextBox t, PrintWriter out, int turn, int mode) throws IOException
     {
         if (t.isDisplayed() &&
             (turn == TURN_ALL || turn == TURN_NONFLOAT) &&
@@ -172,7 +172,7 @@ public class ImageRenderer
         }
     }
     
-    private void writeElementBoxSVG(ElementBox eb, PrintWriter out, int turn, int mode) throws IOException
+    protected void writeElementBoxSVG(ElementBox eb, PrintWriter out, int turn, int mode) throws IOException
     {
         boolean floating = !(eb instanceof BlockBox) || (((BlockBox) eb).getFloating() != BlockBox.FLOAT_NONE);
         boolean draw = (turn == TURN_ALL || (floating && turn == TURN_FLOAT) || (!floating && turn == TURN_NONFLOAT));
@@ -234,7 +234,7 @@ public class ImageRenderer
         }
     }
     
-    private void writeBorderSVG(ElementBox eb, int x1, int y1, int x2, int y2, String side, int width, int right, int down, PrintWriter out) throws IOException
+    protected void writeBorderSVG(ElementBox eb, int x1, int y1, int x2, int y2, String side, int width, int right, int down, PrintWriter out) throws IOException
     {
         TermColor tclr = eb.getStyle().getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = eb.getStyle().getProperty("border-"+side+"-style");
@@ -273,12 +273,12 @@ public class ImageRenderer
         
     }
     
-    private String colorString(Color color)
+    protected String colorString(Color color)
     {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
     
-    private String htmlEntities(String s)
+    protected String htmlEntities(String s)
     {
         return s.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;");
     }
