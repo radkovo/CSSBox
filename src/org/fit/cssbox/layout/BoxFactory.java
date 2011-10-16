@@ -237,7 +237,7 @@ public class BoxFactory
             //Determine the containing boxes of the children
             BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
             newstat.parent = (ElementBox) newbox;
-            if (newbox.isBlock())
+            if (((ElementBox) newbox).mayContainBlocks())
             {
                 BlockBox block = (BlockBox) newbox;
                 //A positioned box forms a content box for following absolutely
@@ -277,7 +277,7 @@ public class BoxFactory
         {
             if (!((BlockBox) newbox).isPositioned())
             {
-                if (stat.parent.isBlock()) //block in block
+                if (stat.parent.mayContainBlocks()) //block in block
                 {
                     stat.parent.addSubBox(newbox);
                     stat.lastinflow = newbox;
@@ -306,7 +306,7 @@ public class BoxFactory
                                 newparent.preadd = prev;
                             prev = newparent;
                         }
-                    } while (grandpa != null && !grandpa.isBlock());
+                    } while (grandpa != null && !grandpa.mayContainBlocks());
                         
                     if (grandpa != null)
                     {
@@ -748,6 +748,8 @@ public class BoxFactory
             root = new TableColumn((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_COLUMN_GROUP)
             root = new TableColumnGroup((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
+            root = new InlineBlockBox((InlineBox) root);
         else if (root.isBlock())
             root = new BlockBox((InlineBox) root);
         return root;

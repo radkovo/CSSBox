@@ -178,6 +178,12 @@ public class InlineBox extends ElementBox implements Inline
 	{
 		return !isempty;
 	}
+	
+    @Override
+    public boolean mayContainBlocks()
+    {
+    	return false;
+    }
     
     /** Compute the width and height of this element. Layout the sub-elements.
      * @param availw Maximal width available to the child elements

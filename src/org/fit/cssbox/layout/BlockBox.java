@@ -301,6 +301,12 @@ public class BlockBox extends ElementBox
     
     //========================================================================
     
+    @Override
+    public boolean mayContainBlocks()
+    {
+    	return true;
+    }
+    
     public boolean containsBlocks()
     {
         return contblock;

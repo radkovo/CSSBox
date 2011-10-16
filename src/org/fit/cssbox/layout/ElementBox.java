@@ -847,6 +847,11 @@ abstract public class ElementBox extends Box
     //=======================================================================
     
     /**
+     * @return <code> true when this box may contain block boxes (it may be a containing-block)
+     */
+    abstract public boolean mayContainBlocks();
+    
+    /**
      * Load the box sizes from the CSS properties.
      */
     abstract protected void loadSizes();
