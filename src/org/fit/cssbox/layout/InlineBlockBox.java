@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 import java.awt.Graphics2D;
 
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
 import org.w3c.dom.Element;
@@ -31,8 +32,15 @@ import org.w3c.dom.Element;
  * 
  * @author radek
  */
-public class InlineBlockBox extends BlockBox implements Inline
+public class InlineBlockBox extends BlockBox implements InlineElement
 {
+    /** vertical box alignment specified by the style */
+    private CSSProperty.VerticalAlign valign;
+    
+    /** parent LineBox assigned during layout */
+    private LineBox linebox;
+    
+    /** The baseline offset of the contents */
     protected int baseline;
 
 	public InlineBlockBox(Element n, Graphics2D g, VisualContext ctx)
@@ -47,6 +55,33 @@ public class InlineBlockBox extends BlockBox implements Inline
 		isblock = false;
 	}
 
+    @Override
+    public void setStyle(NodeData s)
+    {
+        super.setStyle(s);
+        loadInlineStyle();
+    }
+	
+    public CSSProperty.VerticalAlign getVerticalAlign()
+    {
+        return valign;
+    }
+	
+    public void setLineBox(LineBox linebox)
+    {
+        this.linebox = linebox;
+    }
+    
+    public LineBox getLineBox()
+    {
+        return linebox;
+    }
+
+    public int getLineboxOffset()
+    {
+        return 0;
+    }
+    
 	//========================================================================
 	
     @Override
@@ -65,6 +100,20 @@ public class InlineBlockBox extends BlockBox implements Inline
         return wset; //the width should not be computed from the parent
     }
 
+    @Override
+    public int getMinimalContentWidthLimit()
+    {
+        int ret;
+        if (wset)
+            ret = content.width;
+        else if (min_size.width != -1)
+            ret = min_size.width;
+        else
+            ret = 0;
+            
+        return ret;
+    }
+    
     @Override
     protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
     {
@@ -101,18 +150,13 @@ public class InlineBlockBox extends BlockBox implements Inline
         
     }
         
-    @Override
-    public int getMinimalContentWidthLimit()
+    /**
+     * Loads the basic style properties related to the inline elements.
+     */
+    protected void loadInlineStyle()
     {
-        int ret;
-        if (wset)
-            ret = content.width;
-        else if (min_size.width != -1)
-            ret = min_size.width;
-        else
-            ret = 0;
-            
-        return ret;
+        valign = style.getProperty("vertical-align");
+        if (valign == null) valign = CSSProperty.VerticalAlign.BASELINE;
     }
     
     //========================================================================

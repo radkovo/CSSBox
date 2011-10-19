@@ -185,12 +185,12 @@ public class LineBox
     {
         int a = box.getBaselineOffset();
         int b = box.getBelowBaseline();
-    	if (box instanceof InlineBox)
+    	if (box instanceof InlineElement)
     	{
-	        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
+	        VerticalAlign va = ((InlineElement) box).getVerticalAlign();
 	        if (va != VerticalAlign.TOP && va != VerticalAlign.BOTTOM) //the box influences 'a' and 'b'
 	        {
-	            int dif = computeBaselineDifference((InlineBox) box);
+	            int dif = computeBaselineDifference((InlineElement) box);
 	            a -= dif; //what from the box is above our baseline
 	            b += dif; //what from the box is below
 	            above = Math.max(above, a);
@@ -213,20 +213,20 @@ public class LineBox
      */
     public int alignBox(Inline box)
     {
-    	if (box instanceof InlineBox)
+    	if (box instanceof InlineElement)
     	{
-	        VerticalAlign va = ((InlineBox) box).getVerticalAlign();
+	        VerticalAlign va = ((InlineElement) box).getVerticalAlign();
 	        if (va == VerticalAlign.TOP)
 	        {
 	            return 0;
 	        }
 	        else if (va == VerticalAlign.BOTTOM)
 	        {
-	            return getTotalLineHeight() - ((InlineBox) box).getContentHeight() + 1;
+	            return getTotalLineHeight() - ((ElementBox) box).getContentHeight() + 1;
 	        }
 	        else
 	        {
-	            return above + computeBaselineDifference((InlineBox) box) - box.getBaselineOffset() + ((InlineBox) box).getLineboxOffset();
+	            return above + computeBaselineDifference((InlineElement) box) - box.getBaselineOffset() + ((InlineElement) box).getLineboxOffset();
 	        }
     	}
     	else
@@ -238,7 +238,7 @@ public class LineBox
      * @param box The box whose baseline should be considered
      * @return the vertical difference betweein baselines, positive dif means the box baseline is below our baseline 
      */
-    private int computeBaselineDifference(InlineBox box)
+    private int computeBaselineDifference(InlineElement box)
     {
         int a = box.getBaselineOffset();
         int b = box.getBelowBaseline();
@@ -271,7 +271,7 @@ public class LineBox
         }
         else if (va == CSSProperty.VerticalAlign.length || va == CSSProperty.VerticalAlign.percentage)
         {
-            CSSDecoder dec = new CSSDecoder(box.getVisualContext());
+            CSSDecoder dec = new CSSDecoder(((ElementBox) box).getVisualContext());
             int len = dec.getLength(((ElementBox) box).getLengthValue("vertical-align"), false, 0, 0, box.getLineHeight());
             dif = -len;
         }

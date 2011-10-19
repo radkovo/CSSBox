@@ -625,12 +625,12 @@ public class BlockBox extends ElementBox
                 int dif = line.alignBox((Inline) subbox);
                 
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
-                if (subbox instanceof ElementBox)
+                if (subbox instanceof InlineBox)
                     dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
 
                 //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
-                if (subbox instanceof InlineBox)
-                    ((InlineBox) subbox).setLineBox(line);
+                if (subbox instanceof InlineElement)
+                    ((InlineElement) subbox).setLineBox(line);
                 
                 int y = line.getY() + (line.getLead() / 2) + dif;
                 subbox.moveDown(y);
@@ -704,7 +704,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	//if (getElement() != null && getElement().getAttribute("class").equals("col col_02"))
+    	//if (getElement() != null && getElement().getAttribute("id").equals("main"))
     	//	System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)

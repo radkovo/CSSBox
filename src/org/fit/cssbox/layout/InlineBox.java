@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. únor 2006, 13:38
+ * Created on 5. ï¿½nor 2006, 13:38
  */
 
 package org.fit.cssbox.layout;
@@ -30,7 +30,7 @@ import cz.vutbr.web.css.*;
  *
  * @author  radek
  */
-public class InlineBox extends ElementBox implements Inline
+public class InlineBox extends ElementBox implements InlineElement
 {
     /** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;
@@ -98,8 +98,8 @@ public class InlineBox extends ElementBox implements Inline
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
-            if (sub instanceof InlineBox)
-                ((InlineBox) sub).setLineBox(linebox);
+            if (sub instanceof InlineElement)
+                ((InlineElement) sub).setLineBox(linebox);
         }
     }
     
@@ -145,10 +145,6 @@ public class InlineBox extends ElementBox implements Inline
             return Math.max(lineHeight, curline.getMaxLineHeight());
     }
     
-    /**
-     * Obtains the offset of the content edge from the line box top
-     * @return the difference between the content edge and the top of the line box in pixels. Positive numbers mean the content box is inside the line box.  
-     */
     public int getLineboxOffset()
     {
         if (curline == null)
@@ -194,6 +190,8 @@ public class InlineBox extends ElementBox implements Inline
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
+        //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+        //  System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
@@ -544,7 +542,7 @@ public class InlineBox extends ElementBox implements Inline
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
-            if (!sub.isblock)
+            if (!sub.isBlock())
             {
                 //position relative to the line box
                 int dif = curline.alignBox((Inline) sub);
@@ -552,7 +550,7 @@ public class InlineBox extends ElementBox implements Inline
                 dif = dif - getLineboxOffset();
                 //recompute to the bounding box
                 if (sub instanceof InlineBox)
-                    dif = dif - ((InlineBox) sub).getContentOffsetY();
+                    dif = dif - ((ElementBox) sub).getContentOffsetY();
                 
                 if (dif != 0)
                     sub.moveDown(dif);
