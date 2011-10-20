@@ -98,5 +98,24 @@
        d="m 52.017289,145.86218 389.959591,0"
        id="path3073"
        inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+       x="45.5"
+       y="199.36218"
+       id="text3849"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3851"
+         x="45.5"
+         y="199.36218">The content height depends on the font only</tspan><tspan
+         sodipodi:role="line"
+         x="45.5"
+         y="214.36218"
+         id="tspan3853">The linebox height depends on line-height only.</tspan><tspan
+         sodipodi:role="line"
+         x="45.5"
+         y="229.36218"
+         id="tspan3855">Line spacing uses the maximum of the line heights?</tspan></text>
   </g>
 </svg>

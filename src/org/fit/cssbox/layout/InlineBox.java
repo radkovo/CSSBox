@@ -425,14 +425,14 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public void drawExtent(Graphics2D g)
     {
-        super.drawExtent(g);
+        //super.drawExtent(g);
         
-        /*g.setColor(Color.MAGENTA);
+        g.setColor(Color.MAGENTA);
         int y = getAbsoluteContentY() - getLineboxOffset();
         int h = 0;
         if (curline != null)
             h = curline.getTotalLineHeight();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);*/
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
     }
 
     /*public int getMaxLineHeight()
