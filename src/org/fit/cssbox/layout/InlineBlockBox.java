@@ -40,6 +40,8 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     /** parent LineBox assigned during layout */
     private LineBox linebox;
     
+    protected int lineboxofs;
+    
     /** The baseline offset of the contents */
     protected int baseline;
 
@@ -79,6 +81,33 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 
     public int getLineboxOffset()
     {
+        return lineboxofs;
+    }
+    
+    //========================================================================
+    
+    public int getMaxLineHeight()
+    {
+        return getHeight();
+    }
+
+    public int getBaselineOffset()
+    {
+        return baseline;
+    }
+
+    public int getBelowBaseline()
+    {
+        return getHeight() - baseline;
+    }
+
+    public int getTotalLineHeight()
+    {
+        return getHeight();
+    }
+
+    public int getHalfLead()
+    {
         return 0;
     }
     
@@ -89,7 +118,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     {
         boolean ret = super.doLayout(availw, force, linestart);
         baseline = getLastInlineBoxBaseline(this) + getContentOffsetY();
-        System.out.println("Ofs: " + getContentOffsetY());
+        lineboxofs = getLastInlineBoxLineboxOfs(this) + getContentOffsetY();
         System.out.println("H: " + getHeight());
         return ret;
     }
@@ -161,33 +190,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     //========================================================================
 	
-    public int getMaxLineHeight()
-	{
-		return getHeight();
-	}
-
-    public int getBaselineOffset()
-	{
-		return baseline;
-	}
-
-	public int getBelowBaseline()
-	{
-		return getHeight() - baseline;
-	}
-
-	public int getTotalLineHeight()
-	{
-		return getHeight();
-	}
-
-	public int getHalfLead()
-	{
-		return 0;
-	}
-	
-    //========================================================================
-	
 	private int getLastInlineBoxBaseline(ElementBox root)
 	{
 	    //find last in-flow box
@@ -205,12 +207,12 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         {
 	        if (box instanceof Inline)
 	        {
-                System.out.println(box + ":I: " + (box.getContentY() + ((Inline) box).getBaselineOffset()));
+                //System.out.println(box + ":I: " + (box.getContentY() + ((Inline) box).getBaselineOffset()));
                 return box.getContentY() + ((Inline) box).getBaselineOffset();
 	        }
             else
             {
-                System.out.println(box + ":B: " + (box.getContentY() + getLastInlineBoxBaseline((ElementBox) box)));
+                //System.out.println(box + ":B: " + (box.getContentY() + getLastInlineBoxBaseline((ElementBox) box)));
 	            return box.getContentY() + getLastInlineBoxBaseline((ElementBox) box);
             }
 	    }
@@ -218,5 +220,39 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 	        return 0;
 	}
 	
+    private int getLastInlineBoxLineboxOfs(ElementBox root)
+    {
+        //find last in-flow box
+        Box box = null;
+        for (int i = root.getSubBoxNumber() - 1; i >= 0; i--)
+        {
+            box = root.getSubBox(i);
+            if (box.isInFlow())
+                break;
+            else
+                box = null;
+        }
+        
+        if (box != null)
+        {
+            if (box instanceof InlineElement)
+            {
+                System.out.println(box + ":I: " + (box.getContentY() + ((InlineElement) box).getLineboxOffset()));
+                return box.getContentY() + ((InlineElement) box).getLineboxOffset();
+            }
+            else if (box instanceof ElementBox)
+            {
+                System.out.println(box + ":B: " + (box.getContentY() + getLastInlineBoxLineboxOfs((ElementBox) box)));
+                return box.getContentY() + getLastInlineBoxLineboxOfs((ElementBox) box);
+            }
+            else
+            {
+                System.out.println(box + ":T: " + box.getContentY());
+                return box.getContentY();
+            }
+        }
+        else
+            return 0;
+    }
 
 }

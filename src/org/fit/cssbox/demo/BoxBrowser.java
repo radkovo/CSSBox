@@ -33,7 +33,7 @@ import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Inline;
-import org.fit.cssbox.layout.InlineBox;
+import org.fit.cssbox.layout.InlineElement;
 import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -284,9 +284,9 @@ public class BoxBrowser
             vals.add(infoTableData("Half Lead", String.valueOf(ib.getHalfLead())));
         }
         
-        if (box instanceof InlineBox)
+        if (box instanceof InlineElement)
         {
-            InlineBox ib = (InlineBox) box;
+            InlineElement ib = (InlineElement) box;
             vals.add(infoTableData("LineboxOfs", String.valueOf(ib.getLineboxOffset()) + "px"));
             vals.add(infoTableData("VAlign", ib.getVerticalAlign().toString()));
         }
