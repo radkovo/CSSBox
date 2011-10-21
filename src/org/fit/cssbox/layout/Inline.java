@@ -28,15 +28,15 @@ public interface Inline
 {
     
     /**
-     * Returns the declared line height
-     * @return Declared line height in pixels
+     * Returns the declared line height.
+     * @return The declared line height in pixels.
      */
     public int getLineHeight();
     
     
     /**
      * Returns the maximal declared line height of this box and its children.
-     * @return Maximal line height in pixels
+     * @return Maximal declared line height in pixels.
      */
     public int getMaxLineHeight();
 

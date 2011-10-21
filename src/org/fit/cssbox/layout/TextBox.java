@@ -634,6 +634,18 @@ public class TextBox extends Box implements Inline
                 System.out.print("*");
         }
         System.out.println();
+        
+        g.setColor(Color.MAGENTA);
+        int y = getAbsoluteContentY();
+        int h = getTotalLineHeight();
+            
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
+        
+        g.setColor(Color.BLUE);
+        y = getAbsoluteContentY() + getBaselineOffset();
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);
+        
+        
     }
 
 }

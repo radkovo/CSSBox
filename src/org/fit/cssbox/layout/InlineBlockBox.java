@@ -81,7 +81,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 
     public int getLineboxOffset()
     {
-        return lineboxofs;
+        return 0; //lineboxofs; //TODO jak to ma byt?
     }
     
     //========================================================================
