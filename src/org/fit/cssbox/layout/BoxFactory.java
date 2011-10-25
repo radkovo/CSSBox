@@ -237,7 +237,7 @@ public class BoxFactory
             //Determine the containing boxes of the children
             BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
             newstat.parent = (ElementBox) newbox;
-            if (((ElementBox) newbox).mayContainBlocks())
+            if (((ElementBox) newbox).mayContainBlocks()) //the new box forms a block context
             {
                 BlockBox block = (BlockBox) newbox;
                 //A positioned box forms a content box for following absolutely

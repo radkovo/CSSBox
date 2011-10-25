@@ -395,7 +395,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean isWhitespace()
     {
-        if (anyinflow)
+        if (anyinflow || encloseFloats())
             return super.isWhitespace();
         else
             return true;
@@ -504,6 +504,16 @@ public class BlockBox extends ElementBox
     public boolean canIncreaseWidth()
     {
         return false;
+    }
+    
+    /**
+     * Checks whether the block should enclose all the floating children as well.
+     * See http://www.w3.org/TR/CSS21/visudet.html#root-height
+     * @return <code>true</code> if the floats should enclosed
+     */
+    protected boolean encloseFloats()
+    {
+        return overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK;
     }
     
     /**
@@ -934,10 +944,9 @@ public class BlockBox extends ElementBox
         if (!hasFixedHeight())
         {
                 y += curline.getMaxLineHeight(); //last unfinished line
-                if (overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK)
+                if (encloseFloats())
                 {
                     //enclose all floating boxes we own
-                    // http://www.w3.org/TR/CSS21/visudet.html#root-height
                     int mfy = getFloatHeight() - floatY;
                     if (mfy > y) y = mfy;
                 }

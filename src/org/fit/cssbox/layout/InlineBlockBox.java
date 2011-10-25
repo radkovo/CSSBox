@@ -115,7 +115,11 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
         boolean ret = super.doLayout(availw, force, linestart);
-        baseline = getLastInlineBoxBaseline(this) + getContentOffsetY();
+        baseline = getLastInlineBoxBaseline(this);
+        if (baseline == -1)
+            baseline = getHeight();
+        else
+            baseline += getContentOffsetY();
         return ret;
     }
 	
@@ -233,7 +237,12 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     //========================================================================
 	
-	private int getLastInlineBoxBaseline(ElementBox root)
+	/**
+	 * Recursively finds the baseline of the last in-flow box.
+	 * @param root the element to start search in
+	 * @return The baseline offset in the element content or -1 if there are no in-flow boxes.
+	 */
+    private int getLastInlineBoxBaseline(ElementBox root)
 	{
 	    //find last in-flow box
 	    Box box = null;
@@ -260,7 +269,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             }
 	    }
 	    else
-	        return 0;
+	        return -1; //no inline box found
 	}
 	
 
