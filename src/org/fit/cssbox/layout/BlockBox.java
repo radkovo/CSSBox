@@ -704,7 +704,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    	if (getElement() != null && getElement().getAttribute("id").equals("main"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -722,7 +722,8 @@ public class BlockBox extends ElementBox
         {
             int min = getMinimalContentWidthLimit();
             int max = getMaximalContentWidth();
-            int pref = Math.min(max, availw);
+            int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
+            int pref = Math.min(max, availcont);
             if (pref < min) pref = min;
             setContentWidth(pref);
             updateChildSizes();
