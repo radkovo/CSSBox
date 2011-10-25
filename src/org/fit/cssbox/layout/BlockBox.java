@@ -704,8 +704,8 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	//if (getElement() != null && getElement().getAttribute("id").equals("main"))
-    	//	System.out.println("jo!");
+    	if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
+    		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
@@ -1831,7 +1831,7 @@ public class BlockBox extends ElementBox
         if (!widthComputed) update = false;
     	
         //compute width when set. If not, it will be computed during the layout
-    	if (cblock != null && cblock.wset)
+    	/*if (cblock != null && cblock.wset)
         {
             wset = (exact && !auto && width != null);
             if (!update)
@@ -1842,6 +1842,22 @@ public class BlockBox extends ElementBox
             wset = (exact && !auto && width != null && !width.isPercentage());
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, 0);
+        }*/
+        if (auto)
+        {
+            if (exact) wset = false;
+            if (!update)
+                content.width = dec.getLength(width, auto, 0, 0, contw);
+            preferredWidth = -1; //we don't prefer anything (auto width)
+        }
+        else
+        {
+            if (exact) 
+            {
+                wset = true;
+                wrelative = width.isPercentage();
+            }
+            content.width = dec.getLength(width, auto, 0, 0, contw);
         }
     	
     	//count left, right and width constraints

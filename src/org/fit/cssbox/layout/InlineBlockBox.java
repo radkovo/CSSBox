@@ -156,7 +156,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         if (!widthComputed) update = false;
         
         //compute width when set. If not, it will be computed during the layout
-        if (cblock != null && cblock.wset)
+        /*if (cblock != null && cblock.wset)
         {
             wset = (exact && !auto && width != null);
             if (!update)
@@ -167,6 +167,22 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             wset = (exact && !auto && width != null && !width.isPercentage());
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, 0);
+        }*/
+        if (auto)
+        {
+            if (exact) wset = false;
+            if (!update)
+                content.width = dec.getLength(width, auto, 0, 0, contw);
+            preferredWidth = -1; //we don't prefer anything (auto width)
+        }
+        else
+        {
+            if (exact) 
+            {
+                wset = true;
+                wrelative = width.isPercentage();
+            }
+            content.width = dec.getLength(width, auto, 0, 0, contw);
         }
 
         //auto margins are treated as zero
