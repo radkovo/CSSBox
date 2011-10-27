@@ -119,7 +119,10 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         if (baseline == -1)
             baseline = getHeight();
         else
+        {
             baseline += getContentOffsetY();
+            if (baseline > getHeight()) baseline = getHeight();
+        }
         return ret;
     }
 	
