@@ -294,6 +294,7 @@ public class BoxBrowser
         if (box instanceof BlockBox)
         {
             BlockBox eb = (BlockBox) box;
+            vals.add(infoTableData("Content layout", (eb.containsBlocks() ? "blocks" : "inline")));
             vals.add(infoTableData("Coords", eb.getCoords().toString()));
             vals.add(infoTableData("Float", eb.getFloatingString()));
             vals.add(infoTableData("Position", eb.getPositionString()));
