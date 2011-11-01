@@ -122,7 +122,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         this.availw = availw;
         this.force = force;
         super.doLayout(availw, force, linestart);
-        if (fitsSpace())
+        if (force || fitsSpace())
         {
             baseline = getLastInlineBoxBaseline(this);
             if (baseline == -1)
@@ -141,14 +141,14 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     @Override
     protected void layoutInline()
     {
-        if (fitsSpace()) //do not layout if we don't fit the available space
+        if (force || fitsSpace()) //do not layout if we don't fit the available space
             super.layoutInline();
     }
 
     @Override
     protected void layoutBlocks()
     {
-        if (fitsSpace()) //do not layout if we don't fit the available space
+        if (force || fitsSpace()) //do not layout if we don't fit the available space
             super.layoutBlocks();
     }
     
@@ -158,7 +158,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
      */
     private boolean fitsSpace()
     {
-        return force || (availw >= totalWidth());
+        return availw >= totalWidth();
     }
 
     @Override

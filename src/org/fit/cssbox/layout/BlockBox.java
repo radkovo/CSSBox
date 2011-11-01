@@ -715,7 +715,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("iii"))
+    	if (getElement() != null && getElement().getAttribute("class").equals("Xanonymous"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -897,6 +897,7 @@ public class BlockBox extends ElementBox
                 else if (((!fit || x > wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && subbox.getRest() != null)) //or something fit but something has left
                 {
+                	boolean over = (x > wlimit - x2); //space overflow?
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
@@ -910,7 +911,7 @@ public class BlockBox extends ElementBox
                     x = x1;
 
                     //create a new line
-                    if (!fit || x > wlimit - x2) //line overflow
+                    if (!fit || over) //line overflow
                     {
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
