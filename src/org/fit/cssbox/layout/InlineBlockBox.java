@@ -42,7 +42,12 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     /** The baseline offset of the contents */
     protected int baseline;
-
+    
+    /* current layout parametres */
+    private int availw;
+    private boolean force;
+    
+    
 	public InlineBlockBox(Element n, Graphics2D g, VisualContext ctx)
 	{
 		super(n, g, ctx);
@@ -114,18 +119,48 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-        boolean ret = super.doLayout(availw, force, linestart);
-        baseline = getLastInlineBoxBaseline(this);
-        if (baseline == -1)
-            baseline = getHeight();
-        else
+        this.availw = availw;
+        this.force = force;
+        super.doLayout(availw, force, linestart);
+        if (fitsSpace())
         {
-            baseline += getContentOffsetY();
-            if (baseline > getHeight()) baseline = getHeight();
+            baseline = getLastInlineBoxBaseline(this);
+            if (baseline == -1)
+                baseline = getHeight();
+            else
+            {
+                baseline += getContentOffsetY();
+                if (baseline > getHeight()) baseline = getHeight();
+            }
+            return true;
         }
-        return ret;
+        else
+            return false;
     }
-	
+
+    @Override
+    protected void layoutInline()
+    {
+        if (fitsSpace()) //do not layout if we don't fit the available space
+            super.layoutInline();
+    }
+
+    @Override
+    protected void layoutBlocks()
+    {
+        if (fitsSpace()) //do not layout if we don't fit the available space
+            super.layoutBlocks();
+    }
+    
+    /**
+     * Checks wheter the block fits the available space
+     * @return <code>true</code> when there is enough space to fit the block
+     */
+    private boolean fitsSpace()
+    {
+        return force || (availw >= totalWidth());
+    }
+
     @Override
     public boolean hasFixedWidth()
     {
