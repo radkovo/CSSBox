@@ -237,7 +237,7 @@ public class BoxFactory
             //Determine the containing boxes of the children
             BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
             newstat.parent = (ElementBox) newbox;
-            if (((ElementBox) newbox).mayContainBlocks())
+            if (((ElementBox) newbox).mayContainBlocks()) //the new box forms a block context
             {
                 BlockBox block = (BlockBox) newbox;
                 //A positioned box forms a content box for following absolutely
@@ -366,8 +366,16 @@ public class BoxFactory
                     {
                         if (subbox.isWhitespace())
                             it.remove();
-                        else if (subbox instanceof ElementBox) //TODO: text boxes too?
+                        else if (subbox instanceof ElementBox)
+                        {
                             removeTrailingWhitespaces((ElementBox) subbox);
+                            break; //the whole box is not whitespace
+                        }
+                        else if (subbox instanceof TextBox)
+                        {
+                            ((TextBox) subbox).removeTrailingWhitespaces();
+                            break;
+                        }
                     }
                     else
                         break;
@@ -428,7 +436,7 @@ public class BoxFactory
     private ElementBox normalizeBox(ElementBox root)
     {
         //anonymous inline and block elements if necessary
-        if (root.isBlock() && ((BlockBox) root).containsBlocks())
+        if (root.mayContainBlocks() && ((BlockBox) root).containsBlocks())
             createAnonymousBlocks((BlockBox) root);
         else if (root.containsMixedContent())
             createAnonymousInline(root);
@@ -495,14 +503,17 @@ public class BoxFactory
         for (int i = 0; i < root.getSubBoxNumber(); i++)
         {
             Box sub = root.getSubBox(i);
-            if (sub.isblock)
+            if (sub.isBlock())
             {
                 if (adiv != null && !adiv.isempty)
+                {
                     normalizeBox(adiv); //normalize even the newly created blocks
+                    removeTrailingWhitespaces(adiv);
+                }
                 adiv = null;
                 nest.add(sub);
             }
-            else if (!sub.isWhitespace()) //omit whitespace boxes
+            else if (adiv != null || !sub.isWhitespace()) //omit whitespace boxes at the beginning of the blocks
             {
                 if (adiv == null)
                 {
@@ -518,7 +529,10 @@ public class BoxFactory
             }
         }
         if (adiv != null && !adiv.isempty)
+        {
             normalizeBox(adiv); //normalize even the newly created blocks
+            removeTrailingWhitespaces(adiv);
+        }
         root.nested = nest;
         root.endChild = nest.size();
     }

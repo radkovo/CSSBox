@@ -150,7 +150,7 @@ public class InlineBox extends ElementBox implements InlineElement
         if (curline == null)
             return 0;
         else
-            return  curline.getBaselineOffset() - ctx.getBaselineOffset() - halflead;
+            return curline.getBaselineOffset() - ctx.getBaselineOffset() - halflead;
     }
     /**
      * Returns the half-lead value used for positioning the nested boxes within this inline box
@@ -267,12 +267,11 @@ public class InlineBox extends ElementBox implements InlineElement
             	lastbreak = i+1;
         }
         
-        
         //compute the vertical positions of the boxes
         //updateLineMetrics();
         content.width = x;
         content.height = (int) Math.round(ctx.getFontHeight() * 1.2); //based on browser behaviour observations
-        halflead = (content.height - curline.getTotalLineHeight()) / 2;
+        halflead = (content.height - ctx.getFontHeight()) / 2;
         alignBoxes();
         setSize(totalWidth(), totalHeight());
         
@@ -432,14 +431,13 @@ public class InlineBox extends ElementBox implements InlineElement
         int h = 0;
         if (curline != null)
             h = curline.getTotalLineHeight();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);*/
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
+        
+        g.setColor(Color.BLUE);
+        y = y + getBaselineOffset();
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);*/
     }
 
-    /*public int getMaxLineHeight()
-    {
-        return maxLineHeight;
-    }*/
-    
     @Override
     public int totalHeight()
     {

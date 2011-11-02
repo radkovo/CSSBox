@@ -40,11 +40,14 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     /** parent LineBox assigned during layout */
     private LineBox linebox;
     
-    protected int lineboxofs;
-    
     /** The baseline offset of the contents */
     protected int baseline;
-
+    
+    /* current layout parametres */
+    private int availw;
+    private boolean force;
+    
+    
 	public InlineBlockBox(Element n, Graphics2D g, VisualContext ctx)
 	{
 		super(n, g, ctx);
@@ -81,7 +84,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 
     public int getLineboxOffset()
     {
-        return lineboxofs;
+        return 0;
     }
     
     //========================================================================
@@ -116,13 +119,48 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-        boolean ret = super.doLayout(availw, force, linestart);
-        baseline = getLastInlineBoxBaseline(this) + getContentOffsetY();
-        lineboxofs = getLastInlineBoxLineboxOfs(this) + getContentOffsetY();
-        System.out.println("H: " + getHeight());
-        return ret;
+        this.availw = availw;
+        this.force = force;
+        super.doLayout(availw, force, linestart);
+        if (force || fitsSpace())
+        {
+            baseline = getLastInlineBoxBaseline(this);
+            if (baseline == -1)
+                baseline = getHeight();
+            else
+            {
+                baseline += getContentOffsetY();
+                if (baseline > getHeight()) baseline = getHeight();
+            }
+            return true;
+        }
+        else
+            return false;
     }
-	
+
+    @Override
+    protected void layoutInline()
+    {
+        if (force || fitsSpace()) //do not layout if we don't fit the available space
+            super.layoutInline();
+    }
+
+    @Override
+    protected void layoutBlocks()
+    {
+        if (force || fitsSpace()) //do not layout if we don't fit the available space
+            super.layoutBlocks();
+    }
+    
+    /**
+     * Checks wheter the block fits the available space
+     * @return <code>true</code> when there is enough space to fit the block
+     */
+    private boolean fitsSpace()
+    {
+        return availw >= totalWidth();
+    }
+
     @Override
     public boolean hasFixedWidth()
     {
@@ -159,18 +197,21 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         
         if (!widthComputed) update = false;
         
-        //compute width when set. If not, it will be computed during the layout
-        if (cblock != null && cblock.wset)
+        if (auto)
         {
-            wset = (exact && !auto && width != null);
+            if (exact) wset = false;
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, contw);
+            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
-            wset = (exact && !auto && width != null && !width.isPercentage());
-            if (!update)
-                content.width = dec.getLength(width, auto, 0, 0, 0);
+            if (exact) 
+            {
+                wset = true;
+                wrelative = width.isPercentage();
+            }
+            content.width = dec.getLength(width, auto, 0, 0, contw);
         }
 
         //auto margins are treated as zero
@@ -178,7 +219,38 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
         
     }
-        
+
+    @Override
+    public void absolutePositions()
+    {
+        if (isDisplayed())
+        {
+            //x coordinate is taken from the content edge
+            absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
+            //y coordinate -- depends on the vertical alignment
+            if (valign == CSSProperty.VerticalAlign.TOP)
+            {
+                absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
+            }
+            else if (valign == CSSProperty.VerticalAlign.BOTTOM)
+            {
+                absbounds.y = linebox.getAbsoluteY() + linebox.getTotalLineHeight() - getContentHeight() - getContentOffsetY();
+            }
+            else //other positions -- set during the layout. Relative to the parent content edge.
+            {
+                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+            }
+
+            //update the width and height according to overflow of the parent
+            absbounds.width = bounds.width;
+            absbounds.height = bounds.height;
+            
+            //repeat for all valid subboxes
+            for (int i = startChild; i < endChild; i++)
+                getSubBox(i).absolutePositions();
+        }
+    }
+    
     /**
      * Loads the basic style properties related to the inline elements.
      */
@@ -190,7 +262,12 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     //========================================================================
 	
-	private int getLastInlineBoxBaseline(ElementBox root)
+	/**
+	 * Recursively finds the baseline of the last in-flow box.
+	 * @param root the element to start search in
+	 * @return The baseline offset in the element content or -1 if there are no in-flow boxes.
+	 */
+    private int getLastInlineBoxBaseline(ElementBox root)
 	{
 	    //find last in-flow box
 	    Box box = null;
@@ -217,42 +294,8 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             }
 	    }
 	    else
-	        return 0;
+	        return -1; //no inline box found
 	}
 	
-    private int getLastInlineBoxLineboxOfs(ElementBox root)
-    {
-        //find last in-flow box
-        Box box = null;
-        for (int i = root.getSubBoxNumber() - 1; i >= 0; i--)
-        {
-            box = root.getSubBox(i);
-            if (box.isInFlow())
-                break;
-            else
-                box = null;
-        }
-        
-        if (box != null)
-        {
-            if (box instanceof InlineElement)
-            {
-                System.out.println(box + ":I: " + (box.getContentY() + ((InlineElement) box).getLineboxOffset()));
-                return box.getContentY() + ((InlineElement) box).getLineboxOffset();
-            }
-            else if (box instanceof ElementBox)
-            {
-                System.out.println(box + ":B: " + (box.getContentY() + getLastInlineBoxLineboxOfs((ElementBox) box)));
-                return box.getContentY() + getLastInlineBoxLineboxOfs((ElementBox) box);
-            }
-            else
-            {
-                System.out.println(box + ":T: " + box.getContentY());
-                return box.getContentY();
-            }
-        }
-        else
-            return 0;
-    }
 
 }

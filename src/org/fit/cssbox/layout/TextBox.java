@@ -224,6 +224,27 @@ public class TextBox extends Box implements Inline
     }
     
     /**
+     * Removes the trailing whitespaces from the cotnained text string. This must be done before the layout (it resets the text start and end pointers). 
+     */
+    public void removeTrailingWhitespaces()
+    {
+        int last = -1;
+        for (int i = text.length() - 1; i >= 0; i--)
+        {
+            if (Character.isWhitespace(text.charAt(i)))
+                last = i;
+            else
+                break;
+        }
+        if (last != -1)
+        {
+            text = text.substring(0, last);
+            textStart = 0;
+            textEnd = last;
+        }
+    }
+    
+    /**
      * @return the start offset in the text string
      */ 
     protected int getTextStart()
@@ -634,6 +655,18 @@ public class TextBox extends Box implements Inline
                 System.out.print("*");
         }
         System.out.println();
+        
+        g.setColor(Color.MAGENTA);
+        int y = getAbsoluteContentY();
+        int h = getTotalLineHeight();
+            
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
+        
+        g.setColor(Color.BLUE);
+        y = getAbsoluteContentY() + getBaselineOffset();
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);
+        
+        
     }
 
 }
