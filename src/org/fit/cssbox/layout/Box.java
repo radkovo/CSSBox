@@ -377,9 +377,6 @@ abstract public class Box
      */
     public void moveDown(int ofs)
     {
-        if (ofs == -11)
-               System.out.println("jo!");
-        System.out.println("MVDN " + ofs);
         bounds.y += ofs;
     }
     

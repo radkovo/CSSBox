@@ -880,6 +880,7 @@ public class BlockBox extends ElementBox
                 }
                 
                 //check line overflows
+                boolean over = (x > wlimit - x2); //space overflow?
                 if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
                 {
                     //go to the new line
@@ -894,10 +895,9 @@ public class BlockBox extends ElementBox
                     //force repeating the same once again
                     split = true;
                 }
-                else if (((!fit || x > wlimit - x2) && lastbreak > lnstr) //line overflow and the line can be broken
-                           || (fit && subbox.getRest() != null)) //or something fit but something has left
+                else if ((!fit && lastbreak > lnstr) //line overflow and the line can be broken
+                           || (fit && (over || subbox.getRest() != null))) //or something fit but something has left
                 {
-                	boolean over = (x > wlimit - x2); //space overflow?
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
@@ -911,7 +911,7 @@ public class BlockBox extends ElementBox
                     x = x1;
 
                     //create a new line
-                    if (!fit || over) //line overflow
+                    if (!fit) //not fit - try again with a new line
                     {
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
@@ -919,9 +919,10 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                         split = true; //force repeating the same once again
                     }
-                    else if (subbox.getRest() != null) //something fit but not everything placed
+                    else if (over || subbox.getRest() != null) //something fit but not everything placed or line exceeded - create a new empty line
                     {
-                   		insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
+                        if (subbox.getRest() != null)
+                            insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
                         lnstr = i+1; //new line starts with the next subbox
                         curline.setEnd(lnstr); //finish the old line
                         curline = new LineBox(this, lnstr, y); //create the new line 
