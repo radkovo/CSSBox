@@ -426,7 +426,7 @@ public class InlineBox extends ElementBox implements InlineElement
     {
         super.drawExtent(g);
         
-        g.setColor(Color.MAGENTA);
+        /*g.setColor(Color.MAGENTA);
         int y = getAbsoluteContentY() - getLineboxOffset();
         int h = 0;
         if (curline != null)
@@ -435,7 +435,7 @@ public class InlineBox extends ElementBox implements InlineElement
         
         g.setColor(Color.BLUE);
         y = y + getBaselineOffset();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);
+        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);*/
     }
 
     @Override

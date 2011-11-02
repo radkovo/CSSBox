@@ -197,19 +197,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         
         if (!widthComputed) update = false;
         
-        //compute width when set. If not, it will be computed during the layout
-        /*if (cblock != null && cblock.wset)
-        {
-            wset = (exact && !auto && width != null);
-            if (!update)
-                content.width = dec.getLength(width, auto, 0, 0, contw);
-        }
-        else
-        {
-            wset = (exact && !auto && width != null && !width.isPercentage());
-            if (!update)
-                content.width = dec.getLength(width, auto, 0, 0, 0);
-        }*/
         if (auto)
         {
             if (exact) wset = false;
