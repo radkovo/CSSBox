@@ -212,7 +212,7 @@ public class ImageRenderer
                 ReplacedContent cont = ((ReplacedBox) eb).getContentObj();
                 if (cont != null && cont instanceof ReplacedImage) //images
                 {
-                    BufferedImage img = ((ReplacedImage) cont).getImage();
+                    BufferedImage img = ((ReplacedImage) cont).getBufferedImage();
                     if (img != null)
                     {
                         ByteArrayOutputStream os = new ByteArrayOutputStream();
