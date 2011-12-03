@@ -270,7 +270,7 @@ public class InlineBox extends ElementBox implements InlineElement
         //compute the vertical positions of the boxes
         //updateLineMetrics();
         content.width = x;
-        content.height = (int) Math.round(ctx.getFontHeight() * 1.2); //based on browser behaviour observations
+        content.height = (int) Math.round(ctx.getFontHeight() * 1.1); //based on browser behaviour observations
         halflead = (content.height - ctx.getFontHeight()) / 2;
         alignBoxes();
         setSize(totalWidth(), totalHeight());
@@ -288,11 +288,12 @@ public class InlineBox extends ElementBox implements InlineElement
             //y coordinate -- depends on the vertical alignment
             if (valign == CSSProperty.VerticalAlign.TOP)
             {
-                absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
+                //absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() - getContentOffsetY();
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getTotalLineHeight() - getContentHeight() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxLineHeight() - getContentHeight() - getContentOffsetY();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
