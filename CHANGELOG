@@ -1,3 +1,11 @@
+2011-12-06 - Version 3.4
+- Support for display:inline-block layout
+- Vertical alignment fixed for the "top" and "bottom" values
+- Whitespace processing fixes
+- API extension for accessing list properties
+- Block width computation fixes
+- Image loading improvements
+
 2011-06-09 - Version 3.3
 - Fixes in table column width computation
 - Table background color computation adjusted
