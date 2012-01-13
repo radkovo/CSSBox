@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 6. únor 2005, 18:52
+ * Created on 6. ï¿½nor 2005, 18:52
  */
 
 package org.fit.cssbox.css;
@@ -39,7 +39,7 @@ public class HTMLNorm
 {
     /**
      * Recursively converts some HTML presentation attributes to the inline style of the element.
-     * The original attributes are left in the DOM tree, the <code>style</code> attribute is
+     * The original attributes are left in the DOM tree, the <code>XDefaultStyle</code> attribute is
      * modified appropriately. Some of the values (e.g. the font sizes) are converted approximately
      * since their exact interpretation is not defined.
      * @param n the root node of the DOM subtree where the conversion is done
@@ -104,11 +104,11 @@ public class HTMLNorm
                 if (el.getAttributes().getNamedItem("frame") != null)
                     frame = el.getAttribute("frame").toLowerCase();
                 if (el.getAttributes().getNamedItem("rules") != null)
-                    frame = el.getAttribute("rules").toLowerCase();
+                    rules = el.getAttribute("rules").toLowerCase();
                 
                 if (!border.equals("0"))
                 {
-                    String fstyle = "border-@-color:auto;border-@-style:solid;border-@-width:"+border+"px;";
+                    String fstyle = "border-@-style:solid;border-@-width:"+border+"px;";
                     if (frame.equals("above"))
                         attrs = attrs + applyBorders(fstyle, "top");
                     if (frame.equals("below"))
@@ -143,18 +143,21 @@ public class HTMLNorm
                     }
                     
                     //when 'rules' are set, 1px border is inherited by the cells
-                    fstyle = "border-@-color:auto;border-@-style:solid;border-@-width:1px;";
+                    fstyle = "border-@-style:solid;border-@-width:1px;";
+                    System.out.println("rules: " + rules);
                     if (rules.equals("rows"))
                     {
                         itab = itab + applyBorders(fstyle, "top");
                         itab = itab + applyBorders(fstyle, "bottom");
+                        attrs = attrs + "border-collapse:collapse;"; //seems to cause table border collapsing
                     }
-                    if (rules.equals("rows"))
+                    else if (rules.equals("cols"))
                     {
                         itab = itab + applyBorders(fstyle, "left");
                         itab = itab + applyBorders(fstyle, "right");
+                        attrs = attrs + "border-collapse:collapse;";
                     }
-                    if (rules.equals("all"))
+                    else if (rules.equals("all"))
                     {
                         itab = itab + applyBorders(fstyle, "top");
                         itab = itab + applyBorders(fstyle, "bottom");
@@ -181,7 +184,7 @@ public class HTMLNorm
                     if (border.equals("0"))
                         fstyle = "border-@-style:none;";
                     else
-                        fstyle = "border-@-color:auto;border-@-style:solid;border-@-width:"+border+"px;";
+                        fstyle = "border-@-style:solid;border-@-width:"+border+"px;";
                     attrs = attrs + applyBorders(fstyle, "top");
                     attrs = attrs + applyBorders(fstyle, "right");
                     attrs = attrs + applyBorders(fstyle, "bottom");
@@ -284,7 +287,7 @@ public class HTMLNorm
             }
 
             if (attrs.length() > 0)
-                el.setAttribute("style", el.getAttribute("style") + ";" + attrs);            
+                el.setAttribute("XDefaultStyle", el.getAttribute("XDefaultStyle") + ";" + attrs);            
         }                
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)

@@ -817,10 +817,18 @@ abstract public class ElementBox extends Box
     {
         TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
-        if (tclr != null && bst != CSSProperty.BorderStyle.HIDDEN)
+        if (bst != CSSProperty.BorderStyle.HIDDEN)
         {
-            Color clr = tclr.getValue();
-            if (clr == null) clr = Color.BLACK;
+            //System.out.println("Elem: " + this + "side: " + side + "color: " + tclr);
+            Color clr = null;
+            if (tclr != null)
+                clr = tclr.getValue();
+            if (clr == null)
+            {
+                clr = ctx.getColor();
+                if (clr == null)
+                    clr = Color.BLACK;
+            }
             g.setColor(clr);
             g.setStroke(new CSSStroke(width, bst, reverse));
             g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
