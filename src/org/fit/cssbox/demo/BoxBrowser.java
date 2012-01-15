@@ -127,8 +127,8 @@ public class BoxBrowser
             
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
             da.attributesToStyles();
-            da.addStyleSheet(null, CSSNorm.stdStyleSheet());
-            da.addStyleSheet(null, CSSNorm.userStyleSheet());
+            da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
+            da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.getStyleSheets();
             
             is.close();

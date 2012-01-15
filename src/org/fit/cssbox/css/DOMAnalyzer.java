@@ -49,10 +49,20 @@ public class DOMAnalyzer
     private String media;   //media type
     
     private Vector<StyleSheet> styles;  //vector of StyleSheet sheets
-    private StyleSheet mainsheet; //the stylesheet containing all the rules, if it is null, it must be recomputed
     private Analyzer analyzer; //style sheet analyzer
     private StyleMap stylemap; //style map for DOM nodes
     private StyleMap istylemap; //style map with inheritance
+    
+    /** The origin of a style sheet */
+    public enum Origin 
+    {
+    	/** An author style sheet (this is the default in most cases) */
+    	AUTHOR, 
+    	/** A user agent style sheet */
+    	AGENT, 
+    	/** A user tstyle sheet */
+    	USER 
+    };
     
     /**
      * Creates a new DOM analyzer.
@@ -64,7 +74,6 @@ public class DOMAnalyzer
         this.media = DEFAULT_MEDIA;
         baseUrl = null;
         styles = new Vector<StyleSheet>();
-        mainsheet = null;
         stylemap = null;
         istylemap = null;
     }
@@ -80,7 +89,6 @@ public class DOMAnalyzer
         this.media = DEFAULT_MEDIA;
         styles = new Vector<StyleSheet>();
         this.baseUrl = baseUrl;
-        mainsheet = null;
         stylemap = null;
         istylemap = null;
     }
@@ -193,15 +201,30 @@ public class DOMAnalyzer
     }
 
     /**
-     * Loads a stylesheet from an URL.
+     * Loads a stylesheet from an URL as na author style sheet.
      * Imports all the imported style sheets before storing it.
      * @param base the document base url
      * @param href the href specification
+     * @param encoding the default encoding
      */
     public void loadStyleSheet(URL base, String href, String encoding)
     {
+    	loadStyleSheet(base, href, encoding, Origin.AUTHOR);
+    }
+    
+    /**
+     * Loads a stylesheet from an URL and specifies the origin.
+     * Imports all the imported style sheets before storing it.
+     * @param base the document base url
+     * @param href the href specification
+     * @param encoding the default encoding
+     * @param origin the style sheet origin (author, user agent or user)
+     */
+    public void loadStyleSheet(URL base, String href, String encoding, Origin origin)
+    {
         try {
-            StyleSheet newsheet = CSSFactory.parse(new URL(base, href), encoding); 
+            StyleSheet newsheet = CSSFactory.parse(new URL(base, href), encoding);
+            newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
         } catch (IOException e) {
             System.err.println("DOMAnalyzer: I/O Error: "+e.getMessage());
@@ -211,7 +234,7 @@ public class DOMAnalyzer
     }
     
     /**
-     * Parses and adds a style sheet represented as a string to the end of the used
+     * Parses and adds an author style sheet represented as a string to the end of the used
      * stylesheet lists. It imports all the imported style sheets before storing
      * it.
      * @param base the document base URL
@@ -219,8 +242,21 @@ public class DOMAnalyzer
      */
 	public void addStyleSheet(URL base, String cssdata)
     {
+		addStyleSheet(base, cssdata, Origin.AUTHOR);
+    }
+    
+    /**
+     * Parses and adds an author style sheet represented as a string to the end of the used
+     * stylesheet lists. It imports all the imported style sheets before storing
+     * it.
+     * @param base the document base URL
+     * @param cssdata the style string
+     */
+	public void addStyleSheet(URL base, String cssdata, Origin origin)
+    {
 	    try {
     	    StyleSheet newsheet = CSSFactory.parse(cssdata);
+            newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
 	    } catch (IOException e) {
             System.err.println("DOMAnalyzer: I/O Error: "+e.getMessage());
@@ -228,7 +264,7 @@ public class DOMAnalyzer
             System.err.println("DOMAnalyzer: CSS Error: "+e.getMessage());
         }
     }
-    
+	
     /**
      * Gets all the style declarations for a particular element and computes 
      * the resulting element style.
@@ -237,11 +273,8 @@ public class DOMAnalyzer
      */
     public NodeData getElementStyle(Element el)
     {
-    	if (mainsheet == null)
-    	{
-    		mainsheet = computeMainSheet();
-    		analyzer = new Analyzer(mainsheet);
-    	}
+    	if (analyzer == null)
+    		analyzer = new Analyzer(styles);
     	
     	if (stylemap == null)
     		stylemap = analyzer.evaluateDOM(doc, media, false);
@@ -254,11 +287,8 @@ public class DOMAnalyzer
      */
     private void checkStylesInherited()
     {
-        if (mainsheet == null)
-        {
-            mainsheet = computeMainSheet();
-            analyzer = new Analyzer(mainsheet);
-        }
+    	if (analyzer == null)
+    		analyzer = new Analyzer(styles);
         
         if (istylemap == null)
             istylemap = analyzer.evaluateDOM(doc, media, true);
@@ -382,14 +412,18 @@ public class DOMAnalyzer
         for (int i = 0; i < child.getLength(); i++)
             recursivePrintTags(child.item(i), level+1, p);   
     }
-        
     
-    private StyleSheet computeMainSheet()
+    /**
+     * Translates the origin from the CSSBox API to jStyleParser API
+     * (in order not to expose the jStyleParser API in CSSBox)
+     */
+    private StyleSheet.Origin translateOrigin(Origin origin)
     {
-        StyleSheet newstyle = (StyleSheet) CSSFactory.getRuleFactory().createStyleSheet().unlock();
-        for (StyleSheet style : styles)
-            newstyle.addAll(style);
-        return newstyle;
+    	if (origin == Origin.AUTHOR)
+    		return StyleSheet.Origin.AUTHOR;
+    	else if (origin == Origin.AGENT)
+    		return StyleSheet.Origin.AGENT;
+    	else
+    		return StyleSheet.Origin.USER;
     }
-    
 }
