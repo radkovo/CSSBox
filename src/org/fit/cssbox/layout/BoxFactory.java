@@ -616,7 +616,7 @@ public class BoxFactory
         if (block)
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
-            anbox = new BlockBox(anelem, child.getGraphics(), child.getVisualContext());
+            anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
             anbox.setStyle(createAnonymousStyle("block"));
             ((BlockBox) anbox).contblock = false;
             anbox.isblock = true;
@@ -624,7 +624,7 @@ public class BoxFactory
         else
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xspan", "inline");
-            anbox = new InlineBox(anelem, child.getGraphics(), child.getVisualContext());
+            anbox = new InlineBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
             anbox.setStyle(createAnonymousStyle("inline"));
             anbox.isblock = false;
         }
