@@ -58,6 +58,9 @@ public class TextBox extends Box implements Inline
     /** Indicates whether to collapse whitespaces at all */
     protected boolean collapsews;
     
+    /** Indicates whether it is allowed to split on whitespace */
+    protected boolean splitws;
+    
     //===================================================================
     
     /**
@@ -170,7 +173,7 @@ public class TextBox extends Box implements Inline
      */
     public void setWhiteSpace(CSSProperty.WhiteSpace value)
     {
-        
+        splitws = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_PRE_WRAP || value== ElementBox.WHITESPACE_PRE_LINE);
         collapsews = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE);
         //When this is the original box, apply the whitespace. For the copied boxes, the whitespace has been already applied (they contain
         //a copy of the original, already processed content). 
@@ -496,7 +499,7 @@ public class TextBox extends Box implements Inline
             {
                 w = fm.stringWidth(text.substring(textStart, end));
                 h = fm.getHeight();
-                if (w > wlimit) //exceeded - try to split
+                if (w > wlimit) //exceeded - try to split if allowed
                 {
                     if (empty) //empty or just spaces - don't place at all
                     {
@@ -504,7 +507,7 @@ public class TextBox extends Box implements Inline
                     }
                     int wordend = text.substring(0, end).lastIndexOf(' '); //find previous word
                     while (wordend > 0 && text.charAt(wordend-1) == ' ') wordend--; //skip trailing spaces
-                    if (wordend <= textStart) //no previous word, cannot split
+                    if (wordend <= textStart || !splitws) //no previous word, cannot split or splitting not allowed
                     {
                         if (!force) //let it split as good as possible
                         {
