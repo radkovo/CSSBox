@@ -61,6 +61,9 @@ public class TextBox extends Box implements Inline
     /** Indicates whether it is allowed to split on whitespace */
     protected boolean splitws;
     
+    /** Indicatew whether it line feeds should be treated as whitespace */
+    protected boolean linews;
+    
     //===================================================================
     
     /**
@@ -93,6 +96,8 @@ public class TextBox extends Box implements Inline
         text = new String(src.text);
         ignoreinitialws = false; //only the first box should ignore
         collapsews = src.collapsews;
+        splitws = src.splitws;
+        linews = src.linews;
     }
     
     /** 
@@ -175,6 +180,7 @@ public class TextBox extends Box implements Inline
     {
         splitws = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_PRE_WRAP || value== ElementBox.WHITESPACE_PRE_LINE);
         collapsews = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP || value == ElementBox.WHITESPACE_PRE_LINE);
+        linews = (value == ElementBox.WHITESPACE_NORMAL || value == ElementBox.WHITESPACE_NOWRAP);
         //When this is the original box, apply the whitespace. For the copied boxes, the whitespace has been already applied (they contain
         //a copy of the original, already processed content). 
         if (!splitted)
@@ -198,7 +204,7 @@ public class TextBox extends Box implements Inline
     }
     
     /**
-     * Applies the whitespace removal rules used in HTML
+     * Applies the whitespace removal rules used in HTML.
      * @param src source string
      * @return a new string with additional whitespaces removed
      */
@@ -209,13 +215,20 @@ public class TextBox extends Box implements Inline
         for (int i = 0; i < src.length(); i++)
         {
             char ch = src.charAt(i);
-            if (Character.isWhitespace(ch))
+            if (isWhitespace(ch))
             {
                 if (!inws)
                 {
                     ret.append(' ');
                     inws = true;
                 }
+            }
+            else if (isLineBreak(ch))
+            {
+            	ret.append(ch);
+            	//reduce eventual CR+LF to CR only
+            	if (ch == '\r' && i+1 < src.length() && src.charAt(i+1) == '\n')
+            		i++;
             }
             else
             {
@@ -234,7 +247,7 @@ public class TextBox extends Box implements Inline
         int last = -1;
         for (int i = text.length() - 1; i >= 0; i--)
         {
-            if (Character.isWhitespace(text.charAt(i)))
+            if (isWhitespace(text.charAt(i)))
                 last = i;
             else
                 break;
@@ -245,6 +258,22 @@ public class TextBox extends Box implements Inline
             textStart = 0;
             textEnd = last;
         }
+    }
+    
+    private boolean isWhitespace(char ch)
+    {
+    	if (linews) 
+    		return Character.isWhitespace(ch);
+    	else
+    		return ch != '\n' && ch != '\r' && Character.isWhitespace(ch);
+    }
+    
+    private boolean isLineBreak(char ch)
+    {
+    	if (linews)
+    		return false;
+    	else
+    		return (ch == '\r' || ch == '\n');
     }
     
     /**
@@ -482,17 +511,27 @@ public class TextBox extends Box implements Inline
         
         setAvailableWidth(widthlimit);
         
-        boolean split = false;
+        boolean split = false; //should we split to more boxes?
+        boolean allow = false; //allow succesfull result even if nothing has been placed (line break only)
         int wlimit = getAvailableContentWidth();
         boolean empty = (text.trim().length() == 0);
-        int end = text.length();
         FontMetrics fm = g.getFontMetrics();
         int w = 0, h = 0;
+        
+        int end = text.length();
+        int lineend = findEndOfLine(text, textStart);
+        if (lineend != -1 && lineend < end) //preserved end-of-line encountered
+        {
+        	end = lineend; //split at line end (or earlier)
+        	split = true;
+        	allow = true;
+        }
+        
         if (!empty || !linestart) //ignore empty text elements at the begining of a line
         {
             //ignore spaces at the begining of a line
             if ((linestart || ignoreinitialws) && collapsews)
-                while (textStart < end && text.charAt(textStart) == ' ')
+                while (textStart < end && isWhitespace(text.charAt(textStart)))
                     textStart++;
             //try to place the text
             do
@@ -534,7 +573,9 @@ public class TextBox extends Box implements Inline
         {
             //find the start of the next word
             int start = textEnd;
-            while (start < text.length() && text.charAt(start) == ' ') start++;
+            while (start < text.length() && 
+            		((collapsews && isWhitespace(text.charAt(start))) || isLineBreak(text.charAt(start))))
+            			start++;
             if (start < text.length())
             {
                 TextBox rtext = copyTextBox();
@@ -548,9 +589,22 @@ public class TextBox extends Box implements Inline
         else
             rest = null;
         
-        return ((textEnd > textStart) || empty);
+        return ((textEnd > textStart) || empty || allow);
     }
     
+	private int findEndOfLine(String s, int start)
+	{
+		if (linews)
+			return -1;
+		else
+		{
+			for (int i = start; i < s.length(); i++)
+				if (isLineBreak(s.charAt(i)))
+						return i;
+			return -1;
+		}
+	}
+	
 	@Override
     public void absolutePositions()
     {
@@ -572,22 +626,30 @@ public class TextBox extends Box implements Inline
 	
     private int computeMinimalWidth()
     {
-        //returns the length of the longest word
         int ret = 0;
         String t = getText();
         if (t.length() > 0)
         {
             FontMetrics fm = g.getFontMetrics();
-            int s1 = 0;
-            int s2 = t.indexOf(' ');
-            do
+            if (splitws)
             {
-                if (s2 == -1) s2 = t.length();
-                int w = fm.stringWidth(t.substring(s1, s2));
-                if (w > ret) ret = w;
-                s1 = s2 + 1;
-                s2 = t.indexOf(' ', s1);
-            } while (s1 < t.length() && s2 < t.length());
+                //wrapping allowed - returns the length of the longest word
+	            int s1 = 0;
+	            int s2 = t.indexOf(' ');
+	            do
+	            {
+	                if (s2 == -1) s2 = t.length();
+	                int w = fm.stringWidth(t.substring(s1, s2));
+	                if (w > ret) ret = w;
+	                s1 = s2 + 1;
+	                s2 = t.indexOf(' ', s1);
+	            } while (s1 < t.length() && s2 < t.length());
+            }
+            else
+            {
+            	//cannot wrap - return the width of the whole string
+            	ret = fm.stringWidth(t);
+            }
         }
         return ret;
     }
