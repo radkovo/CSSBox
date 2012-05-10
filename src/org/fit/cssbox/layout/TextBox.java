@@ -193,11 +193,7 @@ public class TextBox extends Box implements Inline
      */
     private void applyWhiteSpace()
     {
-        if (collapsews)
-            text = collapseWhitespaces(node.getNodeValue());
-        else
-            text = node.getNodeValue();
-        
+        text = collapseWhitespaces(node.getNodeValue());
         textStart = 0;
         textEnd = text.length();
         isempty = (textEnd == 0);
@@ -215,7 +211,7 @@ public class TextBox extends Box implements Inline
         for (int i = 0; i < src.length(); i++)
         {
             char ch = src.charAt(i);
-            if (isWhitespace(ch))
+            if (collapsews && isWhitespace(ch))
             {
                 if (!inws)
                 {
@@ -225,7 +221,7 @@ public class TextBox extends Box implements Inline
             }
             else if (isLineBreak(ch))
             {
-            	ret.append(ch);
+            	ret.append('\r'); //represent all line breaks as LF
             	//reduce eventual CR+LF to CR only
             	if (ch == '\r' && i+1 < src.length() && src.charAt(i+1) == '\n')
             		i++;
@@ -258,22 +254,6 @@ public class TextBox extends Box implements Inline
             textStart = 0;
             textEnd = last;
         }
-    }
-    
-    private boolean isWhitespace(char ch)
-    {
-    	if (linews) 
-    		return Character.isWhitespace(ch);
-    	else
-    		return ch != '\n' && ch != '\r' && Character.isWhitespace(ch);
-    }
-    
-    private boolean isLineBreak(char ch)
-    {
-    	if (linews)
-    		return false;
-    	else
-    		return (ch == '\r' || ch == '\n');
     }
     
     /**
@@ -519,7 +499,7 @@ public class TextBox extends Box implements Inline
         int w = 0, h = 0;
         
         int end = text.length();
-        int lineend = findEndOfLine(text, textStart);
+        int lineend = text.indexOf('\r', textStart);
         if (lineend != -1 && lineend < end) //preserved end-of-line encountered
         {
         	end = lineend; //split at line end (or earlier)
@@ -592,19 +572,6 @@ public class TextBox extends Box implements Inline
         return ((textEnd > textStart) || empty || allow);
     }
     
-	private int findEndOfLine(String s, int start)
-	{
-		if (linews)
-			return -1;
-		else
-		{
-			for (int i = start; i < s.length(); i++)
-				if (isLineBreak(s.charAt(i)))
-						return i;
-			return -1;
-		}
-	}
-	
 	@Override
     public void absolutePositions()
     {
@@ -630,25 +597,15 @@ public class TextBox extends Box implements Inline
         String t = getText();
         if (t.length() > 0)
         {
-            FontMetrics fm = g.getFontMetrics();
             if (splitws)
             {
                 //wrapping allowed - returns the length of the longest word
-	            int s1 = 0;
-	            int s2 = t.indexOf(' ');
-	            do
-	            {
-	                if (s2 == -1) s2 = t.length();
-	                int w = fm.stringWidth(t.substring(s1, s2));
-	                if (w > ret) ret = w;
-	                s1 = s2 + 1;
-	                s2 = t.indexOf(' ', s1);
-	            } while (s1 < t.length() && s2 < t.length());
+                ret = getLongestWord();
             }
             else
             {
             	//cannot wrap - return the width of the whole string
-            	ret = fm.stringWidth(t);
+            	ret = g.getFontMetrics().stringWidth(t);
             }
         }
         return ret;
@@ -662,9 +619,55 @@ public class TextBox extends Box implements Inline
 	
     private int computeMaximalWidth()
     {
-        //returns the lenth of the whole string
+        if (linews)
+        {
+            //no preserved line breaks -- returns the lenth of the whole string
+            return g.getFontMetrics().stringWidth(getText());
+        }
+        else
+        {
+            return getLongestLine();
+        }
+    }
+    
+    private int getLongestWord()
+    {
+        int ret = 0;
+        String t = getText();
         FontMetrics fm = g.getFontMetrics();
-        return fm.stringWidth(getText());
+        
+        int s1 = 0;
+        int s2 = t.indexOf(' ');
+        do
+        {
+            if (s2 == -1) s2 = t.length();
+            int w = fm.stringWidth(t.substring(s1, s2));
+            if (w > ret) ret = w;
+            s1 = s2 + 1;
+            s2 = t.indexOf(' ', s1);
+        } while (s1 < t.length() && s2 < t.length());
+        
+        return ret;
+    }
+
+    private int getLongestLine()
+    {
+        int ret = 0;
+        String t = getText();
+        FontMetrics fm = g.getFontMetrics();
+        
+        int s1 = 0;
+        int s2 = t.indexOf('\r');
+        do
+        {
+            if (s2 == -1) s2 = t.length();
+            int w = fm.stringWidth(t.substring(s1, s2));
+            if (w > ret) ret = w;
+            s1 = s2 + 1;
+            s2 = t.indexOf('\r', s1);
+        } while (s1 < t.length() && s2 < t.length());
+        
+        return ret;
     }
 
     /** 
@@ -733,5 +736,34 @@ public class TextBox extends Box implements Inline
         
         
     }
+	
+	//===============================================================================
+	
+	/**
+	 * Checks if a character can be interpreted as whitespace according to current settings.
+	 * @param ch
+	 * @return
+	 */
+    private boolean isWhitespace(char ch)
+    {
+        if (linews) 
+            return Character.isWhitespace(ch);
+        else
+            return ch != '\n' && ch != '\r' && Character.isWhitespace(ch);
+    }
+    
+    /**
+     * Checks if a character can be interpreted a line break according to current settings.
+     * @param ch
+     * @return
+     */
+    private boolean isLineBreak(char ch)
+    {
+        if (linews)
+            return false;
+        else
+            return (ch == '\r' || ch == '\n');
+    }
+    
 
 }
