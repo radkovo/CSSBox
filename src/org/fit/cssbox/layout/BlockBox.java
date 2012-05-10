@@ -732,11 +732,13 @@ public class BlockBox extends ElementBox
         //shrink-to-fit when the width is not given by containing box or specified explicitly
         if (!hasFixedWidth())
         {
-            int min = getMinimalContentWidthLimit();
+            //int min = getMinimalContentWidthLimit();
+            int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
             int max = getMaximalContentWidth();
             int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-            int pref = Math.min(max, availcont);
-            if (pref < min) pref = min;
+            //int pref = Math.min(max, availcont);
+            //if (pref < min) pref = min;
+            int pref = Math.min(Math.max(min, availcont), max);
             setContentWidth(pref);
             updateChildSizes();
         }

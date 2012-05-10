@@ -80,8 +80,6 @@ public class TextBox extends Box implements Inline
         
         ctx.updateForGraphics(null, g);
 
-        minwidth = computeMinimalWidth();
-        maxwidth = computeMaximalWidth();
         ignoreinitialws = false;
         collapsews = true;
     }
@@ -184,7 +182,10 @@ public class TextBox extends Box implements Inline
         //When this is the original box, apply the whitespace. For the copied boxes, the whitespace has been already applied (they contain
         //a copy of the original, already processed content). 
         if (!splitted)
-            applyWhiteSpace(); 
+            applyWhiteSpace();
+        //recompute widths (possibly different wrapping)
+        minwidth = computeMinimalWidth();
+        maxwidth = computeMaximalWidth();
     }
     
     /**
@@ -628,6 +629,7 @@ public class TextBox extends Box implements Inline
         {
             return getLongestLine();
         }
+        //return g.getFontMetrics().stringWidth(getText());
     }
     
     private int getLongestWord()
