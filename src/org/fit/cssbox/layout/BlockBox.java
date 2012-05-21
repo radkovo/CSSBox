@@ -571,15 +571,6 @@ public class BlockBox extends ElementBox
                 padding.bottom + border.bottom + emargin.bottom;
     }
     
-    //TODO: this is not used by block boxes and it is bad for inline-block boxes. Why was it here?
-    /*@Override
-    public void moveDown(int ofs)
-    {
-        super.moveDown(ofs);
-        if (isInFlow())
-            moveFloatsDown(ofs);
-    }*/
-
    //========================================================================
     
     /**
@@ -673,8 +664,6 @@ public class BlockBox extends ElementBox
                     subbox.computeEfficientMargins();
                     boolean boxempty = subbox.marginsAdjoin();
                     
-                    //TODO: clearance: http://www.w3.org/TR/CSS21/visuren.html#clearance
-
                     //if no separated box yet, update the top margin
                     if (firstseparated == null && !separatedFromTop(this)) 
                     {
@@ -716,7 +705,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	//if (getElement() != null && getElement().getAttribute("class").equals("Xanonymous"))
+    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzw"))
     	//	System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -834,7 +823,7 @@ public class BlockBox extends ElementBox
                 }
                 else //absolute or fixed positioning
                 {
-                    layoutBlockPositioned(sb, wlimit, stat);
+                    layoutBlockPositioned(sb, stat);
                 }
                 
                 //preferred width
@@ -1070,7 +1059,7 @@ public class BlockBox extends ElementBox
                 }
                 else //absolute or fixed positioning
                 {
-                    layoutBlockPositioned(subbox, wlimit, stat);
+                    layoutBlockPositioned(subbox, stat);
                 }
                 //accept the resulting Y coordinate
                 stat.y = nexty;
@@ -1191,8 +1180,12 @@ public class BlockBox extends ElementBox
             stat.prefw = pref;
     }
     
-    protected void layoutBlockPositioned(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    protected void layoutBlockPositioned(BlockBox subbox, BlockLayoutStatus stat)
     {
+        //calculate the available width for positioned boxes
+        int wlimit = availwidth;
+        if (leftset) wlimit -= coords.left;
+        if (rightset) wlimit -= coords.right;
         //layout the contents
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.doLayout(wlimit, true, true);
