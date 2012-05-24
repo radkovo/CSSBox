@@ -561,8 +561,9 @@ public class TextBox extends Box implements Inline
                     {
                         if (!force) //let it split as good as possible
                         {
-                            end = textStart;
+                            end = textStart; w = 0; h = 0;
                             split = false;
+                            allow = false; //split before the linebreak
                         }
                         else
                             split = true;
