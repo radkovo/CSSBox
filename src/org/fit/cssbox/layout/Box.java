@@ -317,6 +317,18 @@ abstract public class Box
     abstract public boolean collapsesSpaces();
     
     /**
+     * Checks whether this element should preserve the line breaks according to its style.
+     * @return <code>true</code> when the line breaks should be preserved
+     */
+    abstract public boolean preservesLineBreaks();
+    
+    /**
+     * Checks whether this box allows line wrapping on whitespaces according to the whit-space setting.
+     * @return <code>true</code> when line wrapping is allowed
+     */
+    abstract public boolean allowsWrapping();
+    
+    /**
      * @return <code>true</code> if the box can be split in two or more boxes
      * on different lines
      */

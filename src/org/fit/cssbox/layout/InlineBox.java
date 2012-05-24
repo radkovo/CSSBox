@@ -161,9 +161,54 @@ public class InlineBox extends ElementBox implements InlineElement
         return halflead;
     }
     
+    public int getFirstLineLength()
+    {
+        if (preservesLineBreaks())
+        {
+            if (endChild > startChild)
+                return ((Inline) getSubBox(startChild)).getFirstLineLength();
+            else
+                return 0;
+        }
+        else
+        {
+            int ret = 0;
+            for (int i = startChild; i < endChild; i++)
+                ret += getSubBox(i).getMaximalWidth();
+            return ret;
+        }
+    }
+
+    public int getLastLineLength()
+    {
+        if (preservesLineBreaks())
+        {
+            if (endChild > startChild)
+                return ((Inline) getSubBox(endChild - 1)).getLastLineLength();
+            else
+                return 0;
+        }
+        else
+        {
+            int ret = 0;
+            for (int i = startChild; i < endChild; i++)
+                ret += getSubBox(i).getMaximalWidth();
+            return ret;
+        }
+    }
+    
+    public boolean containsLineBreak()
+    {
+        for (int i = startChild; i < endChild; i++)
+            if (((Inline) getSubBox(i)).containsLineBreak())
+                return true;
+        return false;
+        
+    }
+    
     //========================================================================
     
-	@Override
+    @Override
     public boolean isInFlow()
 	{
 		return true;
@@ -313,12 +358,38 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public int getMinimalWidth()
     {
-        //return the maximum of the nested minimal widths that are separated
         int ret = 0;
-        for (int i = startChild; i < endChild; i++)
+        if (allowsWrapping())
         {
-            int w = getSubBox(i).getMinimalWidth();
-            if (w > ret) ret = w;
+            //return the maximum of the nested minimal widths that are separated
+            for (int i = startChild; i < endChild; i++)
+            {
+                int w = getSubBox(i).getMinimalWidth();
+                if (w > ret) ret = w;
+            }
+        }
+        else if (preservesLineBreaks())
+        {
+            //return the maximum of the nested minimal widths and try to sum the siblings sharing the same line
+            int total = 0;
+            for (int i = startChild; i < endChild; i++)
+            {
+                Box cur = getSubBox(i);
+                int w = cur.getMinimalWidth();
+                if (w > ret) ret = w;
+                
+                total += ((Inline) cur).getFirstLineLength();
+                if (total > ret) ret = total;
+                if (((Inline) cur).containsLineBreak())
+                    total = 0;
+                total += ((Inline) cur).getLastLineLength();
+            }
+        }
+        else
+        {
+            //no wrapping allowed, no preserved line breaks, return the sum
+            for (int i = startChild; i < endChild; i++)
+                ret += getSubBox(i).getMaximalWidth();
         }
         //increase by margin, padding, border
         ret += margin.left + padding.left + border.left +
@@ -329,10 +400,30 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public int getMaximalWidth()
     {
-        //return the sum of all the elements inside
         int ret = 0;
-        for (int i = startChild; i < endChild; i++)
-            ret += getSubBox(i).getMaximalWidth();
+        if (!preservesLineBreaks())
+        {
+            //return the sum of all the elements inside
+            for (int i = startChild; i < endChild; i++)
+                ret += getSubBox(i).getMaximalWidth();
+        }
+        else
+        {
+            //return the maximum of the nested minimal widths and try to sum the siblings sharing the same line
+            int total = 0;
+            for (int i = startChild; i < endChild; i++)
+            {
+                Box cur = getSubBox(i);
+                int w = cur.getMinimalWidth();
+                if (w > ret) ret = w;
+                
+                total += ((Inline) cur).getFirstLineLength();
+                if (total > ret) ret = total;
+                if (((Inline) cur).containsLineBreak())
+                    total = 0;
+                total += ((Inline) cur).getLastLineLength();
+            }
+        }
         //increase by margin, padding, border
         ret += margin.left + padding.left + border.left +
                margin.right + padding.right + border.right;

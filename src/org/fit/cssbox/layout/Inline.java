@@ -62,4 +62,25 @@ public interface Inline
 	
 	public int getHalfLead();
 	
+    /**
+     * Obtains the expected maximal length of the first line of this inline box.
+     * This is useful when the line breaks are preserved. Otherwise, the length of the whole text is returned.
+     * @return the length of the first line of the contents in pixels
+     */
+    public int getFirstLineLength();
+
+    /**
+     * Obtains the expected maximal length of the last line of this inline box.
+     * This is useful when the line breaks are preserved. Otherwise, the length of the whole text is returned.
+     * @return the length of the last line of the contents in pixels
+     */
+    public int getLastLineLength();
+    
+    /** 
+     * Checks whether the inline box contains a line break. This may be only true when the line breaks are preserved
+     * according to the whitespace style.
+     * @return <code>true</code> when there is at least one preserved line break inside 
+     */
+    public boolean containsLineBreak();
+
 }

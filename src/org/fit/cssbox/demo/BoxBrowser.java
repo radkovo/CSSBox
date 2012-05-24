@@ -261,6 +261,8 @@ public class BoxBrowser
         vals.add(infoTableData("Font name", box.getVisualContext().getFont().getFontName()));
         vals.add(infoTableData("Font size", box.getVisualContext().getFont().getSize() + "pt (" + CSSUnits.pixels(box.getVisualContext().getFont().getSize()) + "px)"));
         vals.add(infoTableData("Text decor", box.getVisualContext().getTextDecorationString()));
+        vals.add(infoTableData("Min width", String.valueOf(box.getMinimalWidth())));
+        vals.add(infoTableData("Max width", String.valueOf(box.getMaximalWidth())));
 
         if (box instanceof ElementBox)
         {

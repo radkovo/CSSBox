@@ -348,6 +348,28 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Checks whether this element should preserve the line breaks according to its style.
+     * @return <code>true</code> when the line breaks should be preserved
+     */
+    @Override
+    public boolean preservesLineBreaks()
+    {
+        return (whitespace != WHITESPACE_NORMAL && whitespace != WHITESPACE_NOWRAP);
+    }
+    
+    /**
+     * Checks whether this box allows line wrapping on whitespaces according to the whit-space setting.
+     * @return <code>true</code> when line wrapping is allowed
+     */
+    @Override
+    public boolean allowsWrapping()
+    {
+        return (whitespace == ElementBox.WHITESPACE_NORMAL
+                || whitespace == ElementBox.WHITESPACE_PRE_WRAP
+                || whitespace== ElementBox.WHITESPACE_PRE_LINE);
+    }
+    
+    /**
      * @return the background color or null when transparent
      */
     public Color getBgcolor()

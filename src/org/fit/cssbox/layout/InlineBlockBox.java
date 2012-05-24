@@ -114,6 +114,21 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         return 0;
     }
     
+    public int getFirstLineLength()
+    {
+        return getMaximalContentWidth();
+    }
+
+    public int getLastLineLength()
+    {
+        return getMaximalContentWidth();
+    }
+
+    public boolean containsLineBreak()
+    {
+        return false;
+    }
+    
 	//========================================================================
 	
     @Override

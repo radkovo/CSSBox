@@ -64,6 +64,18 @@ public class TextBox extends Box implements Inline
     /** Indicatew whether it line feeds should be treated as whitespace */
     protected boolean linews;
     
+    /** When line feeds are preserved, this contains the maximal length of the first line of the text. */
+    protected int firstLineLength;
+    
+    /** When line feeds are preserved, this contains the maximal length of the last line of the text. */
+    protected int lastLineLength;
+    
+    /** Contains the maximal length of the longest line of the text. */
+    protected int longestLineLength;
+    
+    /** Contains a preserved line break? */
+    protected boolean containsLineBreak;
+    
     //===================================================================
     
     /**
@@ -82,6 +94,7 @@ public class TextBox extends Box implements Inline
 
         ignoreinitialws = false;
         collapsews = true;
+        containsLineBreak = false;
     }
 
     /**
@@ -96,6 +109,10 @@ public class TextBox extends Box implements Inline
         collapsews = src.collapsews;
         splitws = src.splitws;
         linews = src.linews;
+        firstLineLength = src.firstLineLength;
+        lastLineLength = src.lastLineLength;
+        longestLineLength = src.longestLineLength;
+        containsLineBreak = src.containsLineBreak;
     }
     
     /** 
@@ -184,6 +201,7 @@ public class TextBox extends Box implements Inline
         if (!splitted)
             applyWhiteSpace();
         //recompute widths (possibly different wrapping)
+        computeLineLengths();
         minwidth = computeMinimalWidth();
         maxwidth = computeMaximalWidth();
     }
@@ -307,7 +325,19 @@ public class TextBox extends Box implements Inline
         return collapsews;
     }
     
-	@Override
+    @Override
+    public boolean preservesLineBreaks()
+    {
+        return !linews;
+    }
+
+    @Override
+    public boolean allowsWrapping()
+    {
+        return splitws;
+    }
+
+    @Override
     public int getContentX() 
     {
         return bounds.x;
@@ -606,7 +636,7 @@ public class TextBox extends Box implements Inline
             else
             {
             	//cannot wrap - return the width of the whole string
-            	ret = g.getFontMetrics().stringWidth(t);
+                ret = longestLineLength;
             }
         }
         return ret;
@@ -623,13 +653,16 @@ public class TextBox extends Box implements Inline
         if (linews)
         {
             //no preserved line breaks -- returns the lenth of the whole string
-            return g.getFontMetrics().stringWidth(getText());
+            int len = g.getFontMetrics().stringWidth(getText());
+            firstLineLength = len;
+            lastLineLength = len;
+            longestLineLength = len;
+            return len;
         }
         else
         {
-            return getLongestLine();
+            return longestLineLength;
         }
-        //return g.getFontMetrics().stringWidth(getText());
     }
     
     private int getLongestWord()
@@ -652,24 +685,49 @@ public class TextBox extends Box implements Inline
         return ret;
     }
 
-    private int getLongestLine()
+    public int getFirstLineLength()
     {
-        int ret = 0;
+        return firstLineLength;
+    }
+
+    public int getLastLineLength()
+    {
+        return lastLineLength;
+    }
+
+    public boolean containsLineBreak()
+    {
+        return containsLineBreak;
+    }
+
+    /**
+     * Computes the lengths of the first, last and longest lines.
+     */
+    protected void computeLineLengths()
+    {
+        firstLineLength = -1;
+        lastLineLength = 0;
+        longestLineLength = 0;
+        
         String t = getText();
         FontMetrics fm = g.getFontMetrics();
         
         int s1 = 0;
         int s2 = t.indexOf('\r');
+        int w = 0;
         do
         {
-            if (s2 == -1) s2 = t.length();
-            int w = fm.stringWidth(t.substring(s1, s2));
-            if (w > ret) ret = w;
+            if (s2 == -1)
+                s2 = t.length();
+            else
+                containsLineBreak = true;
+            w = fm.stringWidth(t.substring(s1, s2));
+            if (firstLineLength == -1) firstLineLength = w;
+            if (w > longestLineLength) longestLineLength = w;
             s1 = s2 + 1;
             s2 = t.indexOf('\r', s1);
         } while (s1 < t.length() && s2 < t.length());
-        
-        return ret;
+        lastLineLength = w;
     }
 
     /** 
@@ -713,7 +771,7 @@ public class TextBox extends Box implements Inline
         //draw the full box
         g.setColor(Color.ORANGE);
         g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
-        for (int i = 0; i < getText().length(); i++)
+        /*for (int i = 0; i < getText().length(); i++)
         {
             if (i != 0) System.out.print(" : ");
             char ch = getText().charAt(i);
@@ -724,7 +782,7 @@ public class TextBox extends Box implements Inline
             if (Character.isSpaceChar(ch))
                 System.out.print("*");
         }
-        System.out.println();
+        System.out.println();*/
         
         g.setColor(Color.MAGENTA);
         int y = getAbsoluteContentY();
