@@ -425,6 +425,7 @@ public class BoxFactory
         text.setClipBlock(stat.clipbox);
         text.setViewport(viewport);
         text.setBase(baseurl);
+        text.setParent(stat.parent);
         return text;
     }
 

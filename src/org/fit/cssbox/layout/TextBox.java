@@ -316,7 +316,12 @@ public class TextBox extends Box implements Inline
 	@Override
     public boolean isWhitespace()
     {
-        return getText().trim().length() == 0;
+		//after wihtespace processing, all whitespaces should be represented by ' '
+		String s = getText();
+		for (int i = 0; i < s.length(); i++)
+			if (s.charAt(i) != ' ')
+				return false;
+		return true;
     }
     
     @Override
