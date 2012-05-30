@@ -705,7 +705,7 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("gbz"))
+    	if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
     		System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
@@ -852,7 +852,7 @@ public class BlockBox extends ElementBox
                 boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
-                boolean f = (x == x1 || lastbreak == lnstr) && !narrowed;
+                boolean f = (x == x1 || lastbreak == lnstr || !allowsWrapping()) && !narrowed;
                 //if the previous box ends with a whitespace, ignore initial whitespaces here
                 if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
                 //do the layout                
@@ -1312,22 +1312,33 @@ public class BlockBox extends ElementBox
     protected int getMinimalContentWidth()
     {
         int ret = 0;
+        int max = 0; //block children
+        int sum = 0; //inline children
         for (int i = startChild; i < endChild; i++)
         {
             Box box = getSubBox(i);
-            boolean affect = true; //does the box affect the minimal width?
-            if (box instanceof BlockBox)
+            if (box instanceof Inline)
+            {
+                if (allowsWrapping() && box.canSplitBefore())
+                    sum = 0;
+                sum += box.getMinimalWidth();
+            }
+            else
             {
                 BlockBox block = (BlockBox) box;
-                if (block.position == POS_ABSOLUTE || block.position == POS_FIXED) //absolute or fixed position boxes don't affect the width
-                    affect = false;
+                if (block.position != POS_ABSOLUTE && block.position != POS_FIXED) //absolute or fixed position boxes don't affect the width
+                {
+                    int w = box.getMinimalWidth();
+                    if (w > max) max = w;
+                    sum = 0;
+                }
             }
             
-            if (affect)
-            {
-                int w = box.getMinimalWidth();
-                if (w > ret) ret = w;
-            }
+            if (sum > ret) ret = sum;
+            if (max > ret) ret = max;
+            
+            if (allowsWrapping() && box.canSplitAfter())
+                sum = 0;
         }
         return ret;
     }
@@ -1382,7 +1393,13 @@ public class BlockBox extends ElementBox
             }
             else //inline boxes
             {
-                sum += subbox.getMaximalWidth();
+                if (preservesLineBreaks())
+                {
+                    int sm = subbox.getMaximalWidth();
+                    if (sm > max) max = sm;
+                }
+                else
+                    sum += subbox.getMaximalWidth();
             }
         }
         return Math.max(sum, max);
