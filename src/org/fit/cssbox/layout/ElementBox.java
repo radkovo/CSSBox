@@ -634,41 +634,41 @@ abstract public class ElementBox extends Box
      */
     public int getContentOffsetY()
     {
-        return margin.top + border.top + padding.top;
+        return emargin.top + border.top + padding.top;
     }
     
     public int getContentX()
     {
-        return bounds.x + margin.left + border.left + padding.left;
+        return bounds.x + emargin.left + border.left + padding.left;
     }
     
     public int getContentY()
     {
-        return bounds.y + margin.top + border.top + padding.top;
+        return bounds.y + emargin.top + border.top + padding.top;
     }
     
     public int getAbsoluteContentX()
     {
-        return absbounds.x + margin.left + border.left + padding.left;
+        return absbounds.x + emargin.left + border.left + padding.left;
     }
     
     public int getAbsoluteContentY()
     {
-        return absbounds.y + margin.top + border.top + padding.top;
+        return absbounds.y + emargin.top + border.top + padding.top;
     }
     
     public int totalWidth()
     {
-        return margin.left + border.left + padding.left + content.width +
-            padding.right + border.right + margin.right;
+        return emargin.left + border.left + padding.left + content.width +
+            padding.right + border.right + emargin.right;
     }
     
     //totalHeight() differs for inline and block boxes
     
     public int getAvailableContentWidth()
     {
-        return availwidth - margin.left - border.left - padding.left 
-                  - padding.right - border.right - margin.right;
+        return availwidth - emargin.left - border.left - padding.left 
+                  - padding.right - border.right - emargin.right;
     }
     
     @Override

@@ -414,7 +414,7 @@ public class InlineBox extends ElementBox implements InlineElement
             for (int i = startChild; i < endChild; i++)
             {
                 Box cur = getSubBox(i);
-                int w = cur.getMinimalWidth(); //TODO minimal or maximal?
+                int w = cur.getMaximalWidth();
                 if (w > ret) ret = w;
                 
                 total += ((Inline) cur).getFirstLineLength();
