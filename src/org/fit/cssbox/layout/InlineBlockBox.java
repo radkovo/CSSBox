@@ -245,7 +245,8 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             //y coordinate -- depends on the vertical alignment
             if (valign == CSSProperty.VerticalAlign.TOP)
             {
-                absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
+                //absbounds.y = linebox.getAbsoluteY() + (linebox.getLead() / 2) - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() - getContentOffsetY();
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
