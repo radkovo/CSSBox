@@ -131,6 +131,13 @@ public class TableRowBox extends BlockBox
 
     //=====================================================================================
     
+    @Override
+    public void computeEfficientMargins()
+    {
+        //no margin collapsing with the contents for table rows
+        emargin = new LengthSet(margin);
+    }
+	
 	@Override
     public boolean doLayout(int widthlimit, boolean force, boolean linestart)
     {
@@ -193,6 +200,7 @@ public class TableRowBox extends BlockBox
 	        bounds = new Rectangle(0, 0, 0, 0);
 	        margin = new LengthSet(); //internal table cells do not have margins
 	        emargin = margin;
+	        declMargin = margin;
 	        padding = new LengthSet();
 	        border = new LengthSet(); //borders are ignored for rows
             min_size = new Dimension(-1, -1);
@@ -201,6 +209,18 @@ public class TableRowBox extends BlockBox
     	}
     	//row occupies the whole body width
     	content.width = cblock.getContentWidth();
+    }
+
+    @Override
+    protected boolean separatedFromTop(ElementBox box)
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean separatedFromBottom(ElementBox box)
+    {
+        return true;
     }
 
     @Override

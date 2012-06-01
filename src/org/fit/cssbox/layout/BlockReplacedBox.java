@@ -182,6 +182,18 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
 		return true;
 	}
 
+    @Override
+    protected boolean separatedFromTop(ElementBox box)
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean separatedFromBottom(ElementBox box)
+    {
+        return true;
+    }
+
 	@Override
 	public void draw(Graphics2D g, int turn, int mode)
     {

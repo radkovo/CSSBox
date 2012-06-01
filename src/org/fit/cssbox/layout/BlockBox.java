@@ -1047,7 +1047,7 @@ public class BlockBox extends ElementBox
                             mbottom = subbox.emargin.bottom;
                     }
                     
-                    stat.y = borderY - subbox.margin.top; //place the border edge appropriately
+                    stat.y = borderY - subbox.emargin.top; //place the border edge appropriately
                     layoutBlockInFlow(subbox, wlimit, stat);
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
@@ -2119,7 +2119,7 @@ public class BlockBox extends ElementBox
     /**
      * Checks if the box content is separated from the top margin by a border or padding.
      */
-    private boolean separatedFromTop(ElementBox box)
+    protected boolean separatedFromTop(ElementBox box)
     {
         return (box.border.top > 0 || box.padding.top > 0);
     }
@@ -2127,7 +2127,7 @@ public class BlockBox extends ElementBox
     /**
      * Checks if the box content is separated from the bottom margin by a border or padding.
      */
-    private boolean separatedFromBottom(ElementBox box)
+    protected boolean separatedFromBottom(ElementBox box)
     {
         return (box.border.bottom > 0 || box.padding.bottom > 0);
     }

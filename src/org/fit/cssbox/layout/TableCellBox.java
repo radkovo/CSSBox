@@ -193,6 +193,13 @@ public class TableCellBox extends BlockBox
     //====================================================================================
 
     @Override
+    public void computeEfficientMargins()
+    {
+        //no margin collapsing with the contents for table cells
+        emargin = new LengthSet(margin);
+    }
+    
+    @Override
     public int getMinimalWidth()
     {
         int ret = getMinimalContentWidth();
@@ -367,8 +374,19 @@ public class TableCellBox extends BlockBox
         g.setColor(color); //restore original color
     }
     
-    
-	/**
+    @Override
+    protected boolean separatedFromTop(ElementBox box)
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean separatedFromBottom(ElementBox box)
+    {
+        return true;
+    }
+
+    /**
      * Loads the important values from the element attributes.
      */
     protected void loadAttributes()
