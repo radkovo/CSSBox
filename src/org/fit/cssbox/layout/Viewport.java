@@ -188,8 +188,8 @@ public class Viewport extends BlockBox
 			max_size = new Dimension(-1, -1);
 			loadPosition();
 		}
-		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, this, update); 
-		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, this, update); 
+		//computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, this, update); 
+		//computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, this, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
@@ -235,6 +235,39 @@ public class Viewport extends BlockBox
 		if (height < maxy) height = maxy;
 		loadSizes();
 	}
+
+    @Override
+    public boolean doLayout(int availw, boolean force, boolean linestart)
+    {
+        //remove previously splitted children from possible previous layout
+        clearSplitted();
+
+        //shrink-to-fit when the width is not given by containing box or specified explicitly
+        //int min = getMinimalContentWidthLimit();
+        int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
+        int max = getMaximalContentWidth();
+        int availcont = width;
+        //int pref = Math.min(max, availcont);
+        //if (pref < min) pref = min;
+        int pref = Math.min(Math.max(min, availcont), max);
+        setContentWidth(pref);
+        updateChildSizes();
+        
+        //the width should be fixed from this point
+        widthComputed = true;
+        
+        /* Always try to use the full width. If the box is not in flow, its width
+         * is updated after the layout */
+        setAvailableWidth(totalWidth());
+        
+        if (!contblock)  //block elements containing inline elements only
+            layoutInline();
+        else //block elements containing block elements
+            layoutBlocks();
+        
+        //allways fits as well possible
+        return true;
+    }
 	
 	@Override
     public void absolutePositions()

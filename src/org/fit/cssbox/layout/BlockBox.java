@@ -2135,7 +2135,7 @@ public class BlockBox extends ElementBox
     /**
      * Remove the previously splitted child boxes
      */
-    private void clearSplitted()
+    protected void clearSplitted()
     {
         for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {

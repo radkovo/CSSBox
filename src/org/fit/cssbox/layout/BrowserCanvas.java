@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 13. záøí 2005, 15:44
+ * Created on 13. zï¿½ï¿½ï¿½ 2005, 15:44
  */
 
 package org.fit.cssbox.layout;
@@ -110,10 +110,10 @@ public class BrowserCanvas extends JPanel
         viewport.doLayout(dim.width, true, true);
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
-        System.err.println("Updating viewport size");
+        /*System.err.println("Updating viewport size");
         viewport.updateBounds();
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
-        
+        */
         if (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height)
         {
             img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),
