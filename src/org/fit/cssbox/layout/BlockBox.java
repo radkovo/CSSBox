@@ -1667,6 +1667,11 @@ public class BlockBox extends ElementBox
         
         if (!update)
         	emargin = new LengthSet(margin);
+        else
+        { //efficient top and bottom margins already computed; update just left and right
+            emargin.left = margin.left;
+            emargin.right = margin.right;
+        }
     }
     
     /**

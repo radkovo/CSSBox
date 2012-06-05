@@ -110,10 +110,10 @@ public class BrowserCanvas extends JPanel
         viewport.doLayout(dim.width, true, true);
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
-        /*System.err.println("Updating viewport size");
+        System.err.println("Updating viewport size");
         viewport.updateBounds();
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
-        */
+        
         if (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height)
         {
             img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),

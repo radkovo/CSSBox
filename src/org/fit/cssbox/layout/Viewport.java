@@ -23,7 +23,6 @@ import java.util.Vector;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSFactory;
-import cz.vutbr.web.css.TermNumeric.Unit;
 
 /**
  * This class represents a browser viewport which is implemented as a special case of a block
@@ -182,14 +181,12 @@ public class Viewport extends BlockBox
 			emargin = new LengthSet();
 			declMargin = new LengthSet();
 			border = new LengthSet();
-			padding = new LengthSet(1, 1, 1, 1);
-			content = new Dimension(0, 0);
-			min_size = new Dimension(width, height);
+			padding = new LengthSet();
+			content = new Dimension(width, height);
+			min_size = new Dimension(-1, -1);
 			max_size = new Dimension(-1, -1);
 			loadPosition();
 		}
-		//computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, this, update); 
-		//computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, this, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
@@ -242,14 +239,9 @@ public class Viewport extends BlockBox
         //remove previously splitted children from possible previous layout
         clearSplitted();
 
-        //shrink-to-fit when the width is not given by containing box or specified explicitly
-        //int min = getMinimalContentWidthLimit();
-        int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-        int max = getMaximalContentWidth();
-        int availcont = width;
-        //int pref = Math.min(max, availcont);
-        //if (pref < min) pref = min;
-        int pref = Math.min(Math.max(min, availcont), max);
+        //viewport has a siplified width computation algorithm
+        int min = getMinimalContentWidth();
+        int pref = Math.max(min, width);
         setContentWidth(pref);
         updateChildSizes();
         
