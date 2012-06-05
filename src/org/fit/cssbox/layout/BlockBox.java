@@ -1667,6 +1667,11 @@ public class BlockBox extends ElementBox
         
         if (!update)
         	emargin = new LengthSet(margin);
+        else
+        { //efficient top and bottom margins already computed; update just left and right
+            emargin.left = margin.left;
+            emargin.right = margin.right;
+        }
     }
     
     /**
@@ -2135,7 +2140,7 @@ public class BlockBox extends ElementBox
     /**
      * Remove the previously splitted child boxes
      */
-    private void clearSplitted()
+    protected void clearSplitted()
     {
         for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {

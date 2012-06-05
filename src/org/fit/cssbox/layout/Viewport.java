@@ -23,7 +23,6 @@ import java.util.Vector;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSFactory;
-import cz.vutbr.web.css.TermNumeric.Unit;
 
 /**
  * This class represents a browser viewport which is implemented as a special case of a block
@@ -182,14 +181,12 @@ public class Viewport extends BlockBox
 			emargin = new LengthSet();
 			declMargin = new LengthSet();
 			border = new LengthSet();
-			padding = new LengthSet(1, 1, 1, 1);
-			content = new Dimension(0, 0);
-			min_size = new Dimension(width, height);
+			padding = new LengthSet();
+			content = new Dimension(width, height);
+			min_size = new Dimension(-1, -1);
 			max_size = new Dimension(-1, -1);
 			loadPosition();
 		}
-		computeWidths(CSSFactory.getTermFactory().createLength((float) width, Unit.px), false, false, this, update); 
-		computeHeights(CSSFactory.getTermFactory().createLength((float) height, Unit.px), false, false, this, update); 
 		bounds = new Rectangle(0, 0, totalWidth(), totalHeight());
 	}
 
@@ -235,6 +232,34 @@ public class Viewport extends BlockBox
 		if (height < maxy) height = maxy;
 		loadSizes();
 	}
+
+    @Override
+    public boolean doLayout(int availw, boolean force, boolean linestart)
+    {
+        //remove previously splitted children from possible previous layout
+        clearSplitted();
+
+        //viewport has a siplified width computation algorithm
+        int min = getMinimalContentWidth();
+        int pref = Math.max(min, width);
+        setContentWidth(pref);
+        updateChildSizes();
+        
+        //the width should be fixed from this point
+        widthComputed = true;
+        
+        /* Always try to use the full width. If the box is not in flow, its width
+         * is updated after the layout */
+        setAvailableWidth(totalWidth());
+        
+        if (!contblock)  //block elements containing inline elements only
+            layoutInline();
+        else //block elements containing block elements
+            layoutBlocks();
+        
+        //allways fits as well possible
+        return true;
+    }
 	
 	@Override
     public void absolutePositions()
