@@ -534,7 +534,7 @@ public class TextBox extends Box implements Inline
         FontMetrics fm = g.getFontMetrics();
         int w = 0, h = 0;
         
-        int end = text.length();
+        int end = textEnd;
         int lineend = text.indexOf('\r', textStart);
         if (lineend != -1 && lineend < end) //preserved end-of-line encountered
         {
@@ -598,6 +598,7 @@ public class TextBox extends Box implements Inline
                 TextBox rtext = copyTextBox();
                 rtext.splitted = true;
                 rtext.setTextStart(start);
+                rtext.setTextEnd(text.length());
                 rest = rtext;
             }
             else
