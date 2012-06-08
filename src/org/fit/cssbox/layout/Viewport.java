@@ -146,6 +146,18 @@ public class Viewport extends BlockBox
         return true;
     }
 
+    @Override
+    protected boolean separatedFromTop(ElementBox box)
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean separatedFromBottom(ElementBox box)
+    {
+        return true;
+    }
+
 	@Override
 	public void setSize(int width, int height)
     {

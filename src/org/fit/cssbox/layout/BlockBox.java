@@ -705,8 +705,8 @@ public class BlockBox extends ElementBox
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
-    	if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-    		System.out.println("jo!");
+    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
+    	//	System.out.println("jo!");
         //Skip if not displayed
         if (!displayed)
         {
@@ -1098,7 +1098,7 @@ public class BlockBox extends ElementBox
                             + subbox.border.left + subbox.padding.left;
         int newfloatXr = floatXr + subbox.margin.right
                             + subbox.border.right + subbox.padding.right;
-        int newfloatY = floatY + subbox.margin.top
+        int newfloatY = floatY + subbox.emargin.top
                             + subbox.border.top + subbox.padding.top;
         
         //position the box
