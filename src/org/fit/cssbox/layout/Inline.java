@@ -83,4 +83,10 @@ public interface Inline
      */
     public boolean containsLineBreak();
 
+    /**
+     * Indicates whether the layout of this box content has been finished by a line break. 
+     * @return <code>true</code> if the layout of this box has finished by a line break
+     */
+    public boolean finishedByLineBreak();
+    
 }

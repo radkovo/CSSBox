@@ -44,6 +44,9 @@ public class InlineBox extends ElementBox implements InlineElement
     /** half-lead after layout */
     private int halflead;
     
+    /** Layout finished with a line break? */
+    protected boolean lineBreakStop;
+    
     //========================================================================
     
     /** Creates a new instance of InlineBox */
@@ -51,6 +54,7 @@ public class InlineBox extends ElementBox implements InlineElement
     {
         super(n, g, ctx);
         halflead = 0;
+        lineBreakStop = false;
     }
     
     public void copyValues(InlineBox src)
@@ -205,6 +209,11 @@ public class InlineBox extends ElementBox implements InlineElement
         return false;
         
     }
+
+    public boolean finishedByLineBreak()
+    {
+        return lineBreakStop;
+    }
     
     //========================================================================
     
@@ -273,6 +282,8 @@ public class InlineBox extends ElementBox implements InlineElement
                     subbox.setPosition(x,  0); //the y position will be updated later
                     x += subbox.getWidth();
                     curline.considerBox((Inline) subbox);
+                    if (((Inline) subbox).finishedByLineBreak())
+                        lineBreakStop = true;
                 }
                 else
                 	System.err.println("Warning: doLayout(): subbox is not inline: " + subbox);
@@ -285,6 +296,19 @@ public class InlineBox extends ElementBox implements InlineElement
                     rbox.adoptChildren();
                     setEndChild(i+1); //...and this box stops with this element
                     rest = rbox;
+                    break;
+                }
+                else if (lineBreakStop) //nothing remained but there was a line break
+                {
+                    if (i + 1 < endChild) //some children remaining
+                    {
+                        InlineBox rbox = copyBox();
+                        rbox.splitted = true;
+                        rbox.setStartChild(i + 1); //next starts with the next one
+                        rbox.adoptChildren();
+                        setEndChild(i+1); //...and this box stops with this element
+                        rest = rbox;
+                    }
                     break;
                 }
             }

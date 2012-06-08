@@ -76,6 +76,9 @@ public class TextBox extends Box implements Inline
     /** Contains a preserved line break? */
     protected boolean containsLineBreak;
     
+    /** Layout finished with a line break? */
+    protected boolean lineBreakStop;
+    
     //===================================================================
     
     /**
@@ -95,6 +98,7 @@ public class TextBox extends Box implements Inline
         ignoreinitialws = false;
         collapsews = true;
         containsLineBreak = false;
+        lineBreakStop = false;
     }
 
     /**
@@ -530,7 +534,7 @@ public class TextBox extends Box implements Inline
         boolean split = false; //should we split to more boxes?
         boolean allow = false; //allow succesfull result even if nothing has been placed (line break only)
         int wlimit = getAvailableContentWidth();
-        boolean empty = (text.trim().length() == 0);
+        boolean empty = isempty;
         FontMetrics fm = g.getFontMetrics();
         int w = 0, h = 0;
         
@@ -588,11 +592,20 @@ public class TextBox extends Box implements Inline
         //if not the whole element was placed, create the rest
         if (split)
         {
-            //find the start of the next word
+            //skip the eventual line break
             int start = textEnd;
-            while (start < text.length() && 
-            		((collapsews && isWhitespace(text.charAt(start))) || isLineBreak(text.charAt(start))))
-            			start++;
+            if (start < text.length() && isLineBreak(text.charAt(start)))
+            {
+                start++;
+                lineBreakStop = true;
+            }
+            //find the start of the next word
+            if (collapsews)
+            {
+                while (start < text.length() && isWhitespace(text.charAt(start)))
+                    start++;
+            }
+            //create the rest if something has left
             if (start < text.length())
             {
                 TextBox rtext = copyTextBox();
@@ -705,6 +718,11 @@ public class TextBox extends Box implements Inline
     public boolean containsLineBreak()
     {
         return containsLineBreak;
+    }
+    
+    public boolean finishedByLineBreak()
+    {
+        return lineBreakStop;
     }
 
     /**

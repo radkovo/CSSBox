@@ -873,6 +873,7 @@ public class BlockBox extends ElementBox
                 
                 //check line overflows
                 boolean over = (x > wlimit - x2); //space overflow?
+                boolean linebreak = (subbox instanceof Inline && ((Inline) subbox).finishedByLineBreak()); //finished by a line break?
                 if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
                 {
                     //go to the new line
@@ -888,7 +889,7 @@ public class BlockBox extends ElementBox
                     split = true;
                 }
                 else if ((!fit && lastbreak > lnstr) //line overflow and the line can be broken
-                           || (fit && (over || subbox.getRest() != null))) //or something fit but something has left
+                           || (fit && (over || linebreak || subbox.getRest() != null))) //or something fit but something has left
                 {
                     //the width and height for text alignment
                     curline.setWidth(x - x1);
@@ -911,7 +912,7 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                         split = true; //force repeating the same once again
                     }
-                    else if (over || subbox.getRest() != null) //something fit but not everything placed or line exceeded - create a new empty line
+                    else if (over || linebreak || subbox.getRest() != null) //something fit but not everything placed or line exceeded - create a new empty line
                     {
                         if (subbox.getRest() != null)
                             insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
