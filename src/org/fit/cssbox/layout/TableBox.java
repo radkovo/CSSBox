@@ -184,7 +184,6 @@ public class TableBox extends BlockBox
      * @param width the specified width
      * @param exact true if this is the exact width, false when it's a max/min width
      * @param contw containing block width
-     * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     @Override

@@ -1,3 +1,11 @@
+2012-06-08 - Version 3.5
+- Improved performance (faster style computation, less rendering phases)
+- Support for style sheet origin specification (for priority computation)
+- White-space property support (including 'pre' and 'nowrap' modes)
+- Viewport and block width computation fixes
+- Fixed processing of the presentational HTML attributes (mainly for tables)
+- Line alignment bugfixes
+
 2011-12-06 - Version 3.4
 - Support for display:inline-block layout
 - Vertical alignment fixed for the "top" and "bottom" values

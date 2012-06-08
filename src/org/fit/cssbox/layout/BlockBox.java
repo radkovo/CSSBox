@@ -1744,7 +1744,6 @@ public class BlockBox extends ElementBox
      * @param width the specified width or null for auto
      * @param exact true if this is the exact width, false when it's a max/min width
      * @param cblock containing block
-     * @param wknown <code>true</code>, if the containing block width is known
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, BlockBox cblock, boolean update)
@@ -1951,9 +1950,7 @@ public class BlockBox extends ElementBox
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
      * @param height the specified width
      * @param exact true if this is the exact height, false when it's a max/min height
-     * @param contw containing block width
-     * @param conth containing block height
-     * @param wknown <code>true</code>, if the containing block width is known
+     * @param cblock the containing block
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, BlockBox cblock, boolean update)

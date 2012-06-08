@@ -682,10 +682,8 @@ public class BoxFactory
 
     /**
      * Creates a new box for a pseudo-element.
-     * @param n The source DOM element
+     * @param box the parent box of the pseudo element
      * @param pseudo The pseudo element name
-     * @param viewport The used viewport
-     * @param parent the root element from which the style will be inherited
      * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
      */
     private Node createPseudoElement(ElementBox box, Selector.PseudoDeclaration pseudo) 
