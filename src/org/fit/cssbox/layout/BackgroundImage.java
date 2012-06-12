@@ -19,6 +19,8 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.net.URL;
 
 import cz.vutbr.web.css.CSSProperty;
@@ -31,10 +33,11 @@ import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
  * 
  * @author burgetr
  */
-public class BackgroundImage
+public class BackgroundImage extends ContentImage
 {
-    private URL url;
-    
+    /** Indicates whether to load images automatically */
+    private static boolean LOAD_IMAGES = true;
+
     private CSSProperty.BackgroundPosition position;
     
     private CSSProperty.BackgroundRepeat repeat;
@@ -43,20 +46,42 @@ public class BackgroundImage
 
     
     
-    public BackgroundImage(URL url, BackgroundPosition position,
-            BackgroundRepeat repeat, BackgroundAttachment attachment)
+    public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, BackgroundRepeat repeat, BackgroundAttachment attachment)
     {
+        super(owner);
+        this.loadImages = LOAD_IMAGES;
         this.url = url;
         this.position = position;
         this.repeat = repeat;
         this.attachment = attachment;
     }
 
-    public URL getUrl()
+    /**
+     * Switches automatic image data downloading on or off.
+     * 
+     * @param b
+     *            when set to <code>true</code>, the images are automatically
+     *            loaded from the server. When set to <code>false</code>, the
+     *            images are not loaded and the corresponding box is displayed
+     *            empty. When the image loading is switched off, the box size
+     *            can be only determined from the element attributes or style.
+     *            The default value is on.
+     */
+    public static void setLoadImages(boolean b)
     {
-        return url;
+        LOAD_IMAGES = b;
     }
 
+    /**
+     * Gets the load images.
+     * 
+     * @return the load images
+     */
+    public static boolean getLoadImages()
+    {
+        return LOAD_IMAGES;
+    }
+    
     public CSSProperty.BackgroundPosition getPosition()
     {
         return position;
@@ -71,9 +96,15 @@ public class BackgroundImage
     {
         return attachment;
     }
-    
+
     //===========================================================================
     
+    @Override
+    public void draw(Graphics2D g, int width, int height)
+    {
+        Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
+        g.drawImage(image, bounds.x, bounds.y, getIntrinsicWidth(), getIntrinsicHeight(), observer);
+    }
     
     
 }

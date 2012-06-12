@@ -20,6 +20,8 @@
 
 package org.fit.cssbox.layout;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.awt.*;
@@ -105,6 +107,9 @@ abstract public class ElementBox extends Box
     
     /** Background color or null when transparent */
     protected Color bgcolor;
+
+    /** Background images or null when there are no background images */
+    protected Vector<BackgroundImage> bgimages;
     
     /** A list of nested boxes (possibly empty). The box can contain either 
      * only block boxes or only inline boxes. The inline boxes can only
@@ -195,6 +200,7 @@ abstract public class ElementBox extends Box
         lineHeight = src.lineHeight;
         whitespace = src.whitespace;
         bgcolor = (src.bgcolor == null) ? null : new Color(src.bgcolor.getRed(), src.bgcolor.getGreen(), src.bgcolor.getBlue(), src.bgcolor.getAlpha());
+        bgimages = (src.bgimages == null) ? null : new Vector<BackgroundImage>(src.bgimages);
         
         if (src.margin != null)
             margin = new LengthSet(src.margin);
@@ -375,6 +381,15 @@ abstract public class ElementBox extends Box
     public Color getBgcolor()
     {
         return bgcolor;
+    }
+    
+    /**
+     * Obtains the list of background images of the element.
+     * @return a list of the background images
+     */
+    public List<BackgroundImage> getBackgroundImages()
+    {
+        return bgimages;
     }
 
     /**
@@ -1036,6 +1051,26 @@ abstract public class ElementBox extends Box
         }
         else
             bgcolor = null;
+        
+        CSSProperty.BackgroundImage img = style.getProperty("background-image");
+        if (img == CSSProperty.BackgroundImage.uri)
+        {
+            try {
+                bgimages = new Vector<BackgroundImage>(1);
+                TermURI urlstring = style.getValue(TermURI.class, "background-image");
+                URL url = new URL(urlstring.getValue());
+                CSSProperty.BackgroundPosition position = style.getProperty("background-position");
+                CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
+                CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
+                BackgroundImage bgimg = new BackgroundImage(this, url, position, repeat, attachment);
+                bgimages.add(bgimg);
+            } catch (MalformedURLException e) {
+                System.err.println("BackgroundImage: Warning: " + e.getMessage());
+                bgimages = null;
+            }
+        }
+        else
+            bgimages = null;
     }
     
 }
