@@ -1058,7 +1058,11 @@ abstract public class ElementBox extends Box
             try {
                 bgimages = new Vector<BackgroundImage>(1);
                 TermURI urlstring = style.getValue(TermURI.class, "background-image");
-                URL url = new URL(urlstring.getValue());
+                URL url;
+                if (urlstring.getBase() != null)
+                    url = new URL(urlstring.getBase(), urlstring.getValue());
+                else
+                    url = new URL(urlstring.getValue());
                 CSSProperty.BackgroundPosition position = style.getProperty("background-position");
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
