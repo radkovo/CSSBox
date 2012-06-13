@@ -26,8 +26,11 @@ import java.util.*;
 import java.util.List;
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
 
 import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
+import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.misc.CSSStroke;
@@ -831,6 +834,18 @@ abstract public class ElementBox extends Box
             g.fillRect(bx1, by1, bw, bh);
         }
         
+        //draw the background images
+        if (bgimages != null)
+        {
+            for (BackgroundImage img : bgimages)
+            {
+                //img.draw(g, 0, 0);
+                BufferedImage bimg = img.getBufferedImage();
+                if (bimg != null)
+                    g.drawImage(bimg, bx1 + border.left, by1 + border.top, null);
+            }
+        }
+        
         //draw the border
         drawBorders(g, bx1, by1, bx2, by2);
         
@@ -1065,9 +1080,12 @@ abstract public class ElementBox extends Box
                     url = new URL(urlstring.getValue());
                 CSSProperty.BackgroundPosition position = style.getProperty("background-position");
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
+                if (repeat == null) repeat = BackgroundRepeat.REPEAT;
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
+                if (attachment == null) attachment = BackgroundAttachment.SCROLL;
                 BackgroundImage bgimg = new BackgroundImage(this, url, position, repeat, attachment);
                 bgimages.add(bgimg);
+                System.out.println("BG: " + url);
             } catch (MalformedURLException e) {
                 System.err.println("BackgroundImage: Warning: " + e.getMessage());
                 bgimages = null;
