@@ -1909,7 +1909,7 @@ public class BlockBox extends ElementBox
     	    }
     	    else if (mrightauto)
     	    {
-    	        margin.left = dec.getLength(mright, false, 0, 0, contw);
+    	        margin.left = dec.getLength(mleft, false, 0, 0, contw);
     	        margin.right = contw - coords.right - border.left - border.right - padding.left - padding.right - content.width - margin.left;
     	    }
     	    else //over-constrained, both margins apply (right coordinate will be ignored)
