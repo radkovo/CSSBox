@@ -108,6 +108,12 @@ public class BlockBox extends ElementBox
     /** true if the width is relative [%] */
     protected boolean wrelative;
     
+    /** true if the left margin is set to auto */
+    protected boolean mleftauto;
+    
+    /** true if the right margin is set to auto */
+    protected boolean mrightauto;
+    
     /** the preferred width or -1 if something is set to "auto" */
     protected int preferredWidth;
     
@@ -1439,7 +1445,9 @@ public class BlockBox extends ElementBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-	    return wset || isInFlow();
+	    return wset //width set explicitly 
+	            || isInFlow() //in flow boxes fixed to their containing block
+	            || (isPositioned() && !mleftauto && !mrightauto && leftset && rightset); //positioned blocks with auto width but fixed on both sides 
 	}
 
 	@Override
@@ -1748,6 +1756,8 @@ public class BlockBox extends ElementBox
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, BlockBox cblock, boolean update)
     {
+        mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
+        mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
     	if (position == POS_ABSOLUTE)
     		computeWidthsAbsolute(width, auto, exact, cblock.getContentWidth() + cblock.padding.left + cblock.padding.right, update); //containing box created by padding
     	else
@@ -1760,9 +1770,7 @@ public class BlockBox extends ElementBox
         
         if (width == null) auto = true; //no value behaves as 'auto'
         
-        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");
-        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mright = getLengthValue("margin-right");
         preferredWidth = -1;
         
@@ -1851,9 +1859,7 @@ public class BlockBox extends ElementBox
         
     	if (width == null) auto = true; //no value behaves as "auto"
 
-        boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");
-        boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mright = getLengthValue("margin-right");
         preferredWidth = -1;
         
