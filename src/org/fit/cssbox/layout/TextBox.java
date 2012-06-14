@@ -533,6 +533,7 @@ public class TextBox extends Box implements Inline
         
         boolean split = false; //should we split to more boxes?
         boolean allow = false; //allow succesfull result even if nothing has been placed (line break only)
+        boolean fail = false; //failed totally (nothing fit)
         int wlimit = getAvailableContentWidth();
         boolean empty = isempty;
         FontMetrics fm = g.getFontMetrics();
@@ -568,11 +569,13 @@ public class TextBox extends Box implements Inline
                     while (wordend > 0 && text.charAt(wordend-1) == ' ') wordend--; //skip trailing spaces
                     if (wordend <= textStart || !splitws) //no previous word, cannot split or splitting not allowed
                     {
-                        if (!force) //let it split as good as possible
+                        if (!force) //everything failed
                         {
-                            end = textStart; w = 0; h = 0;
-                            split = false;
+                        	//System.out.println("Here for " + this);
+                            end = textEnd; //we will try with the whole rest next time
+                            split = false; 
                             allow = false; //split before the linebreak
+                            fail = true;
                         }
                         else
                             split = true;
@@ -620,7 +623,7 @@ public class TextBox extends Box implements Inline
         else
             rest = null;
         
-        return ((textEnd > textStart) || empty || allow);
+        return !fail && ((textEnd > textStart) || empty || allow);
     }
     
 	@Override
