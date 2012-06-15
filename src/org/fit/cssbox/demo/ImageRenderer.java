@@ -184,15 +184,18 @@ public class ImageRenderer
         
         if (drawbg)
         {
-            //background
+            Rectangle bb = eb.getAbsoluteBorderBounds();
+            
+            //background color
             if (bg != null)
             {
                 String style = "stroke:none;fill-opacity:1;fill:" + colorString(bg);
-                out.println("<rect x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" style=\"" + style + "\" />");
+                out.println("<rect x=\"" + bb.x + "\" y=\"" + bb.y + "\" width=\"" + bb.width + "\" height=\"" + bb.height + "\" style=\"" + style + "\" />");
             }
+            
+            //background image
         
             //border
-            Rectangle bb = eb.getAbsoluteBorderBounds();
             LengthSet borders = eb.getBorder();
             if (borders.top > 0)
                 writeBorderSVG(eb, bb.x, bb.y, bb.x + bb.width, bb.y, "top", borders.top, 0, borders.top/2, out);

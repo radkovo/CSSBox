@@ -1085,7 +1085,6 @@ abstract public class ElementBox extends Box
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
                 BackgroundImage bgimg = new BackgroundImage(this, url, position, repeat, attachment);
                 bgimages.add(bgimg);
-                System.out.println("BG: " + url);
             } catch (MalformedURLException e) {
                 System.err.println("BackgroundImage: Warning: " + e.getMessage());
                 bgimages = null;
