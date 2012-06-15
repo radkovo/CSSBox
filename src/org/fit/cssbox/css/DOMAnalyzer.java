@@ -239,6 +239,7 @@ public class DOMAnalyzer
      * it.
      * @param base the document base URL
      * @param cssdata the style string
+     * @deprecated This method does not specify the style sheet origin; use {@link #addStyleSheet(URL, String, Origin)} instead.
      */
 	public void addStyleSheet(URL base, String cssdata)
     {
@@ -248,9 +249,11 @@ public class DOMAnalyzer
     /**
      * Parses and adds an author style sheet represented as a string to the end of the used
      * stylesheet lists. It imports all the imported style sheets before storing
-     * it.
+     * it. The origin of the style sheet is set to the author, agent or user. The origin
+     * influences the rule priority according to the <a href="http://www.w3.org/TR/CSS21/cascade.html#cascading-order">CSS specification</a>.
      * @param base the document base URL
      * @param cssdata the style string
+     * @param origin the style sheet origin (AUTHOR, AGENT or USER)
      */
 	public void addStyleSheet(URL base, String cssdata, Origin origin)
     {

@@ -55,17 +55,18 @@ initialized with the DOM tree and the base URL:</p>
 <d:codebox>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
-da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
-da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
+da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the standard style sheet</em>
+da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the additional style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
 </d:codebox>
 <p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="attributesToStyles()">attributesToStyles()</d:api>
 method converts some HTML presentation attributes to CSS
 styles (e.g. the <d:tag>font</d:tag> tag attributes, table attributes and some more). If (X)HTML
 interpretation is not required, this method need not be called.</p> 
-<p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="addStyleSheet(java.net.URL, java.lang.String)">addStyleSheet()</d:api> 
+<p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="addStyleSheet(java.net.URL, java.lang.String, org.fit.cssbox.css.DOMAnalyzer.Origin)">addStyleSheet()</d:api> 
 method is used to add a style sheet to the document. The style sheet is passed as a text
-string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style.
+string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style. These style
+sheets are imported as the user agent style sheets according to the <a href="http://www.w3.org/TR/CSS21/cascade.html#cascading-order">CSS specification</a>.
 The <d:api class="org/fit/cssbox/css/CSSNorm" anchor="stdStyleSheet()">CSSNorm.stdStyleSheet()</d:api>
 method returns the default style sheet recommended by the CSS specification and the
 <d:api class="org/fit/cssbox/css/CSSNorm" anchor="userStyleSheet()">CSSNorm.userStyleSheet()</d:api> 
@@ -109,6 +110,11 @@ displaying is shown in the <d:api class="org/fit/cssbox/demo/SimpleBrowser">Simp
 example.</p>
 </d:subsection>
 </d:section> 
+
+<d:subsection id="loadImages">
+<d:title>Image loading</d:title>
+<p>TODO</p>
+</d:subsection>
 
 <d:section id="model">
 <d:title>Rendered Document Model</d:title>

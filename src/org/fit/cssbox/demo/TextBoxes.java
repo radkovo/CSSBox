@@ -25,6 +25,7 @@ import java.net.URLConnection;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.ElementBox;
@@ -85,12 +86,13 @@ public class TextBoxes
             //Create the CSS analyzer
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
             da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
-            da.addStyleSheet(null, CSSNorm.stdStyleSheet()); //use the standard style sheet
-            da.addStyleSheet(null, CSSNorm.userStyleSheet()); //use the additional style sheet
+            da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
+            da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
             da.getStyleSheets(); //load the author style sheets
             
             //Disable image loading
             ReplacedImage.setLoadImages(false);
+            BackgroundImage.setLoadImages(false);
             
             //Create the browser canvas of 1000x600 pixels
             BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
