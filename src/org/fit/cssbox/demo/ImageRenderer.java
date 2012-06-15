@@ -98,13 +98,13 @@ public class ImageRenderer
         if (type == TYPE_PNG)
         {
             ReplacedImage.setLoadImages(true);
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1200, 600), url);
             ImageIO.write(contentCanvas.getImage(), "png", out);
         }
         else if (type == TYPE_SVG)
         {
             ReplacedImage.setLoadImages(true);
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1200, 600), url);
             PrintWriter w = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
             writeSVG(contentCanvas.getViewport(), w);
             w.close();
@@ -194,6 +194,26 @@ public class ImageRenderer
             }
             
             //background image
+            if (eb.getBackgroundImages() != null && eb.getBackgroundImages().size() > 0)
+            {
+                for (BackgroundImage bimg : eb.getBackgroundImages())
+                {
+                    BufferedImage img = bimg.getBufferedImage();
+                    if (img != null)
+                    {
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        ImageIO.write(img, "png", os);
+                        char[] data = Base64Coder.encode(os.toByteArray());
+                        String imgdata = "data:image/png;base64," + new String(data);
+                        int ix = bb.x + eb.getBorder().left;
+                        int iy = bb.y + eb.getBorder().top;
+                        int iw = bb.width - eb.getBorder().right - eb.getBorder().left;
+                        int ih = bb.height - eb.getBorder().bottom - eb.getBorder().top;
+                        out.println("<image x=\"" + ix + "\" y=\"" + iy + "\" width=\"" + iw + "\" height=\"" + ih + "\" xlink:href=\"" + imgdata + "\" />");
+                    }
+                }
+                
+            }
         
             //border
             LengthSet borders = eb.getBorder();
