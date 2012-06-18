@@ -48,6 +48,10 @@ public class BrowserConfig
         return loadImages;
     }
 
+    /**
+     * Sets whether to load the referenced content images automatically. The default value is <code>true</code>.
+     * @param loadImages
+     */
     public void setLoadImages(boolean loadImages)
     {
         this.loadImages = loadImages;
@@ -58,6 +62,10 @@ public class BrowserConfig
         return loadBackgroundImages;
     }
 
+    /**
+     * Sets whether to load the CSS background images automatically. The default value is <code>true</code>.
+     * @param loadBackgroundImages
+     */
     public void setLoadBackgroundImages(boolean loadBackgroundImages)
     {
         this.loadBackgroundImages = loadBackgroundImages;
@@ -68,6 +76,15 @@ public class BrowserConfig
         return useHTML;
     }
 
+    /**
+     * Sets whether the engine should use the HTML extensions or not. Currently, the HTML
+     * extensions include the following:
+     * <ul>
+     * <li>Creating replaced boxes for <code>&lt;img&gt;</code> elements
+     * <li>Using the <code>&lt;body&gt;</code> element background for the whole canvas according to the HTML specification
+     * </ul> 
+     * @param useHTML <code>false</code> if the extensions should be switched off (default is on)
+     */
     public void setUseHTML(boolean useHTML)
     {
         this.useHTML = useHTML;

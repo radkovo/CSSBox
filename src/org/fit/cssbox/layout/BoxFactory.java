@@ -67,7 +67,7 @@ public class BoxFactory
     protected int next_order;
     
     /**
-     * Create a new factory. From this point, the new factory will be accessible using the {@link #getInstance()} method.
+     * Create a new factory.
      * @param decoder The CSS decoder used for obtaining the DOM styles.
      * @param baseurl Base URL used for completing the relative URLs in the document.
      */

@@ -4,7 +4,7 @@
 			@import "manual.css";
 			</style></head><body><h1>CSSBox Manual</h1><p class="author">Radek Burget<br />
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
-</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
+</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Configuration Options</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
@@ -32,15 +32,16 @@ Document doc = parser.parse();
 initialized with the DOM tree and the base URL:</p><div class="code"><pre>
 DOMAnalyzer da = new DOMAnalyzer(doc, url);
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
-da.addStyleSheet(null, CSSNorm.stdStyleSheet()); <em>//use the standard style sheet</em>
-da.addStyleSheet(null, CSSNorm.userStyleSheet()); <em>//use the additional style sheet</em>
+da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the standard style sheet</em>
+da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the additional style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
 </pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
 method converts some HTML presentation attributes to CSS
 styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more). If (X)HTML
-interpretation is not required, this method need not be called.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String)" class="api">addStyleSheet()</a> 
+interpretation is not required, this method need not be called.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String, org.fit.cssbox.css.DOMAnalyzer.Origin)" class="api">addStyleSheet()</a> 
 method is used to add a style sheet to the document. The style sheet is passed as a text
-string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style.
+string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style. These style
+sheets are imported as the user agent style sheets according to the <a href="http://www.w3.org/TR/CSS21/cascade.html#cascading-order">CSS specification</a>.
 The <a href="../api/org/fit/cssbox/css/CSSNorm.html#stdStyleSheet()" class="api">CSSNorm.stdStyleSheet()</a>
 method returns the default style sheet recommended by the CSS specification and the
 <a href="../api/org/fit/cssbox/css/CSSNorm.html#userStyleSheet()" class="api">CSSNorm.userStyleSheet()</a> 
@@ -51,17 +52,43 @@ the file from the corresponding URL, if accessible.</p><p><em><strong>NOTE:</str
 for interpreting the HTML presentation attributes, it must be called before <code>getStyleSheets()</code> is used.
 Otherwise, the presentation attributes will not be considered in the resulting style.</em></p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
 the document code together with the associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
-<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object. The layout is
-computed automatically by creating an instance of this object. The constructor arguments are
-the root DOM element, the DOMAnalyzer used for obtaining the element styles, the initial viewport 
-dimensions and the document base URL used for loading images and other referenced content.</p><div class="code"><pre>
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object.
+The simplest way of creating the layout is passing the initial viewport dimensions to the BrowserCanvas
+constructor. Then, the layout is computed automatically by creating an instance of this object.
+The remaining constructor arguments are the root DOM element, the DOMAnalyzer used for obtaining the 
+element styles and the document base URL used for loading images and other referenced content.</p><div class="code"><pre>
 BrowserCanvas browser = 
         new BrowserCanvas(da.getRoot(),
                           da,
                           new java.awt.Dimension(1000, 600),
                           url);
-</pre></div></div><p>The created <code>browser</code> object can be directly used for both displaying
-the rendered document and for obtaining the created layout model.</p><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
+</pre></div><p>When further browser configuration is required, the BrowserCanvas may be created without specifying
+the viewport dimension. Then, the layout is not computed automatically and it must be created by a subsequent
+call of the <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#createLayout(java.awt.Dimension)" class="api">CreateLayout</a>
+method. Before creating the layout, the browser configuration may be changed.</p><div class="code"><pre>
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getRoot(), da, url);
+<em>//... modify the browser configuration here ...</em>
+browser.createLayout(new java.awt.Dimension(1000, 600));
+</pre></div><p>In both cases, the created <code>browser</code> object can be directly used for both displaying
+the rendered document and for obtaining the created layout model.</p></div><div class="subsection" id="basicDisplay"><h3>Configuration Options</h3><p>Current browser configuration is represented using a
+<a href="../api/org/fit/cssbox/layout/BrowserConfig.html" class="api">BrowserConfig</a>
+object that may be accessed using the browser's
+<a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getConfig()" class="api">getConfig()</a> method.
+The following configuration options are available:</p><dl>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setLoadImages(boolean)" class="api">browser.getConfig().setLoadImages(boolean)</a></dt>
+<dd>Configures whether to load the referenced content images automatically. The default value is <code>true</code>.</dd>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setLoadBackgroundImages(boolean)" class="api">browser.getConfig().setLoadBackgroundImages(boolean)</a></dt>
+<dd>Configures whether to load the CSS background images automatically. The default value is <code>true</code>.</dd>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#useHTML(boolean)" class="api">browser.getConfig().useHTML(boolean)</a></dt>
+<dd>Configures whether the engine should use the HTML extensions or not. Currently, the HTML extensions include the following:
+     <ul>
+     <li>Creating replaced boxes for <code>&lt;img&gt;</code> elements</li>
+     <li>Using the <code>&lt;body&gt;</code> element background for the whole canvas according to the HTML specification</li>
+     </ul>
+     The default value is <code>true</code>.
+     </dd>
+</dl></div><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
 directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can
 be directly used as a Swing user interface component. The size of the component is
 automatically adjusted according to the resulting document layout. The basic document

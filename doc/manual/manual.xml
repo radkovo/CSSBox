@@ -85,10 +85,11 @@ the document code together with the associated style.</p>
 <d:subsection id="basicLayout">
 <d:title>Obtaining the Layout</d:title>
 <p>The whole layout engine is represented by a graphical
-<d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> object. The layout is
-computed automatically by creating an instance of this object. The constructor arguments are
-the root DOM element, the DOMAnalyzer used for obtaining the element styles, the initial viewport 
-dimensions and the document base URL used for loading images and other referenced content.</p>
+<d:api class="org/fit/cssbox/layout/BrowserCanvas">BrowserCanvas</d:api> object.
+The simplest way of creating the layout is passing the initial viewport dimensions to the BrowserCanvas
+constructor. Then, the layout is computed automatically by creating an instance of this object.
+The remaining constructor arguments are the root DOM element, the DOMAnalyzer used for obtaining the 
+element styles and the document base URL used for loading images and other referenced content.</p>
 <d:codebox>
 BrowserCanvas browser = 
         new BrowserCanvas(da.getRoot(),
@@ -96,9 +97,43 @@ BrowserCanvas browser =
                           new java.awt.Dimension(1000, 600),
                           url);
 </d:codebox>
-</d:subsection>
-<p>The created <code>browser</code> object can be directly used for both displaying
+
+<p>When further browser configuration is required, the BrowserCanvas may be created without specifying
+the viewport dimension. Then, the layout is not computed automatically and it must be created by a subsequent
+call of the <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="createLayout(java.awt.Dimension)">CreateLayout</d:api>
+method. Before creating the layout, the browser configuration may be changed.</p>
+<d:codebox>
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getRoot(), da, url);
+<em>//... modify the browser configuration here ...</em>
+browser.createLayout(new java.awt.Dimension(1000, 600));
+</d:codebox>
+<p>In both cases, the created <code>browser</code> object can be directly used for both displaying
 the rendered document and for obtaining the created layout model.</p>
+</d:subsection>
+
+<d:subsection id="basicDisplay">
+<d:title>Configuration Options</d:title>
+<p>Current browser configuration is represented using a
+<d:api class="org/fit/cssbox/layout/BrowserConfig">BrowserConfig</d:api>
+object that may be accessed using the browser's
+<d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="getConfig()">getConfig()</d:api> method.
+The following configuration options are available:</p>
+<dl>
+<dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="setLoadImages(boolean)">browser.getConfig().setLoadImages(boolean)</d:api></dt>
+<dd>Configures whether to load the referenced content images automatically. The default value is <code>true</code>.</dd>
+<dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="setLoadBackgroundImages(boolean)">browser.getConfig().setLoadBackgroundImages(boolean)</d:api></dt>
+<dd>Configures whether to load the CSS background images automatically. The default value is <code>true</code>.</dd>
+<dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="useHTML(boolean)">browser.getConfig().useHTML(boolean)</d:api></dt>
+<dd>Configures whether the engine should use the HTML extensions or not. Currently, the HTML extensions include the following:
+     <ul>
+     <li>Creating replaced boxes for <code>&lt;img&gt;</code> elements</li>
+     <li>Using the <code>&lt;body&gt;</code> element background for the whole canvas according to the HTML specification</li>
+     </ul>
+     The default value is <code>true</code>.
+     </dd>
+</dl>
+</d:subsection>
 
 <d:subsection id="basicDisplay">
 <d:title>Displaying the document</d:title>
