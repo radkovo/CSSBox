@@ -1,3 +1,8 @@
+2012-06-18 - Version 4.0
+- Background image support
+- Reworked configuration API (static configuration removed)
+- Minor bugfixes
+
 2012-06-08 - Version 3.5
 - Improved performance (faster style computation, less rendering phases)
 - Support for style sheet origin specification (for priority computation)
