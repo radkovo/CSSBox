@@ -31,6 +31,7 @@ import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
+import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Inline;
 import org.fit.cssbox.layout.InlineElement;
@@ -72,6 +73,7 @@ import javax.swing.JTabbedPane;
 public class BoxBrowser
 {
     protected DefaultMutableTreeNode root;
+    protected BrowserConfig config;
     public static BoxBrowser browser;
     
     protected JFrame mainWindow = null;  //  @jve:decl-index=0:visual-constraint="67,17"
@@ -102,6 +104,18 @@ public class BoxBrowser
     protected JPanel DOMPanel = null;
     protected JScrollPane domScroll = null;
     protected JTree domTree = null;
+    
+
+    public BoxBrowser()
+    {
+        this.config = new BrowserConfig();
+    }
+
+    public BrowserConfig getConfig()
+    {
+        return config;
+    }
+    
     /**
      * Reads the document, creates the layout and displays it
      */
@@ -133,7 +147,10 @@ public class BoxBrowser
             
             is.close();
 
-            contentCanvas = new BrowserCanvas(da.getRoot(), da, contentScroll.getSize(), url);
+            contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            ((BrowserCanvas) contentCanvas).setConfig(config);
+            ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize());
+            
             contentCanvas.addMouseListener(new MouseListener() {
                 public void mouseClicked(MouseEvent e)
                 {

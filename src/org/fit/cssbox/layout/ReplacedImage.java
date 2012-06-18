@@ -39,9 +39,6 @@ public class ReplacedImage extends ContentImage
     /** Default image height of 20 px, used when there are no image data */
     protected final int DEFAULT_IMAGE_HEIGHT = 20;
     
-    /** Indicates whether to load images automatically */
-    private static boolean LOAD_IMAGES = true;
-
     protected URL base;
     protected VisualContext ctx; //visual context
 
@@ -63,7 +60,7 @@ public class ReplacedImage extends ContentImage
     {
         super(owner);
         this.ctx = ctx;
-        this.loadImages = LOAD_IMAGES;
+        this.loadImages = owner.getViewport().getConfig().getLoadImages();
         this.base = baseurl;
 
         try {
@@ -83,32 +80,6 @@ public class ReplacedImage extends ContentImage
             image = null;
         }
 
-    }
-
-    /**
-     * Switches automatic image data downloading on or off.
-     * 
-     * @param b
-     *            when set to <code>true</code>, the images are automatically
-     *            loaded from the server. When set to <code>false</code>, the
-     *            images are not loaded and the corresponding box is displayed
-     *            empty. When the image loading is switched off, the box size
-     *            can be only determined from the element attributes or style.
-     *            The default value is on.
-     */
-    public static void setLoadImages(boolean b)
-    {
-        LOAD_IMAGES = b;
-    }
-
-    /**
-     * Gets the load images.
-     * 
-     * @return the load images
-     */
-    public static boolean getLoadImages()
-    {
-        return LOAD_IMAGES;
     }
 
     @Override

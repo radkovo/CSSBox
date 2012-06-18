@@ -403,9 +403,9 @@ public class TableBodyBox extends BlockBox
             {
                 if (anonrow == null)
                 {
-                    Element anonelem = BoxFactory.getInstance().createAnonymousElement(getParent().getParent().getElement().getOwnerDocument(), "tr", "table-row"); 
+                    Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getParent().getElement().getOwnerDocument(), "tr", "table-row"); 
                     anonrow = new TableRowBox(anonelem, g, ctx);
-                    anonrow.setStyle(BoxFactory.getInstance().createAnonymousStyle("table-row"));
+                    anonrow.setStyle(viewport.getFactory().createAnonymousStyle("table-row"));
                     anonrow.adoptParent(this);
                     addRow(anonrow);
                 }

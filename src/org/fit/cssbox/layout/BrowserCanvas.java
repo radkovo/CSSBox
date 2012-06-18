@@ -46,9 +46,28 @@ public class BrowserCanvas extends JPanel
     protected Viewport viewport;
 
     protected BufferedImage img;
+
+    protected BrowserConfig config;
+    
     
     /** 
-     * Creates a new instance of the browser engine.for a document
+     * Creates a new instance of the browser engine for a document. After creating the engine,
+     * the layout itself may be computed by calling {@link #createLayout(Dimension)}.
+     * @param root the &lt;body&gt; element of the document to be rendered
+     * @param decoder the CSS decoder used to compute the style
+     * @param baseurl the document base URL   
+     */
+    public BrowserCanvas(org.w3c.dom.Element root, DOMAnalyzer decoder, URL baseurl)
+    {
+        this.root = root;
+        this.decoder = decoder;
+        this.baseurl = baseurl;
+        this.config = new BrowserConfig();
+    }
+    
+    /** 
+     * Creates a new instance of the browser engine for a document and creates the layout.
+     * 
      * @param root the &lt;body&gt; element of the document to be rendered
      * @param decoder the CSS decoder used to compute the style
      * @param dim the viewport dimensions
@@ -61,9 +80,28 @@ public class BrowserCanvas extends JPanel
         this.root = root;
         this.decoder = decoder;
         this.baseurl = baseurl;
+        this.config = new BrowserConfig();
         createLayout(dim);
     }
     
+    /**
+     * Obtains the current browser configuration.
+     * @return current configuration.
+     */
+    public BrowserConfig getConfig()
+    {
+        return config;
+    }
+
+    /**
+     * Sets the browser configuration used for rendering.
+     * @param config the new configuration.
+     */
+    public void setConfig(BrowserConfig config)
+    {
+        this.config = config;
+    }
+
     /**
      * After creating the layout, the root box of the document can be accessed through this method.
      * @return the root box of the rendered document. Normally, it corresponds to the &lt;html&gt; element
@@ -101,6 +139,7 @@ public class BrowserCanvas extends JPanel
         
         System.err.println("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, baseurl);
+        factory.setConfig(config);
         factory.reset();
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
         System.err.println("We have " + factory.next_order + " boxes");

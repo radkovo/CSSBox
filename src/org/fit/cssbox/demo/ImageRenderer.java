@@ -97,14 +97,18 @@ public class ImageRenderer
 
         if (type == TYPE_PNG)
         {
-            ReplacedImage.setLoadImages(true);
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1200, 600), url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            contentCanvas.getConfig().setLoadImages(true);
+            contentCanvas.getConfig().setLoadBackgroundImages(true);
+            contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
             ImageIO.write(contentCanvas.getImage(), "png", out);
         }
         else if (type == TYPE_SVG)
         {
-            ReplacedImage.setLoadImages(true);
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1200, 600), url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            contentCanvas.getConfig().setLoadImages(true);
+            contentCanvas.getConfig().setLoadBackgroundImages(true);
+            contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
             PrintWriter w = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
             writeSVG(contentCanvas.getViewport(), w);
             w.close();

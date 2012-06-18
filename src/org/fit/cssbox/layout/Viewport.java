@@ -35,6 +35,8 @@ public class Viewport extends BlockBox
 {
 	private int width;
 	private int height;
+	protected BrowserConfig config;
+	
 	private BoxFactory factory;
 	private Element root; //the DOM root
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
@@ -59,6 +61,24 @@ public class Viewport extends BlockBox
         contblock = true;
         root = null;
 	}
+    
+    /**
+     * Obtains the current browser configuration.
+     * @return current configuration.
+     */
+    public BrowserConfig getConfig()
+    {
+        return config;
+    }
+
+    /**
+     * Sets the browser configuration used for rendering.
+     * @param config the new configuration.
+     */
+    public void setConfig(BrowserConfig config)
+    {
+        this.config = config;
+    }
     
     @Override
     public void initSubtree()
@@ -217,7 +237,7 @@ public class Viewport extends BlockBox
 	    if (rootBox != null)
 	    {
     	    ElementBox src = rootBox;
-    	    if (src.getBgcolor() == null && factory.getUseHTML()) //for HTML, try to use the body
+    	    if (src.getBgcolor() == null && config.getUseHTML()) //for HTML, try to use the body
     	        src = getElementBoxByName("body", false);
     	    
     	    if (src.getBgcolor() != null)
@@ -323,6 +343,6 @@ public class Viewport extends BlockBox
             return ret;
         }
     }
-    
+
 }
 

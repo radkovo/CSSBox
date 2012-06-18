@@ -40,9 +40,6 @@ import cz.vutbr.web.css.TermList;
  */
 public class BackgroundImage extends ContentImage
 {
-    /** Indicates whether to load images automatically */
-    private static boolean LOAD_IMAGES = true;
-
     private CSSProperty.BackgroundPosition position;
     private CSSProperty.BackgroundRepeat repeat;
     private CSSProperty.BackgroundAttachment attachment;
@@ -57,7 +54,7 @@ public class BackgroundImage extends ContentImage
     public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, BackgroundRepeat repeat, BackgroundAttachment attachment)
     {
         super(owner);
-        this.loadImages = LOAD_IMAGES;
+        this.loadImages = owner.getViewport().getConfig().getLoadBackgroundImages();
         this.url = url;
         this.position = position;
         this.repeat = repeat;
@@ -68,32 +65,6 @@ public class BackgroundImage extends ContentImage
         repeaty = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_Y);
     }
 
-    /**
-     * Switches automatic image data downloading on or off.
-     * 
-     * @param b
-     *            when set to <code>true</code>, the images are automatically
-     *            loaded from the server. When set to <code>false</code>, the
-     *            images are not loaded and the corresponding box is displayed
-     *            empty. When the image loading is switched off, the box size
-     *            can be only determined from the element attributes or style.
-     *            The default value is on.
-     */
-    public static void setLoadImages(boolean b)
-    {
-        LOAD_IMAGES = b;
-    }
-
-    /**
-     * Gets the load images.
-     * 
-     * @return the load images
-     */
-    public static boolean getLoadImages()
-    {
-        return LOAD_IMAGES;
-    }
-    
     public CSSProperty.BackgroundPosition getPosition()
     {
         return position;

@@ -209,7 +209,6 @@ public class BlockBox extends ElementBox
     public BlockBox(InlineBox src)
     {
         super(src.el, src.g, src.ctx);
-        setStyle(src.getStyle());
         
         viewport = src.viewport;
         cblock = src.cblock;
@@ -217,7 +216,6 @@ public class BlockBox extends ElementBox
         isblock = true;
         contblock = false;
         anyinflow = false;
-        style = src.style;
         
         fleft = null;
         fright = null;
@@ -241,7 +239,8 @@ public class BlockBox extends ElementBox
         nested = src.nested;
         startChild = src.startChild;
         endChild = src.endChild;
-        loadBlockStyle();
+        
+        setStyle(src.getStyle());
     }
     
     public void copyValues(BlockBox src)

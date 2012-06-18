@@ -51,17 +51,14 @@ import cz.vutbr.web.css.Selector.PseudoDeclaration;
  * {@link BoxFactory#createViewportTree(Element, Graphics2D, VisualContext, int, int)}. However, the factory can be used for creating
  * the individual nodes or subtrees.
  * 
- * <p>Usually, a single factory is created using the constructor. The last created factory is then accessible using
- * the {@link #getInstance()} method.
+ * <p>Usually, a single factory is created for each viewport. Then, this factory is accessible using
+ * the {@link Viewport#getFactory()} method.
  * 
  * @author burgetr
  */
 public class BoxFactory
 {
-    private static BoxFactory instance = null; //last created instance
-    
-    /** whether to use HTML */
-    private boolean useHTML = true;
+    protected BrowserConfig config;
     
     protected DOMAnalyzer decoder;
     protected URL baseurl;
@@ -79,18 +76,27 @@ public class BoxFactory
         this.decoder = decoder;
         this.baseurl = baseurl;
         this.next_order = 0;
-        instance = this;
+        this.config = new BrowserConfig();
     }
     
     /**
-     * Get the latest created instance of the factory.
-     * @return A box factory object or <code>null</code> when no factory has been created yet.
+     * Obtains the current browser configuration.
+     * @return current configuration.
      */
-    public static BoxFactory getInstance()
+    public BrowserConfig getConfig()
     {
-        return instance;
+        return config;
     }
-    
+
+    /**
+     * Sets the browser configuration used for rendering.
+     * @param config the new configuration.
+     */
+    public void setConfig(BrowserConfig config)
+    {
+        this.config = config;
+    }
+
     /**
      * Sets whether the engine should use the HTML extensions or not. Currently, the HTML
      * extensions include following:
@@ -102,7 +108,7 @@ public class BoxFactory
      */
     public void setUseHTML(boolean useHTML)
     {
-        this.useHTML = useHTML;
+        config.setUseHTML(useHTML);
     }
     
     /**
@@ -112,7 +118,7 @@ public class BoxFactory
      */
     public boolean getUseHTML()
     {
-        return useHTML;
+        return config.getUseHTML();
     }
     
     /**
@@ -137,6 +143,7 @@ public class BoxFactory
     {
         Element vp = createAnonymousElement(root.getOwnerDocument(), "Xdiv", "block");
         viewport = new Viewport(vp, g, ctx, this, root, width, height);
+        viewport.setConfig(config);
         BoxTreeCreationStatus stat = new BoxTreeCreationStatus(viewport);
         createSubtree(root, stat);
         System.out.println("Root box is: " + viewport.getRootBox());
@@ -618,6 +625,7 @@ public class BoxFactory
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
             anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("block"));
             ((BlockBox) anbox).contblock = false;
             anbox.isblock = true;
@@ -626,6 +634,7 @@ public class BoxFactory
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xspan", "inline");
             anbox = new InlineBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("inline"));
             anbox.isblock = false;
         }
@@ -637,7 +646,6 @@ public class BoxFactory
         anbox.setOrder(next_order++);
         anbox.isempty = true;
         anbox.setBase(child.getBase());
-        anbox.setViewport(child.getViewport());
         anbox.setContainingBlock(child.getContainingBlock());
         anbox.setClipBlock(child.getClipBlock());
         return anbox;
@@ -659,9 +667,10 @@ public class BoxFactory
                 style = createAnonymousStyle(display);
         
         //Special tag names
-        if (useHTML && n.getNodeName().equals("img"))
+        if (config.getUseHTML() && n.getNodeName().equals("img"))
         {
             InlineReplacedBox rbox = new InlineReplacedBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            rbox.setViewport(viewport);
             rbox.setStyle(style);
             rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), baseurl));
             root = rbox;
@@ -740,6 +749,7 @@ public class BoxFactory
     private ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
     {
         ElementBox root = new InlineBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        root.setViewport(viewport);
         root.setStyle(style);
         if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
             root = new ListItemBox((InlineBox) root);
