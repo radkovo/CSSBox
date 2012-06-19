@@ -62,6 +62,15 @@ public class ImageRenderer
     protected static final short MODE_FG = 1;
     protected static final short MODE_BG = 2;
     
+    private boolean loadImages = true;
+    private boolean loadBackgroundImages = true;
+
+    public void setLoadImages(boolean content, boolean background)
+    {
+        loadImages = content;
+        loadBackgroundImages = background;
+    }
+    
     /**
      * Renders the URL and prints the result to the specified output stream in the specified
      * format.
@@ -98,16 +107,16 @@ public class ImageRenderer
         if (type == TYPE_PNG)
         {
             BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
-            contentCanvas.getConfig().setLoadImages(true);
-            contentCanvas.getConfig().setLoadBackgroundImages(true);
+            contentCanvas.getConfig().setLoadImages(loadImages);
+            contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
             contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
             ImageIO.write(contentCanvas.getImage(), "png", out);
         }
         else if (type == TYPE_SVG)
         {
             BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
-            contentCanvas.getConfig().setLoadImages(true);
-            contentCanvas.getConfig().setLoadBackgroundImages(true);
+            contentCanvas.getConfig().setLoadImages(loadImages);
+            contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
             contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
             PrintWriter w = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
             writeSVG(contentCanvas.getViewport(), w);
