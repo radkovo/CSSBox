@@ -731,6 +731,13 @@ abstract public class ElementBox extends Box
         return ret;
     }
     
+    @Override
+    public boolean isVisible()
+    {
+        //the margin is never visible - use the background bounds instead of the full bounds
+        return visible && clipblock.isVisible() && clipblock.getAbsoluteContentBounds().intersects(getAbsoluteBorderBounds());
+    }
+    
     /**
      * @return the bounds of the background - the content and padding
      */
@@ -752,7 +759,7 @@ abstract public class ElementBox extends Box
                              content.width + padding.left + padding.right + border.left + border.right,
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
     }
-
+    
     @Override
     public String getText()
     {
