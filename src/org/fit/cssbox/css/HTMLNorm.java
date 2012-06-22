@@ -144,7 +144,6 @@ public class HTMLNorm
                     
                     //when 'rules' are set, 1px border is inherited by the cells
                     fstyle = "border-@-style:solid;border-@-width:1px;";
-                    System.out.println("rules: " + rules);
                     if (rules.equals("rows"))
                     {
                         itab = itab + applyBorders(fstyle, "top");
