@@ -260,8 +260,8 @@ public class TableRowBox extends BlockBox
                 {
                     Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getParent().getParent().getElement().getOwnerDocument(), "td", "table-cell");
                     anoncell = new TableCellBox(anonelem, g, ctx);
-                    anoncell.setStyle(viewport.getFactory().createAnonymousStyle("table-cell"));
                     anoncell.adoptParent(this);
+                    anoncell.setStyle(viewport.getFactory().createAnonymousStyle("table-cell"));
                     addCell(anoncell);
                 }
                 anoncell.addSubBox(box);

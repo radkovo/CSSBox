@@ -220,8 +220,8 @@ public class BlockTableBox extends BlockBox
     private void organizeContent()
     {
         table = new TableBox(el, g, ctx);
-        table.setStyle(style);
         table.adoptParent(this);
+        table.setStyle(style);
         
         for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {

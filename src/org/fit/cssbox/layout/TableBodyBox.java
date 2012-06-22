@@ -405,8 +405,8 @@ public class TableBodyBox extends BlockBox
                 {
                     Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getParent().getElement().getOwnerDocument(), "tr", "table-row"); 
                     anonrow = new TableRowBox(anonelem, g, ctx);
-                    anonrow.setStyle(viewport.getFactory().createAnonymousStyle("table-row"));
                     anonrow.adoptParent(this);
+                    anonrow.setStyle(viewport.getFactory().createAnonymousStyle("table-row"));
                     addRow(anonrow);
                 }
                 anonrow.addSubBox(box);
@@ -441,6 +441,7 @@ public class TableBodyBox extends BlockBox
         }
         
         //determine the cell positions
+        int col = 0;
         boolean cell_found = true;
         while (cell_found)
         {
@@ -449,7 +450,7 @@ public class TableBodyBox extends BlockBox
             while (r < rows.size())
             {
                 TableRowBox row = rows.elementAt(r);
-                if (row.hasNext())
+                if (rowidx[r] <= col && row.hasNext())
                 {
                     cell_found = true;
                     //get the current element
@@ -471,7 +472,8 @@ public class TableBodyBox extends BlockBox
                 }
                 else
                     r++;
-            }                
+            }
+            col++;
         }    
         //build the cell array
         for (int i = 0; i < rows.size(); i++)

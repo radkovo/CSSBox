@@ -78,11 +78,7 @@ public class BrowserCanvas extends JPanel
                          DOMAnalyzer decoder,
                          Dimension dim, URL baseurl)
     {
-        this.root = root;
-        this.decoder = decoder;
-        this.baseurl = baseurl;
-        this.config = new BrowserConfig();
-        this.createImage = true;
+        this(root, decoder, baseurl);
         createLayout(dim);
     }
     
@@ -163,7 +159,7 @@ public class BrowserCanvas extends JPanel
             ig = img.createGraphics();
         }
         
-        System.err.println("Positioning for "+img.getWidth()+"x"+img.getHeight()+"px");
+        System.err.println("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
         viewport.absolutePositions();
         
         clearCanvas();

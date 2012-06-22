@@ -589,8 +589,8 @@ public class TableBox extends BlockBox
                         //therefore, we're using the parent's owner document
                         Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getElement().getOwnerDocument(), "tbody", "table-row-group"); 
                         anonbody = new TableBodyBox(anonelem, g, ctx);
-                        anonbody.setStyle(viewport.getFactory().createAnonymousStyle("table-row-group"));
                         anonbody.adoptParent(this);
+                        anonbody.setStyle(viewport.getFactory().createAnonymousStyle("table-row-group"));
                         anonbody.setOwnerTable(this);
                         bodies.add(anonbody);
                     }
