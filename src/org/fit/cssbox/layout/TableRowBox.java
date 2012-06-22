@@ -250,7 +250,7 @@ public class TableRowBox extends BlockBox
                 if (anoncell != null)
                 {
                     anoncell.endChild = anoncell.nested.size();
-                    addSubBox(anoncell);
+                    addSubBox(anoncell); //TODO this breaks the iteration (?)
                 }
                 anoncell = null;
             }
