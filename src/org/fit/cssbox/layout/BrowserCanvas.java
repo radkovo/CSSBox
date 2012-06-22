@@ -48,7 +48,7 @@ public class BrowserCanvas extends JPanel
     protected BufferedImage img;
 
     protected BrowserConfig config;
-    
+    protected boolean createImage;
     
     /** 
      * Creates a new instance of the browser engine for a document. After creating the engine,
@@ -63,6 +63,7 @@ public class BrowserCanvas extends JPanel
         this.decoder = decoder;
         this.baseurl = baseurl;
         this.config = new BrowserConfig();
+        this.createImage = true;
     }
     
     /** 
@@ -81,6 +82,7 @@ public class BrowserCanvas extends JPanel
         this.decoder = decoder;
         this.baseurl = baseurl;
         this.config = new BrowserConfig();
+        this.createImage = true;
         createLayout(dim);
     }
     
@@ -131,8 +133,8 @@ public class BrowserCanvas extends JPanel
      */
     public void createLayout(Dimension dim)
     {
-        img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
-        System.gc();
+        if (createImage)
+            img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         Graphics2D ig = img.createGraphics();
         
         VisualContext ctx = new VisualContext(null);
@@ -153,7 +155,7 @@ public class BrowserCanvas extends JPanel
         viewport.updateBounds();
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
         
-        if (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height)
+        if (createImage && (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height))
         {
             img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),
                                     Math.max(viewport.getHeight(), dim.height),
@@ -214,6 +216,18 @@ public class BrowserCanvas extends JPanel
     public BufferedImage getImage()
     {
         return img;
+    }
+    
+    /**
+     * Sets a custom image that is used for rendering. Setting the custom image prevents BrowserCanvas
+     * from creating the image automatically. This can be used for rendering to an image of a specific
+     * size or format.
+     * @param image The new image to be used for rendering.
+     */
+    public void setImage(BufferedImage image)
+    {
+        img = image;
+        createImage = false;
     }
     
 }
