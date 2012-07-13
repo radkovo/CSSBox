@@ -1105,6 +1105,15 @@ public class BlockBox extends ElementBox
                             + subbox.border.right + subbox.padding.right;
         int newfloatY = floatY + subbox.emargin.top
                             + subbox.border.top + subbox.padding.top;
+        //consider the relative positioning if necessary
+        if (subbox.position == POS_RELATIVE)
+        {
+            int dx = subbox.leftset ? subbox.coords.left : (-subbox.coords.right);
+            int dy = subbox.topset ? subbox.coords.top : (-subbox.coords.bottom);
+            newfloatXl += dx;
+            newfloatXr -= dx;
+            newfloatY += dy;
+        }
         
         //position the box
         subbox.setFloats(fleft, fright, newfloatXl, newfloatXr, stat.y + newfloatY);
