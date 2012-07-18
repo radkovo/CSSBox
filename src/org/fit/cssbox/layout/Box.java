@@ -458,7 +458,7 @@ abstract public class Box
      */
     public Rectangle getClippedBounds()
     {
-        return absbounds.intersection(clipblock.absbounds);
+        return absbounds.intersection(clipblock.getAbsoluteContentBounds());
     }
     
     /**
