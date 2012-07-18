@@ -19,8 +19,13 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import org.w3c.dom.Element;
 
@@ -240,9 +245,12 @@ public class TableRowBox extends BlockBox
         cells = new Vector<TableCellBox>();
         TableCellBox anoncell = null;
         
-        for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
+        int size = nested.size();
+        List<Box> toremove = new ArrayList<Box>();
+        for (int i = 0; i < size; i++)
         {
-            Box box = it.next();
+            Box box = nested.get(i);
+            
             if (box instanceof TableCellBox)
             {
                 addCell((TableCellBox) box);
@@ -250,7 +258,7 @@ public class TableRowBox extends BlockBox
                 if (anoncell != null)
                 {
                     anoncell.endChild = anoncell.nested.size();
-                    addSubBox(anoncell); //TODO this breaks the iteration (?)
+                    addSubBox(anoncell);
                 }
                 anoncell = null;
             }
@@ -269,10 +277,12 @@ public class TableRowBox extends BlockBox
                 if (box.isBlock()) anoncell.contblock = true;
                 box.setContainingBlock(anoncell);
                 box.setParent(anoncell);
-                it.remove();
+                toremove.add(box);
                 endChild--;
             }
         }
+        nested.removeAll(toremove);
+        
         if (anoncell != null)
         {
             anoncell.endChild = anoncell.nested.size();
