@@ -81,14 +81,40 @@ public class DOMAnalyzer
     /**
      * Creates a new DOM analyzer.
      * @param doc the document to be analyzed
-     * @param baseUrl the base URL for loading the style sheets
+     * @param baseUrl the base URL for loading the style sheets. This URL may be redefined by the <code>&lt;base&gt;</code> tag used in the
+     * document header.
      */
     public DOMAnalyzer(org.w3c.dom.Document doc, URL baseUrl) 
+    {
+        this(doc, baseUrl, true);
+    }
+    
+    /**
+     * Creates a new DOM analyzer.
+     * @param doc the document to be analyzed
+     * @param baseUrl the base URL for loading the style sheets. If <code>detectBase</code>, this URL may be redefined by the <code>&lt;base&gt;</code> tag used in the
+     * document header.
+     * @param detectBase sets whether to try to accept the <code>&lt;base&gt;</code> tags in the document header.
+     */
+    public DOMAnalyzer(org.w3c.dom.Document doc, URL baseUrl, boolean detectBase) 
     {
         this.doc = doc;
         this.media = DEFAULT_MEDIA;
         styles = new Vector<StyleSheet>();
         this.baseUrl = baseUrl;
+        if (detectBase)
+        {
+            String docbase = getDocumentBase();
+            if (docbase != null)
+            {
+                try {
+                    this.baseUrl = new URL(baseUrl, docbase);
+                    System.err.println("DOMAnalyzer: Using specified document base " + this.baseUrl);
+                } catch (MalformedURLException e) {
+                    System.err.println("DOMAnalyzer: error: malformed base URL " + docbase);
+                }
+            }
+        }
         stylemap = null;
         istylemap = null;
     }
@@ -133,6 +159,32 @@ public class DOMAnalyzer
     public Element getBody()
     {
         return (Element) doc.getElementsByTagName("body").item(0);
+    }
+
+    /**
+     * Finds the explicitly specified base URL in the document according to the HTML specification
+     * @return the base URL string, when present in the document or null when not present
+     * @see http://www.w3.org/TR/html4/struct/links.html#edef-BASE
+     */
+    public String getDocumentBase()
+    {
+        Element head = getHead();
+        if (head != null)
+        {
+            NodeList bases = head.getElementsByTagName("base");
+            if (bases != null && bases.getLength() > 0)
+            {
+                Element base = (Element) bases.item(0);
+                if (base.hasAttribute("href"))
+                    return base.getAttribute("href");
+                else
+                    return null;
+            }
+            else
+                return null;
+        }
+        else
+            return null;
     }
     
     /**
