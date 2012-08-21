@@ -890,8 +890,9 @@ public class BlockBox extends ElementBox
                     if (x1 < 0) x1 = 0;
                     if (x2 < 0) x2 = 0;
                     x = x1;
-                    //force repeating the same once again
-                    split = true;
+                    //force repeating the same once again unless line height is non-positive (prevent infinite loop)
+                    if (getLineHeight() > 0)
+                        split = true;
                 }
                 else if ((!fit && lastbreak > lnstr) //line overflow and the line can be broken
                            || (fit && (over || linebreak || subbox.getRest() != null))) //or something fit but something has left

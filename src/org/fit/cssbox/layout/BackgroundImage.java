@@ -125,6 +125,7 @@ public class BackgroundImage extends ContentImage
     private void drawRepeatX(Graphics2D g, int sx, int sy, int limit)
     {
         int width = getIntrinsicWidth();
+        if (width == 0) width = 1;
         for (int x = sx; x < limit; x += width)
             g.drawImage(image, x, sy, observer);
         for (int x = sx - width; x + width - 1 >= 0; x -= width)
@@ -135,6 +136,7 @@ public class BackgroundImage extends ContentImage
     private void drawRepeatY(Graphics2D g, int sx, int sy, int limit)
     {
         int height = getIntrinsicHeight();
+        if (height == 0) height = 1;
         for (int y = sy; y < limit; y += height)
             g.drawImage(image, sx, y, observer);
         for (int y = sy - height; y + height - 1 >= 0; y -= height)
