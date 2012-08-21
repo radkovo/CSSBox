@@ -450,25 +450,30 @@ public class TableBodyBox extends BlockBox
             while (r < rows.size())
             {
                 TableRowBox row = rows.elementAt(r);
-                if (rowidx[r] <= col && row.hasNext())
+                if (row.hasNext())
                 {
                     cell_found = true;
-                    //get the current element
-                    TableCellBox cell = row.next();
-                    //set the new position
-                    cell.setCellPosition(rowidx[r], r);
-                    //move the row indices
-                    for (int nr = r; nr < r + cell.getRowspan(); nr++)
+                    if (rowidx[r] <= col) //we are not in the middle of some colspan for this row
                     {
-                        if (nr < rows.size())
+                        //get the current element
+                        TableCellBox cell = row.next();
+                        //set the new position
+                        cell.setCellPosition(rowidx[r], r);
+                        //move the row indices
+                        for (int nr = r; nr < r + cell.getRowspan(); nr++)
                         {
-                            rowidx[nr] += cell.getColspan();
-                            if (rowidx[nr] > numCols) numCols = rowidx[nr]; 
+                            if (nr < rows.size())
+                            {
+                                rowidx[nr] += cell.getColspan();
+                                if (rowidx[nr] > numCols) numCols = rowidx[nr]; 
+                            }
+                            else
+                                cell.rowspan--;
                         }
-                        else
-                            cell.rowspan--;
+                        r += cell.getRowspan();
                     }
-                    r += cell.getRowspan();
+                    else
+                        r++;
                 }
                 else
                     r++;

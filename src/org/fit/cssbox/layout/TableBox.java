@@ -128,15 +128,6 @@ public class TableBox extends BlockBox
                 maxw = header.getWidth();
             y += header.getHeight();
         }
-        if (footer != null)
-        {
-        	footer.setSpacing(spacing);
-            footer.doLayout(wlimit, columns);
-            footer.setPosition(0, y);
-            if (footer.getWidth() > maxw)
-                maxw = footer.getWidth();
-            y += footer.getHeight();
-        }
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
         {
             TableBodyBox body = it.next();
@@ -146,6 +137,15 @@ public class TableBox extends BlockBox
             if (body.getWidth() > maxw)
                 maxw = body.getWidth();
             y += body.getHeight();
+        }
+        if (footer != null)
+        {
+            footer.setSpacing(spacing);
+            footer.doLayout(wlimit, columns);
+            footer.setPosition(0, y);
+            if (footer.getWidth() > maxw)
+                maxw = footer.getWidth();
+            y += footer.getHeight();
         }
         content.width = maxw;
         content.height = y;
