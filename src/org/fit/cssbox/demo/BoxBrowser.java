@@ -138,8 +138,12 @@ public class BoxBrowser
             DOMSource parser = new DOMSource(is);
             parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
             Document doc = parser.parse();
+            String encoding = parser.getHttpCharset();
             
             DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            if (encoding == null)
+                encoding = da.getCharacterEncoding();
+            da.setDefaultEncoding(encoding);
             da.attributesToStyles();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);

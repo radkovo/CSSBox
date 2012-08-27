@@ -47,6 +47,7 @@ public class DOMAnalyzer
     private Document doc;   //the root node of the DOM tree
     private URL baseUrl;    //base URL
     private String media;   //media type
+    private String encoding; //default character encoding for style sheet parsing
     
     private Vector<StyleSheet> styles;  //vector of StyleSheet sheets
     private Analyzer analyzer; //style sheet analyzer
@@ -73,6 +74,7 @@ public class DOMAnalyzer
         this.doc = doc;
         this.media = DEFAULT_MEDIA;
         baseUrl = null;
+        encoding = null;
         styles = new Vector<StyleSheet>();
         stylemap = null;
         istylemap = null;
@@ -99,6 +101,7 @@ public class DOMAnalyzer
     public DOMAnalyzer(org.w3c.dom.Document doc, URL baseUrl, boolean detectBase) 
     {
         this.doc = doc;
+        this.encoding = null;
         this.media = DEFAULT_MEDIA;
         styles = new Vector<StyleSheet>();
         this.baseUrl = baseUrl;
@@ -118,7 +121,29 @@ public class DOMAnalyzer
         stylemap = null;
         istylemap = null;
     }
-    
+
+    /**
+     * Obtains the default character encoding used for parsing the style sheets. This encoding is used when there is
+     * no other encoding specified inside the style sheet using the <code>@charset</code> rule. When there
+     * is no default encoding specified, this method returns <code>null</code> and the system default encoding
+     * is used for style sheets.
+     * @return The encoding name or <code>null</code> when there is no default encoding specified.
+     */
+    public String getDefaultEncoding()
+    {
+        return encoding;
+    }
+
+    /**
+     * Sets the default character encoding used for parsing the referenced style sheets. This encoding is used when there is
+     * no other encoding specified inside the style sheet using the <code>@charset</code> rule.
+     * @param encoding The encoding string or <code>null</code> for using the system default encoding.
+     */
+    public void setDefaultEncoding(String encoding)
+    {
+        this.encoding = encoding;
+    }
+
     /**
      * Returns current medium used.
 	 * @return the media type according to CSS
@@ -188,6 +213,45 @@ public class DOMAnalyzer
     }
     
     /**
+     * Finds the explicitly specified character encoding using the <code>&lt;meta&gt;</code> tag according
+     * to the HTML specifiaction.
+     * @return the encoding name when present in the document or <code>null</code> if not present. 
+     */
+    public String getCharacterEncoding()
+    {
+        Element head = getHead();
+        if (head != null)
+        {
+            NodeList metas = head.getElementsByTagName("meta");
+            if (metas != null)
+            {
+                for (int i = 0; i < metas.getLength(); i++)
+                {
+                    Element meta = (Element) metas.item(i);
+                    if (meta.hasAttribute("http-equiv")
+                            && meta.getAttribute("http-equiv").equalsIgnoreCase("content-type") 
+                            && meta.hasAttribute("content"))
+                    {
+                        String ctype = meta.getAttribute("content").toLowerCase(); 
+                        int cpos = ctype.indexOf("charset=");
+                        if (cpos != -1)
+                            return ctype.substring(cpos + 8);
+                    }
+                    else if (meta.hasAttribute("charset"))
+                    {
+                        return meta.getAttribute("charset");
+                    }
+                }
+                return null;
+            }
+            else
+                return null;
+        }
+        else
+            return null;
+    }
+    
+    /**
      * Formats the tag tree to an output stream. This is used mainly for debugging purposes.
      */
     public void printTagTree(java.io.PrintStream out)
@@ -237,7 +301,7 @@ public class DOMAnalyzer
     public void getStyleSheets(String media)
     {
     	this.media = new String(media);
-        StyleSheet newsheet = CSSFactory.getUsedStyles(doc, baseUrl, media);
+        StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, media);
         styles.add(newsheet);
     }
 
@@ -269,7 +333,7 @@ public class DOMAnalyzer
      * Imports all the imported style sheets before storing it.
      * @param base the document base url
      * @param href the href specification
-     * @param encoding the default encoding
+     * @param encoding the default character encoding for the style sheet (use <code>null</code> for default system encoding)
      * @param origin the style sheet origin (author, user agent or user)
      */
     public void loadStyleSheet(URL base, String href, String encoding, Origin origin)

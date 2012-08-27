@@ -79,5 +79,10 @@ public class DOMSource
         doc = parser.getDocument();
         return doc;
     }
+    
+    public String getHttpCharset()
+    {
+        return charset;
+    }
 
 }
