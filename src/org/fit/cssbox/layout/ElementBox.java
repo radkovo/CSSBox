@@ -861,13 +861,13 @@ abstract public class ElementBox extends Box
     
     protected void drawBorders(Graphics2D g, int bx1, int by1, int bx2, int by2)
     {
-        if (border.top > 0)
+        if (border.top > 0 && bx2 > bx1)
             drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
-        if (border.right > 0)
+        if (border.right > 0 && by2 > by1)
             drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right + 1, 0, "right", true); 
-        if (border.bottom > 0)
+        if (border.bottom > 0 && bx2 > bx1)
             drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom + 1, "bottom", true); 
-        if (border.left > 0)
+        if (border.left > 0 && by2 > by1)
             drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
     }
     

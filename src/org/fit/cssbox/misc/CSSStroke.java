@@ -58,9 +58,9 @@ public class CSSStroke implements Stroke
     		int y1 = (int) l.getY1();
     		int x2 = (int) l.getX2();
     		int y2 = (int) l.getY2();
-    		if (y1 == y2)
+    		if (y1 == y2 && x2 > x1)
     			return sideShape(x1, y1, x2 - x1 + 1 , width, false);
-    		else if (x1 == x2)
+    		else if (x1 == x2 && y2 > y1)
     			return sideShape(x1, y1, y2 - y1 + 1, width, true);
     		else
     			return basicStrokeShape(s);
