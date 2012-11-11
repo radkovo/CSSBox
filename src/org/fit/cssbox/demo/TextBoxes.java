@@ -76,6 +76,7 @@ public class TextBoxes
             URL url = new URL(args[0]);
             URLConnection con = url.openConnection();
             InputStream is = con.getInputStream();
+            url = con.getURL(); //update the URL after possible redirects
             
             //Parse the input document using jTidy
             DOMSource parser = new DOMSource(is);

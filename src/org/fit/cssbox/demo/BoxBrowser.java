@@ -118,8 +118,10 @@ public class BoxBrowser
     
     /**
      * Reads the document, creates the layout and displays it
+     * @param urlstring The URL of the document to display.
+     * @return The final URL of the displayed document or <code>null</code> when the document couldn't be displayed.
      */
-	public void displayURL(String urlstring)
+	public URL displayURL(String urlstring)
     {
         try {
             if (!urlstring.startsWith("http:") &&
@@ -133,6 +135,7 @@ public class BoxBrowser
             URLConnection con = url.openConnection();
             con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; BoxBrowserTest/2.x; Linux) CSSBox/2.x (like Gecko)");
             InputStream is = con.getInputStream();
+            url = con.getURL(); //update the URL after possible redirects
             
             System.out.println("Parsing: " + url); 
             DOMSource parser = new DOMSource(is);
@@ -177,10 +180,12 @@ public class BoxBrowser
             domTree.setModel(new DefaultTreeModel(createDomTree(doc)));
             
             //=============================================================================
-           
+            return url;
+            
         } catch (Exception e) {
             System.err.println("*** Error: "+e.getMessage());
             e.printStackTrace();
+            return null;
         }
     }
     

@@ -91,6 +91,7 @@ public class ImageRenderer
         URLConnection con = url.openConnection();
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; Transformer/2.x; Linux) CSSBox/2.x (like Gecko)");
         InputStream is = con.getInputStream();
+        url = con.getURL(); //update the URL after possible redirects
         
         DOMSource parser = new DOMSource(is);
         parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
