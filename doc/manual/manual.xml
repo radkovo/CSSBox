@@ -30,24 +30,34 @@ efficient style of each element. Afterwrads, the document layout is computed.</p
 
 <d:subsection id="basicLoading">
 <d:title>Document Loading</d:title>
-<p>In the examples, the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
-is used that is based on <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>.
-However, any other DOM parser with DOM Traversal support can be used. For our demos,
-we have created a simple <d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api>
-class that hides the detail of document parsing implementation. See the 
-<d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api> source code for
-more details.</p> 
+<p>CSSBox generally expects a <a href="http://www.w3.org/DOM/" title="Document Object Model">DOM</a> on its input.
+In the examples provided with CSSBox, the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
+is used for building the DOM that is based on <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>.
+However, any other DOM parser can be used with CSSBox, or any alternative way of obtaining
+the DOM may be used as well.</p>
+
+<p>For our demos, we have created a simple
+<d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api> class that encapsulates the basic
+operations with the parser such as its initialization and obtaining the DOM. When another DOM 
+parser is required to be used with CSSBox, the only necessary change is to re-implement 
+the <code>DOMSource</code> class in order to follow the chosen parser API. No further changes
+are necessary in the remaining code shown below. See the <d:api class="org/fit/cssbox/demo/DOMSource">DOMSource</d:api>
+source code for more details.</p> 
+
+<p>The following code reads and parses the document based on its URL:</p>
 
 <d:codebox>
 <em>//Open the network connection</em> 
 URL url = new URL("http://cssbox.sf.net");
 URLConnection con = url.openConnection();
 InputStream is = con.getInputStream();
+<em>//use the final URL as the base URL later (possible redirects)</em>
+url = con.getURL();
 
-<em>//Parse the input document (replace this with your own parser)</em>
+<em>//Parse the input document (replace this with your own parser if desired)</em>
 DOMSource parser = new DOMSource(is);
-Document doc = parser.parse();
-</d:codebox>>
+Document doc = parser.parse(); <em>//doc represents the obtained DOM</em>
+</d:codebox>
 
 <p>For the initial DOM and style sheet processing, a
 <d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object is used. It is
@@ -99,8 +109,8 @@ BrowserCanvas browser =
 </d:codebox>
 
 <p>When further browser configuration is required, the BrowserCanvas may be created without specifying
-the viewport dimension. Then, the layout is not computed automatically and it must be created by a subsequent
-call of the <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="createLayout(java.awt.Dimension)">CreateLayout</d:api>
+the viewport dimensions. Then, the layout is not computed automatically and it must be created by a subsequent
+call of the <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="createLayout(java.awt.Dimension)">createLayout</d:api>
 method. Before creating the layout, the browser configuration may be changed.</p>
 <d:codebox>
 BrowserCanvas browser = 
@@ -112,7 +122,7 @@ browser.createLayout(new java.awt.Dimension(1000, 600));
 the rendered document and for obtaining the created layout model.</p>
 </d:subsection>
 
-<d:subsection id="basicDisplay">
+<d:subsection id="configOptions">
 <d:title>Configuration Options</d:title>
 <p>Current browser configuration is represented using a
 <d:api class="org/fit/cssbox/layout/BrowserConfig">BrowserConfig</d:api>
@@ -143,13 +153,16 @@ be directly used as a Swing user interface component. The size of the component 
 automatically adjusted according to the resulting document layout. The basic document
 displaying is shown in the <d:api class="org/fit/cssbox/demo/SimpleBrowser">SimpleBrowser</d:api>
 example.</p>
+<p>BrowserCanvas provides a simple display of the rendered page with no interactive elements.
+For obtaining an interactive browser component with text selection and clickable links,
+the <a href="http://cssbox.sourceforge.net/swingbox/">SwingBox</a> extension should be used.</p>
 </d:subsection>
 </d:section> 
 
-<d:subsection id="loadImages">
+<!-- <d:subsection id="loadImages">
 <d:title>Image loading</d:title>
 <p>TODO</p>
-</d:subsection>
+</d:subsection>  -->
 
 <d:section id="model">
 <d:title>Rendered Document Model</d:title>
