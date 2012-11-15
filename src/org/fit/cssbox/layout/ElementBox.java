@@ -34,6 +34,7 @@ import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.misc.CSSStroke;
+import org.fit.net.DataURLHandler;
 import org.w3c.dom.*;
 
 /**
@@ -1080,11 +1081,7 @@ abstract public class ElementBox extends Box
             try {
                 bgimages = new Vector<BackgroundImage>(1);
                 TermURI urlstring = style.getValue(TermURI.class, "background-image");
-                URL url;
-                if (urlstring.getBase() != null)
-                    url = new URL(urlstring.getBase(), urlstring.getValue());
-                else
-                    url = new URL(urlstring.getValue());
+                URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
                 CSSProperty.BackgroundPosition position = style.getProperty("background-position");
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;

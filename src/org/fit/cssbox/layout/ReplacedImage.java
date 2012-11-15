@@ -26,6 +26,8 @@ import java.awt.Rectangle;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.fit.net.DataURLHandler;
+
 /**
  * This class represents an image as the contents of a replaced element.
  * 
@@ -65,18 +67,18 @@ public class ReplacedImage extends ContentImage
 
         try {
             String src = getOwner().getElement().getAttribute("src");
-            url = new URL(base, src);
+            url = DataURLHandler.createURL(base, src);
             if (loadImages)
             {
                 // get image object (may not have picture data)
                 image = loadImage(caching);
             }
         } catch (MalformedURLException e) {
-            System.err.println("ImgBox: URL: " + e.getMessage());
+            System.err.println("ReplacedImage: URL: " + e.getMessage());
             image = null;
             url = null;
         } catch (IllegalArgumentException e) {
-            System.err.println("ImgBox: Format error: " + e.getMessage());
+            System.err.println("ReplacedImage: Format error: " + e.getMessage());
             image = null;
         }
 
