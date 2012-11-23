@@ -19,6 +19,11 @@
  */
 package org.fit.cssbox.layout;
 
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
+
 /**
  * A rendering engine configuration.
  *
@@ -35,12 +40,22 @@ public class BrowserConfig
     /** Should we interpret the HTML tags? */
     private boolean useHTML;
     
+    /** Registered DocumentSource implementation */
+    private Class<? extends DocumentSource> documentSourceClass;
     
+    /** Registered DOMSource implementation */
+    private Class<? extends DOMSource> domSourceClass;
+    
+    /**
+     * Creates a new config with default values of the options.
+     */
     public BrowserConfig()
     {
         loadImages = true;
         loadBackgroundImages = true;
         useHTML = true;
+        documentSourceClass = DefaultDocumentSource.class;
+        domSourceClass = DefaultDOMSource.class;
     }
 
     public boolean getLoadImages()
@@ -88,6 +103,42 @@ public class BrowserConfig
     public void setUseHTML(boolean useHTML)
     {
         this.useHTML = useHTML;
+    }
+    
+    /**
+     * Sets the class used by CSSBox for obtaining documents based on their URLs.
+     * @param documentSourceClass the new document source class
+     */
+    public void registerDocumentSource(Class<? extends DocumentSource> documentSourceClass)
+    {
+        this.documentSourceClass = documentSourceClass;
+    }
+    
+    /**
+     * Obtains the class used by CSSBox for obtaining documents based on their URLs.
+     * @return the used class
+     */
+    public Class<? extends DocumentSource> getDocumentSourceClass()
+    {
+        return documentSourceClass;
+    }
+    
+    /**
+     * Sets the class used by CSSBox for the DOM tree from documents.
+     * @param domSourceClass the new DOM source class
+     */
+    public void registerDOMSource(Class<? extends DOMSource> domSourceClass)
+    {
+        this.domSourceClass = domSourceClass;
+    }
+    
+    /**
+     * Obtains the class used by CSSBox for the DOM tree from documents.
+     * @return the used class
+     */
+    public Class<? extends DOMSource> getDOMSourceClass()
+    {
+        return domSourceClass;
     }
     
 }

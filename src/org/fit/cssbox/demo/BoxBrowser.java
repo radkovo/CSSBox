@@ -20,14 +20,16 @@ package org.fit.cssbox.demo;
 
 import javax.swing.*;
 
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Vector;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
@@ -39,6 +41,7 @@ import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -129,21 +132,15 @@ public class BoxBrowser
                 !urlstring.startsWith("file:"))
                     urlstring = "http://" + urlstring;
             
-            URL url = new URL(urlstring);
-            urlText.setText(url.toString());
+            DocumentSource docSource = new DefaultDocumentSource(urlstring);
+            urlText.setText(docSource.getURL().toString());
             
-            URLConnection con = url.openConnection();
-            con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; BoxBrowserTest/2.x; Linux) CSSBox/2.x (like Gecko)");
-            InputStream is = con.getInputStream();
-            url = con.getURL(); //update the URL after possible redirects
-            
-            System.out.println("Parsing: " + url); 
-            DOMSource parser = new DOMSource(is);
-            parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
+            System.out.println("Parsing: " + urlstring); 
+            DOMSource parser = new DefaultDOMSource(docSource);
             Document doc = parser.parse();
-            String encoding = parser.getHttpCharset();
+            String encoding = parser.getCharset();
             
-            DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
             if (encoding == null)
                 encoding = da.getCharacterEncoding();
             da.setDefaultEncoding(encoding);
@@ -152,12 +149,12 @@ public class BoxBrowser
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.getStyleSheets();
             
-            is.close();
-
-            contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             ((BrowserCanvas) contentCanvas).setConfig(config);
             ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize());
             
+            docSource.close();
+
             contentCanvas.addMouseListener(new MouseListener() {
                 public void mouseClicked(MouseEvent e)
                 {
@@ -180,7 +177,7 @@ public class BoxBrowser
             domTree.setModel(new DefaultTreeModel(createDomTree(doc)));
             
             //=============================================================================
-            return url;
+            return docSource.getURL();
             
         } catch (Exception e) {
             System.err.println("*** Error: "+e.getMessage());
