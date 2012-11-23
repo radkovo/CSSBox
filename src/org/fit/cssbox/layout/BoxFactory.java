@@ -22,12 +22,12 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,6 +62,7 @@ import cz.vutbr.web.css.Selector.PseudoDeclaration;
 public class BoxFactory
 {
     protected BrowserConfig config;
+    protected HTMLBoxFactory html;
     
     protected DOMAnalyzer decoder;
     protected URL baseurl;
@@ -80,6 +81,7 @@ public class BoxFactory
         this.baseurl = baseurl;
         this.next_order = 0;
         this.config = new BrowserConfig();
+        this.html = new HTMLBoxFactory(this);
     }
     
     /**
@@ -122,6 +124,15 @@ public class BoxFactory
     public boolean getUseHTML()
     {
         return config.getUseHTML();
+    }
+    
+    /**
+     * Obtains the base URL used by this factory.
+     * @return the base URL.
+     */
+    public URL getBaseURL()
+    {
+        return baseurl;
     }
     
     /**
@@ -669,16 +680,10 @@ public class BoxFactory
         if (style == null)
                 style = createAnonymousStyle(display);
         
-        //Special tag names
-        if (config.getUseHTML() && n.getNodeName().equals("img"))
+        //Special (HTML) tag names
+        if (config.getUseHTML() && html.isTagSupported(n.getNodeName()))
         {
-            InlineReplacedBox rbox = new InlineReplacedBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
-            rbox.setViewport(viewport);
-            rbox.setStyle(style);
-            rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), baseurl));
-            root = rbox;
-            if (root.isBlock())
-                root = new BlockReplacedBox(rbox);
+            root = html.createBox(parent, n, viewport, style);
         }
         //Create a box according to the <code>display</code> value
         else
@@ -832,6 +837,12 @@ public class BoxFactory
         dest.setStyle(newstyle);
     }
     
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DocumentSource} class registered in the browser configuration
+     * ({@link org.fit.cssbox.layout.BrowserConfig}).
+     * @param urlstring the URL to be given to the document source.
+     * @return the document source.
+     */
     public DocumentSource createDocumentSource(String urlstring)
     {
         try
@@ -840,6 +851,24 @@ public class BoxFactory
             return constr.newInstance(urlstring);
         } catch (Exception e) {
             System.err.println("BoxFactory: Warning: could not create the DocumentSource instance: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DOMSource} class registered in the browser configuration
+     * ({@link org.fit.cssbox.layout.BrowserConfig}).
+     * @param src the document source to be given to the DOM source.
+     * @return the DOM source.
+     */
+    public DOMSource createDOMSource(DocumentSource src)
+    {
+        try
+        {
+            Constructor<? extends DOMSource> constr = config.getDOMSourceClass().getConstructor(DocumentSource.class);
+            return constr.newInstance(src);
+        } catch (Exception e) {
+            System.err.println("BoxFactory: Warning: could not create the DOMSource instance: " + e.getMessage());
             return null;
         }
     }
