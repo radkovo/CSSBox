@@ -21,11 +21,14 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DocumentSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -827,6 +830,18 @@ public class BoxFactory
     {
         NodeData newstyle = dest.getStyle().inheritFrom(parent.getStyle()); 
         dest.setStyle(newstyle);
+    }
+    
+    public DocumentSource createDocumentSource(String urlstring)
+    {
+        try
+        {
+            Constructor<? extends DocumentSource> constr = config.getDocumentSourceClass().getConstructor(String.class);
+            return constr.newInstance(urlstring);
+        } catch (Exception e) {
+            System.err.println("BoxFactory: Warning: could not create the DocumentSource instance: " + e.getMessage());
+            return null;
+        }
     }
     
 }
