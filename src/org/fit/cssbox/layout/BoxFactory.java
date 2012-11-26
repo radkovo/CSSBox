@@ -673,7 +673,7 @@ public class BoxFactory
      */
     public ElementBox createBox(ElementBox parent, Element n, String display)
     {
-        ElementBox root;
+        ElementBox root = null;
         
         //New box style
         NodeData style = decoder.getElementStyleInherited(n);
@@ -685,8 +685,8 @@ public class BoxFactory
         {
             root = html.createBox(parent, n, viewport, style);
         }
-        //Create a box according to the <code>display</code> value
-        else
+        //Not created yet -- create a box according to the display value
+        if (root == null)
         {
             root = createElementInstance(parent, n, style);
         }

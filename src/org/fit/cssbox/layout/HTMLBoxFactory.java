@@ -52,6 +52,15 @@ public class HTMLBoxFactory
         return supported.contains(name.toLowerCase());
     }
     
+    /**
+     * Creates the box according to the HTML element.
+     * @param parent
+     * @param e
+     * @param viewport
+     * @param style
+     * @return The newly created box or <code>null</code> when the element is not supported
+     * or cannot be created. 
+     */
     public ElementBox createBox(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
         String name = e.getNodeName().toLowerCase();
@@ -113,11 +122,20 @@ public class HTMLBoxFactory
             //something failed, no content object is created => the we should use the object element contents
         }
 
-        //convert to block if necessary
-        if (rbox.isBlock())
-            return new BlockReplacedBox(rbox);
-        else
-            return rbox;
+        if (rbox.getContentObj() != null) //the content object has been sucessfuly created
+        {
+            //convert the type if necessary
+            if (rbox.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
+                return new InlineBlockReplacedBox(rbox);
+            else if (rbox.getDisplay() == ElementBox.DISPLAY_BLOCK)
+                return new BlockReplacedBox(rbox);
+            else
+                return rbox;
+        }
+        else //no content object - fallback to a normal box (the default object behavior)
+        {
+            return null;
+        }
     }
     
 }
