@@ -60,8 +60,23 @@ public class DefaultDocumentSource extends DocumentSource
      */
     public DefaultDocumentSource(String urlstring) throws IOException
     {
-        super(urlstring);
+        super(null, urlstring);
         URL url = DataURLHandler.createURL(null, urlstring);
+        con = createConnection(url);
+        is = null;
+    }
+    
+    /**
+     * Creates a data source based on the URL string. The data: urls are automatically
+     * recognized and  processed.
+     * @param base The base URL to be used for the relative URLs in the urlstring
+     * @param urlstring The URL string
+     * @throws IOException
+     */
+    public DefaultDocumentSource(URL base, String urlstring) throws IOException
+    {
+        super(base, urlstring);
+        URL url = DataURLHandler.createURL(base, urlstring);
         con = createConnection(url);
         is = null;
     }

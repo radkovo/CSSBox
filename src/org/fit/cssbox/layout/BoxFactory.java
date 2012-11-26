@@ -843,12 +843,12 @@ public class BoxFactory
      * @param urlstring the URL to be given to the document source.
      * @return the document source.
      */
-    public DocumentSource createDocumentSource(String urlstring)
+    public DocumentSource createDocumentSource(URL base, String urlstring)
     {
         try
         {
-            Constructor<? extends DocumentSource> constr = config.getDocumentSourceClass().getConstructor(String.class);
-            return constr.newInstance(urlstring);
+            Constructor<? extends DocumentSource> constr = config.getDocumentSourceClass().getConstructor(URL.class, String.class);
+            return constr.newInstance(base, urlstring);
         } catch (Exception e) {
             System.err.println("BoxFactory: Warning: could not create the DocumentSource instance: " + e.getMessage());
             return null;

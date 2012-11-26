@@ -58,8 +58,9 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
 	public void setContentObj(ReplacedContent obj)
 	{
 		this.obj = obj;
-		obj.setOwner(this);
 		isempty = (obj == null);
+		if (!isempty)
+		    obj.setOwner(this);
 	}
 
     @Override

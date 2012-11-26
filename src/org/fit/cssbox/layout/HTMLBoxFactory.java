@@ -20,11 +20,14 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
 import cz.vutbr.web.css.NodeData;
 
+import org.fit.cssbox.io.DocumentSource;
 import org.w3c.dom.Element;
 
 /**
@@ -40,7 +43,7 @@ public class HTMLBoxFactory
     {
         this.factory = parent;
         supported = new HashSet<String>(2);
-        //supported.add("object");
+        supported.add("object");
         supported.add("img");
     }
     
@@ -49,32 +52,72 @@ public class HTMLBoxFactory
         return supported.contains(name.toLowerCase());
     }
     
-    public ElementBox createBox(ElementBox parent, Element n, Viewport viewport, NodeData style)
+    public ElementBox createBox(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
-        String name = n.getNodeName().toLowerCase();
+        String name = e.getNodeName().toLowerCase();
         if (name.equals("object"))
-            return createSubtreeObject(parent, n, viewport, style);
+            return createSubtreeObject(parent, e, viewport, style);
         else if (name.equals("img"))
-            return createSubtreeImg(parent, n, viewport, style);
+            return createSubtreeImg(parent, e, viewport, style);
         else
             return null;
     }
     
-    protected ElementBox createSubtreeImg(ElementBox parent, Element n, Viewport viewport, NodeData style)
+    protected ElementBox createSubtreeImg(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
-        InlineReplacedBox rbox = new InlineReplacedBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         rbox.setViewport(viewport);
         rbox.setStyle(style);
-        rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL()));
+
+        String src = e.getAttribute("src");
+        rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
+        
         if (rbox.isBlock())
             return new BlockReplacedBox(rbox);
         else
             return rbox;
     }
     
-    protected ElementBox createSubtreeObject(ElementBox parent, Element n, Viewport viewport, NodeData style)
+    protected ElementBox createSubtreeObject(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
-        return null;
+        //create the replaced box
+        InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        rbox.setViewport(viewport);
+        rbox.setStyle(style);
+        
+        //try to create the content object based on the mime type
+        try
+        {
+            String mime = e.getAttribute("type").toLowerCase();
+            String cb = e.getAttribute("codebase");
+            String dataurl = e.getAttribute("data");
+            URL base = new URL(factory.getBaseURL(), cb);
+            
+            DocumentSource src = factory.createDocumentSource(base, dataurl);
+            if (mime.isEmpty())
+            {
+                mime = src.getContentType();
+                if (mime == null || mime.isEmpty())
+                    mime = "text/html";
+            }
+            System.out.println("ctype=" + mime);
+            
+            ReplacedContent content = null;
+            if (mime.startsWith("image/"))
+            {
+                content = new ReplacedImage(rbox, rbox.getVisualContext(), base, dataurl);
+            }
+            rbox.setContentObj(content);
+        } catch (MalformedURLException e1)
+        {
+            //something failed, no content object is created => the we should use the object element contents
+        }
+
+        //convert to block if necessary
+        if (rbox.isBlock())
+            return new BlockReplacedBox(rbox);
+        else
+            return rbox;
     }
     
 }

@@ -46,7 +46,7 @@ public abstract class DocumentSource
      * @param urlstring the URL string
      * @throws IOException
      */
-    public DocumentSource(String urlstring) throws IOException
+    public DocumentSource(URL base, String urlstring) throws IOException
     {
     }
     
