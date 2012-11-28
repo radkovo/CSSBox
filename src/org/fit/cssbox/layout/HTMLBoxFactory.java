@@ -20,6 +20,7 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -27,8 +28,12 @@ import java.util.Set;
 
 import cz.vutbr.web.css.NodeData;
 
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DocumentSource;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -116,10 +121,21 @@ public class HTMLBoxFactory
             {
                 content = new ReplacedImage(rbox, rbox.getVisualContext(), base, dataurl);
             }
+            else if (mime.equals("text/html"))
+            {
+                System.out.println("Parsing: " + src.getURL()); 
+                DOMSource parser = new DefaultDOMSource(src);
+                Document doc = parser.parse();
+                String encoding = parser.getCharset();
+
+            }
             rbox.setContentObj(content);
-        } catch (MalformedURLException e1)
-        {
+        } catch (MalformedURLException e1) {
             //something failed, no content object is created => the we should use the object element contents
+        } catch (SAXException e1) {
+            //parsing failed
+        } catch (IOException e1) {
+            //document reading failed
         }
 
         if (rbox.getContentObj() != null) //the content object has been sucessfuly created

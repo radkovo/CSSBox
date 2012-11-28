@@ -70,6 +70,14 @@ public abstract class ReplacedContent
         def_height = "auto";
     }
     
+    /**
+     * Compute the content layout in the owner area
+     */
+    public void doLayout()
+    {
+        //default behaviour is to do nothing
+    }
+    
 	/**
 	 * Draw the contents of the element.
 	 * @param g graphics context
