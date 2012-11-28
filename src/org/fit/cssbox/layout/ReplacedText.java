@@ -20,6 +20,7 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.net.URL;
 
 import org.fit.cssbox.css.CSSNorm;
@@ -50,7 +51,7 @@ public class ReplacedText extends ReplacedContent
     @Override
     public void draw(Graphics2D g, int width, int height)
     {
-        
+        canvas.getViewport().draw(g);
     }
 
     @Override
@@ -78,6 +79,23 @@ public class ReplacedText extends ReplacedContent
     public void doLayout()
     {
         canvas.createLayout(owner.getContent());
+        Viewport vp = canvas.getViewport();
+        //containing box for the new viewport
+        BlockBox cblock = owner.isBlock() ? (BlockBox) owner : owner.getContainingBlock();
+        vp.setContainingBlock(cblock);
+        vp.setClipBlock(cblock);
+        
+        owner.removeAllSubBoxes();
+        owner.addSubBox(vp);
+    }
+
+    @Override
+    public void absolutePositions()
+    {
+        Viewport vp = canvas.getViewport();
+        Rectangle bounds = new Rectangle(owner.getContentWidth(), owner.getContentHeight());
+        vp.setBounds(bounds);
+        vp.absolutePositions();
     }
 
     //==========================================================================

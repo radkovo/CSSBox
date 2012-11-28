@@ -296,7 +296,11 @@ public class Viewport extends BlockBox
 	@Override
     public void absolutePositions()
     {
-	    absbounds = new Rectangle(bounds);
+	    if (parent == null) //viewport may be the root
+	        absbounds = new Rectangle(bounds);
+	    else //or a nested viewport
+	        absbounds = new Rectangle(parent.getAbsoluteContentBounds());
+	    
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();
     }

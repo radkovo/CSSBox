@@ -161,12 +161,23 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
             return true;
         }
 
+        if (obj != null)
+            obj.doLayout();
+        
         setAvailableWidth(availw);
         int wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else
             return force;
+    }
+
+    @Override
+    public void absolutePositions()
+    {
+        super.absolutePositions();
+        if (obj != null)
+            obj.absolutePositions();
     }
 
     @Override

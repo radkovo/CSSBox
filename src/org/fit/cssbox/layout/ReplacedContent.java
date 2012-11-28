@@ -75,7 +75,17 @@ public abstract class ReplacedContent
      */
     public void doLayout()
     {
-        //default behaviour is to do nothing
+        //the default behaviour is to do remove the child nodes from the owner object if any
+        //because the box is replaced by the content
+        owner.removeAllSubBoxes();
+    }
+    
+    /**
+     * Computes the absolute positions in the content if necessary.
+     */
+    public void absolutePositions()
+    {
+        //the default is to do nothing
     }
     
 	/**

@@ -127,7 +127,7 @@ public class HTMLBoxFactory
                 DOMSource parser = new DefaultDOMSource(src);
                 Document doc = parser.parse();
                 String encoding = parser.getCharset();
-
+                content = new ReplacedText(rbox, doc, src.getURL(), encoding);
             }
             rbox.setContentObj(content);
         } catch (MalformedURLException e1) {
@@ -140,13 +140,11 @@ public class HTMLBoxFactory
 
         if (rbox.getContentObj() != null) //the content object has been sucessfuly created
         {
-            //convert the type if necessary
-            if (rbox.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
-                return new InlineBlockReplacedBox(rbox);
-            else if (rbox.getDisplay() == ElementBox.DISPLAY_BLOCK)
+            //convert the type
+            if (rbox.getDisplay() == ElementBox.DISPLAY_BLOCK)
                 return new BlockReplacedBox(rbox);
-            else
-                return rbox;
+            else //inline boxes are not allowed -- we must create a block formatting context
+                return new InlineBlockReplacedBox(rbox);
         }
         else //no content object - fallback to a normal box (the default object behavior)
         {
