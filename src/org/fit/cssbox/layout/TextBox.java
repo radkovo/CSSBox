@@ -775,7 +775,7 @@ public class TextBox extends Box implements Inline
             FontMetrics fm = g.getFontMetrics();
             Rectangle2D rect = fm.getStringBounds(t, g);
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getAbsoluteContentBounds());
+            g.setClip(clipblock.getClippedContentBounds());
             g.drawString(t, x + (int) rect.getX(), y - (int) rect.getY());
             g.setClip(oldclip);
         }
@@ -784,7 +784,7 @@ public class TextBox extends Box implements Inline
 	@Override
     public void draw(Graphics2D g, int turn, int mode)
     {
-        if (displayed)
+        if (displayed && isVisible())
         {
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {

@@ -280,7 +280,7 @@ abstract public class Box
      */
     public boolean isVisible()
     {
-        return visible && clipblock.isVisible() && clipblock.getAbsoluteContentBounds().intersects(getAbsoluteBounds());
+        return visible && clipblock.isVisible() && clipblock.getClippedContentBounds().intersects(getAbsoluteBounds());
     }
     
     /**
@@ -458,7 +458,22 @@ abstract public class Box
      */
     public Rectangle getClippedBounds()
     {
-        return absbounds.intersection(clipblock.getAbsoluteContentBounds());
+        if (clipblock == null)
+            return getAbsoluteBounds();
+        else
+            return absbounds.intersection(clipblock.getAbsoluteContentBounds());
+    }
+
+    /**
+     * Computes the absolute clipping rectangle coordinates if this box is used as a clipping block.
+     * @return the clipping rectangle coordinates
+     */
+    public Rectangle getClippedContentBounds()
+    {
+        if (clipblock == null)
+            return getAbsoluteContentBounds();
+        else
+            return clipblock.getClippedContentBounds().intersection(getAbsoluteContentBounds());
     }
     
     /**

@@ -736,7 +736,7 @@ abstract public class ElementBox extends Box
     public boolean isVisible()
     {
         //the margin is never visible - use the background bounds instead of the full bounds
-        return visible && clipblock.isVisible() && clipblock.getAbsoluteContentBounds().intersects(getAbsoluteBorderBounds());
+        return visible && clipblock.isVisible() && clipblock.getClippedContentBounds().intersects(getAbsoluteBorderBounds());
     }
     
     /**
