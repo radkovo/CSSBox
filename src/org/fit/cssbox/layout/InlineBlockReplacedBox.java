@@ -21,6 +21,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 
 import org.w3c.dom.Element;
 
@@ -258,12 +259,15 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
+            Shape oldclip = g.getClip();
+            g.setClip(clipblock.getClippedContentBounds());
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
                 if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
             }
             
             if (obj != null) obj.draw(g, boxw, boxh);
+            g.setClip(oldclip);
         }
     }
 

@@ -201,12 +201,15 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
+            Shape oldclip = g.getClip();
+            g.setClip(clipblock.getClippedContentBounds());
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
                 if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
             }
             
             if (obj != null) obj.draw(g, boxw, boxh);
+            g.setClip(oldclip);
         }
     }
 
