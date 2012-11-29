@@ -323,6 +323,29 @@ public class Viewport extends BlockBox
 		if (maxy < y) maxy = y;
 	}
 	
+	/**
+	 * Uses the given block as a clipping block instead of the default Viewport.
+	 * @param box the new clipping block
+	 */
+	public void clipByBlock(BlockBox block)
+	{
+	    recursivelySetClipBlock(this, block);
+	}
+	
+	private void recursivelySetClipBlock(Box root, BlockBox clip)
+	{
+	    if (root == this || root.getClipBlock() == this)
+	    {
+	        root.setClipBlock(clip);
+	        if (root instanceof ElementBox)
+	        {
+	            ElementBox eb = (ElementBox) root;
+	            for (int i = eb.getStartChild(); i < eb.getEndChild(); i++)
+	                recursivelySetClipBlock(eb.getSubBox(i), clip);
+	        }
+	    }
+	}
+	
     //===================================================================================
     
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)

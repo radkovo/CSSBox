@@ -430,17 +430,7 @@ abstract public class Box
     }
     
     /**
-     * Sets the box bounds relatively to the parent. Normally the bounds are computed
-     * automatically during the layout so that it is not necessary to set this manually.
-     * @param bounds the new bounds
-     */
-    public void setBounds(Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-    
-    /**
-     * Returns the absolute box position on the page.
+     * Returns the absolute box position on the page
      * @return Absolute box bounds
      */
     public Rectangle getAbsoluteBounds()
@@ -448,15 +438,6 @@ abstract public class Box
     	return absbounds;
     }
     
-    /**
-     * Sets the absolute box bounds. Normally the bounds are computed
-     * automatically during the layout so that it is not necessary to set this manually.
-     * @param bounds the new bounds
-     */
-    public void setAbsoluteBounds(Rectangle bounds)
-    {
-        this.absbounds = bounds;
-    }
 
     /**
      * Adjusts the absolute bounds width and height in order to fit into the clip.

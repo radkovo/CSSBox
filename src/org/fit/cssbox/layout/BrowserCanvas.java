@@ -49,6 +49,7 @@ public class BrowserCanvas extends JPanel
 
     protected BrowserConfig config;
     protected boolean createImage;
+    protected boolean autoSizeUpdate;
     
     /** 
      * Creates a new instance of the browser engine for a document. After creating the engine,
@@ -64,6 +65,7 @@ public class BrowserCanvas extends JPanel
         this.baseurl = baseurl;
         this.config = new BrowserConfig();
         this.createImage = true;
+        this.autoSizeUpdate = true;
     }
     
     /** 
@@ -147,9 +149,12 @@ public class BrowserCanvas extends JPanel
         viewport.doLayout(dim.width, true, true);
         System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
-        System.err.println("Updating viewport size");
-        viewport.updateBounds();
-        System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+        if (autoSizeUpdate)
+        {
+            System.err.println("Updating viewport size");
+            viewport.updateBounds();
+            System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+        }
         
         if (createImage && (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height))
         {
@@ -224,6 +229,24 @@ public class BrowserCanvas extends JPanel
     {
         img = image;
         createImage = false;
+    }
+    
+    /**
+     * Enables or disables the automatic viewport size update according to its contents. This is enabled by default.
+     * @param b <code>true</code> for enable, <code>false</code> for disable.
+     */
+    public void setAutoSizeUpdate(boolean b)
+    {
+        autoSizeUpdate = b;
+    }
+    
+    /**
+     * Checks whether the automatic viewport size update is enabled.
+     * @return <code>true</code> when enabled
+     */
+    public boolean getAutoSizeUpdate()
+    {
+        return autoSizeUpdate;
     }
     
 }

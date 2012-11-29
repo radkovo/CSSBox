@@ -19,8 +19,8 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.net.URL;
 
 import org.fit.cssbox.css.CSSNorm;
@@ -37,83 +37,138 @@ public class ReplacedText extends ReplacedContent
     private Document doc;
     private URL base;
     private String encoding;
-    private BrowserCanvas canvas;
+    private DOMAnalyzer decoder;
+    private Viewport viewport;
+    
+    /** The last dimension used for layout or null when no layout has been created */
+    private Dimension currentDimension;
 
+    /** The final dimension used for layout or null when no layout has been created */
+    private Dimension layoutDimension;
+    
     public ReplacedText(ElementBox owner, Document doc, URL base, String encoding)
     {
         super(owner);
         this.doc = doc;
         this.base = base;
         this.encoding = encoding;
-        createBrowser();
+        currentDimension = null;
+        layoutDimension = null;
+        createDecoder();
     }
 
     @Override
     public void draw(Graphics2D g, int width, int height)
     {
-        canvas.getViewport().draw(g);
+        viewport.draw(g);
     }
 
     @Override
     public int getIntrinsicWidth()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        checkLayout();
+        return viewport.getWidth();
     }
 
     @Override
     public int getIntrinsicHeight()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        checkLayout();
+        return viewport.getHeight();
     }
 
     @Override
     public float getIntrinsicRatio()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        return (float) getIntrinsicWidth() / (float) getIntrinsicHeight();
     }
     
     @Override
     public void doLayout()
     {
-        canvas.createLayout(owner.getContent());
-        Viewport vp = canvas.getViewport();
-        //containing box for the new viewport
-        BlockBox cblock = owner.isBlock() ? (BlockBox) owner : owner.getContainingBlock();
-        vp.setContainingBlock(cblock);
-        vp.setClipBlock(cblock);
-        
-        owner.removeAllSubBoxes();
-        owner.addSubBox(vp);
+        System.out.println("LAYOUT");
+        layoutDimension = new Dimension(owner.getContent()); //use owner content size for dimension
+        checkLayout();
     }
 
     @Override
     public void absolutePositions()
     {
-        Viewport vp = canvas.getViewport();
-        Rectangle bounds = new Rectangle(owner.getContentWidth(), owner.getContentHeight());
-        vp.setBounds(bounds);
-        vp.absolutePositions();
+        viewport.absolutePositions();
     }
 
     //==========================================================================
     
-    private void createBrowser()
+    private void createDecoder()
     {
-        DOMAnalyzer da = new DOMAnalyzer(doc, base);
+        decoder = new DOMAnalyzer(doc, base);
         if (encoding == null)
-            encoding = da.getCharacterEncoding();
-        da.setDefaultEncoding(encoding);
-        da.attributesToStyles();
-        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.getStyleSheets();
+            encoding = decoder.getCharacterEncoding();
+        decoder.setDefaultEncoding(encoding);
+        decoder.attributesToStyles();
+        decoder.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
+        decoder.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
+        decoder.getStyleSheets();
+    }
+    
+    /**
+     * Obtains the dimension that should be used for the layout.
+     * @return the dimension
+     */
+    private Dimension getLayoutDimension()
+    {
+        Dimension dim;
+        if (layoutDimension != null)
+        {
+            dim = new Dimension(layoutDimension);
+            if (dim.width <= 0) dim.width = 10; //use some minimum size when the size is not known
+            if (dim.height <= 0) dim.height = 10;
+        }
+        else
+            dim = new Dimension(10, 10);
+        return dim;
+    }
+    
+    /**
+     * Checks whether the layout is computed and recomputes it when necessary.
+     */
+    private void checkLayout()
+    {
+        Dimension dim = getLayoutDimension();
+        if (currentDimension == null || !currentDimension.equals(dim)) //the dimension has changed
+        {
+            System.out.println("UPDATE: " + dim);
+            createLayout(dim);
+            //containing box for the new viewport
+            BlockBox cblock = (owner instanceof BlockBox) ? (BlockBox) owner : owner.getContainingBlock();
+            viewport.setContainingBlock(cblock);
+            viewport.clipByBlock(cblock);
+            
+            owner.removeAllSubBoxes();
+            owner.addSubBox(viewport);
+            currentDimension = new Dimension(dim);
+            System.out.println("DONE");
+        }
+    }
+    
+    private void createLayout(Dimension dim)
+    {
+        VisualContext ctx = new VisualContext(null);
         
-        canvas = new BrowserCanvas(da.getRoot(), da, base);
-        canvas.setConfig(owner.getViewport().getConfig());
+        System.err.println("Creating boxes");
+        BoxFactory factory = new BoxFactory(decoder, base);
+        factory.setConfig(owner.getViewport().getConfig());
+        factory.reset();
+        viewport = factory.createViewportTree(decoder.getRoot(), owner.getGraphics(), ctx, dim.width, dim.height);
+        System.err.println("We have " + factory.next_order + " boxes");
+        viewport.initSubtree();
         
+        System.err.println("Layout for "+dim.width+"px");
+        viewport.doLayout(dim.width, true, true);
+        System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+
+        System.err.println("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
+        viewport.absolutePositions();
     }
     
 }
