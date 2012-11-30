@@ -183,27 +183,30 @@ public class LineBox
     
     public void considerBox(Inline box)
     {
-        int a = box.getBaselineOffset();
-        int b = box.getBelowBaseline();
-    	if (box instanceof InlineElement)
-    	{
-	        VerticalAlign va = ((InlineElement) box).getVerticalAlign();
-	        if (va != VerticalAlign.TOP && va != VerticalAlign.BOTTOM) //the box influences 'a' and 'b'
-	        {
-	            int dif = computeBaselineDifference((InlineElement) box);
-	            a -= dif; //what from the box is above our baseline
-	            b += dif; //what from the box is below
-	            above = Math.max(above, a);
-	            below = Math.max(below, b);
-	        }
-    	}
-    	else
-    	{
-	        above = Math.max(above, a);
-	        below = Math.max(below, b);
-    	}
-
-    	maxlineheight = Math.max(maxlineheight, box.getMaxLineHeight());
+        if (((Box) box).isDisplayed())
+        {
+            int a = box.getBaselineOffset();
+            int b = box.getBelowBaseline();
+        	if (box instanceof InlineElement)
+        	{
+    	        VerticalAlign va = ((InlineElement) box).getVerticalAlign();
+    	        if (va != VerticalAlign.TOP && va != VerticalAlign.BOTTOM) //the box influences 'a' and 'b'
+    	        {
+    	            int dif = computeBaselineDifference((InlineElement) box);
+    	            a -= dif; //what from the box is above our baseline
+    	            b += dif; //what from the box is below
+    	            above = Math.max(above, a);
+    	            below = Math.max(below, b);
+    	        }
+        	}
+        	else
+        	{
+    	        above = Math.max(above, a);
+    	        below = Math.max(below, b);
+        	}
+    
+        	maxlineheight = Math.max(maxlineheight, box.getMaxLineHeight());
+        }
     }
     
     /**
