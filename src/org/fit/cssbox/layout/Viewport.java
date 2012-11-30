@@ -255,12 +255,13 @@ public class Viewport extends BlockBox
     /**
 	 * Calculates the absolute positions and updates the viewport size
 	 * in order to enclose all the boxes.
+	 * @param min the minimal viewport dimensions
 	 */
-	public void updateBounds()
+	public void updateBounds(Dimension min)
 	{
 		//first round - compute the viewport size
-		maxx = 0;
-		maxy = 0;
+		maxx = min.width;
+		maxy = min.height;
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();
 		//update the size
