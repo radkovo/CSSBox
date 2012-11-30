@@ -185,11 +185,7 @@ public class BrowserCanvas extends JPanel
     public void clearCanvas()
     {
         Graphics2D ig = img.createGraphics();
-        Color bg = viewport.getBgcolor();
-        if (bg == null) bg = Color.white;
-        ig.setColor(bg);
-        ig.fillRect(0, 0, img.getWidth(), img.getHeight());
-        ig.setColor(Color.black);
+        viewport.drawBackground(ig);
     }
     
     /**

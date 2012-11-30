@@ -233,7 +233,6 @@ public class Viewport extends BlockBox
 	 */
 	private void loadBackgroundFromContents()
 	{
-	    //TODO: consider background images
 	    if (rootBox != null)
 	    {
     	    ElementBox src = rootBox;
@@ -244,6 +243,11 @@ public class Viewport extends BlockBox
     	    {
     	        bgcolor = src.getBgcolor();
     	        src.setBgcolor(null);
+    	    }
+    	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
+    	    {
+    	        bgimages = loadBackgroundImages(src.getStyle());
+    	        src.getBackgroundImages().clear();
     	    }
 	    }
 	}
@@ -263,6 +267,7 @@ public class Viewport extends BlockBox
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
 		loadSizes();
+		loadBackgroundFromContents(); //the background image positions may have changed
 	}
 
     @Override
@@ -305,13 +310,6 @@ public class Viewport extends BlockBox
 			getSubBox(i).absolutePositions();
     }
 	
-	@Override
-	public void draw(Graphics2D g, int turn, int mode) 
-	{
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).draw(g, turn, mode);
-	}
-
 	/**
 	 * Updates the maximal viewport size according to the element bounds
 	 */

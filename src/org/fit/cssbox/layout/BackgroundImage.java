@@ -43,6 +43,7 @@ public class BackgroundImage extends ContentImage
     private CSSProperty.BackgroundPosition position;
     private CSSProperty.BackgroundRepeat repeat;
     private CSSProperty.BackgroundAttachment attachment;
+    private TermList positionValues;
 
     //the coordinates of the image within the element
     private int imgx;
@@ -51,12 +52,13 @@ public class BackgroundImage extends ContentImage
     private boolean repeaty;
     
     
-    public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, BackgroundRepeat repeat, BackgroundAttachment attachment)
+    public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, TermList positionValues, BackgroundRepeat repeat, BackgroundAttachment attachment)
     {
         super(owner);
         this.loadImages = owner.getViewport().getConfig().getLoadBackgroundImages();
         this.url = url;
         this.position = position;
+        this.positionValues = positionValues;
         this.repeat = repeat;
         this.attachment = attachment;
         if (loadImages)
@@ -211,8 +213,7 @@ public class BackgroundImage extends ContentImage
             imgx = (bounds.width - getIntrinsicWidth()) / 2;
         else if (position == BackgroundPosition.list_values)
         {
-            TermList list = getOwner().getStyle().getValue(TermList.class, "background-position");
-            imgx = dec.getLength((TermLengthOrPercent) list.get(0), false, 0, 0, bounds.width - getIntrinsicWidth());
+            imgx = dec.getLength((TermLengthOrPercent) positionValues.get(0), false, 0, 0, bounds.width - getIntrinsicWidth());
         }
         else
             imgx = 0;
@@ -226,9 +227,8 @@ public class BackgroundImage extends ContentImage
             imgy = (bounds.height - getIntrinsicHeight()) / 2;
         else if (position == BackgroundPosition.list_values)
         {
-            TermList list = getOwner().getStyle().getValue(TermList.class, "background-position");
-            int i = list.size() > 1 ? 1 : 0;
-            imgy = dec.getLength((TermLengthOrPercent) list.get(i), false, 0, 0, bounds.height - getIntrinsicHeight());
+            int i = positionValues.size() > 1 ? 1 : 0;
+            imgy = dec.getLength((TermLengthOrPercent) positionValues.get(i), false, 0, 0, bounds.height - getIntrinsicHeight());
         }
         else
             imgy = 0;
