@@ -331,7 +331,8 @@ public class InlineBox extends ElementBox implements InlineElement
                 }
             }
             
-            lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
+            if (!subbox.isEmpty())
+                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }

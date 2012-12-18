@@ -353,7 +353,7 @@ public class BoxFactory
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
             boolean lastwhite = (stat.lastinflow == null) || stat.lastinflow.isBlock() || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
-            boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
+            boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces() && !newbox.isSticky();
             if (!collapse)
             {
                 stat.parent.addSubBox(newbox);
@@ -681,7 +681,7 @@ public class BoxFactory
                 style = createAnonymousStyle(display);
         
         //Special (HTML) tag names
-        if (config.getUseHTML() && html.isTagSupported(n.getNodeName()))
+        if (config.getUseHTML() && html.isTagSupported(n))
         {
             root = html.createBox(parent, n, viewport, style);
         }
@@ -754,7 +754,7 @@ public class BoxFactory
      * @param style Style definition for the node
      * @return The created instance of ElementBox
      */
-    private ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
+    public ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
     {
         ElementBox root = new InlineBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         root.setViewport(viewport);

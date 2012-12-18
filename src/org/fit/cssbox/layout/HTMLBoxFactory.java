@@ -52,9 +52,18 @@ public class HTMLBoxFactory
         supported.add("img");
     }
     
-    public boolean isTagSupported(String name)
+    public boolean isTagSupported(Element e)
     {
-        return supported.contains(name.toLowerCase());
+        if (e.getNodeName() != null && supported.contains(e.getNodeName().toLowerCase())) //completely supported tags
+            return true;
+        else //special cases
+        {
+            //empty anchor elements must be preserved
+            if (e.getNodeName().toLowerCase().equals("a") && e.hasAttribute("name") && e.getTextContent().trim().length() == 0)
+                return true;
+            else
+                return false;
+        }
     }
     
     /**
@@ -73,6 +82,13 @@ public class HTMLBoxFactory
             return createSubtreeObject(parent, e, viewport, style);
         else if (name.equals("img"))
             return createSubtreeImg(parent, e, viewport, style);
+        else if (name.equals("a") && e.hasAttribute("name") && e.getTextContent().trim().length() == 0)
+        {
+            //make the named anchors sticky
+            ElementBox eb = factory.createElementInstance(parent, e, style);
+            eb.setSticky(true);
+            return eb;
+        }
         else
             return null;
     }
