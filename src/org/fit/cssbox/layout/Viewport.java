@@ -324,7 +324,7 @@ public class Viewport extends BlockBox
 	
 	/**
 	 * Uses the given block as a clipping block instead of the default Viewport.
-	 * @param box the new clipping block
+	 * @param block the new clipping block
 	 */
 	public void clipByBlock(BlockBox block)
 	{

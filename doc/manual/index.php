@@ -3,7 +3,7 @@
 		make_header("documentation", "Manual", "../", "@import \"manual.css\";");
 		?><h1 xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs">CSSBox Manual</h1><p xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="author">
 			[ <a href="manual.html">Downloadable version</a> ]
-		</p><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#configOptions">Configuration Options</a></li><li><a href="#basicDisplay">Displaying the document</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
+		</p><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li><li><a href="#configOptions">Configuration Options</a></li><li><a href="#parserCustomization">Custom Document Sources and Parsers</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
@@ -11,31 +11,25 @@ how the basic information about the individual parts can be obtained.</p><p>More
 from the <a href="../api/index.html" class="api">API documentation</a>.</p><p>Any feedback to CSSBox and/or this manual is welcome via the
 <a href="http://cssbox.sourceforge.net/">CSSBox website</a>.</p></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="basic"><h2>Basic usage</h2><p>The input of the rendering engine is a document DOM tree. The engine is able to
 automatically load the style sheets referenced in the document and it computes the
-efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>CSSBox generally expects a <a href="http://www.w3.org/DOM/" title="Document Object Model">DOM</a> on its input.
-In the examples provided with CSSBox, the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
-is used for building the DOM that is based on <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>.
-However, any other DOM parser can be used with CSSBox, or any alternative way of obtaining
-the DOM may be used as well.</p><p>For our demos, we have created a simple
-<a href="../api/org/fit/cssbox/demo/DOMSource.html" class="api">DOMSource</a> class that encapsulates the basic
-operations with the parser such as its initialization and obtaining the DOM. When another DOM 
-parser is required to be used with CSSBox, the only necessary change is to re-implement 
-the <code>DOMSource</code> class in order to follow the chosen parser API. No further changes
-are necessary in the remaining code shown below. See the <a href="../api/org/fit/cssbox/demo/DOMSource.html" class="api">DOMSource</a>
-source code for more details.</p><p>The following code reads and parses the document based on its URL:</p><div class="code"><pre>
+efficient style of each element. Afterwrads, the document layout is computed.</p><div class="subsection" id="basicLoading"><h3>Document Loading</h3><p>CSSBox generally expects an implementation of the
+<a href="http://www.w3.org/DOM/" title="Document Object Model">DOM</a> on its input represented
+by its root <code>Document</code> node. The way how the DOM is obtained is not important for CSSBox.
+However, in most situations, the DOM is obtained by parsing a HTML or XML file. Therefore, CSSBox provides
+a framework for binding a parser to the layout engine. Moreover it contains a default parser implementation
+that may be simply used or it can be easily replaced by a custom implementation when required. The default
+implementation is based on the <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser
+and <a href="http://xerces.apache.org/xerces2-j/">Xerces 2</a>. The details about using a different
+parser are described in the <a href="#parserCustomization">Custom Document Sources and Parsers</a> section.</p><p>With the default implementation,  the following code reads and parses the document based on its URL:</p><div class="code"><pre>
 <em>//Open the network connection</em> 
-URL url = new URL("http://cssbox.sf.net");
-URLConnection con = url.openConnection();
-InputStream is = con.getInputStream();
-<em>//use the final URL as the base URL later (possible redirects)</em>
-url = con.getURL();
+DocumentSource docSource = new DefaultDocumentSource(urlstring);
 
-<em>//Parse the input document (replace this with your own parser if desired)</em>
-DOMSource parser = new DOMSource(is);
+<em>//Parse the input document</em>
+DOMSource parser = new DefaultDOMSource(docSource);
 Document doc = parser.parse(); <em>//doc represents the obtained DOM</em>
 </pre></div><p>For the initial DOM and style sheet processing, a
 <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object is used. It is
 initialized with the DOM tree and the base URL:</p><div class="code"><pre>
-DOMAnalyzer da = new DOMAnalyzer(doc, url);
+DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
 da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the standard style sheet</em>
 da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the additional style sheet</em>
@@ -76,7 +70,15 @@ BrowserCanvas browser =
 <em>//... modify the browser configuration here ...</em>
 browser.createLayout(new java.awt.Dimension(1000, 600));
 </pre></div><p>In both cases, the created <code>browser</code> object can be directly used for both displaying
-the rendered document and for obtaining the created layout model.</p></div><div class="subsection" id="configOptions"><h3>Configuration Options</h3><p>Current browser configuration is represented using a
+the rendered document and for obtaining the created layout model. The details of the browser
+configuration are described in the <a href="#configOptions">Configuration Options</a> section.</p></div><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
+directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can
+be directly used as a Swing user interface component. The size of the component is
+automatically adjusted according to the resulting document layout. The basic document
+displaying is shown in the <a href="../api/org/fit/cssbox/demo/SimpleBrowser.html" class="api">SimpleBrowser</a>
+example.</p><p>BrowserCanvas provides a simple display of the rendered page with no interactive elements.
+For obtaining an interactive browser component with text selection and clickable links,
+the <a href="http://cssbox.sourceforge.net/swingbox/">SwingBox</a> extension should be used.</p></div><div class="subsection" id="configOptions"><h3>Configuration Options</h3><p>Current browser configuration is represented using a
 <a href="../api/org/fit/cssbox/layout/BrowserConfig.html" class="api">BrowserConfig</a>
 object that may be accessed using the browser's
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#getConfig()" class="api">getConfig()</a> method.
@@ -90,17 +92,35 @@ The following configuration options are available:</p><dl>
      <ul>
      <li>Creating replaced boxes for <code>&lt;img&gt;</code> elements</li>
      <li>Using the <code>&lt;body&gt;</code> element background for the whole canvas according to the HTML specification</li>
+     <li>Support for the embedded <code>&lt;object&gt;</code> elements.</li>
+     <li>Special handling of certain elements such as named anchors.</li>
      </ul>
      The default value is <code>true</code>.
      </dd>
-</dl></div><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
-directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can
-be directly used as a Swing user interface component. The size of the component is
-automatically adjusted according to the resulting document layout. The basic document
-displaying is shown in the <a href="../api/org/fit/cssbox/demo/SimpleBrowser.html" class="api">SimpleBrowser</a>
-example.</p><p>BrowserCanvas provides a simple display of the rendered page with no interactive elements.
-For obtaining an interactive browser component with text selection and clickable links,
-the <a href="http://cssbox.sourceforge.net/swingbox/">SwingBox</a> extension should be used.</p></div></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="model"><h2>Rendered Document Model</h2><p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#registerDocumentSource(java.lang.Class)" class="api">browser.getConfig().registerDocumentSource(Class&lt;? extends DocumentSource&gt;)</a></dt>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#registerDOMSource(java.lang.Class)" class="api">browser.getConfig().registerDOMSource(Class&lt;? extends DOMSource&gt;)</a></dt>
+<dd>Register the DocumentSource and DOMSource implementation used for automatic loading of the referenced documents.
+See the <a href="#parserCustomization">Custom Document Sources and Parsers</a> section for details.</dd>
+</dl></div><div class="subsection" id="parserCustomization"><h3>Custom Document Sources and Parsers</h3><p>CSSBox contains two generic abstract classes that represent the document source and the parser and provides their
+default implementations:</p><ul>
+<li><a href="../api/org/fit/cssbox/io/DocumentSource.html" class="api">DocumentSource</a> represents a generic source of documents
+ that is able to obtain a document based on its URL. The default
+ <a href="../api/org/fit/cssbox/io/DefaultDocumentSource.html" class="api">DefaultDocumentSource</a> implementation uses the standard Java
+ <code>URLConnection</code> mechanism extended by the support of <code>data:</code> URL scheme.</li>
+<li><a href="../api/org/fit/cssbox/io/DOMSource.html" class="api">DOMSource</a> represents a parser that is able to create a DOM
+ from a document source. The default
+ <a href="../api/org/fit/cssbox/io/DefaultDOMSource.html" class="api">DefaultDOMSource</a> implementation is based on the
+ <a href="http://nekohtml.sourceforge.net/">NekoHTML</a> parser.</li>
+</ul><p>The default implementations may be used for obtaining the DOM from an URL easily as shown in the
+<a href="#basicLoading">Document Loading</a> section. Moreover, CSSBox uses these implementations for obtaining
+ the documents referenced from the HTML code such as images and embedded objects.</p><p>When a different implementation of the document source or the parser is required (e.g. for obtaining the documents
+from a non-standard source, using a different parser implementation, etc.), it is possible to create a custom implementation
+of the appropriate abstract class. Then, the new implementation may be registered using the browser configuration
+<a href="../api/org/fit/cssbox/layout/BrowserConfig.html#registerDocumentSource(java.lang.Class)" class="api">browser.getConfig().registerDocumentSource()</a>
+and
+<a href="../api/org/fit/cssbox/layout/BrowserConfig.html#registerDOMSource(java.lang.Class)" class="api">browser.getConfig().registerDOMSource()</a>
+methods as mentioned above in the <a href="#configOptions">Configuration Options</a> section.
+</p></div></div><div xmlns="http://www.w3.org/1999/xhtml" xmlns:doc="http://cssbox.sourceforge.net/docs" class="section" id="model"><h2>Rendered Document Model</h2><p>The resulting document layout is represented as a tree of <dfn>boxes</dfn>. Each box
 creates a rectangular area in the resulting page and it corresponds to a particular
 rendered HTML element. There may be multiple boxes corresponding to a single element;
 e.g. a multi-line paragraph <code>&lt;p&gt;</code> is split to several line boxes. A box may be
