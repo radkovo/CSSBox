@@ -928,7 +928,8 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                 }
-                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace();
+                if (!subbox.isEmpty())
+                    lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace();
             } while (split);
             
             if (subbox.canSplitAfter())
@@ -1505,7 +1506,8 @@ public class BlockBox extends ElementBox
         if (isDisplayed() && isDeclaredVisible())
         {
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getAbsoluteContentBounds());
+            if (clipblock != null)
+                g.setClip(clipblock.getClippedContentBounds());
             int nestTurn = turn;
             switch (turn)
             {

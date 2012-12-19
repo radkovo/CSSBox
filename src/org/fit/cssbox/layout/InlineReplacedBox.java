@@ -58,8 +58,9 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
 	public void setContentObj(ReplacedContent obj)
 	{
 		this.obj = obj;
-		obj.setOwner(this);
 		isempty = (obj == null);
+		if (!isempty)
+		    obj.setOwner(this);
 	}
 
     @Override
@@ -165,43 +166,81 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     protected void loadSizes()
     {
         super.loadSizes();
-        //TODO: Incorporate the ratio according to CSS specs. 10.3.2
+        int intw; //intrinsic sizes
+        int inth;
+        float intr;
         if (obj != null)
         {
-            boxw = obj.getIntrinsicWidth();
-            boxh = obj.getIntrinsicHeight();
+            boxw = intw = obj.getIntrinsicWidth();
+            boxh = inth = obj.getIntrinsicHeight();
+            intr = (float) intw / inth;
         }
         else
         {
-            boxw = 20; //some reasonable default values
-            boxh = 20;
+            boxw = intw = 20; //some reasonable default values
+            boxh = inth = 20;
+            intr = 1.0f;
         }
         
-        TermPercent whole = CSSFactory.getTermFactory().createPercent(100.0f);
+        //try to use the attributes
+        int atrw = -1;
+        int atrh = -1;
         try {
             if (!el.getAttribute("width").equals(""))
-                boxw = Integer.parseInt(el.getAttribute("width"));
-            else //try to get from style
-            {
-                CSSProperty.Width width = style.getProperty("width");
-                CSSDecoder dec = new CSSDecoder(ctx);
-                boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, whole, whole, boxw);
-            }
+                atrw = Integer.parseInt(el.getAttribute("width"));
         } catch (NumberFormatException e) {
             System.err.println("Invalid width value: " + el.getAttribute("width"));
         }
         try {
             if (!el.getAttribute("height").equals(""))
-                boxh = Integer.parseInt(el.getAttribute("height"));
-            else //try to get from style
-            {
-                CSSProperty.Height height = style.getProperty("height");
-                CSSDecoder dec = new CSSDecoder(ctx);
-                boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, whole, whole, boxh);
-            }
+                atrh = Integer.parseInt(el.getAttribute("height"));
         } catch (NumberFormatException e) {
-            System.err.println("Invalid height value: " + el.getAttribute("height"));
+            System.err.println("Invalid height value: " + el.getAttribute("width"));
         }
+        //apply intrinsic ration when necessary
+        if (atrw == -1 && atrh == -1)
+        {
+            boxw = intw;
+            boxh = inth;
+        }
+        else if (atrw == -1)
+        {
+            boxw = Math.round(intr * atrh);
+            boxh = atrh;
+        }
+        else if (atrh == -1)
+        {
+            boxw = atrw;
+            boxh = Math.round(atrw / intr);
+        }
+        else
+        {
+            boxw = atrw;
+            boxh = atrh;
+        }
+
+        //compute dimensions from styles (styles should override the attributes)
+        CSSDecoder dec = new CSSDecoder(ctx);
+        CSSProperty.Width width = style.getProperty("width");
+        CSSProperty.Height height = style.getProperty("height");
+        if (width == null && height != null)
+        {
+            //boxw remains untouched, compute boxh
+            int autoh = Math.round(boxw / intr);
+            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, content.height);
+        }
+        else if (width != null && height == null)
+        {
+            //boxh remains untouched, compute boxw
+            int autow = Math.round(intr * boxh);
+            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, content.width);
+        }
+        else
+        {
+            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, intw, content.width);
+            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, inth, content.height);
+        }
+        
         content.width = boxw;
         content.height = boxh;
         bounds.setSize(totalWidth(), totalHeight());
@@ -213,12 +252,19 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
+            Shape oldclip = g.getClip();
+            g.setClip(clipblock.getClippedContentBounds());
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
                 if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
             }
             
-            if (obj != null) obj.draw(g, boxw, boxh);
+            if (obj != null)
+            {
+                g.setClip(getClippedContentBounds());
+                obj.draw(g, boxw, boxh);
+            }
+            g.setClip(oldclip);
         }
     }
 

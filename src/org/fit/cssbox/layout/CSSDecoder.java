@@ -104,10 +104,10 @@ public class CSSDecoder
      */
     public int getLength(TermLengthOrPercent value, boolean auto, int defval, int autoval, int whole)
     {
-        if (value == null)
-            return defval;
-        else if (auto)
+        if (auto)
             return autoval;
+        else if (value == null)
+            return defval;
         else
             return (int) Math.round(context.pxLength(value, whole));
     }

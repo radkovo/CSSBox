@@ -19,17 +19,18 @@
  */
 package org.fit.cssbox.demo;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.TextBox;
 import org.w3c.dom.Document;
+
 
 /**
  * This demo shows how the rendered box tree can be accessed. It renders the document 
@@ -73,24 +74,21 @@ public class TextBoxes
         
         try {
             //Open the network connection 
-            URL url = new URL(args[0]);
-            URLConnection con = url.openConnection();
-            InputStream is = con.getInputStream();
-            url = con.getURL(); //update the URL after possible redirects
+            DocumentSource docSource = new DefaultDocumentSource(args[0]);
             
-            //Parse the input document using jTidy
-            DOMSource parser = new DOMSource(is);
+            //Parse the input document
+            DOMSource parser = new DefaultDOMSource(docSource);
             Document doc = parser.parse();
             
             //Create the CSS analyzer
-            DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
             da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
             da.getStyleSheets(); //load the author style sheets
             
             //Create the browser canvas
-            BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, url);
+            BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             //Disable the image loading
             browser.getConfig().setLoadImages(false);
             browser.getConfig().setLoadBackgroundImages(false);
@@ -101,7 +99,7 @@ public class TextBoxes
             //Display the result
             printTextBoxes(browser.getViewport());
             
-            is.close();
+            docSource.close();
             
         } catch (Exception e) {
             System.err.println("Error: "+e.getMessage());

@@ -119,7 +119,7 @@ public class CSSNorm
     {
         return
         "body   { color: black; background-color: #fafafa;}"+
-        "a      { color: blue; text-decoration: underline; }"+
+        "a[href]{ color: blue; text-decoration: underline; }"+
         "script { display: none; }"+
         "style  { display: none; }"+
         "option { display: none; }"+

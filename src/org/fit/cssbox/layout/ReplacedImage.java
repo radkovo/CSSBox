@@ -45,20 +45,22 @@ public class ReplacedImage extends ContentImage
     protected VisualContext ctx; //visual context
 
     /**
-     * Creates a new instance of ReplacedImage.
+     * Creates a new instance of ReplacedImage. 
      * 
      * @param owner
      *            the owning Box.
      * @param ctx
      *            the visual context applied during rendering.
      * @param baseurl
-     *            the url to load image from.
+     *            the base url used for loading images from.
+     * @param src
+     *            the source URL
      * 
      * @see ElementBox
      * @see VisualContext
      * @see URL
      */
-    public ReplacedImage(ElementBox owner, VisualContext ctx, URL baseurl)
+    public ReplacedImage(ElementBox owner, VisualContext ctx, URL baseurl, String src)
     {
         super(owner);
         this.ctx = ctx;
@@ -66,7 +68,6 @@ public class ReplacedImage extends ContentImage
         this.base = baseurl;
 
         try {
-            String src = getOwner().getElement().getAttribute("src");
             url = DataURLHandler.createURL(base, src);
             if (loadImages)
             {

@@ -21,13 +21,18 @@ package org.fit.cssbox.demo;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.*;
-import java.net.*;
-import org.w3c.dom.*;
+import java.net.URL;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 
 /**
  * An example of using CSSBox for the HTML page rendering and display.
@@ -123,29 +128,26 @@ public class SimpleBrowser extends javax.swing.JFrame
     	}
     	
         try {
-        	//Open the network connection 
-        	URL url = new URL(args[0]);
-        	URLConnection con = url.openConnection();
-            InputStream is = con.getInputStream();
-            url = con.getURL(); //update the URL after possible redirects
+            //Open the network connection 
+            DocumentSource docSource = new DefaultDocumentSource(args[0]);
             
             //Parse the input document
-            DOMSource parser = new DOMSource(is);
+            DOMSource parser = new DefaultDOMSource(docSource);
             Document doc = parser.parse();
             
             //Create the CSS analyzer
-            DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
             da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
             da.getStyleSheets(); //load the author style sheets
             
             //Display the result
-            SimpleBrowser test = new SimpleBrowser(da.getRoot(), url, da);
+            SimpleBrowser test = new SimpleBrowser(da.getRoot(), docSource.getURL(), da);
             test.setSize(1275, 750);
             test.setVisible(true);
             
-            is.close();
+            docSource.close();
             
         } catch (Exception e) {
             System.out.println("Error: "+e.getMessage());

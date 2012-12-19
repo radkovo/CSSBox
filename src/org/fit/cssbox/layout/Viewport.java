@@ -233,7 +233,6 @@ public class Viewport extends BlockBox
 	 */
 	private void loadBackgroundFromContents()
 	{
-	    //TODO: consider background images
 	    if (rootBox != null)
 	    {
     	    ElementBox src = rootBox;
@@ -245,24 +244,31 @@ public class Viewport extends BlockBox
     	        bgcolor = src.getBgcolor();
     	        src.setBgcolor(null);
     	    }
+    	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
+    	    {
+    	        bgimages = loadBackgroundImages(src.getStyle());
+    	        src.getBackgroundImages().clear();
+    	    }
 	    }
 	}
 	
     /**
 	 * Calculates the absolute positions and updates the viewport size
 	 * in order to enclose all the boxes.
+	 * @param min the minimal viewport dimensions
 	 */
-	public void updateBounds()
+	public void updateBounds(Dimension min)
 	{
 		//first round - compute the viewport size
-		maxx = 0;
-		maxy = 0;
+		maxx = min.width;
+		maxy = min.height;
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();
 		//update the size
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
 		loadSizes();
+		loadBackgroundFromContents(); //the background image positions may have changed
 	}
 
     @Override
@@ -296,18 +302,15 @@ public class Viewport extends BlockBox
 	@Override
     public void absolutePositions()
     {
-	    absbounds = new Rectangle(bounds);
+	    if (parent == null) //viewport may be the root
+	        absbounds = new Rectangle(bounds);
+	    else //or a nested viewport
+	        absbounds = new Rectangle(parent.getAbsoluteContentBounds());
+	    
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();
     }
 	
-	@Override
-	public void draw(Graphics2D g, int turn, int mode) 
-	{
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).draw(g, turn, mode);
-	}
-
 	/**
 	 * Updates the maximal viewport size according to the element bounds
 	 */
@@ -317,6 +320,29 @@ public class Viewport extends BlockBox
 		if (maxx < x) maxx = x;
 		int y = bounds.y + bounds.height - 1;
 		if (maxy < y) maxy = y;
+	}
+	
+	/**
+	 * Uses the given block as a clipping block instead of the default Viewport.
+	 * @param block the new clipping block
+	 */
+	public void clipByBlock(BlockBox block)
+	{
+	    recursivelySetClipBlock(this, block);
+	}
+	
+	private void recursivelySetClipBlock(Box root, BlockBox clip)
+	{
+	    if (root == this || root.getClipBlock() == this)
+	    {
+	        root.setClipBlock(clip);
+	        if (root instanceof ElementBox)
+	        {
+	            ElementBox eb = (ElementBox) root;
+	            for (int i = eb.getStartChild(); i < eb.getEndChild(); i++)
+	                recursivelySetClipBlock(eb.getSubBox(i), clip);
+	        }
+	    }
 	}
 	
     //===================================================================================

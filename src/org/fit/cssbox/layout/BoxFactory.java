@@ -21,11 +21,14 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,6 +62,7 @@ import cz.vutbr.web.css.Selector.PseudoDeclaration;
 public class BoxFactory
 {
     protected BrowserConfig config;
+    protected HTMLBoxFactory html;
     
     protected DOMAnalyzer decoder;
     protected URL baseurl;
@@ -77,6 +81,7 @@ public class BoxFactory
         this.baseurl = baseurl;
         this.next_order = 0;
         this.config = new BrowserConfig();
+        this.html = new HTMLBoxFactory(this);
     }
     
     /**
@@ -119,6 +124,15 @@ public class BoxFactory
     public boolean getUseHTML()
     {
         return config.getUseHTML();
+    }
+    
+    /**
+     * Obtains the base URL used by this factory.
+     * @return the base URL.
+     */
+    public URL getBaseURL()
+    {
+        return baseurl;
     }
     
     /**
@@ -339,7 +353,7 @@ public class BoxFactory
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
             boolean lastwhite = (stat.lastinflow == null) || stat.lastinflow.isBlock() || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
-            boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces();
+            boolean collapse = lastwhite && newbox.isWhitespace() && newbox.collapsesSpaces() && !newbox.isSticky();
             if (!collapse)
             {
                 stat.parent.addSubBox(newbox);
@@ -659,26 +673,20 @@ public class BoxFactory
      */
     public ElementBox createBox(ElementBox parent, Element n, String display)
     {
-        ElementBox root;
+        ElementBox root = null;
         
         //New box style
         NodeData style = decoder.getElementStyleInherited(n);
         if (style == null)
                 style = createAnonymousStyle(display);
         
-        //Special tag names
-        if (config.getUseHTML() && n.getNodeName().equals("img"))
+        //Special (HTML) tag names
+        if (config.getUseHTML() && html.isTagSupported(n))
         {
-            InlineReplacedBox rbox = new InlineReplacedBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
-            rbox.setViewport(viewport);
-            rbox.setStyle(style);
-            rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), baseurl));
-            root = rbox;
-            if (root.isBlock())
-                root = new BlockReplacedBox(rbox);
+            root = html.createBox(parent, n, viewport, style);
         }
-        //Create a box according to the <code>display</code> value
-        else
+        //Not created yet -- create a box according to the display value
+        if (root == null)
         {
             root = createElementInstance(parent, n, style);
         }
@@ -746,7 +754,7 @@ public class BoxFactory
      * @param style Style definition for the node
      * @return The created instance of ElementBox
      */
-    private ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
+    public ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
     {
         ElementBox root = new InlineBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         root.setViewport(viewport);
@@ -827,6 +835,42 @@ public class BoxFactory
     {
         NodeData newstyle = dest.getStyle().inheritFrom(parent.getStyle()); 
         dest.setStyle(newstyle);
+    }
+    
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DocumentSource} class registered in the browser configuration
+     * ({@link org.fit.cssbox.layout.BrowserConfig}).
+     * @param urlstring the URL to be given to the document source.
+     * @return the document source.
+     */
+    public DocumentSource createDocumentSource(URL base, String urlstring)
+    {
+        try
+        {
+            Constructor<? extends DocumentSource> constr = config.getDocumentSourceClass().getConstructor(URL.class, String.class);
+            return constr.newInstance(base, urlstring);
+        } catch (Exception e) {
+            System.err.println("BoxFactory: Warning: could not create the DocumentSource instance: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DOMSource} class registered in the browser configuration
+     * ({@link org.fit.cssbox.layout.BrowserConfig}).
+     * @param src the document source to be given to the DOM source.
+     * @return the DOM source.
+     */
+    public DOMSource createDOMSource(DocumentSource src)
+    {
+        try
+        {
+            Constructor<? extends DOMSource> constr = config.getDOMSourceClass().getConstructor(DocumentSource.class);
+            return constr.newInstance(src);
+        } catch (Exception e) {
+            System.err.println("BoxFactory: Warning: could not create the DOMSource instance: " + e.getMessage());
+            return null;
+        }
     }
     
 }

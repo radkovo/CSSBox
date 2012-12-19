@@ -189,7 +189,7 @@ public class DOMAnalyzer
     /**
      * Finds the explicitly specified base URL in the document according to the HTML specification
      * @return the base URL string, when present in the document or null when not present
-     * @see http://www.w3.org/TR/html4/struct/links.html#edef-BASE
+     * @see <a href="http://www.w3.org/TR/html4/struct/links.html#edef-BASE">the BASE element definition</a>
      */
     public String getDocumentBase()
     {

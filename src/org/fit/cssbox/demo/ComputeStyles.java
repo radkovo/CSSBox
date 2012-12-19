@@ -20,16 +20,18 @@
 package org.fit.cssbox.demo;
 
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URL;
-import java.net.URLConnection;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.css.NormalOutput;
 import org.fit.cssbox.css.Output;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.w3c.dom.Document;
+
 
 /**
  * This example computes the effective style of each element and encodes it into the
@@ -54,17 +56,14 @@ public class ComputeStyles
         
         try {
             //Open the network connection 
-            URL url = new URL(args[0]);
-            URLConnection con = url.openConnection();
-            InputStream is = con.getInputStream();
-            url = con.getURL(); //update the URL after possible redirects
+            DocumentSource docSource = new DefaultDocumentSource(args[0]);
             
             //Parse the input document
-            DOMSource parser = new DOMSource(is);
+            DOMSource parser = new DefaultDOMSource(docSource);
             Document doc = parser.parse();
             
             //Create the CSS analyzer
-            DOMAnalyzer da = new DOMAnalyzer(doc, url);
+            DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
             da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
@@ -80,7 +79,7 @@ public class ComputeStyles
             out.dumpTo(os);
             os.close();
             
-            is.close();
+            docSource.close();
             
             System.err.println("Done.");
             

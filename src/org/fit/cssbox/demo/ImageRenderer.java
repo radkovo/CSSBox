@@ -25,12 +25,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.net.URLConnection;
 
 import javax.imageio.ImageIO;
 
@@ -39,6 +36,10 @@ import cz.vutbr.web.css.TermColor;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.*;
 import org.fit.cssbox.misc.Base64Coder;
 import org.w3c.dom.Document;
@@ -87,27 +88,23 @@ public class ImageRenderer
             !urlstring.startsWith("file:"))
                 urlstring = "http://" + urlstring;
         
-        URL url = new URL(urlstring);
-        URLConnection con = url.openConnection();
-        con.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; Transformer/2.x; Linux) CSSBox/2.x (like Gecko)");
-        InputStream is = con.getInputStream();
-        url = con.getURL(); //update the URL after possible redirects
+        //Open the network connection 
+        DocumentSource docSource = new DefaultDocumentSource(urlstring);
         
-        DOMSource parser = new DOMSource(is);
-        parser.setContentType(con.getHeaderField("Content-Type")); //use the default encoding provided via HTTP
+        //Parse the input document
+        DOMSource parser = new DefaultDOMSource(docSource);
         Document doc = parser.parse();
         
-        DOMAnalyzer da = new DOMAnalyzer(doc, url);
-        da.attributesToStyles();
-        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.getStyleSheets();
+        //Create the CSS analyzer
+        DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
+        da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
+        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
+        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
+        da.getStyleSheets(); //load the author style sheets
         
-        is.close();
-
         if (type == TYPE_PNG)
         {
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             contentCanvas.getConfig().setLoadImages(loadImages);
             contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
             contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
@@ -115,7 +112,7 @@ public class ImageRenderer
         }
         else if (type == TYPE_SVG)
         {
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, url);
+            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             contentCanvas.getConfig().setLoadImages(loadImages);
             contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
             contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
@@ -124,6 +121,8 @@ public class ImageRenderer
             w.close();
         }
         
+        docSource.close();
+
         return true;
     }
     

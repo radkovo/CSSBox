@@ -736,7 +736,7 @@ abstract public class ElementBox extends Box
     public boolean isVisible()
     {
         //the margin is never visible - use the background bounds instead of the full bounds
-        return visible && clipblock.isVisible() && clipblock.getAbsoluteContentBounds().intersects(getAbsoluteBorderBounds());
+        return visible && clipblock.isVisible() && clipblock.getClippedContentBounds().intersects(getAbsoluteBorderBounds());
     }
     
     /**
@@ -1074,28 +1074,41 @@ abstract public class ElementBox extends Box
         }
         else
             bgcolor = null;
-        
+
+        bgimages = loadBackgroundImages(style);
+    }
+    
+    /**
+     * Loads background images from style. Considers their positions, repetition, etc. Currently, only a single background
+     * image is supported (CSS2).
+     * @param style the style containing the image specifiations
+     * @return a list of images
+     */
+    protected Vector<BackgroundImage> loadBackgroundImages(NodeData style)
+    {
         CSSProperty.BackgroundImage img = style.getProperty("background-image");
         if (img == CSSProperty.BackgroundImage.uri)
         {
             try {
-                bgimages = new Vector<BackgroundImage>(1);
+                Vector<BackgroundImage> bgimages = new Vector<BackgroundImage>(1);
                 TermURI urlstring = style.getValue(TermURI.class, "background-image");
                 URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
                 CSSProperty.BackgroundPosition position = style.getProperty("background-position");
+                TermList positionValues = style.getValue(TermList.class, "background-position");
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
-                BackgroundImage bgimg = new BackgroundImage(this, url, position, repeat, attachment);
+                BackgroundImage bgimg = new BackgroundImage(this, url, position, positionValues, repeat, attachment);
                 bgimages.add(bgimg);
+                return bgimages;
             } catch (MalformedURLException e) {
                 System.err.println("BackgroundImage: Warning: " + e.getMessage());
-                bgimages = null;
+                return null;
             }
         }
         else
-            bgimages = null;
+            return null;
     }
     
 }

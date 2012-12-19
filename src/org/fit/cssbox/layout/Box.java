@@ -54,7 +54,10 @@ abstract public class Box
 
     /** Is this element visible? (it has not visibility: hidden) */
     protected boolean visible;
-        
+    
+    /** Should this box be preserved in the tree even if it is empty and not visible? (for special-purpose boxes, e.g. anchors */
+    protected boolean sticky;
+    
     /** The DOM node that forms this box. It is either an inline element
      * (e.g. <em>) or a text node (anonymous box) */
     protected Node node;
@@ -117,6 +120,7 @@ abstract public class Box
         rootelem = false;
         isblock = false;
         isempty = true;
+        sticky = false;
 
         bounds = new Rectangle();
         absbounds = new Rectangle();
@@ -136,6 +140,7 @@ abstract public class Box
         isblock = src.isblock;
         order = src.order;
         isempty = src.isempty;
+        sticky = src.sticky;
         availwidth = src.availwidth;
         viewport = src.viewport;
         parent = src.parent;
@@ -280,7 +285,7 @@ abstract public class Box
      */
     public boolean isVisible()
     {
-        return visible && clipblock.isVisible() && clipblock.getAbsoluteContentBounds().intersects(getAbsoluteBounds());
+        return visible && clipblock.isVisible() && clipblock.getClippedContentBounds().intersects(getAbsoluteBounds());
     }
     
     /**
@@ -292,6 +297,26 @@ abstract public class Box
         return visible;
     }
     
+    /**
+     * Checks whether the box should be preserved in the tree even if it is empty and collapsed. This should be used
+     * for special-purpose boxes such as link anchors.
+     * @return <code>true</code> for sticky boxes
+     */
+    public boolean isSticky()
+    {
+        return sticky;
+    }
+
+    /**
+     * Sets whether the box should be preserved in the tree even if it is empty and collapsed. This should be used
+     * for special-purpose boxes such as link anchors.
+     * @param sticky <code>true</code> for sticky boxes
+     */
+    public void setSticky(boolean sticky)
+    {
+        this.sticky = sticky;
+    }
+
     /**
      * @return <code> true if this is a replaced box
      */
@@ -458,7 +483,22 @@ abstract public class Box
      */
     public Rectangle getClippedBounds()
     {
-        return absbounds.intersection(clipblock.getAbsoluteContentBounds());
+        if (clipblock == null)
+            return getAbsoluteBounds();
+        else
+            return absbounds.intersection(clipblock.getAbsoluteContentBounds());
+    }
+
+    /**
+     * Computes the absolute clipping rectangle coordinates if this box is used as a clipping block.
+     * @return the clipping rectangle coordinates
+     */
+    public Rectangle getClippedContentBounds()
+    {
+        if (clipblock == null)
+            return getAbsoluteContentBounds();
+        else
+            return clipblock.getClippedContentBounds().intersection(getAbsoluteContentBounds());
     }
     
     /**

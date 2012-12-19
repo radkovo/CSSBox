@@ -775,7 +775,7 @@ public class TextBox extends Box implements Inline
             FontMetrics fm = g.getFontMetrics();
             Rectangle2D rect = fm.getStringBounds(t, g);
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getAbsoluteContentBounds());
+            g.setClip(clipblock.getClippedContentBounds());
             g.drawString(t, x + (int) rect.getX(), y - (int) rect.getY());
             g.setClip(oldclip);
         }
@@ -784,7 +784,7 @@ public class TextBox extends Box implements Inline
 	@Override
     public void draw(Graphics2D g, int turn, int mode)
     {
-        if (displayed)
+        if (displayed && isVisible())
         {
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
@@ -829,8 +829,8 @@ public class TextBox extends Box implements Inline
 	
 	/**
 	 * Checks if a character can be interpreted as whitespace according to current settings.
-	 * @param ch
-	 * @return
+	 * @param ch the character
+	 * @return <code>true</code> when <code>ch</code> is a whitespace character
 	 */
     private boolean isWhitespace(char ch)
     {
@@ -841,9 +841,9 @@ public class TextBox extends Box implements Inline
     }
     
     /**
-     * Checks if a character can be interpreted a line break according to current settings.
-     * @param ch
-     * @return
+     * Checks if a character can be interpreted as a line break according to current settings.
+     * @param ch the character
+     * @return <code>true</code> when <code>ch</code> is the line break
      */
     private boolean isLineBreak(char ch)
     {

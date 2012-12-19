@@ -331,7 +331,8 @@ public class InlineBox extends ElementBox implements InlineElement
                 }
             }
             
-            lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
+            if (!subbox.isEmpty())
+                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }
@@ -522,7 +523,7 @@ public class InlineBox extends ElementBox implements InlineElement
         if (displayed)
         {
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getAbsoluteContentBounds());
+            g.setClip(clipblock.getClippedContentBounds());
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
                 if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
