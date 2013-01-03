@@ -297,22 +297,18 @@ public class HTMLNorm
      * Computes a length defined using an HTML attribute (e.g. width for tables).
      * @param value The attribute value
      * @param whole the value used as 100% when value is a percentage
-     * @return the computed length or zero in case of error
+     * @return the computed length
      */
-    public static int computeAttributeLength(String value, int whole)
+    public static int computeAttributeLength(String value, int whole) throws NumberFormatException
     {
-        try {
-            if (value.endsWith("%"))
-            {
-                double val = Double.parseDouble(value.substring(0, value.length() - 1));
-                return (int) Math.round(val * whole / 100.0);
-            }
-            else
-            {
-                return (int) Math.rint(Double.parseDouble(value));
-            }
-        } catch (NumberFormatException e) {
-            return 0;
+        if (value.endsWith("%"))
+        {
+            double val = Double.parseDouble(value.substring(0, value.length() - 1));
+            return (int) Math.round(val * whole / 100.0);
+        }
+        else
+        {
+            return (int) Math.rint(Double.parseDouble(value));
         }
     }
     

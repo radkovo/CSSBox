@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
+import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSProperty;
@@ -199,18 +200,22 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
             intr = 1.0f;
         }
         
+        //total widths used for percentages
+        int twidth = cblock.getContentWidth();
+        int theight = viewport.getContentHeight();
+        
         //try to use the attributes
         int atrw = -1;
         int atrh = -1;
         try {
             if (!el.getAttribute("width").equals(""))
-                atrw = Integer.parseInt(el.getAttribute("width"));
+                atrw = HTMLNorm.computeAttributeLength(el.getAttribute("width"), twidth);
         } catch (NumberFormatException e) {
             System.err.println("Invalid width value: " + el.getAttribute("width"));
         }
         try {
             if (!el.getAttribute("height").equals(""))
-                atrh = Integer.parseInt(el.getAttribute("height"));
+                atrh = HTMLNorm.computeAttributeLength(el.getAttribute("height"), theight);
         } catch (NumberFormatException e) {
             System.err.println("Invalid height value: " + el.getAttribute("width"));
         }
@@ -244,18 +249,22 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         {
             //boxw remains untouched, compute boxh
             int autoh = Math.round(boxw / intr);
-            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, content.height);
+            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, theight);
+            if (atrw == -1)
+                boxw = Math.round(intr * boxh);
         }
         else if (width != null && height == null)
         {
             //boxh remains untouched, compute boxw
             int autow = Math.round(intr * boxh);
-            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, content.width);
+            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, twidth);
+            if (atrh == -1)
+                boxh = Math.round(boxw / intr);
         }
         else
         {
-            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, intw, content.width);
-            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, inth, content.height);
+            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, intw, twidth);
+            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, inth, theight);
         }
         
         content.width = boxw;
