@@ -297,6 +297,8 @@ public class BoxBrowser
             vals.add(infoTableData("Padding", eb.getPadding().toString()));
             vals.add(infoTableData("Border", eb.getBorder().toString()));
             vals.add(infoTableData("LineH", String.valueOf(eb.getLineHeight()) + "px"));
+            vals.add(infoTableData("Position", eb.getPositionString()));
+            vals.add(infoTableData("Coords", eb.getCoords().toString()));
         }
 
         if (box instanceof Inline)
@@ -320,9 +322,7 @@ public class BoxBrowser
         {
             BlockBox eb = (BlockBox) box;
             vals.add(infoTableData("Content layout", (eb.containsBlocks() ? "blocks" : "inline")));
-            vals.add(infoTableData("Coords", eb.getCoords().toString()));
             vals.add(infoTableData("Float", eb.getFloatingString()));
-            vals.add(infoTableData("Position", eb.getPositionString()));
             vals.add(infoTableData("Overflow", eb.getOverflowString()));
             vals.add(infoTableData("Clear", eb.getClearingString()));
             vals.add(infoTableData("Reference", (eb.getAbsReference() == null) ? "- none -" : eb.getAbsReference().toString()));

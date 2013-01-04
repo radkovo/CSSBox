@@ -370,6 +370,13 @@ public class InlineBox extends ElementBox implements InlineElement
                 absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
             }
 
+            //consider the relative position
+            if (position == POS_RELATIVE)
+            {
+                absbounds.x += leftset ? coords.left : (-coords.right);
+                absbounds.y += topset ? coords.top : (-coords.bottom);
+            }
+            
             //update the width and height according to overflow of the parent
             absbounds.width = bounds.width;
             absbounds.height = bounds.height;
@@ -600,6 +607,8 @@ public class InlineBox extends ElementBox implements InlineElement
         padding.left = dec.getLength(getLengthValue("padding-left"), false, null, null, contw);
         
         content = new Dimension(0, 0);
+        
+        loadPosition();
     }
     
     @Override

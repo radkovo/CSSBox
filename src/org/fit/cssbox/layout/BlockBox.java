@@ -45,11 +45,6 @@ public class BlockBox extends ElementBox
     public static final CSSProperty.Clear CLEAR_RIGHT = CSSProperty.Clear.RIGHT;
     public static final CSSProperty.Clear CLEAR_BOTH = CSSProperty.Clear.BOTH;
     
-    public static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
-    public static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
-    public static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
-    public static final CSSProperty.Position POS_FIXED = CSSProperty.Position.FIXED;
-    
     public static final CSSProperty.TextAlign ALIGN_LEFT = CSSProperty.TextAlign.LEFT;
     public static final CSSProperty.TextAlign ALIGN_RIGHT = CSSProperty.TextAlign.RIGHT;
     public static final CSSProperty.TextAlign ALIGN_CENTER = CSSProperty.TextAlign.CENTER;
@@ -137,27 +132,9 @@ public class BlockBox extends ElementBox
     /** Clearing property */
     protected CSSProperty.Clear clearing;
     
-    /** Position property */
-    protected CSSProperty.Position position;
-    
     /** Overflow property */
     protected CSSProperty.Overflow overflow;
         
-    /** Position coordinates */
-    protected LengthSet coords;
-    
-    /** The top position coordinate is set explicitely */
-    protected boolean topset;
-    
-    /** The top position coordinate is set explicitely */
-    protected boolean leftset;
-    
-    /** The top position coordinate is set explicitely */
-    protected boolean bottomset;
-    
-    /** The top position coordinate is set explicitely */
-    protected boolean rightset;
-    
     /** the left position should be set to static position during the layout */
     protected boolean leftstatic;
     
@@ -191,15 +168,11 @@ public class BlockBox extends ElementBox
         
         floating = FLOAT_NONE;
         clearing = CLEAR_NONE;
-        position = POS_STATIC;
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
         
-        topset = false;
-        leftset = false;
-        bottomset = false;
-        rightset = false;
         topstatic = false;
+        leftstatic = false;
         
       	if (style != null)
       		loadBlockStyle();
@@ -226,15 +199,16 @@ public class BlockBox extends ElementBox
         
         floating = FLOAT_NONE;
         clearing = CLEAR_NONE;
-        position = POS_STATIC;
+        position = src.position;
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
 
-        topset = false;
-        leftset = false;
-        bottomset = false;
-        rightset = false;
+        topset = src.topset;
+        leftset = src.leftset;
+        bottomset = src.bottomset;
+        rightset = src.rightset;
         topstatic = false;
+        leftstatic = false;
         
         nested = src.nested;
         startChild = src.startChild;
@@ -252,14 +226,10 @@ public class BlockBox extends ElementBox
         fown = src.fown;
         floating = src.floating;
         clearing = src.clearing;
-        position = src.position;
         overflow = src.overflow;
         align = src.align;
-        topset = src.topset;
-        leftset = src.leftset;
-        bottomset = src.bottomset;
-        rightset = src.rightset;
         topstatic = src.topstatic;
+        leftstatic = src.leftstatic;
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
     }
@@ -354,11 +324,6 @@ public class BlockBox extends ElementBox
     public String getClearingString()
     {
         return clearing.toString();
-    }
-    
-    public String getPositionString()
-    {
-        return position.toString();
     }
     
     public String getOverflowString()
@@ -1466,11 +1431,6 @@ public class BlockBox extends ElementBox
 		return hset; //only true if the height is set explicitly
 	}
 
-	public LengthSet getCoords()
-	{
-	    return coords;
-	}
-	
     /**
      * Computes the maximal height of the floating boxes inside of this box and
      * all its children.
@@ -1551,9 +1511,6 @@ public class BlockBox extends ElementBox
         clearing = style.getProperty("clear");
         if (clearing == null) clearing = CLEAR_NONE;
         
-        position = style.getProperty("position");
-        if (position == null) position = POS_STATIC;
-        
         overflow = style.getProperty("overflow");
         if (overflow == null) overflow = OVERFLOW_VISIBLE;
         
@@ -1571,37 +1528,6 @@ public class BlockBox extends ElementBox
         {
             floating = FLOAT_NONE;
         }
-    }
-    
-    /**
-     * Loads the top, left, bottom and right coordinates from the style
-     */
-    protected void loadPosition()
-    {
-        CSSDecoder dec = new CSSDecoder(ctx);
-
-        int contw = cblock.getContentWidth();
-        int conth = cblock.getContentHeight();
-        
-        CSSProperty.Top ptop = style.getProperty("top");
-        CSSProperty.Right pright = style.getProperty("right");
-        CSSProperty.Bottom pbottom = style.getProperty("bottom");
-        CSSProperty.Left pleft = style.getProperty("left");
-
-        topset = !(ptop == null || ptop == CSSProperty.Top.AUTO);
-        rightset = !(pright == null || pright == CSSProperty.Right.AUTO);
-        bottomset = !(pbottom == null || pbottom == CSSProperty.Bottom.AUTO);
-        leftset = !(pleft == null || pleft == CSSProperty.Left.AUTO);
-        
-        coords = new LengthSet();
-        if (topset)
-            coords.top = dec.getLength(getLengthValue("top"), (ptop == CSSProperty.Top.AUTO), 0, 0, conth);
-        if (rightset)
-            coords.right = dec.getLength(getLengthValue("right"), (pright == CSSProperty.Right.AUTO), 0, 0, contw);
-        if (bottomset)
-            coords.bottom = dec.getLength(getLengthValue("bottom"), (pbottom == CSSProperty.Bottom.AUTO), 0, 0, conth);
-        if (leftset)
-            coords.left = dec.getLength(getLengthValue("left"), (pleft == CSSProperty.Left.AUTO), 0, 0, contw);
     }
     
     /** Compute the total width of a block element according to the min-, max-,

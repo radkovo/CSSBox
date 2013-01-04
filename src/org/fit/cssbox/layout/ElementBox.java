@@ -64,6 +64,11 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
     
+    public static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
+    public static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
+    public static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
+    public static final CSSProperty.Position POS_FIXED = CSSProperty.Position.FIXED;
+    
     public static final CSSProperty.WhiteSpace WHITESPACE_NORMAL = CSSProperty.WhiteSpace.NORMAL;
     public static final CSSProperty.WhiteSpace WHITESPACE_PRE = CSSProperty.WhiteSpace.PRE;
     public static final CSSProperty.WhiteSpace WHITESPACE_NOWRAP = CSSProperty.WhiteSpace.NOWRAP;
@@ -103,22 +108,8 @@ abstract public class ElementBox extends Box
     /** Efficient styles for the pseudo classes */
     protected Map<Selector.PseudoDeclaration, NodeData> pseudoStyle;
     
-    /** The display property value */
-    protected CSSProperty.Display display;
-    
-    /** The white-space property value */
-    protected CSSProperty.WhiteSpace whitespace;
-    
-    /** Background color or null when transparent */
-    protected Color bgcolor;
-
     /** Background images or null when there are no background images */
     protected Vector<BackgroundImage> bgimages;
-    
-    /** A list of nested boxes (possibly empty). The box can contain either 
-     * only block boxes or only inline boxes. The inline boxes can only
-     * contain inline boxes */
-    protected Vector<Box> nested;
     
     /** Set to true when the element box contains only text boxes */
     protected boolean textonly;
@@ -126,6 +117,35 @@ abstract public class ElementBox extends Box
     /** The map of related pseudo-elements (if any) */
     protected Map<Selector.PseudoDeclaration, ElementBox> pseudoElements;
     
+    //============================== Computed style ======================
+    
+    /** The display property value */
+    protected CSSProperty.Display display;
+    
+    /** Position property */
+    protected CSSProperty.Position position;
+    
+    /** Position coordinates */
+    protected LengthSet coords;
+    
+    /** The top position coordinate is set explicitely */
+    protected boolean topset;
+    
+    /** The top position coordinate is set explicitely */
+    protected boolean leftset;
+    
+    /** The top position coordinate is set explicitely */
+    protected boolean bottomset;
+    
+    /** The top position coordinate is set explicitely */
+    protected boolean rightset;
+    
+    /** The white-space property value */
+    protected CSSProperty.WhiteSpace whitespace;
+    
+    /** Background color or null when transparent */
+    protected Color bgcolor;
+
     /** Margin widths */
     protected LengthSet margin;
     
@@ -147,12 +167,19 @@ abstract public class ElementBox extends Box
     /** the computed value of line-height */
     protected int lineHeight;
     
+    //============================== Child boxes ======================
+    
     /** First valid child */
     protected int startChild;
     
     /** Last valid child (excl) */
     protected int endChild;
 
+    /** A list of nested boxes (possibly empty). The box can contain either 
+     * only block boxes or only inline boxes. The inline boxes can only
+     * contain inline boxes */
+    protected Vector<Box> nested;
+    
     //=======================================================================
     
     /**
@@ -182,6 +209,11 @@ abstract public class ElementBox extends Box
 	        isblock = false;
 	        textonly = true;
         }
+        position = POS_STATIC;
+        topset = false;
+        leftset = false;
+        bottomset = false;
+        rightset = false;
     }
     
     /**
@@ -205,6 +237,11 @@ abstract public class ElementBox extends Box
         whitespace = src.whitespace;
         bgcolor = (src.bgcolor == null) ? null : new Color(src.bgcolor.getRed(), src.bgcolor.getGreen(), src.bgcolor.getBlue(), src.bgcolor.getAlpha());
         bgimages = (src.bgimages == null) ? null : new Vector<BackgroundImage>(src.bgimages);
+        position = src.position;
+        topset = src.topset;
+        leftset = src.leftset;
+        bottomset = src.bottomset;
+        rightset = src.rightset;
         
         if (src.margin != null)
             margin = new LengthSet(src.margin);
@@ -272,6 +309,15 @@ abstract public class ElementBox extends Box
             return style.toString();
         else
             return "";
+    }
+    
+    /**
+     * Obtains the string value of the position: property
+     * @return The string like "static", "absolute", "relative" or "fixed"
+     */
+    public String getPositionString()
+    {
+        return position.toString();
     }
     
     /**
@@ -567,6 +613,15 @@ abstract public class ElementBox extends Box
     public LengthSet getEMargin()
     {
         return emargin;
+    }
+    
+    /**
+     * Obtains the position coordinates (top, left, bottom, right properties)
+     * @return the set of coordinates
+     */
+    public LengthSet getCoords()
+    {
+        return coords;
     }
     
     /**
@@ -1023,7 +1078,8 @@ abstract public class ElementBox extends Box
         
         CSSProperty.Float floating = style.getProperty("float");
         if (floating == null) floating = BlockBox.FLOAT_NONE;
-        CSSProperty.Position position = style.getProperty("position");
+        
+        position = style.getProperty("position");
         if (position == null) position = BlockBox.POS_STATIC;
         
         //apply combination rules
@@ -1141,6 +1197,37 @@ abstract public class ElementBox extends Box
         }
         else
             return null;
+    }
+    
+    /**
+     * Loads the top, left, bottom and right coordinates from the style
+     */
+    protected void loadPosition()
+    {
+        CSSDecoder dec = new CSSDecoder(ctx);
+
+        int contw = cblock.getContentWidth();
+        int conth = cblock.getContentHeight();
+        
+        CSSProperty.Top ptop = style.getProperty("top");
+        CSSProperty.Right pright = style.getProperty("right");
+        CSSProperty.Bottom pbottom = style.getProperty("bottom");
+        CSSProperty.Left pleft = style.getProperty("left");
+
+        topset = !(ptop == null || ptop == CSSProperty.Top.AUTO);
+        rightset = !(pright == null || pright == CSSProperty.Right.AUTO);
+        bottomset = !(pbottom == null || pbottom == CSSProperty.Bottom.AUTO);
+        leftset = !(pleft == null || pleft == CSSProperty.Left.AUTO);
+        
+        coords = new LengthSet();
+        if (topset)
+            coords.top = dec.getLength(getLengthValue("top"), (ptop == CSSProperty.Top.AUTO), 0, 0, conth);
+        if (rightset)
+            coords.right = dec.getLength(getLengthValue("right"), (pright == CSSProperty.Right.AUTO), 0, 0, contw);
+        if (bottomset)
+            coords.bottom = dec.getLength(getLengthValue("bottom"), (pbottom == CSSProperty.Bottom.AUTO), 0, 0, conth);
+        if (leftset)
+            coords.left = dec.getLength(getLengthValue("left"), (pleft == CSSProperty.Left.AUTO), 0, 0, contw);
     }
     
 }

@@ -273,7 +273,7 @@ public class BoxFactory
                 if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
                     newstat.clipbox = block;
                 //Last inflow box is local for block boxes
-                newstat.lastinflow = null;
+                newstat.lastinflow = null; //TODO this does not work in some cases (absolute.html)
                 //create the subtree
                 createBoxTree(newstat);
                 //remove trailing whitespaces in blocks

@@ -262,6 +262,13 @@ public class InlineBlockBox extends BlockBox implements InlineElement
                 absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
             }
 
+            //consider the relative position
+            if (position == POS_RELATIVE)
+            {
+                absbounds.x += leftset ? coords.left : (-coords.right);
+                absbounds.y += topset ? coords.top : (-coords.bottom);
+            }
+            
             //update the width and height according to overflow of the parent
             absbounds.width = bounds.width;
             absbounds.height = bounds.height;
