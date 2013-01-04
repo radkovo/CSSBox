@@ -929,7 +929,39 @@ abstract public class ElementBox extends Box
      * called when the parent has been resized.
      */
     abstract public void updateSizes(); 
-
+    
+    /**
+     * Re-calculates the sizes of all the child block boxes recursively.
+     */
+    public void updateChildSizes()
+    {
+        for (int i = 0; i < getSubBoxNumber(); i++)
+        {
+            Box child = getSubBox(i);
+            if (child instanceof BlockBox)
+            {
+                //update the children only when some size has changed
+                BlockBox block = (BlockBox) child;
+                int oldw = block.getContentWidth();
+                int oldh = block.getContentHeight();
+                block.updateSizes();
+                block.setSize(block.totalWidth(), block.totalHeight());
+                if (block.getContentWidth() != oldw || block.getContentHeight() != oldh)
+                {
+                    block.updateChildSizes();
+                }
+            }
+            else if (child instanceof ElementBox)
+            {
+                //always update the non-block elements
+                ElementBox eb = (ElementBox) child;
+                eb.updateSizes();
+                eb.setSize(eb.totalWidth(), eb.totalHeight());
+                eb.updateChildSizes();
+            }
+        }
+    }
+    
     /**
      * Computes efficient top and bottom margins for collapsing.
      */

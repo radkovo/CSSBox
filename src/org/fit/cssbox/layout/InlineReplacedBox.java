@@ -167,6 +167,17 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     protected void loadSizes()
     {
         super.loadSizes();
+        loadSizeInfo();
+    }
+    
+    @Override
+    public void updateSizes()
+    {
+        loadSizeInfo();
+    }
+    
+    private void loadSizeInfo()
+    {
         int intw; //intrinsic sizes
         int inth;
         float intr;

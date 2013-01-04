@@ -2113,30 +2113,6 @@ public class BlockBox extends ElementBox
     }
     
     /**
-     * Re-calculates the sizes of all the child block boxes recursively.
-     */
-    public void updateChildSizes()
-    {
-    	for (int i = 0; i < getSubBoxNumber(); i++)
-    	{
-    		Box child = getSubBox(i);
-    		if (child instanceof BlockBox)
-    		{
-    			BlockBox block = (BlockBox) child;
-    			int oldw = block.getContentWidth();
-    			int oldh = block.getContentHeight();
-    			block.updateSizes();
-   				block.setSize(block.totalWidth(), block.totalHeight());
-   				//if something has changed, update the children
-    			if (block.getContentWidth() != oldw || block.getContentHeight() != oldh)
-    			{
-    				block.updateChildSizes();
-    			}
-    		}
-    	}
-    }
-   
-    /**
      * Checks if the box content is separated from the top margin by a border or padding.
      */
     protected boolean separatedFromTop(ElementBox box)
