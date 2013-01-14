@@ -243,6 +243,9 @@ abstract public class ElementBox extends Box
         bottomset = src.bottomset;
         rightset = src.rightset;
         
+        if (src.coords != null)
+            coords = new LengthSet(src.coords);
+        
         if (src.margin != null)
             margin = new LengthSet(src.margin);
         if (src.emargin != null)
