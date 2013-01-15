@@ -39,6 +39,8 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     protected final int DEFAULT_IMAGE_WIDTH = 0;
     /** Used when there are no image data */
     protected final int DEFAULT_IMAGE_HEIGHT = 0;
+    /** Image loading timeout [ms] */
+    protected final int LOAD_TIMEOUT = 500;
     
     protected boolean loadImages; //is the image loading switched on?
     protected boolean caching; //use picture caching?
@@ -220,117 +222,103 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     @Override
     public int getIntrinsicHeight()
     {
-        if (loadImages)
+        if (height > -1)
         {
-            if (image != null)
-            {
-                if (height > -1)
-                {
-                    return height;
-                }
-                else
-                {
-                    // wait for the width...
-                    abort = false;
-                    while (!abort && image != null && (height = image.getHeight(observer)) == -1)
-                    {
-                        try
-                        {
-                            Thread.sleep(25);
-                        } catch (Exception e)
-                        {
-                            image = null;
-                            abort = true;
-                        }
-                    }
-
-                    if (height == -1) height = DEFAULT_IMAGE_HEIGHT;
-                    return height;
-                }
-            }
-            else
-            {
-                image = loadImage(caching);
-                abort = false;
-                while (!abort && image != null && (height = image.getHeight(observer)) == -1)
-                {
-                    try
-                    {
-                        Thread.sleep(25);
-                    } catch (Exception e)
-                    {
-                        image = null;
-                        abort = true;
-                    }
-                }
-                if (height == -1) height = DEFAULT_IMAGE_HEIGHT;
-                return height;// if there was an error, height == DEFAULT_IMAGE_HEIGHT
-            }
+            return height; //previously computed height
         }
         else
         {
-            return DEFAULT_IMAGE_HEIGHT;
+            if (loadImages)
+            {
+                if (image == null)
+                    image = loadImage(caching);
+                height = obtainImageHeight();
+                return height;
+            }
+            else
+            {
+                return DEFAULT_IMAGE_HEIGHT;
+            }
         }
-
     }
 
     @Override
     public int getIntrinsicWidth()
     {
-        if (loadImages)
+        if (width > -1)
         {
-            if (image != null)
-            {
-                if (width > -1)
-                {
-                    return width;
-                }
-                else
-                {
-                    // wait for the width...
-                    abort = false;
-                    while (!abort && image != null && (width = image.getWidth(observer)) == -1)
-                    {
-                        try
-                        {
-                            Thread.sleep(25);
-                        } catch (Exception e)
-                        {
-                            image = null;
-                            abort = true;
-                        }
-                    }
-                    if (width == -1) width = DEFAULT_IMAGE_WIDTH;
-                    return width;
-                }
-            }
-            else
-            {
-                image = loadImage(caching);
-                abort = false;
-                while (!abort && image != null
-                        && (width = image.getWidth(observer)) == -1)
-                {
-                    try
-                    {
-                        Thread.sleep(25);
-                    } catch (Exception e)
-                    {
-                        image = null;
-                        abort = true;
-                    }
-                }
-                if (width == -1) width = DEFAULT_IMAGE_WIDTH;
-                return width;// if there was an error, height == DEFAULT_IMAGE_HEIGHT
-            }
+            return width; //previously computed width
         }
         else
         {
-            return DEFAULT_IMAGE_WIDTH;
+            if (loadImages)
+            {
+                if (image == null)
+                    image = loadImage(caching);
+                width = obtainImageWidth();
+                return width;// if there was an error, height == DEFAULT_IMAGE_HEIGHT
+            }
+            else
+            {
+                return DEFAULT_IMAGE_WIDTH;
+            }
         }
-
     }
 
+    private int obtainImageWidth()
+    {
+        int width = -1;
+        abort = false;
+        int loadtime = 0;
+        while (!abort && image != null && (width = image.getWidth(observer)) == -1)
+        {
+            try
+            {
+                if (loadtime > LOAD_TIMEOUT)
+                {
+                    image = null;
+                    abort = true;
+                }
+                Thread.sleep(25);
+                loadtime += 25;
+            } catch (Exception e)
+            {
+                image = null;
+                abort = true;
+            }
+        }
+        if (width == -1) width = DEFAULT_IMAGE_WIDTH;
+        return width;
+    }
+
+    private int obtainImageHeight()
+    {
+        int height = -1;
+        abort = false;
+        int loadtime = 0;
+        while (!abort && image != null && (height = image.getHeight(observer)) == -1)
+        {
+            try
+            {
+                if (loadtime > LOAD_TIMEOUT)
+                {
+                    image = null;
+                    abort = true;
+                }
+                else
+                    Thread.sleep(25);
+                loadtime += 25;
+            } catch (Exception e)
+            {
+                image = null;
+                abort = true;
+            }
+        }
+
+        if (height == -1) height = DEFAULT_IMAGE_HEIGHT;
+        return height;
+    }
+    
     @Override
     public float getIntrinsicRatio()
     {

@@ -149,11 +149,11 @@ public class BackgroundImage extends ContentImage
     private void drawRepeatBoth(Graphics2D g, int sx, int sy, int limitx, int limity)
     {
         int height = getIntrinsicHeight();
+        if (height == 0) height = 1;
         for (int y = sy; y < limity; y += height)
             drawRepeatX(g, sx, y, limitx);
         for (int y = sy - height; y + height - 1 >= 0; y -= height)
             drawRepeatX(g, sx, y, limitx);
-        
     }
     
     
