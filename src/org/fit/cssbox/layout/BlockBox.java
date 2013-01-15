@@ -829,7 +829,7 @@ public class BlockBox extends ElementBox
                 boolean fit = false;
                 if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
                     fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
-                if (fit) //positioning succeeded, at least a part fit
+                if (fit) //positioning succeeded, at least a part fit -- set the x coordinate
                 {
                     if (subbox.isInFlow())
                     {
@@ -838,7 +838,6 @@ public class BlockBox extends ElementBox
                     }
                     //update current line metrics
                     curline.considerBox((Inline) subbox);
-                    
                 }
                 
                 //check line overflows
@@ -846,6 +845,14 @@ public class BlockBox extends ElementBox
                 boolean linebreak = (subbox instanceof Inline && ((Inline) subbox).finishedByLineBreak()); //finished by a line break?
                 if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
                 {
+                    //finish the line if there are already some boxes on the line
+                    if (lnstr < i)
+                    {
+                        lnstr = i; //new line starts here
+                        curline.setEnd(lnstr); //finish the old line
+                        curline = new LineBox(this, lnstr, y); //create the new line 
+                        lines.add(curline);
+                    }
                     //go to the new line
                     if (x > maxw) maxw = x;
                     y += getLineHeight();
