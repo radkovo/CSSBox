@@ -1229,10 +1229,13 @@ public class BlockBox extends ElementBox
             
             if (isDisplayed())
             {
-                if (clipblock == viewport)
-                    viewport.updateBoundsFor(absbounds);
-                else
-                    viewport.updateBoundsFor(getClippedBounds());
+                if (isVisible())
+                {
+                    if (clipblock == viewport)
+                        viewport.updateBoundsFor(absbounds);
+                    else
+                        viewport.updateBoundsFor(getClippedBounds());
+                }
                 
                 //repeat for all valid subboxes
                 for (int i = startChild; i < endChild; i++)
