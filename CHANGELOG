@@ -1,3 +1,22 @@
+2013-01-22 - Version 4.1
+- New I/O framework and connetcion handling API (see the manual)
+- Support for data: URLs
+- Embedded object support
+- Optimized image loading
+- Default charset detection for referenced style sheets
+- HTML <base> tag support in CSS analyzer
+- Relative positioning not limited to block elements
+- Canvas size computation fixes
+- Fix inline positioning around floating boxes
+- Fixed behavior of replaced boxes in table cells
+- Replaced box size computation fixes (percentage widths and heights)
+- Border drawing fix (null pointer with 0-width or 0-height boxes)
+- Table cell position computation and footer rendering fix
+- Table row organization fix (closes #3545215)
+- Fixed floating box position inside of relatively positioned boxes
+- Whitespace processing fixes
+- Anchor handling
+
 2012-06-18 - Version 4.0
 - Background image support
 - Reworked configuration API (static configuration removed)
