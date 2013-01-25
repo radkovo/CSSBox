@@ -19,19 +19,37 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
 import org.w3c.dom.Element;
+
 import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty.ListStyleType;
 
 /**
  * This class represents a list-item box. This box behaves the same way
  * as a block box with some modifications.
  * @author radek
+ * @author mantlikf
  */
 public class ListItemBox extends BlockBox
 {
+    private static final String[] RCODE = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+    private static final int[] BVAL = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+    
+    /** List style type */
+    private CSSProperty.ListStyleType styleType;
 
+    /** Item number in the sequence */
+    private int itemNumber;
+    
+    /** Item image */
+    private ReplacedImage image;
+    
 	/**
 	 * Create a new list item
 	 */
@@ -41,6 +59,13 @@ public class ListItemBox extends BlockBox
 		isblock = true;
 	}
 
+    @Override
+    public void initBox()
+    {
+        super.initBox();
+        itemNumber = findItemNumber();
+    }
+    
 	/**
 	 * Create a new list item from an inline box
 	 */
@@ -50,6 +75,15 @@ public class ListItemBox extends BlockBox
 		isblock = true;
 	}
 
+    @Override
+    public void setStyle(NodeData s)
+    {
+        super.setStyle(s);
+        styleType = style.getProperty("list-style-type");
+        if (styleType == null)
+            styleType = ListStyleType.DISC;
+    }
+    
 	
     @Override
 	public void draw(Graphics2D g, int turn, int mode)
@@ -59,7 +93,7 @@ public class ListItemBox extends BlockBox
     	{
             if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
             {
-                if (mode == DRAW_BOTH || mode == DRAW_FG) drawBullet(g);
+                if (mode == DRAW_BOTH || mode == DRAW_FG) drawMarker(g);
             }
     	}
     }
@@ -70,27 +104,153 @@ public class ListItemBox extends BlockBox
      */
     public boolean hasVisibleBullet()
     {
-        CSSProperty.ListStyleType type = style.getProperty("list-style-type");
-        return type != CSSProperty.ListStyleType.NONE;
+        return styleType != CSSProperty.ListStyleType.NONE;
     }
     
     /**
-     * Draw a bullet
+     * Return item number in ordered list.
+     *
+     * @return item number
      */
-    private void drawBullet(Graphics2D g)
+    public int getItemNumber() 
+    {
+        return itemNumber;
+    }
+    
+    /**
+     * Get ordered list item marker text depending on list-style-type property.
+     *
+     * @return item text or empty string for unordered list
+     */
+    public String getMarkerText()
+    {
+        String text;
+        if (styleType == CSSProperty.ListStyleType.UPPER_ALPHA)
+            text = "" + ((char) (64 + (itemNumber % 24)));
+        else if (styleType == CSSProperty.ListStyleType.LOWER_ALPHA)
+            text = "" + ((char) (96 + (itemNumber % 24)));
+        else if (styleType == CSSProperty.ListStyleType.UPPER_ROMAN)
+            text = "" + binaryToRoman(itemNumber);
+        else if (styleType == CSSProperty.ListStyleType.LOWER_ROMAN)
+            text = "" + binaryToRoman(itemNumber).toLowerCase();
+        else
+            text = String.valueOf(itemNumber); // default decimal 
+        return text + ". ";
+    }
+
+    /**
+     * Finds the item number. Currently this correspond to the number of list-item boxes before this box
+     * within the parent box.
+     */
+    private int findItemNumber() 
+    {
+        ElementBox parent = getParent();
+        int cnt = 0;
+        for (int i = parent.getStartChild(); i < parent.getEndChild(); i++)
+        {
+            Box child = parent.getSubBox(i);
+            if (child instanceof ListItemBox)
+                cnt++;
+            if (child == this)
+                return cnt;
+        }
+        return 1;
+    }
+    
+    /**
+     * Draw the list item symbol, number or image depending on list-style-type
+     */
+    public void drawMarker(Graphics2D g)
+    {
+        Shape oldclip = g.getClip();
+        g.setClip(clipblock.getClippedContentBounds());
+        if (image != null)
+            drawImage(g);
+        else
+            drawBullet(g);
+        g.setClip(oldclip);
+    }
+    
+    /**
+     * Draws a bullet or text marker
+     */
+    protected void drawBullet(Graphics2D g)
     {
     	int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
     	int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
     	int r = (int) Math.round(0.6 * ctx.getEm());
-    	CSSProperty.ListStyleType type = style.getProperty("list-style-type");
-    	if (type == CSSProperty.ListStyleType.CIRCLE) 
+    	if (styleType == CSSProperty.ListStyleType.CIRCLE) 
     		g.drawOval(x, y, r, r);
-    	else if (type == CSSProperty.ListStyleType.SQUARE) 
+    	else if (styleType == CSSProperty.ListStyleType.SQUARE) 
     		g.fillRect(x, y, r, r);
     	//else if (type == CSSProperty.ListStyleType.BOX) //not documented, recognized by Konqueror 
     	//	g.drawRect(x, y, r, r);
-    	else if (type != CSSProperty.ListStyleType.NONE) //use 'disc'
+    	else if (styleType == CSSProperty.ListStyleType.DISC)
     		g.fillOval(x, y, r, r);
+    	else if (styleType != CSSProperty.ListStyleType.NONE)
+    	    drawText(g, getMarkerText());
     }
     
+    /**
+     * Draws an image marker 
+     */
+    protected void drawImage(Graphics2D g)
+    {
+        int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
+        int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
+        Image img = image.getImage();
+        if (img != null)
+        {
+            int w = img.getWidth(image);
+            int h = img.getHeight(image);
+            x = x - w / 2;
+            y = y + h / 2;
+            g.drawImage(img, x, y, image);
+        }
+    }
+
+    /**
+     * Draws a text marker
+     */
+    protected void drawText(Graphics2D g, String text)
+    {
+        // top left corner
+        int x = (int) Math.round(getAbsoluteContentX());
+        int y = (int) Math.round(getAbsoluteContentY());
+
+        //TODO align Y with baseline
+        FontMetrics fm = g.getFontMetrics();
+        Rectangle2D rect = fm.getStringBounds(text, g);
+        
+        // Draw the string
+        g.drawString(text,
+                     x + ((int) Math.round(rect.getX())) - ((int) Math.round(rect.getWidth())),
+                     y - ((int) Math.round(rect.getY())));
+    }
+    
+    /**
+     * Conversion int to Roman numbers
+     * from http://www.roseindia.net/java/java-tips/45examples/misc/roman/roman.shtml
+     *
+     * @param binary
+     * @return
+     */
+    private static String binaryToRoman(int binary)
+    {
+        if (binary <= 0 || binary >= 4000) 
+            throw new NumberFormatException("Value outside roman numeral range.");
+        String roman = ""; // Roman notation will be accumualated here.
+
+        // Loop from biggest value to smallest, successively subtracting,
+        // from the binary value while adding to the roman representation.
+        for (int i = 0; i < RCODE.length; i++)
+        {
+            while (binary >= BVAL[i])
+            {
+                binary -= BVAL[i];
+                roman += RCODE[i];
+            }
+        }
+        return roman;
+    }
 }
