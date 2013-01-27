@@ -1420,6 +1420,39 @@ public class BlockBox extends ElementBox
     }
     
     /**
+     * Recursively finds the baseline of the first in-flow inline box.
+     * @return The baseline offset in the element content or -1 if there are no in-flow boxes.
+     */
+    public int getFirstInlineBoxBaseline()
+    {
+        return recursiveGetFirstInlineBoxBaseline(this);
+    }
+    
+    protected int recursiveGetFirstInlineBoxBaseline(ElementBox root)
+    {
+        //find the first in-flow box
+        Box box = null;
+        for (int i = startChild; i < endChild; i++)
+        {
+            box = root.getSubBox(i);
+            if (box.isInFlow())
+                break;
+            else
+                box = null;
+        }
+        
+        if (box != null)
+        {
+            if (box instanceof Inline)
+                return box.getContentY() + ((Inline) box).getBaselineOffset();
+            else
+                return box.getContentY() + recursiveGetFirstInlineBoxBaseline((ElementBox) box);
+        }
+        else
+            return -1; //no inline box found
+    }
+    
+    /**
      * @return true if the width is specified relatively
      */
     public boolean isRelative()

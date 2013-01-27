@@ -285,7 +285,7 @@ public class VisualContext
      */
     public int getBaselineOffset()
     {
-        return fm.getMaxAscent();
+        return fm.getAscent();
     }
     
     /** 

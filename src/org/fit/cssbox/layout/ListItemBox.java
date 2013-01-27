@@ -176,6 +176,7 @@ public class ListItemBox extends BlockBox
      */
     protected void drawBullet(Graphics2D g)
     {
+        ctx.updateGraphics(g);
     	int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
     	int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
     	int r = (int) Math.round(0.6 * ctx.getEm());
@@ -215,17 +216,20 @@ public class ListItemBox extends BlockBox
     protected void drawText(Graphics2D g, String text)
     {
         // top left corner
-        int x = (int) Math.round(getAbsoluteContentX());
-        int y = (int) Math.round(getAbsoluteContentY());
+        int x = getAbsoluteContentX();
+        int y = getAbsoluteContentY();
 
-        //TODO align Y with baseline
+        //Align Y with baseline
         FontMetrics fm = g.getFontMetrics();
         Rectangle2D rect = fm.getStringBounds(text, g);
+        int ofs = getFirstInlineBoxBaseline();
+        if (ofs == -1)
+            ofs = ctx.getBaselineOffset(); //use the font baseline
         
         // Draw the string
         g.drawString(text,
-                     x + ((int) Math.round(rect.getX())) - ((int) Math.round(rect.getWidth())),
-                     y - ((int) Math.round(rect.getY())));
+                     x + ((int) rect.getX()) - ((int) Math.round(rect.getWidth())),
+                     y + ofs);
     }
     
     /**

@@ -20,12 +20,15 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
+
+import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
-
-import org.w3c.dom.*;
 
 /**
  * A box that corresponds to a text node.
@@ -772,11 +775,9 @@ public class TextBox extends Box implements Inline
         if (textEnd > textStart)
         {
             String t = text.substring(textStart, textEnd);
-            FontMetrics fm = g.getFontMetrics();
-            Rectangle2D rect = fm.getStringBounds(t, g);
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
-            g.drawString(t, x + (int) rect.getX(), y - (int) rect.getY());
+            g.drawString(t, x, y + getBaselineOffset());
             g.setClip(oldclip);
         }
     }
