@@ -877,7 +877,6 @@ public class BlockBox extends ElementBox
                     //go to the new line
                     if (x > maxw) maxw = x;
                     y += curline.getMaxLineHeight();
-                    System.out.println("ADVANCE " + toString() + " y=" + curline.getMaxLineHeight());
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
                     if (x1 < 0) x1 = 0;
@@ -924,7 +923,6 @@ public class BlockBox extends ElementBox
         if (!hasFixedHeight())
         {
                 y += curline.getMaxLineHeight(); //last unfinished line
-                System.out.println("ADVANCE " + toString() + " y=" + curline.getMaxLineHeight());
                 if (encloseFloats())
                 {
                     //enclose all floating boxes we own
