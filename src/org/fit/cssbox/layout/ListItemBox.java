@@ -83,7 +83,14 @@ public class ListItemBox extends BlockBox
         if (styleType == null)
             styleType = ListStyleType.DISC;
     }
-    
+
+    @Override
+    protected void initNextLine(LineBox line, boolean first)
+    {
+        //consider the possible bullet at the first line
+        if (first)
+            line.considerParentProperties();
+    }
 	
     @Override
 	public void draw(Graphics2D g, int turn, int mode)
