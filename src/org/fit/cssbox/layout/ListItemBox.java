@@ -64,6 +64,7 @@ public class ListItemBox extends BlockBox
     {
         super.initBox();
         itemNumber = findItemNumber();
+        initFirstLine(this); //consider the list marker for the first line
     }
     
 	/**
@@ -84,14 +85,6 @@ public class ListItemBox extends BlockBox
             styleType = ListStyleType.DISC;
     }
 
-    @Override
-    protected void initNextLine(LineBox line, boolean first)
-    {
-        //consider the possible bullet at the first line
-        if (first)
-            line.considerParentProperties();
-    }
-	
     @Override
 	public void draw(Graphics2D g, int turn, int mode)
     {

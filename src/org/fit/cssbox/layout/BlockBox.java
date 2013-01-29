@@ -92,6 +92,9 @@ public class BlockBox extends ElementBox
     /** Maximal size of the box. Values of -1 mean 'not set'. */
     protected Dimension max_size;
     
+    /** Initialized first line of the box or null when it was not initialized */
+    protected LineBox firstLine;
+    
     //============================== Width computing ======================
     
     /** true if the box width has been set explicitly */
@@ -165,6 +168,7 @@ public class BlockBox extends ElementBox
         floatXl = 0;
         floatXr = 0;
         floatY = 0;
+        firstLine = null;
         
         floating = FLOAT_NONE;
         clearing = CLEAR_NONE;
@@ -744,8 +748,9 @@ public class BlockBox extends ElementBox
 
         //line boxes
         Vector<LineBox> lines = new Vector<LineBox>();
-        LineBox curline = new LineBox(this, 0, 0);
-        initNextLine(curline, true);
+        LineBox curline = firstLine;
+        if (curline == null)
+            curline = new LineBox(this, 0, 0);
         lines.add(curline);
 
         for (int i = 0; i < getSubBoxNumber(); i++)
@@ -852,7 +857,6 @@ public class BlockBox extends ElementBox
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
                         curline = new LineBox(this, lnstr, y); //create the new line
-                        initNextLine(curline, false);
                         lines.add(curline);
                     }
                     //go to the new line
@@ -889,7 +893,6 @@ public class BlockBox extends ElementBox
                         lnstr = i; //new line starts here
                         curline.setEnd(lnstr); //finish the old line
                         curline = new LineBox(this, lnstr, y); //create the new line
-                        initNextLine(curline, false);
                         lines.add(curline);
                         split = true; //force repeating the same once again
                     }
@@ -900,7 +903,6 @@ public class BlockBox extends ElementBox
                         lnstr = i+1; //new line starts with the next subbox
                         curline.setEnd(lnstr); //finish the old line
                         curline = new LineBox(this, lnstr, y); //create the new line
-                        initNextLine(curline, false);
                         lines.add(curline);
                     }
                 }
@@ -1185,14 +1187,26 @@ public class BlockBox extends ElementBox
     }
 
     /**
-     * Initializes the next created line box. This is good point for considering special
-     * properties such as list item markers.
-     * @param line the line box to be initialized
-     * @param first <code>true</code> for the first line in the block, <code>false</code> otherwise
+     * Initializes the first line box with the box properties. This may be used for considering special content
+     * such as list item markers.
+     * @param box the box that should be used for the initialization
      */
-    protected void initNextLine(LineBox line, boolean first)
+    public void initFirstLine(ElementBox box)
     {
-        //nothing happens for general block box
+        if (firstLine == null)
+            firstLine = new LineBox(this, 0, 0);
+        firstLine.considerBoxProperties(box);
+        //recursively apply to the first in-flow box, when it is a block box
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box child = getSubBox(i);
+            if (child.isInFlow())
+            {
+                if (child.isBlock())
+                    ((BlockBox) child).initFirstLine(box);
+                break;
+            }
+        }
     }
     
     @Override

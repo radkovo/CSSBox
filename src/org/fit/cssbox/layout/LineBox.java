@@ -209,15 +209,15 @@ public class LineBox
         }
     }
     
-    public void considerParentProperties()
+    public void considerBoxProperties(ElementBox box)
     {
-        VisualContext ctx = parent.getVisualContext();
+        VisualContext ctx = box.getVisualContext();
         int a = ctx.getBaselineOffset();
         int b = ctx.getFontHeight() - ctx.getBaselineOffset();
         above = Math.max(above, a);
         below = Math.max(below, b);
 
-        maxlineheight = Math.max(maxlineheight, parent.getLineHeight());
+        maxlineheight = Math.max(maxlineheight, box.getLineHeight());
     }
     
     /**
