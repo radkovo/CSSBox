@@ -19,6 +19,10 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.Font;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
@@ -46,6 +50,9 @@ public class BrowserConfig
     /** Registered DOMSource implementation */
     private Class<? extends DOMSource> domSourceClass;
     
+    /** Default font families */
+    private Map<String, String> defaultFonts;
+    
     /**
      * Creates a new config with default values of the options.
      */
@@ -56,6 +63,7 @@ public class BrowserConfig
         useHTML = true;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
+        initDefaultFonts();
     }
 
     public boolean getLoadImages()
@@ -139,6 +147,38 @@ public class BrowserConfig
     public Class<? extends DOMSource> getDOMSourceClass()
     {
         return domSourceClass;
+    }
+
+    /**
+     * Sets a default physical font to be used for a logical name.
+     * @param logical the logical font name
+     * @param physical the physical font to be used
+     */
+    public void setDefaultFont(String logical, String physical)
+    {
+        defaultFonts.put(logical, physical);
+    }
+    
+    /**
+     * Obtains the physical font name used for a logical name.
+     * @param logical the logical name
+     * @return the physicel font name or <code>null</code> if no default is defined for the logical name.
+     */
+    public String getDefaultFont(String logical)
+    {
+        return defaultFonts.get(logical);
+    }
+    
+    /**
+     * Initializes the default fonts. Current implementation just defines the same physical names for basic
+     * AWT logical fonts.
+     */
+    protected void initDefaultFonts()
+    {
+        defaultFonts = new HashMap<String, String>(3);
+        defaultFonts.put(Font.SERIF, Font.SERIF);
+        defaultFonts.put(Font.SANS_SERIF, Font.SANS_SERIF);
+        defaultFonts.put(Font.MONOSPACED, Font.MONOSPACED);
     }
     
 }

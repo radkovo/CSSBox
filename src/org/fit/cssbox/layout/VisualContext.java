@@ -27,6 +27,7 @@ import java.util.List;
 import org.fit.cssbox.css.CSSUnits;
 
 import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty.FontFamily;
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
 
 /**
@@ -38,6 +39,7 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
 public class VisualContext 
 {
     private VisualContext parent;
+    private BoxFactory factory; //the factory used for obtaining current configuration
     private Font font; //current font
     private FontMetrics fm; //current font metrics
     private CSSProperty.FontWeight fontWeight;
@@ -50,9 +52,10 @@ public class VisualContext
     
     public Color color; //current text color
     
-    public VisualContext(VisualContext parent)
+    public VisualContext(VisualContext parent, BoxFactory factory)
     {
         this.parent = parent;
+        this.factory = factory;
         font = new Font(Font.SERIF, Font.PLAIN, (int)((CSSUnits.medium_font * 72) / dpi)); //convert medium font to pixels
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
@@ -66,7 +69,7 @@ public class VisualContext
     
     public VisualContext create()
     {
-        VisualContext ret = new VisualContext(this);
+        VisualContext ret = new VisualContext(this, this.factory);
         ret.em = em;
         ret.ex = ex;
         ret.dpi = dpi;
@@ -177,12 +180,25 @@ public class VisualContext
     public void update(NodeData style)
     {
         //setup the font
-        String family;
-        TermList fmlspec = style.getValue(TermList.class, "font-family");
-        if (fmlspec == null)
-            family = font.getFamily();
+        String family = null;
+        CSSProperty.FontFamily ff = style.getProperty("font-family");
+        if (ff == null)
+            family = font.getFamily(); //use current
+        else if (ff == FontFamily.list_values)
+        {
+            TermList fmlspec = style.getValue(TermList.class, "font-family");
+            if (fmlspec == null)
+                family = font.getFamily();
+            else
+                family = getFontName(fmlspec);
+        }
         else
-            family = getFontName(fmlspec);
+        {
+            if (factory != null)
+                family = factory.getConfig().getDefaultFont(ff.getAWTValue()); //try to translate to physical font
+            if (family == null)
+                family = ff.getAWTValue(); //could not translate - use as is
+        }
         
         double size;
         double psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();

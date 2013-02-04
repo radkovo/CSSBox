@@ -153,7 +153,7 @@ public class ReplacedText extends ReplacedContent
     
     private void createLayout(Dimension dim)
     {
-        VisualContext ctx = new VisualContext(null);
+        VisualContext ctx = new VisualContext(null, getOwner().getViewport().getFactory());
         
         System.err.println("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, base);

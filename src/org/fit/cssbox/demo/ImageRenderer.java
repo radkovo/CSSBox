@@ -20,6 +20,7 @@
 package org.fit.cssbox.demo;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -115,6 +116,7 @@ public class ImageRenderer
             BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             contentCanvas.getConfig().setLoadImages(loadImages);
             contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
+            setDefaultFonts(contentCanvas.getConfig());
             contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
             PrintWriter w = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
             writeSVG(contentCanvas.getViewport(), w);
@@ -124,6 +126,16 @@ public class ImageRenderer
         docSource.close();
 
         return true;
+    }
+    
+    /**
+     * Sets some common fonts as the defaults for generic font families.
+     */
+    protected void setDefaultFonts(BrowserConfig config)
+    {
+        config.setDefaultFont(Font.SERIF, "Times New Roman");
+        config.setDefaultFont(Font.SANS_SERIF, "Arial");
+        config.setDefaultFont(Font.MONOSPACED, "Courier New");
     }
     
     protected void writeSVG(Viewport vp, PrintWriter out) throws IOException
@@ -167,7 +179,7 @@ public class ImageRenderer
 
     protected void writeTextBoxSVG(TextBox t, PrintWriter out, int turn, int mode) throws IOException
     {
-        if (t.isDisplayed() &&
+        if (t.isDisplayed() && t.isVisible() &&
             (turn == TURN_ALL || turn == TURN_NONFLOAT) &&
             (mode == MODE_BOTH || mode == MODE_FG))
         {
@@ -181,7 +193,7 @@ public class ImageRenderer
                            "fill:" + colorString(ctx.getColor()) + ";" +
                            "stroke:none";
                            
-            out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + b.height) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(t.getText()) + "</text>");
+            out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + t.getBaselineOffset()) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(t.getText()) + "</text>");
         }
     }
     

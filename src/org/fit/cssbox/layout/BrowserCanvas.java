@@ -135,12 +135,11 @@ public class BrowserCanvas extends JPanel
             img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         Graphics2D ig = img.createGraphics();
         
-        VisualContext ctx = new VisualContext(null);
-        
         System.err.println("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, baseurl);
         factory.setConfig(config);
         factory.reset();
+        VisualContext ctx = new VisualContext(null, factory);
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
         System.err.println("We have " + factory.next_order + " boxes");
         viewport.initSubtree();
