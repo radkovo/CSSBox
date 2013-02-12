@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
+import cz.vutbr.web.css.CSSProperty.ZIndex;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.misc.CSSStroke;
@@ -166,6 +167,12 @@ abstract public class ElementBox extends Box
     
     /** the computed value of line-height */
     protected int lineHeight;
+    
+    /** the z-index flag: true when z-index is different from <code>auto</code> */
+    protected boolean zset;
+    
+    /** the z-index value when set */
+    protected int zIndex;
     
     //============================== Child boxes ======================
     
@@ -649,6 +656,24 @@ abstract public class ElementBox extends Box
     public Dimension getContent()
     {
         return content;
+    }
+    
+    /**
+     * Checks whether the z-index is non-auto for this box.
+     * @return <code>true</code> when z-index has a value different form <code>auto</code>.
+     */
+    public boolean hasZIndex()
+    {
+        return zset;
+    }
+    
+    /**
+     * Obtains the declared z-index for this element.
+     * @return the z-index value
+     */
+    public int getZIndex()
+    {
+        return zIndex;
     }
     
     /**
@@ -1150,6 +1175,20 @@ abstract public class ElementBox extends Box
         
         //background
         loadBackground();
+        
+        //z-index
+        CSSProperty.ZIndex z = style.getProperty("z-index");
+        if (z != null && z != ZIndex.AUTO)
+        {
+            zset = true;
+            Term<?> zterm = style.getValue("z-index", true);
+            if (zterm instanceof TermInteger)
+                zIndex = ((TermInteger) zterm).getValue().intValue();
+            else
+                zset = false;
+        }
+        else
+            zset = false;
     }
     
     /**

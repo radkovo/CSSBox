@@ -299,6 +299,7 @@ public class BoxBrowser
             vals.add(infoTableData("LineH", String.valueOf(eb.getLineHeight()) + "px"));
             vals.add(infoTableData("Position", eb.getPositionString()));
             vals.add(infoTableData("Coords", eb.getCoords().toString()));
+            vals.add(infoTableData("ZIndex", (eb.hasZIndex()) ? String.valueOf(eb.getZIndex()) : "(auto)"));
         }
 
         if (box instanceof Inline)
