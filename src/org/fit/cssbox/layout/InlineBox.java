@@ -524,16 +524,16 @@ public class InlineBox extends ElementBox implements InlineElement
     
     /** Draw the specified stage (DRAW_*) */
     @Override
-    public void draw(Graphics2D g, int turn, int mode)
+    public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
         if (displayed)
         {
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
             {
-                if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
+                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
             }
             
             if (node.getNodeType() == Node.ELEMENT_NODE)

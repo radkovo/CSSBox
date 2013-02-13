@@ -33,12 +33,19 @@ import org.w3c.dom.*;
  */
 abstract public class Box
 {
-    public static final short DRAW_ALL = 0; //drawing stages
-    public static final short DRAW_NONFLOAT = 1;
-    public static final short DRAW_FLOAT = 2;
-    public static final short DRAW_BOTH = 0; //drawing modes
-    public static final short DRAW_FG = 1;
-    public static final short DRAW_BG = 2;
+    public enum DrawStage 
+    {
+        DRAW_ALL,
+        DRAW_NONFLOAT,
+        DRAW_FLOAT
+    }
+    
+    public enum DrawMode 
+    {
+        DRAW_BOTH,
+        DRAW_FG,
+        DRAW_BG
+    }
     
     /** Is this a box for the root element? */
     protected boolean rootelem;
@@ -760,9 +767,9 @@ abstract public class Box
     {
         if (isVisible())
         {
-            draw(g, DRAW_NONFLOAT, DRAW_BOTH);
-            draw(g, DRAW_FLOAT, DRAW_BOTH);
-            draw(g, DRAW_NONFLOAT, DRAW_FG);
+            draw(g, DrawStage.DRAW_NONFLOAT, DrawMode.DRAW_BOTH);
+            draw(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
+            draw(g, DrawStage.DRAW_NONFLOAT, DrawMode.DRAW_FG);
         }
     }
     
@@ -772,7 +779,7 @@ abstract public class Box
      * @param turn drawing stage - DRAW_ALL, DRAW_FLOAT or DRAW_NONFLOAT
      * @param mode what to draw - DRAW_FG, DRAW_BG or DRAW_BOTH 
      */
-    abstract public void draw(Graphics2D g, int turn, int mode);
+    abstract public void draw(Graphics2D g, DrawStage turn, DrawMode mode);
 
     /**
      * Draw the bounds of the box (for visualisation).

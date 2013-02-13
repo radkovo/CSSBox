@@ -783,13 +783,13 @@ public class TextBox extends Box implements Inline
     }
     
 	@Override
-    public void draw(Graphics2D g, int turn, int mode)
+    public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         if (displayed && isVisible())
         {
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
             {
-                if (mode == DRAW_BOTH || mode == DRAW_FG) drawContent(g);
+                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_FG) drawContent(g);
             }
         }
     }

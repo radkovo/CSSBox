@@ -1532,7 +1532,7 @@ public class BlockBox extends ElementBox
     }
     
 	@Override
-    public void draw(Graphics2D g, int turn, int mode)
+    public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
@@ -1540,25 +1540,25 @@ public class BlockBox extends ElementBox
             Shape oldclip = g.getClip();
             if (clipblock != null)
                 g.setClip(clipblock.getClippedContentBounds());
-            int nestTurn = turn;
+            DrawStage nestTurn = turn;
             switch (turn)
             {
                 case DRAW_ALL: 
-                    if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                    nestTurn = DRAW_ALL;
+                    if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
+                    nestTurn = DrawStage.DRAW_ALL;
                     break;
                 case DRAW_NONFLOAT:
                     if (floating == FLOAT_NONE)
                     {
-                        if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                        nestTurn = DRAW_NONFLOAT;
+                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
+                        nestTurn = DrawStage.DRAW_NONFLOAT;
                     }
                     break;
                 case DRAW_FLOAT:
                     if (floating != FLOAT_NONE)
                     {
-                        if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                        nestTurn = DRAW_ALL;
+                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
+                        nestTurn = DrawStage.DRAW_ALL;
                     }
                     break;
             }
