@@ -788,9 +788,10 @@ public class TextBox extends Box implements Inline
     {
         if (displayed && isVisible())
         {
-            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
+            if (turn == DrawStage.DRAW_INLINE)
             {
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_FG) drawContent(g);
+                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_FG) 
+                    drawContent(g);
             }
         }
     }

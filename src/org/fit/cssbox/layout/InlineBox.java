@@ -530,19 +530,21 @@ public class InlineBox extends ElementBox implements InlineElement
         ctx.updateGraphics(g);
         if (displayed)
         {
-            Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
+            if ((!formsStackingContext() && turn == DrawStage.DRAW_INLINE)
+                || (formsStackingContext() && turn == DrawStage.DRAW_STACKS && turn.hasZindex(zIndex)))
             {
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
+                Shape oldclip = g.getClip();
+                g.setClip(clipblock.getClippedContentBounds());
+                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
+                    drawBackground(g);
+                
+                if (node.getNodeType() == Node.ELEMENT_NODE)
+                {
+                    for (int i = startChild; i < endChild; i++)
+                        getSubBox(i).draw(g, turn, mode);
+                }
+                g.setClip(oldclip);
             }
-            
-            if (node.getNodeType() == Node.ELEMENT_NODE)
-            {
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).draw(g, turn, mode);
-            }
-            g.setClip(oldclip);
         }
     }
     

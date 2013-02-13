@@ -33,26 +33,6 @@ import org.w3c.dom.*;
  */
 abstract public class Box
 {
-    /**
-     * Box tree drawing stage.
-     */
-    public enum DrawStage 
-    {
-        DRAW_ALL,
-        DRAW_NONFLOAT,
-        DRAW_FLOAT
-    }
-    
-    /**
-     * Box drawing mode.
-     */
-    public enum DrawMode 
-    {
-        DRAW_BOTH,
-        DRAW_FG,
-        DRAW_BG
-    }
-    
     /** Is this a box for the root element? */
     protected boolean rootelem;
     
@@ -795,16 +775,16 @@ abstract public class Box
      * Draw the box and all the subboxes on the default
      * graphics context passed to the box constructor. 
      */
-    public void draw()
+    /*public void draw()
     {
         draw(g);
-    }
+    }*/
     
     /**
      * Draw the box and all the subboxes.
      * @param g graphics context to draw on
      */
-    public void draw(Graphics2D g)
+    /*public void draw(Graphics2D g);
     {
         if (isVisible())
         {
@@ -812,7 +792,7 @@ abstract public class Box
             draw(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
             draw(g, DrawStage.DRAW_NONFLOAT, DrawMode.DRAW_FG);
         }
-    }
+    }*/
     
     /**
      * Draw the specified stage (DRAW_*)
@@ -827,4 +807,50 @@ abstract public class Box
      */
     abstract public void drawExtent(Graphics2D g);
 
+    //=========================================================================================
+    
+    /**
+     * Box tree drawing stage according to CSS specification.
+     */
+    public enum DrawStage 
+    {
+        //DRAW_ALL,
+        /** stage 3: the in-flow, non-inline-level, non-positioned descendants */ 
+        DRAW_NONINLINE,
+        /** stage 4: the non-positioned floats */
+        DRAW_FLOAT,
+        /** stage 5: the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks */
+        DRAW_INLINE,
+        /** stages 2, 6, 7: the child stacking contexts */
+        DRAW_STACKS;
+        
+        private int zindex;
+
+        public int getZindex()
+        {
+            return zindex;
+        }
+
+        public void setZindex(int zindex)
+        {
+            this.zindex = zindex;
+        }
+        
+        public boolean hasZindex(int zindex)
+        {
+            return this.zindex == zindex;
+        }
+    }
+    
+    /**
+     * Box drawing mode.
+     */
+    public enum DrawMode 
+    {
+        DRAW_BOTH,
+        DRAW_FG,
+        DRAW_BG
+    }
+    
+    
 }

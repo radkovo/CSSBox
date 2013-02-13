@@ -919,6 +919,52 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
     
+    public void drawStackingContext(Graphics2D g)
+    {
+        Integer[] clevels = zindices.toArray(new Integer[0]); 
+        Arrays.sort(clevels);
+        
+        //1.the background and borders of the element forming the stacking context.
+        drawBackground(g);
+        //2.the child stacking contexts with negative stack levels (most negative first).
+        int zi = 0;
+        while (zi < clevels.length && clevels[zi] < 0)
+        {
+            DrawStage stage2 = DrawStage.DRAW_STACKS;
+            stage2.setZindex(clevels[zi]);
+            drawChildren(g, stage2, DrawMode.DRAW_BOTH);
+            zi++;
+        }
+        //3.the in-flow, non-inline-level, non-positioned descendants.
+        drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
+        //4.the non-positioned floats. 
+        drawChildren(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
+        //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+        drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
+        //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+        if (zi < clevels.length && clevels[zi] == 0)
+        {
+            DrawStage stage6 = DrawStage.DRAW_STACKS;
+            stage6.setZindex(0);
+            drawChildren(g, stage6, DrawMode.DRAW_BOTH);
+            zi++;
+        }
+        //7.the child stacking contexts with positive stack levels (least positive first).
+        while (zi < clevels.length)
+        {
+            DrawStage stage7 = DrawStage.DRAW_STACKS;
+            stage7.setZindex(clevels[zi]);
+            drawChildren(g, stage7, DrawMode.DRAW_BOTH);
+            zi++;
+        }
+    }
+    
+    protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
+    {
+        for (int i = startChild; i < endChild; i++)
+            getSubBox(i).draw(g, turn, mode);
+    }
+    
     /** 
      * Draw the background and border of this box (no subboxes).
      * This method is normally called automatically from {@link Box#draw()}.
