@@ -33,6 +33,9 @@ import org.w3c.dom.*;
  */
 abstract public class Box
 {
+    /**
+     * Box tree drawing stage.
+     */
     public enum DrawStage 
     {
         DRAW_ALL,
@@ -40,6 +43,9 @@ abstract public class Box
         DRAW_FLOAT
     }
     
+    /**
+     * Box drawing mode.
+     */
     public enum DrawMode 
     {
         DRAW_BOTH,
@@ -92,6 +98,9 @@ abstract public class Box
      * Normally, the clipping box is the viewport or the nearest parent with
      * overflow set to hidden */
     protected BlockBox clipblock;
+    
+    /** The parent box of the stacking context where this box is contained */
+    protected ElementBox stackingParent;
     
     /** Maximal total width for the layout (obtained from the owner box) */
     protected int availwidth;
@@ -702,8 +711,40 @@ abstract public class Box
 	{
 		this.parent = parent;
 	}
-	
+
 	/**
+	 * Obtains the parent box of the stacking context this box belongs to.
+	 * @return the element that creates current stacking context
+	 */
+	public ElementBox getStackingParent()
+    {
+        return stackingParent;
+    }
+
+	/**
+	 * Sets the box that forms the stacking context for this box.
+	 * @param stackingParent parent box to set
+	 */
+    public void setStackingParent(ElementBox stackingParent)
+    {
+        this.stackingParent = stackingParent;
+    }
+
+    /**
+     * Updates the stacking parent values and registers the z-index for this parent.
+     */
+    protected void updateStackingContexts()
+    {
+        if (parent != null)
+        {
+            if (parent.formsStackingContext())
+                stackingParent = parent;
+            else
+                stackingParent = parent.getStackingParent();
+        }
+    }
+    
+    /**
      * @return the base URL
      */
     public URL getBase()

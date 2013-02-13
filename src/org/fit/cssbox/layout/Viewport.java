@@ -299,6 +299,12 @@ public class Viewport extends BlockBox
         return true;
     }
 	
+    @Override
+    public boolean formsStackingContext()
+    {
+        return true;
+    }
+    
 	@Override
     public void absolutePositions()
     {

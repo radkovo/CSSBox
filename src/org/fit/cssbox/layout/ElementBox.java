@@ -187,6 +187,9 @@ abstract public class ElementBox extends Box
      * contain inline boxes */
     protected Vector<Box> nested;
     
+    /** Registered children z-indices */
+    protected Set<Integer> zindices;
+    
     //=======================================================================
     
     /**
@@ -221,6 +224,7 @@ abstract public class ElementBox extends Box
         leftset = false;
         bottomset = false;
         rightset = false;
+        zindices = new HashSet<Integer>();
     }
     
     /**
@@ -555,6 +559,15 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Registers a new z-index.
+     * @param index the index to register
+     */
+    public void registerZIndex(int index)
+    {
+        zindices.add(index);
+    }
+    
+    /**
      * Sets related pseudo-element boxes
      * @param pseudo the name of the pseudo-element
      * @param box the corresponding pseudo-element box
@@ -674,6 +687,15 @@ abstract public class ElementBox extends Box
     public int getZIndex()
     {
         return zIndex;
+    }
+    
+    /**
+     * Check whether the element forms a new stacking context.
+     * @return <code>true</code> when the element creates a new stacking context.
+     */
+    public boolean formsStackingContext()
+    {
+        return zset && (position != POS_STATIC);
     }
     
     /**
@@ -1270,6 +1292,20 @@ abstract public class ElementBox extends Box
             coords.bottom = dec.getLength(getLengthValue("bottom"), (pbottom == CSSProperty.Bottom.AUTO), 0, 0, conth);
         if (leftset)
             coords.left = dec.getLength(getLengthValue("left"), (pleft == CSSProperty.Left.AUTO), 0, 0, contw);
+    }
+    
+    /**
+     * Updates the stacking parent values and registers the z-index for this parent.
+     */
+    @Override
+    protected void updateStackingContexts()
+    {
+        super.updateStackingContexts();
+        if (parent != null)
+        {
+            if (zset)
+                stackingParent.registerZIndex(zIndex);
+        }
     }
     
 }

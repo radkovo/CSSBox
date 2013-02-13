@@ -632,6 +632,7 @@ public class TextBox extends Box implements Inline
 	@Override
     public void absolutePositions()
     {
+	    updateStackingContexts();
         if (displayed)
         {
             //my top left corner

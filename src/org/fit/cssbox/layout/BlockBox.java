@@ -1212,6 +1212,7 @@ public class BlockBox extends ElementBox
     @Override
     public void absolutePositions()
     {
+        updateStackingContexts();
         if (displayed)
         {
             //my top left corner
