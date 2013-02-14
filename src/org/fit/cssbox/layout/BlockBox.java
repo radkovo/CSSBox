@@ -1532,7 +1532,8 @@ public class BlockBox extends ElementBox
             return 0;
     }
     
-	@Override
+    @SuppressWarnings("incomplete-switch")
+    @Override
     public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
@@ -1541,34 +1542,38 @@ public class BlockBox extends ElementBox
             Shape oldclip = g.getClip();
             if (clipblock != null)
                 g.setClip(clipblock.getClippedContentBounds());
-            DrawStage nestTurn = turn;
             switch (turn)
             {
-                case DRAW_ALL: 
-                    if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
-                    nestTurn = DrawStage.DRAW_ALL;
-                    break;
-                case DRAW_NONFLOAT:
+                case DRAW_NONINLINE:
                     if (floating == FLOAT_NONE)
                     {
-                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
-                        nestTurn = DrawStage.DRAW_NONFLOAT;
+                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
+                            drawBackground(g);
+                        drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
                     }
                     break;
                 case DRAW_FLOAT:
                     if (floating != FLOAT_NONE)
                     {
-                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
-                        nestTurn = DrawStage.DRAW_ALL;
+                        drawStackingContext(g, true);
+                    }
+                    break;
+                case DRAW_STACKS:
+                    if (turn.hasZindex(0))
+                    {
+                        if (!zset)
+                            drawStackingContext(g, true);
+                        else if (this.getZIndex() == 0)
+                            drawStackingContext(g, false);
+                    }
+                    else
+                    {
+                        if (turn.hasZindex(this.getZIndex()) && this.formsStackingContext())
+                            drawStackingContext(g, false);
                     }
                     break;
             }
-            
-            if (node.getNodeType() == Node.ELEMENT_NODE)
-            {
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).draw(g, nestTurn, mode);
-            }
+                
             g.setClip(oldclip);
         }
     }

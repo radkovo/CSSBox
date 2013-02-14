@@ -919,13 +919,29 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
     
-    public void drawStackingContext(Graphics2D g)
+    /**
+     * Draws the subtree with using this box as a root element.
+     * @param g
+     */
+    public void draw(Graphics2D g)
     {
+        drawStackingContext(g, false);
+    }
+    
+    /**
+     * Draws the subtree as this was a stacking context root.
+     * @param g
+     * @param include include new stacking contexts to this context
+     */
+    public void drawStackingContext(Graphics2D g, boolean include)
+    {
+        //TODO implement include
         Integer[] clevels = zindices.toArray(new Integer[0]); 
         Arrays.sort(clevels);
         
         //1.the background and borders of the element forming the stacking context.
-        drawBackground(g);
+        if (this.isBlock())
+            drawBackground(g);
         //2.the child stacking contexts with negative stack levels (most negative first).
         int zi = 0;
         while (zi < clevels.length && clevels[zi] < 0)

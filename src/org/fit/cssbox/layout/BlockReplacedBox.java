@@ -22,6 +22,8 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.fit.cssbox.layout.Box.DrawMode;
+import org.fit.cssbox.layout.Box.DrawStage;
 import org.w3c.dom.*;
 import cz.vutbr.web.css.*;
 
@@ -247,6 +249,48 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
 	public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
+        if (isDisplayed() && isDeclaredVisible())
+        {
+            Shape oldclip = g.getClip();
+            if (clipblock != null)
+                g.setClip(clipblock.getClippedContentBounds());
+            switch (turn)
+            {
+                case DRAW_NONINLINE:
+                    if (floating == FLOAT_NONE)
+                    {
+                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
+                            drawBackground(g);
+                        drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
+                    }
+                    break;
+                case DRAW_FLOAT:
+                    if (floating != FLOAT_NONE)
+                    {
+                        drawStackingContext(g, true);
+                    }
+                    break;
+                case DRAW_STACKS:
+                    if (turn.hasZindex(0))
+                    {
+                        if (!zset)
+                            drawStackingContext(g, true);
+                        else if (this.getZIndex() == 0)
+                            drawStackingContext(g, false);
+                    }
+                    else
+                    {
+                        if (turn.hasZindex(this.getZIndex()) && this.formsStackingContext())
+                            drawStackingContext(g, false);
+                    }
+                    break;
+            }
+                
+            g.setClip(oldclip);
+        }
+	    
+	    
+        /*ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
             Shape oldclip = g.getClip();
@@ -262,7 +306,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
                 obj.draw(g, boxw, boxh);
             }
             g.setClip(oldclip);
-        }
+        }*/
     }
 
 }
