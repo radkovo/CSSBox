@@ -1532,37 +1532,41 @@ public class BlockBox extends ElementBox
             return 0;
     }
     
-    @SuppressWarnings("incomplete-switch")
     @Override
     public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
-            Shape oldclip = g.getClip();
-            if (clipblock != null)
-                g.setClip(clipblock.getClippedContentBounds());
             switch (turn)
             {
                 case DRAW_NONINLINE:
-                    if (floating == FLOAT_NONE)
+                    if (floating == FLOAT_NONE && position == POS_STATIC)
                     {
-                        if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
-                            drawBackground(g);
+                        setupClip(g);
+                        drawBackground(g);
                         drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
+                        restoreClip(g);
                     }
                     break;
                 case DRAW_FLOAT:
-                    if (floating != FLOAT_NONE)
+                    if (floating != FLOAT_NONE && position == POS_STATIC)
                     {
                         drawStackingContext(g, true);
                     }
+                    break;
+                case DRAW_INLINE:
+                    setupClip(g);
+                    drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
+                    restoreClip(g);
                     break;
                 case DRAW_STACKS:
                     if (turn.hasZindex(0))
                     {
                         if (!zset)
+                        {
                             drawStackingContext(g, true);
+                        }
                         else if (this.getZIndex() == 0)
                             drawStackingContext(g, false);
                     }
@@ -1573,8 +1577,6 @@ public class BlockBox extends ElementBox
                     }
                     break;
             }
-                
-            g.setClip(oldclip);
         }
     }
     

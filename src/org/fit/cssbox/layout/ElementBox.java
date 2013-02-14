@@ -192,6 +192,9 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
     
+    /** saved clipping are for restoring */
+    private Shape savedClipArea;
+    
     /**
      * Creates a new element box from a DOM element
      * @param n the DOM element
@@ -935,6 +938,7 @@ abstract public class ElementBox extends Box
      */
     public void drawStackingContext(Graphics2D g, boolean include)
     {
+        setupClip(g);
         //TODO implement include
         Integer[] clevels = zindices.toArray(new Integer[0]); 
         Arrays.sort(clevels);
@@ -958,13 +962,10 @@ abstract public class ElementBox extends Box
         //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
         drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
         //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
-        if (zi < clevels.length && clevels[zi] == 0)
-        {
-            DrawStage stage6 = DrawStage.DRAW_STACKS;
-            stage6.setZindex(0);
-            drawChildren(g, stage6, DrawMode.DRAW_BOTH);
-            zi++;
-        }
+        DrawStage stage6 = DrawStage.DRAW_STACKS; //always try - this includes the 'z-index:auto' positioned descendants
+        stage6.setZindex(0);
+        drawChildren(g, stage6, DrawMode.DRAW_BOTH);
+        zi++;
         //7.the child stacking contexts with positive stack levels (least positive first).
         while (zi < clevels.length)
         {
@@ -973,6 +974,7 @@ abstract public class ElementBox extends Box
             drawChildren(g, stage7, DrawMode.DRAW_BOTH);
             zi++;
         }
+        restoreClip(g);
     }
     
     protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
@@ -1368,6 +1370,18 @@ abstract public class ElementBox extends Box
             if (zset)
                 stackingParent.registerZIndex(zIndex);
         }
+    }
+    
+    protected void setupClip(Graphics2D g)
+    {
+        savedClipArea = g.getClip();
+        if (clipblock != null)
+            g.setClip(clipblock.getClippedContentBounds());
+    }
+    
+    protected void restoreClip(Graphics2D g)
+    {
+        g.setClip(savedClipArea);
     }
     
 }

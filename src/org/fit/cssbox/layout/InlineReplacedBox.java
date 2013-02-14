@@ -272,7 +272,37 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
-            Shape oldclip = g.getClip();
+            switch (turn)
+            {
+                case DRAW_NONINLINE:
+                case DRAW_FLOAT:
+                    break;
+                case DRAW_INLINE:
+                    if (position == POS_STATIC)
+                    {
+                        setupClip(g);
+                        drawBackground(g);
+                        if (obj != null)
+                        {
+                            g.setClip(getClippedContentBounds());
+                            obj.draw(g, boxw, boxh);
+                        }
+                        restoreClip(g);
+                    }
+                    break;
+                case DRAW_STACKS:
+                    if ((turn.hasZindex(0) && !zset)
+                            || (turn.hasZindex(this.getZIndex())))
+                    {
+                        setupClip(g);
+                        drawBackground(g);
+                        restoreClip(g);
+                    }
+                    break;
+            }
+            
+            
+            /*Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
             if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
             {
@@ -284,7 +314,7 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
                 g.setClip(getClippedContentBounds());
                 obj.draw(g, boxw, boxh);
             }
-            g.setClip(oldclip);
+            g.setClip(oldclip);*/
         }
     }
 
