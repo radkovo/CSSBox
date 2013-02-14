@@ -965,7 +965,8 @@ abstract public class ElementBox extends Box
         DrawStage stage6 = DrawStage.DRAW_STACKS; //always try - this includes the 'z-index:auto' positioned descendants
         stage6.setZindex(0);
         drawChildren(g, stage6, DrawMode.DRAW_BOTH);
-        zi++;
+        if (zi < clevels.length && clevels[zi] == 0)
+            zi++;
         //7.the child stacking contexts with positive stack levels (least positive first).
         while (zi < clevels.length)
         {
@@ -990,6 +991,7 @@ abstract public class ElementBox extends Box
      */
     public void drawBackground(Graphics2D g)
     {
+        //System.out.println("BG: " + this);
         Color color = g.getColor(); //original color
 
         //top left corner

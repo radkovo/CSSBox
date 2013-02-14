@@ -546,23 +546,26 @@ public class InlineBox extends ElementBox implements InlineElement
                     }
                     break;
                 case DRAW_STACKS:
-                    if (turn.hasZindex(0))
+                    if (position != POS_STATIC)
                     {
-                        if (!zset)
+                        if (turn.hasZindex(0))
                         {
-                            drawStackingContext(g, true);
+                            if (!zset)
+                                drawStackingContext(g, true);
+                            else if (this.getZIndex() == 0)
+                                drawStackingContext(g, false);
                         }
-                        else if (this.getZIndex() == 0)
-                            drawStackingContext(g, false);
-                    }
-                    else
-                    {
-                        if (turn.hasZindex(this.getZIndex()) && this.formsStackingContext())
-                            drawStackingContext(g, false);
+                        else
+                        {
+                            if (turn.hasZindex(this.getZIndex()))
+                                drawStackingContext(g, false);
+                        }
                     }
                     break;
             }
             
+            if (!this.formsStackingContext())
+                drawChildren(g, turn, mode);
             
             /*if ((!formsStackingContext() && turn == DrawStage.DRAW_INLINE)
                 || (formsStackingContext() && turn == DrawStage.DRAW_STACKS && turn.hasZindex(zIndex)))

@@ -790,8 +790,7 @@ public class TextBox extends Box implements Inline
         {
             if (turn == DrawStage.DRAW_INLINE)
             {
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_FG) 
-                    drawContent(g);
+                drawContent(g);
             }
         }
     }

@@ -1556,27 +1556,33 @@ public class BlockBox extends ElementBox
                     }
                     break;
                 case DRAW_INLINE:
-                    setupClip(g);
-                    drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
-                    restoreClip(g);
+                    if (floating == FLOAT_NONE && position == POS_STATIC)
+                    {
+                        setupClip(g);
+                        drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
+                        restoreClip(g);
+                    }
                     break;
                 case DRAW_STACKS:
-                    if (turn.hasZindex(0))
+                    if (position != POS_STATIC)
                     {
-                        if (!zset)
+                        if (turn.hasZindex(0))
                         {
-                            drawStackingContext(g, true);
+                            if (!zset)
+                                drawStackingContext(g, true);
+                            else if (this.getZIndex() == 0)
+                                drawStackingContext(g, false);
                         }
-                        else if (this.getZIndex() == 0)
-                            drawStackingContext(g, false);
-                    }
-                    else
-                    {
-                        if (turn.hasZindex(this.getZIndex()) && this.formsStackingContext())
-                            drawStackingContext(g, false);
+                        else
+                        {
+                            if (turn.hasZindex(this.getZIndex()))
+                                drawStackingContext(g, false);
+                        }
                     }
                     break;
             }
+            if (!this.formsStackingContext())
+                drawChildren(g, turn, mode);
         }
     }
     
