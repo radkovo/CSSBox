@@ -90,7 +90,7 @@ public class ListItemBox extends BlockBox
     {
         if (displayed && isDeclaredVisible())
         {
-            if (turn == DrawStage.DRAW_INLINE)
+            if (turn == DrawStage.DRAW_INLINE && floating == FLOAT_NONE && position == POS_STATIC)
             {
                 setupClip(g);
                 drawMarker(g);

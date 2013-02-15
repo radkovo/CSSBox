@@ -276,7 +276,10 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
                         }
                         break;
                     case DRAW_INLINE:
-                        drawContent(g);
+                        if (floating == FLOAT_NONE)
+                        {
+                            drawContent(g);
+                        }
                 }
                 restoreClip(g);
             }

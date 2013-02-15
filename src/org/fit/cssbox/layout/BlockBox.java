@@ -1544,21 +1544,22 @@ public class BlockBox extends ElementBox
                 switch (turn)
                 {
                     case DRAW_NONINLINE:
-                        if (floating == FLOAT_NONE && position == POS_STATIC)
+                        if (floating == FLOAT_NONE)
                         {
                             drawBackground(g);
+                            drawChildren(g, turn, mode);
                         }
-                        drawChildren(g, turn, mode);
                         break;
                     case DRAW_FLOAT:
-                        if (floating != FLOAT_NONE && position == POS_STATIC)
-                        {
+                        if (floating != FLOAT_NONE)
                             drawStackingContext(g, true);
-                        }
+                        else
+                            drawChildren(g, turn, mode);
                         break;
                     case DRAW_INLINE:
                         //do nothing but check the children
-                        drawChildren(g, turn, mode);
+                        if (floating == FLOAT_NONE)
+                            drawChildren(g, turn, mode);
                         break;
                 }
                 restoreClip(g);
