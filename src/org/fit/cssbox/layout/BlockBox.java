@@ -1538,15 +1538,13 @@ public class BlockBox extends ElementBox
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
+            setupClip(g);
             switch (turn)
             {
                 case DRAW_NONINLINE:
                     if (floating == FLOAT_NONE && position == POS_STATIC)
                     {
-                        setupClip(g);
                         drawBackground(g);
-                        drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
-                        restoreClip(g);
                     }
                     break;
                 case DRAW_FLOAT:
@@ -1558,9 +1556,7 @@ public class BlockBox extends ElementBox
                 case DRAW_INLINE:
                     if (floating == FLOAT_NONE && position == POS_STATIC)
                     {
-                        setupClip(g);
                         drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
-                        restoreClip(g);
                     }
                     break;
                 case DRAW_STACKS:
@@ -1583,6 +1579,7 @@ public class BlockBox extends ElementBox
             }
             if (!this.formsStackingContext())
                 drawChildren(g, turn, mode);
+            restoreClip(g);
         }
     }
     

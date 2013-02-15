@@ -530,6 +530,7 @@ public class InlineBox extends ElementBox implements InlineElement
         ctx.updateGraphics(g);
         if (displayed)
         {
+            setupClip(g);
             switch (turn)
             {
                 case DRAW_NONINLINE:
@@ -539,10 +540,7 @@ public class InlineBox extends ElementBox implements InlineElement
                 case DRAW_INLINE:
                     if (position == POS_STATIC)
                     {
-                        setupClip(g);
                         drawBackground(g);
-                        drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
-                        restoreClip(g);
                     }
                     break;
                 case DRAW_STACKS:
@@ -566,6 +564,7 @@ public class InlineBox extends ElementBox implements InlineElement
             
             if (!this.formsStackingContext())
                 drawChildren(g, turn, mode);
+            restoreClip(g);
             
             /*if ((!formsStackingContext() && turn == DrawStage.DRAW_INLINE)
                 || (formsStackingContext() && turn == DrawStage.DRAW_STACKS && turn.hasZindex(zIndex)))

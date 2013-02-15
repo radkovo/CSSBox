@@ -938,7 +938,7 @@ abstract public class ElementBox extends Box
      */
     public void drawStackingContext(Graphics2D g, boolean include)
     {
-        setupClip(g);
+        //setupClip(g);
         //TODO implement include
         Integer[] clevels = zindices.toArray(new Integer[0]); 
         Arrays.sort(clevels);
@@ -975,7 +975,7 @@ abstract public class ElementBox extends Box
             drawChildren(g, stage7, DrawMode.DRAW_BOTH);
             zi++;
         }
-        restoreClip(g);
+        //restoreClip(g);
     }
     
     protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
@@ -984,6 +984,8 @@ abstract public class ElementBox extends Box
             getSubBox(i).draw(g, turn, mode);
     }
     
+    private static int bgcnt = 0;
+    
     /** 
      * Draw the background and border of this box (no subboxes).
      * This method is normally called automatically from {@link Box#draw()}.
@@ -991,7 +993,7 @@ abstract public class ElementBox extends Box
      */
     public void drawBackground(Graphics2D g)
     {
-        //System.out.println("BG: " + this);
+        //System.out.println("BG: " + this + " " + bgcnt); bgcnt++;
         Color color = g.getColor(); //original color
 
         //top left corner
