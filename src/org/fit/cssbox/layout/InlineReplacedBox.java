@@ -265,6 +265,15 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         content.height = boxh;
         bounds.setSize(totalWidth(), totalHeight());
     }
+
+    protected void drawContent(Graphics2D g)
+    {
+        if (obj != null)
+        {
+            g.setClip(getClippedContentBounds());
+            obj.draw(g, boxw, boxh);
+        }
+    }
     
     @Override
 	public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
@@ -272,49 +281,22 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
-            switch (turn)
+            if (!this.formsStackingContext())
             {
-                case DRAW_NONINLINE:
-                case DRAW_FLOAT:
-                    break;
-                case DRAW_INLINE:
-                    if (position == POS_STATIC)
-                    {
-                        setupClip(g);
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                    case DRAW_FLOAT:
+                        //there should be no block-level or floating children here -- we do nothing
+                        break;
+                    case DRAW_INLINE:
                         drawBackground(g);
-                        if (obj != null)
-                        {
-                            g.setClip(getClippedContentBounds());
-                            obj.draw(g, boxw, boxh);
-                        }
-                        restoreClip(g);
-                    }
-                    break;
-                case DRAW_STACKS:
-                    if ((turn.hasZindex(0) && !zset)
-                            || (turn.hasZindex(this.getZIndex())))
-                    {
-                        setupClip(g);
-                        drawBackground(g);
-                        restoreClip(g);
-                    }
-                    break;
+                        drawContent(g);
+                        break;
+                }
+                restoreClip(g);
             }
-            
-            
-            /*Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
-            {
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
-            }
-            
-            if (obj != null)
-            {
-                g.setClip(getClippedContentBounds());
-                obj.draw(g, boxw, boxh);
-            }
-            g.setClip(oldclip);*/
         }
     }
 

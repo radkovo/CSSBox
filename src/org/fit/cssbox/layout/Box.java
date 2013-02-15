@@ -814,32 +814,12 @@ abstract public class Box
      */
     public enum DrawStage 
     {
-        //DRAW_ALL,
         /** stage 3: the in-flow, non-inline-level, non-positioned descendants */ 
         DRAW_NONINLINE,
         /** stage 4: the non-positioned floats */
         DRAW_FLOAT,
         /** stage 5: the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks */
-        DRAW_INLINE,
-        /** stages 2, 6, 7: the child stacking contexts */
-        DRAW_STACKS;
-        
-        private int zindex;
-
-        public int getZindex()
-        {
-            return zindex;
-        }
-
-        public void setZindex(int zindex)
-        {
-            this.zindex = zindex;
-        }
-        
-        public boolean hasZindex(int zindex)
-        {
-            return this.zindex == zindex;
-        }
+        DRAW_INLINE
     }
     
     /**

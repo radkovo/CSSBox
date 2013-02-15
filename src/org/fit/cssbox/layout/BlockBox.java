@@ -1538,48 +1538,31 @@ public class BlockBox extends ElementBox
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
-            setupClip(g);
-            switch (turn)
-            {
-                case DRAW_NONINLINE:
-                    if (floating == FLOAT_NONE && position == POS_STATIC)
-                    {
-                        drawBackground(g);
-                    }
-                    break;
-                case DRAW_FLOAT:
-                    if (floating != FLOAT_NONE && position == POS_STATIC)
-                    {
-                        drawStackingContext(g, true);
-                    }
-                    break;
-                case DRAW_INLINE:
-                    if (floating == FLOAT_NONE && position == POS_STATIC)
-                    {
-                        drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
-                    }
-                    break;
-                case DRAW_STACKS:
-                    if (position != POS_STATIC)
-                    {
-                        if (turn.hasZindex(0))
-                        {
-                            if (!zset)
-                                drawStackingContext(g, true);
-                            else if (this.getZIndex() == 0)
-                                drawStackingContext(g, false);
-                        }
-                        else
-                        {
-                            if (turn.hasZindex(this.getZIndex()))
-                                drawStackingContext(g, false);
-                        }
-                    }
-                    break;
-            }
             if (!this.formsStackingContext())
-                drawChildren(g, turn, mode);
-            restoreClip(g);
+            {
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                        if (floating == FLOAT_NONE && position == POS_STATIC)
+                        {
+                            drawBackground(g);
+                        }
+                        drawChildren(g, turn, mode);
+                        break;
+                    case DRAW_FLOAT:
+                        if (floating != FLOAT_NONE && position == POS_STATIC)
+                        {
+                            drawStackingContext(g, true);
+                        }
+                        break;
+                    case DRAW_INLINE:
+                        //do nothing but check the children
+                        drawChildren(g, turn, mode);
+                        break;
+                }
+                restoreClip(g);
+            }
         }
     }
     

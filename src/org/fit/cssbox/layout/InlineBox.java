@@ -530,57 +530,22 @@ public class InlineBox extends ElementBox implements InlineElement
         ctx.updateGraphics(g);
         if (displayed)
         {
-            setupClip(g);
-            switch (turn)
-            {
-                case DRAW_NONINLINE:
-                case DRAW_FLOAT:
-                    //there should be no block-level or floating children here -- we do nothing
-                    break;
-                case DRAW_INLINE:
-                    if (position == POS_STATIC)
-                    {
-                        drawBackground(g);
-                    }
-                    break;
-                case DRAW_STACKS:
-                    if (position != POS_STATIC)
-                    {
-                        if (turn.hasZindex(0))
-                        {
-                            if (!zset)
-                                drawStackingContext(g, true);
-                            else if (this.getZIndex() == 0)
-                                drawStackingContext(g, false);
-                        }
-                        else
-                        {
-                            if (turn.hasZindex(this.getZIndex()))
-                                drawStackingContext(g, false);
-                        }
-                    }
-                    break;
-            }
-            
             if (!this.formsStackingContext())
-                drawChildren(g, turn, mode);
-            restoreClip(g);
-            
-            /*if ((!formsStackingContext() && turn == DrawStage.DRAW_INLINE)
-                || (formsStackingContext() && turn == DrawStage.DRAW_STACKS && turn.hasZindex(zIndex)))
             {
-                Shape oldclip = g.getClip();
-                g.setClip(clipblock.getClippedContentBounds());
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
-                    drawBackground(g);
-                
-                if (node.getNodeType() == Node.ELEMENT_NODE)
+                setupClip(g);
+                switch (turn)
                 {
-                    for (int i = startChild; i < endChild; i++)
-                        getSubBox(i).draw(g, turn, mode);
+                    case DRAW_NONINLINE:
+                    case DRAW_FLOAT:
+                        //there should be no block-level or floating children here -- we do nothing
+                        break;
+                    case DRAW_INLINE:
+                        drawBackground(g);
+                        drawChildren(g, turn, mode);
+                        break;
                 }
-                g.setClip(oldclip);
-            }*/
+                restoreClip(g);
+            }
         }
     }
     

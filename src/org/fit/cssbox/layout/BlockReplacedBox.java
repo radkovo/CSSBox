@@ -243,69 +243,61 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         return true;
     }
 
+    protected void drawContent(Graphics2D g)
+    {
+        if (obj != null)
+        {
+            g.setClip(getClippedContentBounds());
+            obj.draw(g, boxw, boxh);
+        }
+    }
+    
     @Override
 	public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
-            switch (turn)
+            if (!this.formsStackingContext())
             {
-                case DRAW_NONINLINE:
-                    if (floating == FLOAT_NONE)
-                    {
-                        setupClip(g);
-                        drawBackground(g);
-                        restoreClip(g);
-                    }
-                    break;
-                case DRAW_FLOAT:
-                    if (floating != FLOAT_NONE)
-                    {
-                        setupClip(g);
-                        drawBackground(g);
-                        restoreClip(g);
-                    }
-                    break;
-                case DRAW_INLINE:
-                    if (obj != null)
-                    {
-                        setupClip(g);
-                        g.setClip(getClippedContentBounds());
-                        obj.draw(g, boxw, boxh);
-                        restoreClip(g);
-                    }
-                case DRAW_STACKS:
-                    if ((turn.hasZindex(0) && !zset)
-                        || (turn.hasZindex(this.getZIndex())))
-                    {
-                        setupClip(g);
-                        drawBackground(g);
-                        restoreClip(g);
-                    }
-                    break;
-                    
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                        if (floating == FLOAT_NONE)
+                        {
+                            drawBackground(g);
+                        }
+                        break;
+                    case DRAW_FLOAT:
+                        if (floating != FLOAT_NONE)
+                        {
+                            drawBackground(g);
+                        }
+                        break;
+                    case DRAW_INLINE:
+                        drawContent(g);
+                }
+                restoreClip(g);
             }
         }
-	    
-	    
-        /*ctx.updateGraphics(g);
-        if (displayed && isVisible())
-        {
-            Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DrawStage.DRAW_ALL || turn == DrawStage.DRAW_NONFLOAT)
-            {
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG) drawBackground(g);
-            }
-            
-            if (obj != null)
-            {
-                g.setClip(getClippedContentBounds());
-                obj.draw(g, boxw, boxh);
-            }
-            g.setClip(oldclip);
-        }*/
     }
 
+    @Override
+    public void drawStackingContext(Graphics2D g, boolean include)
+    {
+        setupClip(g);
+        
+        //1.the background and borders of the element forming the stacking context.
+        if (this.isBlock())
+            drawBackground(g);
+        //2.the child stacking contexts with negative stack levels (most negative first).
+        //3.the in-flow, non-inline-level, non-positioned descendants.
+        //4.the non-positioned floats. 
+        //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+        drawContent(g);
+        //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+        //7.the child stacking contexts with positive stack levels (least positive first).
+        restoreClip(g);
+    }
 }

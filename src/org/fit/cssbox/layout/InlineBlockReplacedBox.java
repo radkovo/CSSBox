@@ -21,7 +21,6 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Element;
@@ -299,26 +298,36 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         return true;
     }
 
+    protected void drawContent(Graphics2D g)
+    {
+        if (obj != null)
+        {
+            g.setClip(getClippedContentBounds());
+            obj.draw(g, boxw, boxh);
+        }
+    }
+    
     @Override
     public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
-            if ((!formsStackingContext() && turn == DrawStage.DRAW_INLINE)
-                    || (formsStackingContext() && turn == DrawStage.DRAW_STACKS && turn.hasZindex(zIndex)))
+            if (!this.formsStackingContext())
             {
-                Shape oldclip = g.getClip();
-                g.setClip(clipblock.getClippedContentBounds());
-                if (mode == DrawMode.DRAW_BOTH || mode == DrawMode.DRAW_BG)
-                    drawBackground(g);
-
-                if (obj != null)
+                setupClip(g);
+                switch (turn)
                 {
-                    g.setClip(getClippedContentBounds());
-                    obj.draw(g, boxw, boxh);
+                    case DRAW_NONINLINE:
+                    case DRAW_FLOAT:
+                        //there should be no block-level or floating children here -- we do nothing
+                        break;
+                    case DRAW_INLINE:
+                        drawBackground(g);
+                        drawContent(g);
+                        break;
                 }
-                g.setClip(oldclip);
+                restoreClip(g);
             }
         }
     }

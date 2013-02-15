@@ -187,8 +187,8 @@ abstract public class ElementBox extends Box
      * contain inline boxes */
     protected Vector<Box> nested;
     
-    /** Registered children z-indices */
-    protected Set<Integer> zindices;
+    /** Corresponding stacking context if this box creates one. */
+    protected StackingContext scontext;
     
     //=======================================================================
     
@@ -227,7 +227,6 @@ abstract public class ElementBox extends Box
         leftset = false;
         bottomset = false;
         rightset = false;
-        zindices = new HashSet<Integer>();
     }
     
     /**
@@ -562,12 +561,18 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * Registers a new z-index.
-     * @param index the index to register
+     * Obtains the stacking context if this box creates one.
      */
-    public void registerZIndex(int index)
+    public StackingContext getStackingContext()
     {
-        zindices.add(index);
+        if (scontext == null)
+        {
+            if (formsStackingContext())
+                scontext = new StackingContext(this);
+            else
+                System.err.println("ElementBox: getStackingContext: Warning: obtaining a stacking context from element that does not create one");
+        }
+        return scontext;
     }
     
     /**
@@ -698,7 +703,7 @@ abstract public class ElementBox extends Box
      */
     public boolean formsStackingContext()
     {
-        return zset && (position != POS_STATIC);
+        return position != POS_STATIC;
     }
     
     /**
@@ -938,10 +943,9 @@ abstract public class ElementBox extends Box
      */
     public void drawStackingContext(Graphics2D g, boolean include)
     {
-        //setupClip(g);
+        setupClip(g);
         //TODO implement include
-        Integer[] clevels = zindices.toArray(new Integer[0]); 
-        Arrays.sort(clevels);
+        Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
         
         //1.the background and borders of the element forming the stacking context.
         if (this.isBlock())
@@ -950,9 +954,7 @@ abstract public class ElementBox extends Box
         int zi = 0;
         while (zi < clevels.length && clevels[zi] < 0)
         {
-            DrawStage stage2 = DrawStage.DRAW_STACKS;
-            stage2.setZindex(clevels[zi]);
-            drawChildren(g, stage2, DrawMode.DRAW_BOTH);
+            drawChildContexts(g, clevels[zi]);
             zi++;
         }
         //3.the in-flow, non-inline-level, non-positioned descendants.
@@ -962,20 +964,18 @@ abstract public class ElementBox extends Box
         //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
         drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
         //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
-        DrawStage stage6 = DrawStage.DRAW_STACKS; //always try - this includes the 'z-index:auto' positioned descendants
-        stage6.setZindex(0);
-        drawChildren(g, stage6, DrawMode.DRAW_BOTH);
         if (zi < clevels.length && clevels[zi] == 0)
+        {
+            drawChildContexts(g, 0);
             zi++;
+        }
         //7.the child stacking contexts with positive stack levels (least positive first).
         while (zi < clevels.length)
         {
-            DrawStage stage7 = DrawStage.DRAW_STACKS;
-            stage7.setZindex(clevels[zi]);
-            drawChildren(g, stage7, DrawMode.DRAW_BOTH);
+            drawChildContexts(g, clevels[zi]);
             zi++;
         }
-        //restoreClip(g);
+        restoreClip(g);
     }
     
     protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
@@ -984,7 +984,19 @@ abstract public class ElementBox extends Box
             getSubBox(i).draw(g, turn, mode);
     }
     
-    private static int bgcnt = 0;
+    protected void drawChildContexts(Graphics2D g, int zindex)
+    {
+        Vector<ElementBox> list = getStackingContext().getElementsForZIndex(zindex);
+        if (list != null)
+        {
+            for (ElementBox elem : list)
+            {
+                elem.drawStackingContext(g, !elem.hasZIndex());
+            }
+        }
+    }
+    
+    //private static int bgcnt = 0;
     
     /** 
      * Draw the background and border of this box (no subboxes).
@@ -1369,10 +1381,10 @@ abstract public class ElementBox extends Box
     protected void updateStackingContexts()
     {
         super.updateStackingContexts();
-        if (parent != null)
+        if (stackingParent != null)
         {
-            if (zset)
-                stackingParent.registerZIndex(zIndex);
+            if (position != POS_STATIC) //all the positioned boxes are considered as separate stacking contexts
+                stackingParent.getStackingContext().registerChildContext(this);
         }
     }
     
