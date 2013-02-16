@@ -243,6 +243,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     @Override
     public void absolutePositions()
     {
+        updateStackingContexts();
         if (isDisplayed())
         {
             //x coordinate is taken from the content edge

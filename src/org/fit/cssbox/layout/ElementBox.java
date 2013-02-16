@@ -981,7 +981,10 @@ abstract public class ElementBox extends Box
     protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
     {
         for (int i = startChild; i < endChild; i++)
-            getSubBox(i).draw(g, turn, mode);
+        {
+            Box subbox = getSubBox(i);
+            subbox.draw(g, turn, mode);
+        }
     }
     
     protected void drawChildContexts(Graphics2D g, int zindex)
@@ -1380,6 +1383,8 @@ abstract public class ElementBox extends Box
     @Override
     protected void updateStackingContexts()
     {
+        if (this.toString().contains("\"sub\""))
+            System.out.println("jo!");
         super.updateStackingContexts();
         if (stackingParent != null)
         {
