@@ -175,7 +175,7 @@ public class TableRowBox extends BlockBox
             //for (int i = startChild; i < endChild; i++)
             for (TableCellBox child : cells)
             {
-                //BlockBox child = (BlockBox) getSubBox(i);
+                child.updateStackingContexts();
                 x = getAbsoluteContentX() + child.getBounds().x;
                 y = getAbsoluteContentY() + child.getBounds().y;
 
