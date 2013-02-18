@@ -1389,7 +1389,11 @@ abstract public class ElementBox extends Box
         if (stackingParent != null)
         {
             if (position != POS_STATIC) //all the positioned boxes are considered as separate stacking contexts
+            {
                 stackingParent.getStackingContext().registerChildContext(this);
+                if (scontext != null) //clear this context if it exists (remove old children)
+                    scontext.clear();
+            }
         }
     }
     
