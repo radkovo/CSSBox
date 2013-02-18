@@ -153,6 +153,7 @@ public class TableRowBox extends BlockBox
     @Override
     public void absolutePositions()
     {
+        updateStackingContexts();
         int x = cblock.getAbsoluteContentX() + bounds.x;
         int y = cblock.getAbsoluteContentY() + bounds.y;
 

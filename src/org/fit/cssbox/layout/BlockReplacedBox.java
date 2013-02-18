@@ -273,6 +273,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
                         if (floating != FLOAT_NONE)
                         {
                             drawBackground(g);
+                            drawContent(g);
                         }
                         break;
                     case DRAW_INLINE:
