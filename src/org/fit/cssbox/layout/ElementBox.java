@@ -943,39 +943,42 @@ abstract public class ElementBox extends Box
      */
     public void drawStackingContext(Graphics2D g, boolean include)
     {
-        setupClip(g);
-        //TODO implement include
-        Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
-        
-        //1.the background and borders of the element forming the stacking context.
-        if (this instanceof BlockBox)
-            drawBackground(g);
-        //2.the child stacking contexts with negative stack levels (most negative first).
-        int zi = 0;
-        while (zi < clevels.length && clevels[zi] < 0)
+        if (isDisplayed() && isDeclaredVisible())
         {
-            drawChildContexts(g, clevels[zi]);
-            zi++;
+            setupClip(g);
+            //TODO implement include
+            Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
+            
+            //1.the background and borders of the element forming the stacking context.
+            if (this instanceof BlockBox)
+                drawBackground(g);
+            //2.the child stacking contexts with negative stack levels (most negative first).
+            int zi = 0;
+            while (zi < clevels.length && clevels[zi] < 0)
+            {
+                drawChildContexts(g, clevels[zi]);
+                zi++;
+            }
+            //3.the in-flow, non-inline-level, non-positioned descendants.
+            drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
+            //4.the non-positioned floats. 
+            drawChildren(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
+            //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+            drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
+            //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+            if (zi < clevels.length && clevels[zi] == 0)
+            {
+                drawChildContexts(g, 0);
+                zi++;
+            }
+            //7.the child stacking contexts with positive stack levels (least positive first).
+            while (zi < clevels.length)
+            {
+                drawChildContexts(g, clevels[zi]);
+                zi++;
+            }
+            restoreClip(g);
         }
-        //3.the in-flow, non-inline-level, non-positioned descendants.
-        drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
-        //4.the non-positioned floats. 
-        drawChildren(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
-        //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
-        drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
-        //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
-        if (zi < clevels.length && clevels[zi] == 0)
-        {
-            drawChildContexts(g, 0);
-            zi++;
-        }
-        //7.the child stacking contexts with positive stack levels (least positive first).
-        while (zi < clevels.length)
-        {
-            drawChildContexts(g, clevels[zi]);
-            zi++;
-        }
-        restoreClip(g);
     }
     
     protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
