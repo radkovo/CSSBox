@@ -1519,8 +1519,8 @@ public class BlockBox extends ElementBox
                 for (int i = 0; i < getSubBoxNumber(); i++)
                 {
                     Box subbox = getSubBox(i);
-                    if (subbox instanceof BlockBox)
-                    {
+                    if (subbox instanceof BlockBox && !((BlockBox) subbox).isPositioned()) //do not consider positioned boxes
+                    {//TODO what about floating boxes in floating boxes?
                         int cmfy = ((BlockBox) subbox).getFloatHeight();
                         if (cmfy > mfy) mfy = cmfy;
                     }
