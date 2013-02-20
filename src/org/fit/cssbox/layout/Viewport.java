@@ -313,6 +313,10 @@ public class Viewport extends BlockBox
 	    else //or a nested viewport
 	        absbounds = new Rectangle(parent.getAbsoluteContentBounds());
 	    
+	    //clear this context if it exists (remove old children)
+	    if (scontext != null)
+            scontext.clear();
+	    
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();
     }

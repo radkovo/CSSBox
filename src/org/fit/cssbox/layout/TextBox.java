@@ -776,8 +776,6 @@ public class TextBox extends Box implements Inline
         if (textEnd > textStart)
         {
             String t = text.substring(textStart, textEnd);
-            if (t.contains("Second"))
-                System.out.println("jo!");
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
             ctx.updateGraphics(g);

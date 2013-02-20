@@ -289,6 +289,30 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         if (valign == null) valign = CSSProperty.VerticalAlign.BASELINE;
     }
     
+    @Override
+    public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
+    {
+        ctx.updateGraphics(g);
+        if (displayed)
+        {
+            if (!this.formsStackingContext())
+            {
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                    case DRAW_FLOAT:
+                        //everything is drawn in the DRAW_INLINE phase as a new stacking context
+                        break;
+                    case DRAW_INLINE:
+                        drawStackingContext(g, true);
+                        break;
+                }
+                restoreClip(g);
+            }
+        }
+    }
+    
     //========================================================================
 	
 	/**

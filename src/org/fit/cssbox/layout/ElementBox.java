@@ -948,7 +948,7 @@ abstract public class ElementBox extends Box
         Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
         
         //1.the background and borders of the element forming the stacking context.
-        if (this.isBlock())
+        if (this instanceof BlockBox)
             drawBackground(g);
         //2.the child stacking contexts with negative stack levels (most negative first).
         int zi = 0;
@@ -1383,8 +1383,6 @@ abstract public class ElementBox extends Box
     @Override
     protected void updateStackingContexts()
     {
-        if (this.toString().contains("\"sub\""))
-            System.out.println("jo!");
         super.updateStackingContexts();
         if (stackingParent != null)
         {
