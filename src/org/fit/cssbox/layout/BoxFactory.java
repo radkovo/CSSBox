@@ -46,6 +46,7 @@ import cz.vutbr.web.css.TermIdent;
 import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermString;
 import cz.vutbr.web.css.TermURI;
+import cz.vutbr.web.css.CSSProperty.Overflow;
 import cz.vutbr.web.css.Selector.PseudoDeclaration;
 
 
@@ -261,17 +262,33 @@ public class BoxFactory
             if (((ElementBox) newbox).mayContainBlocks()) //the new box forms a block context
             {
                 BlockBox block = (BlockBox) newbox;
-                //A positioned box forms a content box for following absolutely
-                //positioned boxes
+                //positioned element?
                 if (block.position == BlockBox.POS_ABSOLUTE ||
                     block.position == BlockBox.POS_RELATIVE ||
                     block.position == BlockBox.POS_FIXED)
-                     newstat.absbox = block;                
+                {
+                    //A positioned box forms a content box for following absolutely positioned boxes
+                     newstat.absbox = block;
+                     //update clip box for the block
+                     BlockBox cblock = block.getContainingBlock();
+                     if (cblock.overflow != Overflow.VISIBLE || cblock.getClipBlock() == null)
+                         block.setClipBlock(cblock);
+                     else
+                         block.setClipBlock(cblock.getClipBlock());
+                     //A box with overflow:hidden creates a clipping box
+                     if (block.overflow != BlockBox.OVERFLOW_VISIBLE)
+                         newstat.clipbox = block;
+                     else
+                         newstat.clipbox = block.getClipBlock();
+                }
+                else //not positioned element
+                {
+                    //A box with overflow:hidden creates a clipping box
+                    if (block.overflow != BlockBox.OVERFLOW_VISIBLE)
+                        newstat.clipbox = block;
+                }
                 //Any block box forms a containing box for not positioned elements
                 newstat.contbox = block;
-                //A box with overflow:hidden creates a clipping box
-                if (block.overflow == BlockBox.OVERFLOW_HIDDEN)
-                    newstat.clipbox = block;
                 //Last inflow box is local for block boxes
                 newstat.lastinflow = null; //TODO this does not work in some cases (absolute.html)
                 //create the subtree
