@@ -189,7 +189,7 @@ public class TextBox extends Box implements Inline
         if (getParent() == null)
             return true;
         else
-            return parent.isVisible();
+            return parent.isDeclaredVisible();
     }
     
     //=======================================================================
