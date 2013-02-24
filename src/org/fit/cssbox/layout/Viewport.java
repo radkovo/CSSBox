@@ -223,6 +223,22 @@ public class Viewport extends BlockBox
 	}
 
 	@Override
+    public void setContentWidth(int width)
+    {
+	    //do not descrease the viewport width under the initial value
+        if (width > this.width)
+            super.setContentWidth(width);
+    }
+
+    @Override
+    public void setContentHeight(int height)
+    {
+        //do not descrease the viewport height under the initial value
+        if (height > this.height)
+            super.setContentHeight(height);
+    }
+
+    @Override
     protected void loadBackground()
     {
 	    bgcolor = null; //during the initialization, the background is not known
