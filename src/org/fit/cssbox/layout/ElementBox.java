@@ -939,14 +939,13 @@ abstract public class ElementBox extends Box
     /**
      * Draws the subtree as this was a stacking context root.
      * @param g
-     * @param include include new stacking contexts to this context
+     * @param include include new stacking contexts to this context (currently unused)
      */
     public void drawStackingContext(Graphics2D g, boolean include)
     {
         if (isDisplayed() && isDeclaredVisible())
         {
             setupClip(g);
-            //TODO implement include
             Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
             
             //1.the background and borders of the element forming the stacking context.
@@ -960,11 +959,11 @@ abstract public class ElementBox extends Box
                 zi++;
             }
             //3.the in-flow, non-inline-level, non-positioned descendants.
-            drawChildren(g, DrawStage.DRAW_NONINLINE, DrawMode.DRAW_BOTH);
+            drawChildren(g, DrawStage.DRAW_NONINLINE);
             //4.the non-positioned floats. 
-            drawChildren(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
+            drawChildren(g, DrawStage.DRAW_FLOAT);
             //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
-            drawChildren(g, DrawStage.DRAW_INLINE, DrawMode.DRAW_BOTH);
+            drawChildren(g, DrawStage.DRAW_INLINE);
             //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
             if (zi < clevels.length && clevels[zi] == 0)
             {
@@ -981,12 +980,12 @@ abstract public class ElementBox extends Box
         }
     }
     
-    protected void drawChildren(Graphics2D g, DrawStage turn, DrawMode mode)
+    protected void drawChildren(Graphics2D g, DrawStage turn)
     {
         for (int i = startChild; i < endChild; i++)
         {
             Box subbox = getSubBox(i);
-            subbox.draw(g, turn, mode);
+            subbox.draw(g, turn);
         }
     }
     

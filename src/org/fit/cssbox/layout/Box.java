@@ -795,12 +795,11 @@ abstract public class Box
     }*/
     
     /**
-     * Draw the specified stage (DRAW_*)
+     * Draws the specified stage.
      * @param g graphics context to draw on
-     * @param turn drawing stage - DRAW_ALL, DRAW_FLOAT or DRAW_NONFLOAT
-     * @param mode what to draw - DRAW_FG, DRAW_BG or DRAW_BOTH 
+     * @param turn drawing stage
      */
-    abstract public void draw(Graphics2D g, DrawStage turn, DrawMode mode);
+    abstract public void draw(Graphics2D g, DrawStage turn);
 
     /**
      * Draw the bounds of the box (for visualisation).
@@ -821,16 +820,5 @@ abstract public class Box
         /** stage 5: the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks */
         DRAW_INLINE
     }
-    
-    /**
-     * Box drawing mode.
-     */
-    public enum DrawMode 
-    {
-        DRAW_BOTH,
-        DRAW_FG,
-        DRAW_BG
-    }
-    
     
 }

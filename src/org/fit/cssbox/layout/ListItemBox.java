@@ -86,7 +86,7 @@ public class ListItemBox extends BlockBox
     }
 
     @Override
-	public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
+	public void draw(Graphics2D g, DrawStage turn)
     {
         if (displayed && isDeclaredVisible())
         {
@@ -97,7 +97,7 @@ public class ListItemBox extends BlockBox
                 restoreClip(g);
             }
             
-            super.draw(g, turn, mode);
+            super.draw(g, turn);
     	}
     }
     

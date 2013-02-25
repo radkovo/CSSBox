@@ -253,7 +253,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     }
     
     @Override
-	public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
+	public void draw(Graphics2D g, DrawStage turn)
     {
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())

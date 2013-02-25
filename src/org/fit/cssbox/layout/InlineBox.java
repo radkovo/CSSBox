@@ -523,9 +523,8 @@ public class InlineBox extends ElementBox implements InlineElement
             getSubBox(startChild).setIgnoreInitialWhitespace(b);
     }
     
-    /** Draw the specified stage (DRAW_*) */
     @Override
-    public void draw(Graphics2D g, DrawStage turn, DrawMode mode)
+    public void draw(Graphics2D g, DrawStage turn)
     {
         ctx.updateGraphics(g);
         if (displayed)
@@ -541,7 +540,7 @@ public class InlineBox extends ElementBox implements InlineElement
                         break;
                     case DRAW_INLINE:
                         drawBackground(g);
-                        drawChildren(g, turn, mode);
+                        drawChildren(g, turn);
                         break;
                 }
                 restoreClip(g);
