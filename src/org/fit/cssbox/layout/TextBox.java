@@ -25,6 +25,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.TextAttribute;
+import java.text.AttributedString;
 
 import org.w3c.dom.Text;
 
@@ -779,7 +781,20 @@ public class TextBox extends Box implements Inline
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
             ctx.updateGraphics(g);
-            g.drawString(t, x, y + getBaselineOffset());
+            
+            if (!ctx.getTextDecoration().isEmpty()) 
+            {
+                AttributedString as = new AttributedString(t);
+                as.addAttribute(TextAttribute.FONT, ctx.getFont());
+                if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.UNDERLINE))
+                    as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 0, t.length());
+                if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.LINE_THROUGH))
+                    as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON, 0, t.length());
+                g.drawString(as.getIterator(), x, y + getBaselineOffset());
+            } 
+            else
+                g.drawString(t, x, y + getBaselineOffset());
+            
             g.setClip(oldclip);
         }
     }
