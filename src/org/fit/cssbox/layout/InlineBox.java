@@ -351,6 +351,7 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public void absolutePositions()
     {
+        updateStackingContexts();
         if (isDisplayed())
         {
             //x coordinate is taken from the content edge
@@ -522,26 +523,28 @@ public class InlineBox extends ElementBox implements InlineElement
             getSubBox(startChild).setIgnoreInitialWhitespace(b);
     }
     
-    /** Draw the specified stage (DRAW_*) */
     @Override
-    public void draw(Graphics2D g, int turn, int mode)
+    public void draw(Graphics2D g, DrawStage turn)
     {
         ctx.updateGraphics(g);
         if (displayed)
         {
-            Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+            if (!this.formsStackingContext())
             {
-                if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                    case DRAW_FLOAT:
+                        //there should be no block-level or floating children here -- we do nothing
+                        break;
+                    case DRAW_INLINE:
+                        drawBackground(g);
+                        drawChildren(g, turn);
+                        break;
+                }
+                restoreClip(g);
             }
-            
-            if (node.getNodeType() == Node.ELEMENT_NODE)
-            {
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).draw(g, turn, mode);
-            }
-            g.setClip(oldclip);
         }
     }
     

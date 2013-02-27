@@ -86,15 +86,18 @@ public class ListItemBox extends BlockBox
     }
 
     @Override
-	public void draw(Graphics2D g, int turn, int mode)
+	public void draw(Graphics2D g, DrawStage turn)
     {
-    	super.draw(g, turn, mode);
-    	if (displayed && isVisible())
-    	{
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+        if (displayed && isDeclaredVisible())
+        {
+            if (turn == DrawStage.DRAW_INLINE && floating == FLOAT_NONE && position == POS_STATIC)
             {
-                if (mode == DRAW_BOTH || mode == DRAW_FG) drawMarker(g);
+                setupClip(g);
+                drawMarker(g);
+                restoreClip(g);
             }
+            
+            super.draw(g, turn);
     	}
     }
     

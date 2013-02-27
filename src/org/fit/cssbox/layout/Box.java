@@ -33,13 +33,6 @@ import org.w3c.dom.*;
  */
 abstract public class Box
 {
-    public static final short DRAW_ALL = 0; //drawing stages
-    public static final short DRAW_NONFLOAT = 1;
-    public static final short DRAW_FLOAT = 2;
-    public static final short DRAW_BOTH = 0; //drawing modes
-    public static final short DRAW_FG = 1;
-    public static final short DRAW_BG = 2;
-    
     /** Is this a box for the root element? */
     protected boolean rootelem;
     
@@ -85,6 +78,9 @@ abstract public class Box
      * Normally, the clipping box is the viewport or the nearest parent with
      * overflow set to hidden */
     protected BlockBox clipblock;
+    
+    /** The parent box of the stacking context where this box is contained */
+    protected ElementBox stackingParent;
     
     /** Maximal total width for the layout (obtained from the owner box) */
     protected int availwidth;
@@ -695,8 +691,40 @@ abstract public class Box
 	{
 		this.parent = parent;
 	}
-	
+
 	/**
+	 * Obtains the parent box of the stacking context this box belongs to.
+	 * @return the element that creates current stacking context
+	 */
+	public ElementBox getStackingParent()
+    {
+        return stackingParent;
+    }
+
+	/**
+	 * Sets the box that forms the stacking context for this box.
+	 * @param stackingParent parent box to set
+	 */
+    public void setStackingParent(ElementBox stackingParent)
+    {
+        this.stackingParent = stackingParent;
+    }
+
+    /**
+     * Updates the stacking parent values and registers the z-index for this parent.
+     */
+    protected void updateStackingContexts()
+    {
+        if (parent != null)
+        {
+            if (parent.formsStackingContext())
+                stackingParent = parent;
+            else
+                stackingParent = parent.getStackingParent();
+        }
+    }
+    
+    /**
      * @return the base URL
      */
     public URL getBase()
@@ -747,36 +775,50 @@ abstract public class Box
      * Draw the box and all the subboxes on the default
      * graphics context passed to the box constructor. 
      */
-    public void draw()
+    /*public void draw()
     {
         draw(g);
-    }
+    }*/
     
     /**
      * Draw the box and all the subboxes.
      * @param g graphics context to draw on
      */
-    public void draw(Graphics2D g)
+    /*public void draw(Graphics2D g);
     {
         if (isVisible())
         {
-            draw(g, DRAW_NONFLOAT, DRAW_BOTH);
-            draw(g, DRAW_FLOAT, DRAW_BOTH);
-            draw(g, DRAW_NONFLOAT, DRAW_FG);
+            draw(g, DrawStage.DRAW_NONFLOAT, DrawMode.DRAW_BOTH);
+            draw(g, DrawStage.DRAW_FLOAT, DrawMode.DRAW_BOTH);
+            draw(g, DrawStage.DRAW_NONFLOAT, DrawMode.DRAW_FG);
         }
-    }
+    }*/
     
     /**
-     * Draw the specified stage (DRAW_*)
+     * Draws the specified stage.
      * @param g graphics context to draw on
-     * @param turn drawing stage - DRAW_ALL, DRAW_FLOAT or DRAW_NONFLOAT
-     * @param mode what to draw - DRAW_FG, DRAW_BG or DRAW_BOTH 
+     * @param turn drawing stage
      */
-    abstract public void draw(Graphics2D g, int turn, int mode);
+    abstract public void draw(Graphics2D g, DrawStage turn);
 
     /**
      * Draw the bounds of the box (for visualisation).
      */
     abstract public void drawExtent(Graphics2D g);
 
+    //=========================================================================================
+    
+    /**
+     * Box tree drawing stage according to CSS specification.
+     */
+    public enum DrawStage 
+    {
+        /** stage 3: the in-flow, non-inline-level, non-positioned descendants */ 
+        DRAW_NONINLINE,
+        /** stage 4: the non-positioned floats */
+        DRAW_FLOAT,
+        /** stage 5: the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks */
+        DRAW_INLINE
+    }
+    
 }

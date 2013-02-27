@@ -189,7 +189,7 @@ public class TextBox extends Box implements Inline
         if (getParent() == null)
             return true;
         else
-            return parent.isVisible();
+            return parent.isDeclaredVisible();
     }
     
     //=======================================================================
@@ -632,6 +632,7 @@ public class TextBox extends Box implements Inline
 	@Override
     public void absolutePositions()
     {
+	    updateStackingContexts();
         if (displayed)
         {
             //my top left corner
@@ -777,19 +778,20 @@ public class TextBox extends Box implements Inline
             String t = text.substring(textStart, textEnd);
             Shape oldclip = g.getClip();
             g.setClip(clipblock.getClippedContentBounds());
+            ctx.updateGraphics(g);
             g.drawString(t, x, y + getBaselineOffset());
             g.setClip(oldclip);
         }
     }
     
 	@Override
-    public void draw(Graphics2D g, int turn, int mode)
+    public void draw(Graphics2D g, DrawStage turn)
     {
         if (displayed && isVisible())
         {
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+            if (turn == DrawStage.DRAW_INLINE)
             {
-                if (mode == DRAW_BOTH || mode == DRAW_FG) drawContent(g);
+                drawContent(g);
             }
         }
     }

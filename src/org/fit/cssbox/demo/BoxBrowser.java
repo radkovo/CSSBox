@@ -272,6 +272,7 @@ public class BoxBrowser
         vals.add(infoTableData("Parent", (box.getParent() == null) ? "- none -" : box.getParent().toString()));
         vals.add(infoTableData("Cont. block", (box.getContainingBlock() == null) ? "- none -" : box.getContainingBlock().toString()));
         vals.add(infoTableData("Clip. block", (box.getClipBlock() == null) ? "- none -" : box.getClipBlock().toString()));
+        vals.add(infoTableData("S. parent", (box.getStackingParent() == null) ? "- none -" : box.getStackingParent().toString()));
         vals.add(infoTableData("Class", box.getClass().getSimpleName()));
         vals.add(infoTableData("Displayed", "" + box.isDisplayed()));
         vals.add(infoTableData("Visible", "" + box.isVisible()));
@@ -299,6 +300,7 @@ public class BoxBrowser
             vals.add(infoTableData("LineH", String.valueOf(eb.getLineHeight()) + "px"));
             vals.add(infoTableData("Position", eb.getPositionString()));
             vals.add(infoTableData("Coords", eb.getCoords().toString()));
+            vals.add(infoTableData("ZIndex", (eb.hasZIndex()) ? String.valueOf(eb.getZIndex()) : "(auto)"));
         }
 
         if (box instanceof Inline)

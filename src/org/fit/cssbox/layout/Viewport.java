@@ -223,6 +223,22 @@ public class Viewport extends BlockBox
 	}
 
 	@Override
+    public void setContentWidth(int width)
+    {
+	    //do not descrease the viewport width under the initial value
+        if (width > this.width)
+            super.setContentWidth(width);
+    }
+
+    @Override
+    public void setContentHeight(int height)
+    {
+        //do not descrease the viewport height under the initial value
+        if (height > this.height)
+            super.setContentHeight(height);
+    }
+
+    @Override
     protected void loadBackground()
     {
 	    bgcolor = null; //during the initialization, the background is not known
@@ -299,6 +315,12 @@ public class Viewport extends BlockBox
         return true;
     }
 	
+    @Override
+    public boolean formsStackingContext()
+    {
+        return true;
+    }
+    
 	@Override
     public void absolutePositions()
     {
@@ -306,6 +328,10 @@ public class Viewport extends BlockBox
 	        absbounds = new Rectangle(bounds);
 	    else //or a nested viewport
 	        absbounds = new Rectangle(parent.getAbsoluteContentBounds());
+	    
+	    //clear this context if it exists (remove old children)
+	    if (scontext != null)
+            scontext.clear();
 	    
 		for (int i = 0; i < getSubBoxNumber(); i++)
 			getSubBox(i).absolutePositions();

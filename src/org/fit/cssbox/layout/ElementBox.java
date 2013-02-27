@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
+import cz.vutbr.web.css.CSSProperty.ZIndex;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.misc.CSSStroke;
@@ -167,6 +168,12 @@ abstract public class ElementBox extends Box
     /** the computed value of line-height */
     protected int lineHeight;
     
+    /** the z-index flag: true when z-index is different from <code>auto</code> */
+    protected boolean zset;
+    
+    /** the z-index value when set */
+    protected int zIndex;
+    
     //============================== Child boxes ======================
     
     /** First valid child */
@@ -180,7 +187,13 @@ abstract public class ElementBox extends Box
      * contain inline boxes */
     protected Vector<Box> nested;
     
+    /** Corresponding stacking context if this box creates one. */
+    protected StackingContext scontext;
+    
     //=======================================================================
+    
+    /** saved clipping are for restoring */
+    private Shape savedClipArea;
     
     /**
      * Creates a new element box from a DOM element
@@ -548,6 +561,21 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Obtains the stacking context if this box creates one.
+     */
+    public StackingContext getStackingContext()
+    {
+        if (scontext == null)
+        {
+            if (formsStackingContext())
+                scontext = new StackingContext(this);
+            else
+                System.err.println("ElementBox: getStackingContext: Warning: obtaining a stacking context from element that does not create one");
+        }
+        return scontext;
+    }
+    
+    /**
      * Sets related pseudo-element boxes
      * @param pseudo the name of the pseudo-element
      * @param box the corresponding pseudo-element box
@@ -649,6 +677,33 @@ abstract public class ElementBox extends Box
     public Dimension getContent()
     {
         return content;
+    }
+    
+    /**
+     * Checks whether the z-index is non-auto for this box.
+     * @return <code>true</code> when z-index has a value different form <code>auto</code>.
+     */
+    public boolean hasZIndex()
+    {
+        return zset;
+    }
+    
+    /**
+     * Obtains the declared z-index for this element.
+     * @return the z-index value
+     */
+    public int getZIndex()
+    {
+        return zIndex;
+    }
+    
+    /**
+     * Check whether the element forms a new stacking context.
+     * @return <code>true</code> when the element creates a new stacking context.
+     */
+    public boolean formsStackingContext()
+    {
+        return position != POS_STATIC;
     }
     
     /**
@@ -872,6 +927,82 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
     
+    /**
+     * Draws the subtree with using this box as a root element.
+     * @param g
+     */
+    public void draw(Graphics2D g)
+    {
+        drawStackingContext(g, false);
+    }
+    
+    /**
+     * Draws the subtree as this was a stacking context root.
+     * @param g
+     * @param include include new stacking contexts to this context (currently unused)
+     */
+    public void drawStackingContext(Graphics2D g, boolean include)
+    {
+        if (isDisplayed() && isDeclaredVisible())
+        {
+            setupClip(g);
+            Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
+            
+            //1.the background and borders of the element forming the stacking context.
+            if (this instanceof BlockBox)
+                drawBackground(g);
+            //2.the child stacking contexts with negative stack levels (most negative first).
+            int zi = 0;
+            while (zi < clevels.length && clevels[zi] < 0)
+            {
+                drawChildContexts(g, clevels[zi]);
+                zi++;
+            }
+            //3.the in-flow, non-inline-level, non-positioned descendants.
+            drawChildren(g, DrawStage.DRAW_NONINLINE);
+            //4.the non-positioned floats. 
+            drawChildren(g, DrawStage.DRAW_FLOAT);
+            //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+            drawChildren(g, DrawStage.DRAW_INLINE);
+            //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+            if (zi < clevels.length && clevels[zi] == 0)
+            {
+                drawChildContexts(g, 0);
+                zi++;
+            }
+            //7.the child stacking contexts with positive stack levels (least positive first).
+            while (zi < clevels.length)
+            {
+                drawChildContexts(g, clevels[zi]);
+                zi++;
+            }
+            restoreClip(g);
+        }
+    }
+    
+    protected void drawChildren(Graphics2D g, DrawStage turn)
+    {
+        for (int i = startChild; i < endChild; i++)
+        {
+            Box subbox = getSubBox(i);
+            subbox.draw(g, turn);
+        }
+    }
+    
+    protected void drawChildContexts(Graphics2D g, int zindex)
+    {
+        Vector<ElementBox> list = getStackingContext().getElementsForZIndex(zindex);
+        if (list != null)
+        {
+            for (ElementBox elem : list)
+            {
+                elem.drawStackingContext(g, !elem.hasZIndex());
+            }
+        }
+    }
+    
+    //private static int bgcnt = 0;
+    
     /** 
      * Draw the background and border of this box (no subboxes).
      * This method is normally called automatically from {@link Box#draw()}.
@@ -879,6 +1010,7 @@ abstract public class ElementBox extends Box
      */
     public void drawBackground(Graphics2D g)
     {
+        //System.out.println("BG: " + this + " " + bgcnt); bgcnt++;
         Color color = g.getColor(); //original color
 
         //top left corner
@@ -1150,6 +1282,20 @@ abstract public class ElementBox extends Box
         
         //background
         loadBackground();
+        
+        //z-index
+        CSSProperty.ZIndex z = style.getProperty("z-index");
+        if (z != null && z != ZIndex.AUTO)
+        {
+            zset = true;
+            Term<?> zterm = style.getValue("z-index", true);
+            if (zterm instanceof TermInteger)
+                zIndex = ((TermInteger) zterm).getValue().intValue();
+            else
+                zset = false;
+        }
+        else
+            zset = false;
     }
     
     /**
@@ -1231,6 +1377,36 @@ abstract public class ElementBox extends Box
             coords.bottom = dec.getLength(getLengthValue("bottom"), (pbottom == CSSProperty.Bottom.AUTO), 0, 0, conth);
         if (leftset)
             coords.left = dec.getLength(getLengthValue("left"), (pleft == CSSProperty.Left.AUTO), 0, 0, contw);
+    }
+    
+    /**
+     * Updates the stacking parent values and registers the z-index for this parent.
+     */
+    @Override
+    protected void updateStackingContexts()
+    {
+        super.updateStackingContexts();
+        if (stackingParent != null)
+        {
+            if (position != POS_STATIC) //all the positioned boxes are considered as separate stacking contexts
+            {
+                stackingParent.getStackingContext().registerChildContext(this);
+                if (scontext != null) //clear this context if it exists (remove old children)
+                    scontext.clear();
+            }
+        }
+    }
+    
+    protected void setupClip(Graphics2D g)
+    {
+        savedClipArea = g.getClip();
+        if (clipblock != null)
+            g.setClip(clipblock.getClippedContentBounds());
+    }
+    
+    protected void restoreClip(Graphics2D g)
+    {
+        g.setClip(savedClipArea);
     }
     
 }

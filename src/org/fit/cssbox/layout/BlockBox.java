@@ -1212,6 +1212,7 @@ public class BlockBox extends ElementBox
     @Override
     public void absolutePositions()
     {
+        updateStackingContexts();
         if (displayed)
         {
             //my top left corner
@@ -1518,7 +1519,7 @@ public class BlockBox extends ElementBox
                 for (int i = 0; i < getSubBoxNumber(); i++)
                 {
                     Box subbox = getSubBox(i);
-                    if (subbox instanceof BlockBox)
+                    if (subbox instanceof BlockBox && !((BlockBox) subbox).isPositioned()) //do not consider positioned boxes
                     {
                         int cmfy = ((BlockBox) subbox).getFloatHeight();
                         if (cmfy > mfy) mfy = cmfy;
@@ -1531,44 +1532,38 @@ public class BlockBox extends ElementBox
             return 0;
     }
     
-	@Override
-    public void draw(Graphics2D g, int turn, int mode)
+    @Override
+    public void draw(Graphics2D g, DrawStage turn)
     {
         ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
-            Shape oldclip = g.getClip();
-            if (clipblock != null)
-                g.setClip(clipblock.getClippedContentBounds());
-            int nestTurn = turn;
-            switch (turn)
+            if (!this.formsStackingContext())
             {
-                case DRAW_ALL: 
-                    if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                    nestTurn = DRAW_ALL;
-                    break;
-                case DRAW_NONFLOAT:
-                    if (floating == FLOAT_NONE)
-                    {
-                        if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                        nestTurn = DRAW_NONFLOAT;
-                    }
-                    break;
-                case DRAW_FLOAT:
-                    if (floating != FLOAT_NONE)
-                    {
-                        if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
-                        nestTurn = DRAW_ALL;
-                    }
-                    break;
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                        if (floating == FLOAT_NONE)
+                        {
+                            drawBackground(g);
+                            drawChildren(g, turn);
+                        }
+                        break;
+                    case DRAW_FLOAT:
+                        if (floating != FLOAT_NONE)
+                            drawStackingContext(g, true);
+                        else
+                            drawChildren(g, turn);
+                        break;
+                    case DRAW_INLINE:
+                        //do nothing but check the children
+                        if (floating == FLOAT_NONE)
+                            drawChildren(g, turn);
+                        break;
+                }
+                restoreClip(g);
             }
-            
-            if (node.getNodeType() == Node.ELEMENT_NODE)
-            {
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).draw(g, nestTurn, mode);
-            }
-            g.setClip(oldclip);
         }
     }
     
@@ -2088,25 +2083,26 @@ public class BlockBox extends ElementBox
     	}
     	
     	//compute the top and bottom
+    	LengthSet m = update ? emargin : margin; //use the efficient margins instead of the declared ones when the efficient have been computed
 	    if (!topset && !bottomset)
 	    {
 	        topstatic = true; //top will be set to static position during the layout
-            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else if (!topset)
 	    {
-            coords.top = conth - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+            coords.top = conth - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else if (!bottomset)
 	    {
-            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else
 	    {
 	        if (auto) //auto height is computed from the rest
-	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom;
+	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom;
 	        else //over-constrained - compute the bottom coordinate
-	        	coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - margin.top - margin.bottom - content.height;
+	        	coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
     }
     

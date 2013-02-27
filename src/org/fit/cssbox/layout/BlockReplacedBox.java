@@ -243,26 +243,65 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         return true;
     }
 
-	@Override
-	public void draw(Graphics2D g, int turn, int mode)
+    protected void drawContent(Graphics2D g)
+    {
+        if (obj != null)
+        {
+            g.setClip(getClippedContentBounds());
+            obj.draw(g, boxw, boxh);
+        }
+    }
+    
+    @Override
+	public void draw(Graphics2D g, DrawStage turn)
     {
         ctx.updateGraphics(g);
-        if (displayed && isVisible())
+        if (isDisplayed() && isDeclaredVisible())
         {
-            Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
-            if (turn == DRAW_ALL || turn == DRAW_NONFLOAT)
+            if (!this.formsStackingContext())
             {
-                if (mode == DRAW_BOTH || mode == DRAW_BG) drawBackground(g);
+                setupClip(g);
+                switch (turn)
+                {
+                    case DRAW_NONINLINE:
+                        if (floating == FLOAT_NONE)
+                        {
+                            drawBackground(g);
+                        }
+                        break;
+                    case DRAW_FLOAT:
+                        if (floating != FLOAT_NONE)
+                        {
+                            drawBackground(g);
+                            drawContent(g);
+                        }
+                        break;
+                    case DRAW_INLINE:
+                        if (floating == FLOAT_NONE)
+                        {
+                            drawContent(g);
+                        }
+                }
+                restoreClip(g);
             }
-            
-            if (obj != null)
-            {
-                g.setClip(getClippedContentBounds());
-                obj.draw(g, boxw, boxh);
-            }
-            g.setClip(oldclip);
         }
     }
 
+    @Override
+    public void drawStackingContext(Graphics2D g, boolean include)
+    {
+        setupClip(g);
+        
+        //1.the background and borders of the element forming the stacking context.
+        if (this.isBlock())
+            drawBackground(g);
+        //2.the child stacking contexts with negative stack levels (most negative first).
+        //3.the in-flow, non-inline-level, non-positioned descendants.
+        //4.the non-positioned floats. 
+        //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+        drawContent(g);
+        //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+        //7.the child stacking contexts with positive stack levels (least positive first).
+        restoreClip(g);
+    }
 }
