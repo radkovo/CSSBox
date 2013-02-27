@@ -1675,14 +1675,12 @@ public class BlockBox extends ElementBox
         	declMargin = new LengthSet();
         }
             
-        //for first computation, the efficient margin is the same as the declared one
-        if (!update)
-            emargin = new LengthSet(margin);
-        
         //Margins, widths and heights
         loadWidthsHeights(dec, contw, conth, update);
         
-        if (update)
+        if (!update)
+        	emargin = new LengthSet(margin);
+        else
         { //efficient top and bottom margins already computed; update just left and right
             emargin.left = margin.left;
             emargin.right = margin.right;
@@ -2085,25 +2083,26 @@ public class BlockBox extends ElementBox
     	}
     	
     	//compute the top and bottom
+    	LengthSet m = update ? emargin : margin; //use the efficient margins instead of the declared ones when the efficient have been computed
 	    if (!topset && !bottomset)
 	    {
 	        topstatic = true; //top will be set to static position during the layout
-            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - emargin.top - emargin.bottom - content.height;
+            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else if (!topset)
 	    {
-            coords.top = conth - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - emargin.top - emargin.bottom - content.height;
+            coords.top = conth - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else if (!bottomset)
 	    {
-            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - emargin.top - emargin.bottom - content.height;
+            coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
 	    else
 	    {
 	        if (auto) //auto height is computed from the rest
-	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - emargin.top - emargin.bottom;
+	            content.height = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom;
 	        else //over-constrained - compute the bottom coordinate
-	        	coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - emargin.top - emargin.bottom - content.height;
+	        	coords.bottom = conth - coords.top - border.top - border.bottom - padding.top - padding.bottom - m.top - m.bottom - content.height;
 	    }
     }
     
