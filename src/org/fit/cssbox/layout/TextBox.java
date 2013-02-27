@@ -31,6 +31,7 @@ import java.text.AttributedString;
 import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.TextTransform;
 
 /**
  * A box that corresponds to a text node.
@@ -84,6 +85,10 @@ public class TextBox extends Box implements Inline
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
     
+    /** Used text transformation */
+    protected CSSProperty.TextTransform transform;
+    
+    
     //===================================================================
     
     /**
@@ -96,6 +101,7 @@ public class TextBox extends Box implements Inline
     {
         super(n, g, ctx);
         textNode = n;
+        transform = TextTransform.NONE;
         setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
         ctx.updateForGraphics(null, g);
@@ -122,6 +128,7 @@ public class TextBox extends Box implements Inline
         lastLineLength = src.lastLineLength;
         longestLineLength = src.longestLineLength;
         containsLineBreak = src.containsLineBreak;
+        transform = src.transform;
     }
     
     /** 
@@ -151,9 +158,13 @@ public class TextBox extends Box implements Inline
         super.setParent(parent);
         if (getParent() != null)
         {
+            //load the relevant style values
+            transform = getParent().getStyle().getProperty("text-transform");
+            if (transform == null)
+                transform = TextTransform.NONE;
             //reset the whitespace processing according to the parent settings
             CSSProperty.WhiteSpace ws = getParent().getWhiteSpace();
-            if (ws != ElementBox.WHITESPACE_NORMAL)
+            if (ws != ElementBox.WHITESPACE_NORMAL || transform != TextTransform.NONE)
                 setWhiteSpace(ws);
         }
     }
@@ -221,7 +232,7 @@ public class TextBox extends Box implements Inline
      */
     private void applyWhiteSpace()
     {
-        text = collapseWhitespaces(node.getNodeValue());
+        text = applyTransformations(collapseWhitespaces(node.getNodeValue()));
         textStart = 0;
         textEnd = text.length();
         isempty = (textEnd == 0);
@@ -261,6 +272,41 @@ public class TextBox extends Box implements Inline
             }
         }
         return new String(ret);
+    }
+
+    /**
+     * Applies the text transformations to a string according to the current style.
+     * @param src The source string
+     * @return the string after transformations 
+     */
+    private String applyTransformations(String src)
+    {
+        switch (transform)
+        {
+            case LOWERCASE:
+                return src.toLowerCase();
+            case UPPERCASE:
+                return src.toUpperCase();
+            case CAPITALIZE:
+                StringBuilder ret = new StringBuilder(src.length());
+                boolean ws = true;
+                for (int i = 0; i < src.length(); i++)
+                {
+                    char ch = src.charAt(i);
+                    if (Character.isWhitespace(ch))
+                        ws = true;
+                    else
+                    {
+                        if (ws)
+                            ch = Character.toUpperCase(ch);
+                        ws = false;
+                    }
+                    ret.append(ch);
+                }
+                return ret.toString();
+            default:
+                return src;
+        }
     }
     
     /**
