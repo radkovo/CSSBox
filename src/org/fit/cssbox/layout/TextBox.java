@@ -787,9 +787,9 @@ public class TextBox extends Box implements Inline
                 AttributedString as = new AttributedString(t);
                 as.addAttribute(TextAttribute.FONT, ctx.getFont());
                 if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.UNDERLINE))
-                    as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 0, t.length());
+                    as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
                 if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.LINE_THROUGH))
-                    as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON, 0, t.length());
+                    as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
                 g.drawString(as.getIterator(), x, y + getBaselineOffset());
             } 
             else
