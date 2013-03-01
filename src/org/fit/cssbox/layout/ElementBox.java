@@ -929,7 +929,7 @@ abstract public class ElementBox extends Box
     
     /**
      * Draws the subtree with using this box as a root element.
-     * @param g
+     * @param g The graphic context to be used for painting.
      */
     public void draw(Graphics2D g)
     {
@@ -937,8 +937,8 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * Draws the subtree as this was a stacking context root.
-     * @param g
+     * Draws the subtree as if this was a stacking context root.
+     * @param g The graphic context to be used for painting.
      * @param include include new stacking contexts to this context (currently unused)
      */
     public void drawStackingContext(Graphics2D g, boolean include)
@@ -980,6 +980,11 @@ abstract public class ElementBox extends Box
         }
     }
     
+    /**
+     * Draws all the sub-boxes in the given stage.
+     * @param g The graphic context to be used for painting.
+     * @param turn The current drawing stage.
+     */
     protected void drawChildren(Graphics2D g, DrawStage turn)
     {
         for (int i = startChild; i < endChild; i++)
@@ -989,6 +994,11 @@ abstract public class ElementBox extends Box
         }
     }
     
+    /**
+     * Draws child stacking contexts of the given z-index.
+     * @param g The graphic context to be used for painting.
+     * @param zindex The z-index of the contexts to draw. Only the child contexts with the given z-index will be drawn.
+     */
     protected void drawChildContexts(Graphics2D g, int zindex)
     {
         Vector<ElementBox> list = getStackingContext().getElementsForZIndex(zindex);
@@ -1001,8 +1011,6 @@ abstract public class ElementBox extends Box
         }
     }
     
-    //private static int bgcnt = 0;
-    
     /** 
      * Draw the background and border of this box (no subboxes).
      * This method is normally called automatically from {@link Box#draw()}.
@@ -1010,7 +1018,6 @@ abstract public class ElementBox extends Box
      */
     public void drawBackground(Graphics2D g)
     {
-        //System.out.println("BG: " + this + " " + bgcnt); bgcnt++;
         Color color = g.getColor(); //original color
 
         //top left corner
