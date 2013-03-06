@@ -123,29 +123,32 @@ public class HTMLBoxFactory
             String dataurl = e.getAttribute("data");
             URL base = new URL(factory.getBaseURL(), cb);
             
-            DocumentSource src = factory.createDocumentSource(base, dataurl);
-            if (mime.isEmpty())
+            if (!dataurl.trim().isEmpty())
             {
-                mime = src.getContentType();
-                if (mime == null || mime.isEmpty())
-                    mime = "text/html";
+                DocumentSource src = factory.createDocumentSource(base, dataurl);
+                if (mime.isEmpty())
+                {
+                    mime = src.getContentType();
+                    if (mime == null || mime.isEmpty())
+                        mime = "text/html";
+                }
+                System.out.println("ctype=" + mime);
+                
+                ReplacedContent content = null;
+                if (mime.startsWith("image/"))
+                {
+                    content = new ReplacedImage(rbox, rbox.getVisualContext(), base, dataurl);
+                }
+                else if (mime.equals("text/html"))
+                {
+                    System.out.println("Parsing: " + src.getURL()); 
+                    DOMSource parser = new DefaultDOMSource(src);
+                    Document doc = parser.parse();
+                    String encoding = parser.getCharset();
+                    content = new ReplacedText(rbox, doc, src.getURL(), encoding);
+                }
+                rbox.setContentObj(content);
             }
-            System.out.println("ctype=" + mime);
-            
-            ReplacedContent content = null;
-            if (mime.startsWith("image/"))
-            {
-                content = new ReplacedImage(rbox, rbox.getVisualContext(), base, dataurl);
-            }
-            else if (mime.equals("text/html"))
-            {
-                System.out.println("Parsing: " + src.getURL()); 
-                DOMSource parser = new DefaultDOMSource(src);
-                Document doc = parser.parse();
-                String encoding = parser.getCharset();
-                content = new ReplacedText(rbox, doc, src.getURL(), encoding);
-            }
-            rbox.setContentObj(content);
         } catch (MalformedURLException e1) {
             //something failed, no content object is created => the we should use the object element contents
         } catch (SAXException e1) {
