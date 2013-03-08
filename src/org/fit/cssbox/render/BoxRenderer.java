@@ -49,4 +49,9 @@ public interface BoxRenderer
      */
     public void renderReplacedContent(ReplacedBox box);
     
+    /**
+     * Finishes and the output.
+     */
+    public void close();
+    
 }

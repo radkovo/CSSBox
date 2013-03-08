@@ -57,6 +57,15 @@ public class ReplacedText extends ReplacedContent
         createDecoder();
     }
 
+    /**
+     * Obtains the viewport of the contents.
+     * @return the viewport
+     */
+    public Viewport getContentViewport()
+    {
+        return viewport;
+    }
+    
     @Override
     public void draw(Graphics2D g, int width, int height)
     {

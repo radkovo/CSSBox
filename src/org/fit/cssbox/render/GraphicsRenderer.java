@@ -68,6 +68,10 @@ public class GraphicsRenderer implements BoxRenderer
         box.drawContent(g);
     }
 
+    public void close()
+    {
+    }
+    
     //====================================================================================================
     
     protected void setupClip(Box box)
