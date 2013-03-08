@@ -60,7 +60,7 @@ public class ReplacedText extends ReplacedContent
     @Override
     public void draw(Graphics2D g, int width, int height)
     {
-        viewport.draw(g);
+        viewport.draw(owner.getViewport().getRenderer());
     }
 
     @Override

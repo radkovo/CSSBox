@@ -796,10 +796,9 @@ abstract public class Box
     
     /**
      * Draws the specified stage.
-     * @param g graphics context to draw on
      * @param turn drawing stage
      */
-    abstract public void draw(Graphics2D g, DrawStage turn);
+    abstract public void draw(DrawStage turn);
 
     /**
      * Draw the bounds of the box (for visualisation).

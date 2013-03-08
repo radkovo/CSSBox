@@ -298,7 +298,7 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         return true;
     }
 
-    protected void drawContent(Graphics2D g)
+    public void drawContent(Graphics2D g)
     {
         if (obj != null)
         {
@@ -308,14 +308,12 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     }
     
     @Override
-    public void draw(Graphics2D g, DrawStage turn)
+    public void draw(DrawStage turn)
     {
-        ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
             if (!this.formsStackingContext())
             {
-                setupClip(g);
                 switch (turn)
                 {
                     case DRAW_NONINLINE:
@@ -323,11 +321,10 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
                         //there should be no block-level or floating children here -- we do nothing
                         break;
                     case DRAW_INLINE:
-                        drawBackground(g);
-                        drawContent(g);
+                        getViewport().getRenderer().renderElementBackground(this);
+                        getViewport().getRenderer().renderReplacedContent(this);
                         break;
                 }
-                restoreClip(g);
             }
         }
     }

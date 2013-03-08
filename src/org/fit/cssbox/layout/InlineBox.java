@@ -524,14 +524,13 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public void draw(Graphics2D g, DrawStage turn)
+    public void draw(DrawStage turn)
     {
         ctx.updateGraphics(g);
         if (displayed)
         {
             if (!this.formsStackingContext())
             {
-                setupClip(g);
                 switch (turn)
                 {
                     case DRAW_NONINLINE:
@@ -539,11 +538,10 @@ public class InlineBox extends ElementBox implements InlineElement
                         //there should be no block-level or floating children here -- we do nothing
                         break;
                     case DRAW_INLINE:
-                        drawBackground(g);
-                        drawChildren(g, turn);
+                        getViewport().getRenderer().renderElementBackground(this);
+                        drawChildren(turn);
                         break;
                 }
-                restoreClip(g);
             }
         }
     }

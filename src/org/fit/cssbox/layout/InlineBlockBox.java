@@ -290,14 +290,12 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
     
     @Override
-    public void draw(Graphics2D g, DrawStage turn)
+    public void draw(DrawStage turn)
     {
-        ctx.updateGraphics(g);
         if (displayed)
         {
             if (!this.formsStackingContext())
             {
-                setupClip(g);
                 switch (turn)
                 {
                     case DRAW_NONINLINE:
@@ -305,10 +303,9 @@ public class InlineBlockBox extends BlockBox implements InlineElement
                         //everything is drawn in the DRAW_INLINE phase as a new stacking context
                         break;
                     case DRAW_INLINE:
-                        drawStackingContext(g, true);
+                        drawStackingContext(true);
                         break;
                 }
-                restoreClip(g);
             }
         }
     }
