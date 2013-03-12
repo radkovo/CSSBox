@@ -264,20 +264,24 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
                     case DRAW_NONINLINE:
                         if (floating == FLOAT_NONE)
                         {
+                            getViewport().getRenderer().startElement(this);
                             getViewport().getRenderer().renderElementBackground(this);
                         }
                         break;
                     case DRAW_FLOAT:
                         if (floating != FLOAT_NONE)
                         {
+                            getViewport().getRenderer().startElement(this);
                             getViewport().getRenderer().renderElementBackground(this);
                             getViewport().getRenderer().renderReplacedContent(this);
+                            getViewport().getRenderer().finishElement(this);
                         }
                         break;
                     case DRAW_INLINE:
                         if (floating == FLOAT_NONE)
                         {
                             getViewport().getRenderer().renderReplacedContent(this);
+                            getViewport().getRenderer().finishElement(this);
                         }
                 }
             }
@@ -287,15 +291,22 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     @Override
     public void drawStackingContext(boolean include)
     {
-        //1.the background and borders of the element forming the stacking context.
-        if (this.isBlock())
-            getViewport().getRenderer().renderElementBackground(this);
-        //2.the child stacking contexts with negative stack levels (most negative first).
-        //3.the in-flow, non-inline-level, non-positioned descendants.
-        //4.the non-positioned floats. 
-        //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
-        getViewport().getRenderer().renderReplacedContent(this);
-        //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
-        //7.the child stacking contexts with positive stack levels (least positive first).
+        if (isDisplayed() && isDeclaredVisible())
+        {
+            getViewport().getRenderer().startElement(this);
+    
+            //1.the background and borders of the element forming the stacking context.
+            if (this.isBlock())
+                getViewport().getRenderer().renderElementBackground(this);
+            //2.the child stacking contexts with negative stack levels (most negative first).
+            //3.the in-flow, non-inline-level, non-positioned descendants.
+            //4.the non-positioned floats. 
+            //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
+            getViewport().getRenderer().renderReplacedContent(this);
+            //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+            //7.the child stacking contexts with positive stack levels (least positive first).
+            
+            getViewport().getRenderer().finishElement(this);
+        }
     }
 }

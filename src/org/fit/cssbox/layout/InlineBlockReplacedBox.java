@@ -321,8 +321,10 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
                         //there should be no block-level or floating children here -- we do nothing
                         break;
                     case DRAW_INLINE:
+                        getViewport().getRenderer().startElement(this);
                         getViewport().getRenderer().renderElementBackground(this);
                         getViewport().getRenderer().renderReplacedContent(this);
+                        getViewport().getRenderer().finishElement(this);
                         break;
                 }
             }

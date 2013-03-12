@@ -933,6 +933,8 @@ abstract public class ElementBox extends Box
     {
         if (isDisplayed() && isDeclaredVisible())
         {
+            getViewport().getRenderer().startElement(this);
+            
             Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
             
             //1.the background and borders of the element forming the stacking context.
@@ -963,6 +965,8 @@ abstract public class ElementBox extends Box
                 drawChildContexts(clevels[zi]);
                 zi++;
             }
+            
+            getViewport().getRenderer().finishElement(this);
         }
     }
     

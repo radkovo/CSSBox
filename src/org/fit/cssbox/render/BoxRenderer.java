@@ -32,6 +32,20 @@ import org.fit.cssbox.layout.TextBox;
 public interface BoxRenderer
 {
     /**
+     * Initializes the rendering of an element. This is called before any contents of the element
+     * or child boxes are rendered.
+     * @param elem the element
+     */
+    public void startElement(ElementBox elem);
+    
+    /**
+     * Finishes the rendering of an element. This is called after all contents of the element
+     * and the child boxes are rendered.
+     * @param elem the element
+     */
+    public void finishElement(ElementBox elem);
+    
+    /**
      * Renders the background and borders of the given element box according to its style.
      * @param elem
      */

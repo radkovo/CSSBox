@@ -66,6 +66,14 @@ public class SVGRenderer implements BoxRenderer
     
     //====================================================================================================
     
+    public void startElement(ElementBox elem)
+    {
+    }
+
+    public void finishElement(ElementBox elem)
+    {
+    }
+    
     public void renderElementBackground(ElementBox eb)
     {
         Rectangle bb = eb.getAbsoluteBorderBounds();

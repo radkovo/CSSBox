@@ -52,6 +52,14 @@ public class GraphicsRenderer implements BoxRenderer
     
     //====================================================================================================
     
+    public void startElement(ElementBox elem)
+    {
+    }
+
+    public void finishElement(ElementBox elem)
+    {
+    }
+    
     public void renderElementBackground(ElementBox elem)
     {
         elem.drawBackground(g);
@@ -86,7 +94,5 @@ public class GraphicsRenderer implements BoxRenderer
     {
         g.setClip(savedClipArea);
     }
-    
-    
     
 }
