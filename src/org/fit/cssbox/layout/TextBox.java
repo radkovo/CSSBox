@@ -664,6 +664,7 @@ public class TextBox extends Box implements Inline
             {
                 TextBox rtext = copyTextBox();
                 rtext.splitted = true;
+                rtext.splitid = splitid + 1;
                 rtext.setTextStart(start);
                 rtext.setTextEnd(text.length());
                 rest = rtext;

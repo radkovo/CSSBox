@@ -291,6 +291,7 @@ public class InlineBox extends ElementBox implements InlineElement
                 {
                     InlineBox rbox = copyBox();
                     rbox.splitted = true;
+                    rbox.splitid = splitid + 1;
                     rbox.setStartChild(i); //next starts with me...
                     rbox.nested.setElementAt(subbox.getRest(), i); //..but only with the rest
                     rbox.adoptChildren();
@@ -304,6 +305,7 @@ public class InlineBox extends ElementBox implements InlineElement
                     {
                         InlineBox rbox = copyBox();
                         rbox.splitted = true;
+                        rbox.splitid = splitid + 1;
                         rbox.setStartChild(i + 1); //next starts with the next one
                         rbox.adoptChildren();
                         setEndChild(i+1); //...and this box stops with this element
@@ -323,6 +325,7 @@ public class InlineBox extends ElementBox implements InlineElement
                 {
                     InlineBox rbox = copyBox();
                     rbox.splitted = true;
+                    rbox.splitid = splitid + 1;
                     rbox.setStartChild(lastbreak); //next time start from the last break
                     rbox.adoptChildren();
                     setEndChild(lastbreak); //this box stops here

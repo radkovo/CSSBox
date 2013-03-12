@@ -97,6 +97,9 @@ abstract public class Box
     /** True if this box is a result of splitting */
     protected boolean splitted;
     
+    /** a serial number of the splitted box copy (original is 0) */
+    protected int splitid;
+    
     /** Remaining part of the box after splitting */
     protected Box rest;
     
@@ -123,6 +126,7 @@ abstract public class Box
         displayed = true;
         visible = true;
         splitted = false;
+        splitid = 0;
         rest = null;
     }
 
@@ -214,6 +218,15 @@ abstract public class Box
 		this.order = order;
 	}
 
+	/**
+	 * Obtains the order of the box copy.
+	 * @return the copy number (0 means original non-splitted box)
+	 */
+	public int getSplitId()
+	{
+	    return splitid;
+	}
+	
     /**
      * Returns the graphics context that is used for rendering.
      * @return the graphics context
@@ -805,6 +818,36 @@ abstract public class Box
      */
     abstract public void drawExtent(Graphics2D g);
 
+    //=========================================================================================
+    
+    /**
+     * The box hash code is given by its serial number and its copy ID.
+     */
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + order;
+        result = prime * result + splitid;
+        return result;
+    }
+
+    /**
+     * The boxes are equal if they have the some serial number and the same copy ID.
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        Box other = (Box) obj;
+        if (order != other.order) return false;
+        if (splitid != other.splitid) return false;
+        return true;
+    }
+    
     //=========================================================================================
     
     /**
