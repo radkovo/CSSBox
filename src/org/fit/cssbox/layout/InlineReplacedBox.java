@@ -270,8 +270,10 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     {
         if (obj != null)
         {
-            g.setClip(getClippedContentBounds());
+            Shape oldclip = g.getClip();
+            g.setClip(applyClip(oldclip, getClippedContentBounds()));
             obj.draw(g, boxw, boxh);
+            g.setClip(oldclip);
         }
     }
     

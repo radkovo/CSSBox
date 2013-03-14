@@ -1011,7 +1011,7 @@ abstract public class ElementBox extends Box
         Color color = g.getColor(); //original color
         Shape oldclip = g.getClip(); //original clip region
         if (clipblock != null)
-            g.setClip(clipblock.getClippedContentBounds());
+            g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
         ctx.updateGraphics(g);
         
         //top left corner

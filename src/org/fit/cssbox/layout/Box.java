@@ -818,6 +818,25 @@ abstract public class Box
      */
     abstract public void drawExtent(Graphics2D g);
 
+    /**
+     * Computes a new clipping region from the current one and the eventual clipping box
+     * @param current current clipping region
+     * @param newclip new clipping box to be used
+     * @return the new clipping rectangle
+     */
+    protected Rectangle applyClip(Shape current, Rectangle newclip)
+    {
+        if (current == null)
+            return newclip;
+        else
+        {
+            if (current instanceof Rectangle)
+                return ((Rectangle) current).intersection(newclip);
+            else
+                return current.getBounds().intersection(newclip);
+        }
+    }
+    
     //=========================================================================================
     
     /**

@@ -826,7 +826,8 @@ public class TextBox extends Box implements Inline
         {
             String t = text.substring(textStart, textEnd);
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
+            if (clipblock != null)
+                g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
             ctx.updateGraphics(g);
             
             if (!ctx.getTextDecoration().isEmpty()) 
