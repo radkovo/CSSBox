@@ -20,10 +20,7 @@
 package org.fit.cssbox.render;
 
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
-import org.fit.cssbox.layout.BlockBox;
-import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
@@ -38,9 +35,6 @@ public class GraphicsRenderer implements BoxRenderer
     /** the used graphic context */
     protected Graphics2D g;
 
-    /** saved clipping are for restoring */
-    private Shape savedClipArea;
-    
     /**
      * Constructs a renderer using the given graphics contexts.
      * @param g The graphics context used for painting the boxes.
@@ -67,7 +61,6 @@ public class GraphicsRenderer implements BoxRenderer
 
     public void renderTextContent(TextBox text)
     {
-        //no clipping necessary - included in drawContent()
         text.drawContent(g);
     }
 
@@ -78,21 +71,6 @@ public class GraphicsRenderer implements BoxRenderer
 
     public void close()
     {
-    }
-    
-    //====================================================================================================
-    
-    protected void setupClip(Box box)
-    {
-        savedClipArea = g.getClip();
-        BlockBox clipblock = box.getClipBlock();
-        if (clipblock != null)
-            g.setClip(clipblock.getClippedContentBounds());
-    }
-    
-    protected void restoreClip()
-    {
-        g.setClip(savedClipArea);
-    }
+    }    
     
 }
