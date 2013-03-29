@@ -1544,10 +1544,8 @@ public class BlockBox extends ElementBox
                     case DRAW_NONINLINE:
                         if (floating == FLOAT_NONE)
                         {
-                            getViewport().getRenderer().startElement(this);
                             getViewport().getRenderer().renderElementBackground(this);
                             drawChildren(turn);
-                            getViewport().getRenderer().finishElement(this);
                         }
                         break;
                     case DRAW_FLOAT:
@@ -1559,7 +1557,11 @@ public class BlockBox extends ElementBox
                     case DRAW_INLINE:
                         //do nothing but check the children
                         if (floating == FLOAT_NONE)
+                        {
+                            getViewport().getRenderer().startElementContents(this);
                             drawChildren(turn);
+                            getViewport().getRenderer().finishElementContents(this);
+                        }
                         break;
                 }
             }

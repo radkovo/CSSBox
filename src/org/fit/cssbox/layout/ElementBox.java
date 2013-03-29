@@ -933,13 +933,14 @@ abstract public class ElementBox extends Box
     {
         if (isDisplayed() && isDeclaredVisible())
         {
-            getViewport().getRenderer().startElement(this);
-            
             Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
             
             //1.the background and borders of the element forming the stacking context.
             if (this instanceof BlockBox)
                 getViewport().getRenderer().renderElementBackground(this);
+            
+            getViewport().getRenderer().startElementContents(this);
+            
             //2.the child stacking contexts with negative stack levels (most negative first).
             int zi = 0;
             while (zi < clevels.length && clevels[zi] < 0)
@@ -966,7 +967,8 @@ abstract public class ElementBox extends Box
                 zi++;
             }
             
-            getViewport().getRenderer().finishElement(this);
+            getViewport().getRenderer().finishElementContents(this);
+            
         }
     }
     

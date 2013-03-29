@@ -33,17 +33,18 @@ public interface BoxRenderer
 {
     /**
      * Initializes the rendering of an element. This is called before any contents of the element
-     * or child boxes are rendered.
+     * or child boxes are rendered. Note that the {@link BoxRenderer#renderElementBackground} method 
+     * may be called before this method.
      * @param elem the element
      */
-    public void startElement(ElementBox elem);
+    public void startElementContents(ElementBox elem);
     
     /**
      * Finishes the rendering of an element. This is called after all contents of the element
      * and the child boxes are rendered.
      * @param elem the element
      */
-    public void finishElement(ElementBox elem);
+    public void finishElementContents(ElementBox elem);
     
     /**
      * Renders the background and borders of the given element box according to its style.

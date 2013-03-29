@@ -66,11 +66,11 @@ public class SVGRenderer implements BoxRenderer
     
     //====================================================================================================
     
-    public void startElement(ElementBox elem)
+    public void startElementContents(ElementBox elem)
     {
     }
 
-    public void finishElement(ElementBox elem)
+    public void finishElementContents(ElementBox elem)
     {
     }
     
