@@ -136,6 +136,9 @@ public class SVGRenderer implements BoxRenderer
                        "font-family:" + ctx.getFont().getFamily() + ";" +
                        "fill:" + colorString(ctx.getColor()) + ";" +
                        "stroke:none";
+        
+        if (!ctx.getTextDecoration().isEmpty())
+            style += ";text-decoration:" + ctx.getTextDecorationString();
                        
         out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + text.getBaselineOffset()) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(text.getText()) + "</text>");
     }
