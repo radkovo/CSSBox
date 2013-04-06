@@ -56,8 +56,11 @@ public class SVGRenderer implements BoxRenderer
     private int rootw;
     private int rooth;
     
+    private int idcounter;
+    
     public SVGRenderer(int rootWidth, int rootHeight, Writer out)
     {
+        idcounter = 1;
         rootw = rootWidth;
         rooth = rootHeight;
         this.out = new PrintWriter(out);
@@ -168,8 +171,17 @@ public class SVGRenderer implements BoxRenderer
             }
             else if (cont instanceof ReplacedText) //HTML object
             {
-                ReplacedText rt = (ReplacedText) cont;//TODO clip to box content bounds
+                //clipping rectangle for the object
+                Rectangle cb = ((Box) box).getAbsoluteContentBounds();
+                String clip = "cssbox-clip-" + idcounter;
+                out.print("<clipPath id=\"" + clip + "\">");
+                out.print("<rect x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" />");
+                out.println("</clipPath>");
+                //the group containing the rendered object
+                out.println("<g id=\"cssbox-obj-" + (idcounter++) + "\" clip-path=\"url(#" + clip + ")\">");
+                ReplacedText rt = (ReplacedText) cont;
                 rt.getContentViewport().draw(this);
+                out.println("</g>");
             }
         }
     }
