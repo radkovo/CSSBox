@@ -1,3 +1,13 @@
+2013-05-25 - Version 4.2
+- Drawing text decorations (underline and line-through) (closes #12)
+- z-index and stacking context support
+- text-transform support 
+- Positioned boxes in viewport fixed (closes #11)
+- Do not load HTML objects when data URL is not specified (closes #15)
+- Table layout computation fix (closes #18)
+- Custom default font configuration
+- List item marker drawing fixes
+
 2013-01-22 - Version 4.1
 - New I/O framework and connetcion handling API (see the manual)
 - Support for data: URLs

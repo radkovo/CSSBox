@@ -150,6 +150,14 @@ The following configuration options are available:</p>
      </ul>
      The default value is <code>true</code>.
      </dd>
+<dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="setDefaultFont(java.lang.String,%20java.lang.String)">browser.getConfig().setDefaultFont(String logical, String physical)</d:api></dt>
+<dd>Configures the default physical fonts that should be used instead of the logical Java families. The typical usage is the following:
+	<d:codebox>
+        browser.getConfig().setDefaultFont(java.awt.Font.SERIF, "Times New Roman");
+        browser.getConfig().setDefaultFont(java.awt.Font.SANS_SERIF, "Arial");
+        browser.getConfig().setDefaultFont(java.awt.Font.MONOSPACED, "Courier New");
+	</d:codebox>
+</dd>
 <dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="registerDocumentSource(java.lang.Class)">browser.getConfig().registerDocumentSource(Class&lt;? extends DocumentSource&gt;)</d:api></dt>
 <dt><d:api class="org/fit/cssbox/layout/BrowserConfig" anchor="registerDOMSource(java.lang.Class)">browser.getConfig().registerDOMSource(Class&lt;? extends DOMSource&gt;)</d:api></dt>
 <dd>Register the DocumentSource and DOMSource implementation used for automatic loading of the referenced documents.

@@ -1013,7 +1013,7 @@ abstract public class ElementBox extends Box
     
     /** 
      * Draw the background and border of this box (no subboxes).
-     * This method is normally called automatically from {@link Box#draw()}.
+     * This method is normally called automatically from {@link Box#draw(Graphics2D, DrawStage)}.
      * @param g the graphics context used for drawing 
      */
     public void drawBackground(Graphics2D g)
