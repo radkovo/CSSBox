@@ -86,18 +86,14 @@ public class ListItemBox extends BlockBox
     }
 
     @Override
-	public void draw(Graphics2D g, DrawStage turn)
+	public void draw(DrawStage turn)
     {
         if (displayed && isDeclaredVisible())
         {
             if (turn == DrawStage.DRAW_INLINE && floating == FLOAT_NONE && position == POS_STATIC)
-            {
-                setupClip(g);
                 drawMarker(g);
-                restoreClip(g);
-            }
             
-            super.draw(g, turn);
+            super.draw(turn);
     	}
     }
     
@@ -166,11 +162,14 @@ public class ListItemBox extends BlockBox
     public void drawMarker(Graphics2D g)
     {
         Shape oldclip = g.getClip();
-        g.setClip(clipblock.getClippedContentBounds());
+        if (clipblock != null)
+            g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
+        
         if (image != null)
             drawImage(g);
         else
             drawBullet(g);
+        
         g.setClip(oldclip);
     }
     

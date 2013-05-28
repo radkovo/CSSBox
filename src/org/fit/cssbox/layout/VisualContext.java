@@ -56,14 +56,14 @@ public class VisualContext
     {
         this.parent = parent;
         this.factory = factory;
+        em = CSSUnits.medium_font;
+        ex = 0.6 * em;
+        dpi = org.fit.cssbox.css.CSSUnits.dpi;
         font = new Font(Font.SERIF, Font.PLAIN, (int)((CSSUnits.medium_font * 72) / dpi)); //convert medium font to pixels
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
-        em = CSSUnits.medium_font;
-        ex = 0.6 * em;
-        dpi = org.fit.cssbox.css.CSSUnits.dpi;
         color = Color.BLACK;
     }
     

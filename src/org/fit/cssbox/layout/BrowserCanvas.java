@@ -28,6 +28,7 @@ import javax.swing.*;
 import org.w3c.dom.*;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.render.GraphicsRenderer;
 
 /**
  * This class provides an abstraction of a browser rendering area and the main layout engine
@@ -167,7 +168,9 @@ public class BrowserCanvas extends JPanel
         viewport.absolutePositions();
         
         clearCanvas();
-        viewport.draw(ig);
+        GraphicsRenderer r = new GraphicsRenderer(ig); 
+        viewport.draw(r);
+        r.close();
         setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
         revalidate();
     }
@@ -194,7 +197,7 @@ public class BrowserCanvas extends JPanel
     {
         Graphics2D ig = img.createGraphics();
         clearCanvas();
-        viewport.draw(ig);
+        viewport.draw(new GraphicsRenderer(ig));
         revalidate();
     }
     

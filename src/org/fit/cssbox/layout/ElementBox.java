@@ -192,9 +192,6 @@ abstract public class ElementBox extends Box
     
     //=======================================================================
     
-    /** saved clipping are for restoring */
-    private Shape savedClipArea;
-    
     /**
      * Creates a new element box from a DOM element
      * @param n the DOM element
@@ -928,55 +925,50 @@ abstract public class ElementBox extends Box
     //=======================================================================
     
     /**
-     * Draws the subtree with using this box as a root element.
-     * @param g The graphic context to be used for painting.
-     */
-    public void draw(Graphics2D g)
-    {
-        drawStackingContext(g, false);
-    }
-    
-    /**
      * Draws the subtree as if this was a stacking context root.
      * @param g The graphic context to be used for painting.
      * @param include include new stacking contexts to this context (currently unused)
      */
-    public void drawStackingContext(Graphics2D g, boolean include)
+    public void drawStackingContext(boolean include)
     {
         if (isDisplayed() && isDeclaredVisible())
         {
-            setupClip(g);
             Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
             
             //1.the background and borders of the element forming the stacking context.
             if (this instanceof BlockBox)
-                drawBackground(g);
+                getViewport().getRenderer().renderElementBackground(this);
+            
+            getViewport().getRenderer().startElementContents(this);
+            
             //2.the child stacking contexts with negative stack levels (most negative first).
             int zi = 0;
             while (zi < clevels.length && clevels[zi] < 0)
             {
-                drawChildContexts(g, clevels[zi]);
+                drawChildContexts(clevels[zi]);
                 zi++;
             }
             //3.the in-flow, non-inline-level, non-positioned descendants.
-            drawChildren(g, DrawStage.DRAW_NONINLINE);
+            drawChildren(DrawStage.DRAW_NONINLINE);
             //4.the non-positioned floats. 
-            drawChildren(g, DrawStage.DRAW_FLOAT);
+            drawChildren(DrawStage.DRAW_FLOAT);
             //5.the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks. 
-            drawChildren(g, DrawStage.DRAW_INLINE);
+            drawChildren(DrawStage.DRAW_INLINE);
             //6.the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
             if (zi < clevels.length && clevels[zi] == 0)
             {
-                drawChildContexts(g, 0);
+                drawChildContexts(0);
                 zi++;
             }
             //7.the child stacking contexts with positive stack levels (least positive first).
             while (zi < clevels.length)
             {
-                drawChildContexts(g, clevels[zi]);
+                drawChildContexts(clevels[zi]);
                 zi++;
             }
-            restoreClip(g);
+            
+            getViewport().getRenderer().finishElementContents(this);
+            
         }
     }
     
@@ -985,12 +977,12 @@ abstract public class ElementBox extends Box
      * @param g The graphic context to be used for painting.
      * @param turn The current drawing stage.
      */
-    protected void drawChildren(Graphics2D g, DrawStage turn)
+    protected void drawChildren(DrawStage turn)
     {
         for (int i = startChild; i < endChild; i++)
         {
             Box subbox = getSubBox(i);
-            subbox.draw(g, turn);
+            subbox.draw(turn);
         }
     }
     
@@ -999,14 +991,14 @@ abstract public class ElementBox extends Box
      * @param g The graphic context to be used for painting.
      * @param zindex The z-index of the contexts to draw. Only the child contexts with the given z-index will be drawn.
      */
-    protected void drawChildContexts(Graphics2D g, int zindex)
+    protected void drawChildContexts(int zindex)
     {
         Vector<ElementBox> list = getStackingContext().getElementsForZIndex(zindex);
         if (list != null)
         {
             for (ElementBox elem : list)
             {
-                elem.drawStackingContext(g, !elem.hasZIndex());
+                elem.drawStackingContext(!elem.hasZIndex());
             }
         }
     }
@@ -1019,7 +1011,11 @@ abstract public class ElementBox extends Box
     public void drawBackground(Graphics2D g)
     {
         Color color = g.getColor(); //original color
-
+        Shape oldclip = g.getClip(); //original clip region
+        if (clipblock != null)
+            g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
+        ctx.updateGraphics(g);
+        
         //top left corner
         int x = absbounds.x;
         int y = absbounds.y;
@@ -1054,6 +1050,7 @@ abstract public class ElementBox extends Box
         //draw the border
         drawBorders(g, bx1, by1, bx2, by2);
         
+        g.setClip(oldclip); //restore the clipping
         g.setColor(color); //restore original color
     }
     
@@ -1402,18 +1399,6 @@ abstract public class ElementBox extends Box
                     scontext.clear();
             }
         }
-    }
-    
-    protected void setupClip(Graphics2D g)
-    {
-        savedClipArea = g.getClip();
-        if (clipblock != null)
-            g.setClip(clipblock.getClippedContentBounds());
-    }
-    
-    protected void restoreClip(Graphics2D g)
-    {
-        g.setClip(savedClipArea);
     }
     
 }

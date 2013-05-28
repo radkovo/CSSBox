@@ -93,7 +93,17 @@ public class TableCellBox extends BlockBox
     {
         return rowspan;
     }
-    
+
+    public void setColspan(int colspan)
+    {
+        this.colspan = colspan;
+    }
+
+    public void setRowspan(int rowspan)
+    {
+        this.rowspan = rowspan;
+    }
+
     /**
      * @return the row of this cell in the table body
      */

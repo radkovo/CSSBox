@@ -268,7 +268,7 @@ public class BoxBrowser
         Vector<String> cols = infoTableData("Property", "Value");
         
         Vector<Vector <String>> vals = new Vector<Vector <String>>();
-        vals.add(infoTableData("ID", String.valueOf(box.getOrder())));
+        vals.add(infoTableData("ID", box.getOrder() + " (" + box.getSplitId() + ")"));
         vals.add(infoTableData("Parent", (box.getParent() == null) ? "- none -" : box.getParent().toString()));
         vals.add(infoTableData("Cont. block", (box.getContainingBlock() == null) ? "- none -" : box.getContainingBlock().toString()));
         vals.add(infoTableData("Clip. block", (box.getClipBlock() == null) ? "- none -" : box.getClipBlock().toString()));

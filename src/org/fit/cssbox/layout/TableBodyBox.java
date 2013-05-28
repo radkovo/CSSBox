@@ -492,8 +492,13 @@ public class TableBodyBox extends BlockBox
                 if (row.hasNext())
                 {
                     TableCellBox cell = row.next();
-                    int endrow = Math.min(cell.getRow() + cell.getRowspan(), rows.size());
-                    int endcol = Math.min(cell.getColumn() + cell.getColspan(), numCols);
+                    if (cell.getRow() + cell.getRowspan() > rows.size())
+                        cell.setRowspan(rows.size() - cell.getRow());
+                    if (cell.getColumn() + cell.getColspan() > numCols)
+                        cell.setColspan(numCols - cell.getColumn());
+                    
+                    int endrow = cell.getRow() + cell.getRowspan();
+                    int endcol = cell.getColumn() + cell.getColspan();
                     //add it to the mesh
                     for (int nr = cell.getRow(); nr < endrow; nr++)
                         for (int nc = cell.getColumn(); nc < endcol; nc++)

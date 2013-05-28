@@ -664,6 +664,7 @@ public class TextBox extends Box implements Inline
             {
                 TextBox rtext = copyTextBox();
                 rtext.splitted = true;
+                rtext.splitid = splitid + 1;
                 rtext.setTextStart(start);
                 rtext.setTextEnd(text.length());
                 rest = rtext;
@@ -814,7 +815,7 @@ public class TextBox extends Box implements Inline
      * Draw the text content of this box (no subboxes)
      * @param g the graphics context to draw on
      */
-    protected void drawContent(Graphics2D g)
+    public void drawContent(Graphics2D g)
     {
         //top left corner
         int x = absbounds.x;
@@ -825,7 +826,8 @@ public class TextBox extends Box implements Inline
         {
             String t = text.substring(textStart, textEnd);
             Shape oldclip = g.getClip();
-            g.setClip(clipblock.getClippedContentBounds());
+            if (clipblock != null)
+                g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
             ctx.updateGraphics(g);
             
             if (!ctx.getTextDecoration().isEmpty()) 
@@ -846,13 +848,13 @@ public class TextBox extends Box implements Inline
     }
     
 	@Override
-    public void draw(Graphics2D g, DrawStage turn)
+    public void draw(DrawStage turn)
     {
         if (displayed && isVisible())
         {
             if (turn == DrawStage.DRAW_INLINE)
             {
-                drawContent(g);
+                getViewport().getRenderer().renderTextContent(this);
             }
         }
     }

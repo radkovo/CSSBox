@@ -1533,36 +1533,37 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public void draw(Graphics2D g, DrawStage turn)
+    public void draw(DrawStage turn)
     {
-        ctx.updateGraphics(g);
         if (isDisplayed() && isDeclaredVisible())
         {
             if (!this.formsStackingContext())
             {
-                setupClip(g);
                 switch (turn)
                 {
                     case DRAW_NONINLINE:
                         if (floating == FLOAT_NONE)
                         {
-                            drawBackground(g);
-                            drawChildren(g, turn);
+                            getViewport().getRenderer().renderElementBackground(this);
+                            drawChildren(turn);
                         }
                         break;
                     case DRAW_FLOAT:
                         if (floating != FLOAT_NONE)
-                            drawStackingContext(g, true);
+                            drawStackingContext(true);
                         else
-                            drawChildren(g, turn);
+                            drawChildren(turn);
                         break;
                     case DRAW_INLINE:
                         //do nothing but check the children
                         if (floating == FLOAT_NONE)
-                            drawChildren(g, turn);
+                        {
+                            getViewport().getRenderer().startElementContents(this);
+                            drawChildren(turn);
+                            getViewport().getRenderer().finishElementContents(this);
+                        }
                         break;
                 }
-                restoreClip(g);
             }
         }
     }

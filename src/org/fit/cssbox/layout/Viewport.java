@@ -20,6 +20,8 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 import java.util.Vector;
+
+import org.fit.cssbox.render.BoxRenderer;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSFactory;
@@ -38,6 +40,7 @@ public class Viewport extends BlockBox
 	protected BrowserConfig config;
 	
 	private BoxFactory factory;
+	private BoxRenderer renderer;
 	private Element root; //the DOM root
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
     protected ElementBox lastbox = null;
@@ -337,6 +340,25 @@ public class Viewport extends BlockBox
 			getSubBox(i).absolutePositions();
     }
 	
+    /**
+     * Sets the current renderer and draws the whole subtree using the given renderer.
+     * @param g The graphic context to be used for painting.
+     */
+    public void draw(BoxRenderer renderer)
+    {
+        this.renderer = renderer;
+        drawStackingContext(false);
+    }
+	
+    /**
+     * Obtains the current renderer used for painting the boxes.
+     * @return current renderer.
+     */
+    public BoxRenderer getRenderer()
+    {
+        return renderer;
+    }
+    
 	/**
 	 * Updates the maximal viewport size according to the element bounds
 	 */
