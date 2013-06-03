@@ -369,9 +369,8 @@ public class TableBox extends BlockBox
         int sumnonemin = 0; //total minimal length of the columns with no width specified
         int sumnonemax = 0; //total maximal length of the columns with no width specified
         int totalwperc = 0; //total table width computed from percentage columns
-        for (int i = 0; i < columns.size(); i++) //compute the sums
+        for (TableColumn col : columns) //compute the sums
         {
-            TableColumn col = columns.elementAt(i);
             mintotalw += col.getMinimalWidth();
             if (col.wrelative)
             {
@@ -383,7 +382,7 @@ public class TableBox extends BlockBox
             else
             {
                 if (col.wset)
-                    sumabs += col.abswidth;
+                    sumabs += Math.max(col.abswidth, col.getMinimalWidth());
                 else
                 {
                     sumnonemin += col.getWidth();
@@ -414,6 +413,9 @@ public class TableBox extends BlockBox
         }
         if (totalw < mintotalw) totalw = mintotalw; //we cannot be below the minimal width
         
+        //available for further allocation
+        int remain = totalw - mintotalw;
+        
         /*System.out.println("Percent: " + totalwperc);
         System.out.println("Abs+%: " + totalwabs);
         System.out.println("Minimum: " + getMinimalWidth());
@@ -422,85 +424,181 @@ public class TableBox extends BlockBox
         System.out.println("result:" + totalw);*/
         
         //set the percentage columns to their values, if possible
-        int remain = totalw;
-        int remainmin = mintotalw;
-        if (sumperc > 0)
+        if (remain > 0 && sumperc > 0)
         {
-            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            for (TableColumn col : columns) //set the column sizes
             {
-                TableColumn col = columns.elementAt(i);
                 if (col.wrelative)
                 {
                     int mincw = col.getMinimalWidth();
-                    remainmin -= mincw; //how much we must leave for the remaining columns
-                    
                     int neww = col.percent * totalw / 100;
-                    if (neww > remain) neww = remain;
-                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
                     if (neww < mincw) neww = mincw;
-                    //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
-                    remain -= neww;
+                    remain -= (neww - mincw);
                 }
             }
+            //TODO remove overallocated space from the last columns?
         }
         //System.out.println("remain2:" + remain + " min:" + remainmin);
         
         //set the absolute columns
-        if (sumabs > 0)
+        if (remain > 0 && sumabs > 0)
         {
-            double factor = 1.0;
-            if (sumnonemin == 0)
-                factor = remain / (double) sumabs;
-            System.out.println("Factor: " + factor);
-            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            for (TableColumn col : columns) //set the column sizes
             {
-                TableColumn col = columns.elementAt(i);
-                double cf = col.getMinimalWidth() / (double) col.abswidth;
-                System.out.println("Col " + i + " factor:" + cf);
                 if (col.wset && !col.wrelative)
                 {
                     int mincw = col.getMinimalWidth();
-                    remainmin -= mincw; //how much we must leave for the remaining columns
-                    
-                    //System.out.println("Col " + i + " : " + col.abswidth);
-                    int neww = (int) (col.abswidth * factor);
-                    if (neww > remain) neww = remain;
-                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
+                    int neww = col.abswidth;
                     if (neww < mincw) neww = mincw;
-                    //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
-                    remain -= neww;
+                    remain -= (neww - mincw);
                 }
             }
         }
         //System.out.println("remain3:" + remain + " min:" + remainmin);
         
         //set the remaining columns
-        if (sumnonemin > 0)
+        if (remain > 0 && sumnonemin > 0)
         {
-            double factor = 1;
-            factor = remain / (double) sumnonemax;
-            //System.out.println("Factor: " + factor);
-            for (int i = 0; i < columns.size(); i++) //set the column sizes
+            int remainmax = sumnonemax;
+            remain += sumnonemin; 
+            for (TableColumn col : columns) //set the column sizes
             {
-                TableColumn col = columns.elementAt(i);
-                int mincw = col.getMinimalWidth();
-                remainmin -= mincw; //how much we must leave for the remaining columns
-                
                 if (!col.wset)
                 {
-                    int neww = (int) (col.getMaximalWidth() * factor);
-                    if (neww > remain) neww = remain;
-                    if (neww > (remain - remainmin)) neww = remain - remainmin; //leave the minimal space for the remaining columns
+                    int mincw = col.getMinimalWidth();
+                    int neww = remain * col.getMaximalWidth() / remainmax;   
                     if (neww < mincw) neww = mincw;
-                    //int dif = neww - col.getWidth();
                     col.setColumnWidth(neww);
                     remain -= neww;
+                    remainmax -= col.getMaximalWidth();
                 }
             }
         }
-        //System.out.println("remain4:" + remain + " min:" + remainmin);
+        //System.out.println("remain4:" + remain);
+
+        //if something still remains, use it for fixed columns
+        if (remain > 0 && sumabs > 0)
+        {
+            int remainabs = sumabs;
+            for (TableColumn col : columns)
+            {
+                if (col.wset && !col.wrelative)
+                {
+                    int addw = remain * col.getMaximalWidth() / remainabs;
+                    col.setColumnWidth(col.getWidth() + addw);
+                    remain -= addw;
+                    remainabs -= col.getMaximalWidth();
+                }
+            }
+        }
+        
+        //if something still remains, use it for percentage columns
+        if (remain > 0 && sumperc > 0 && sumperc < 100)
+        {
+            int remainperc = sumperc;
+            for (TableColumn col : columns)
+            {
+                if (col.wrelative)
+                {
+                    int addw = remain * col.percent / remainperc;
+                    col.setColumnWidth(col.getWidth() + addw);
+                    remain -= addw;
+                    remainperc -= col.getMaximalWidth();
+                    if (remainperc <= 0 || remain <= 0)
+                        break;
+                }
+            }
+        }
+        
+        //if something still remains, use it for all columns
+        if (remain > 0)
+        {
+            int remaincols = columns.size();
+            for (int i = columns.size() - 1; i >= 0; i--)
+            {
+                TableColumn col = columns.elementAt(i); 
+                int addw = remain / remaincols;
+                col.setColumnWidth(col.getWidth() + addw);
+                remain -= addw;
+                remaincols--;
+            }
+        }
+        
+        //we are wider that we should be, reduce the widths
+        if (remain < 0)
+        {
+            //non-fixed columns
+            if (remain < 0 && sumnonemin > 0)
+            {
+                int totaldif = 0;
+                for (TableColumn col : columns)
+                    if (!col.wset)
+                        totaldif += col.getWidth() - col.getMinimalWidth();
+                
+                for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
+                {
+                    TableColumn col = columns.elementAt(i);
+                    if (!col.wset)
+                    {
+                        int dif = col.getWidth() - col.getMinimalWidth();
+                        int addw = remain * dif / totaldif; 
+                        col.setColumnWidth(col.getWidth() + addw);
+                        remain -= addw;
+                        totaldif -= dif;
+                        if (remain >= 0)
+                            break;
+                    }
+                }
+            }
+            //fixed columns
+            if (remain < 0 && sumabs > 0)
+            {
+                int totaldif = 0;
+                for (TableColumn col : columns)
+                    if (col.wset && !col.wrelative)
+                        totaldif += col.getWidth() - col.getMinimalWidth();
+                
+                for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
+                {
+                    TableColumn col = columns.elementAt(i);
+                    if (col.wset && !col.wrelative)
+                    {
+                        int dif = col.getWidth() - col.getMinimalWidth();
+                        int addw = remain * dif / totaldif; 
+                        col.setColumnWidth(col.getWidth() + addw);
+                        remain -= addw;
+                        totaldif -= dif;
+                        if (remain >= 0)
+                            break;
+                    }
+                }
+            }
+            //percentage columns
+            if (remain < 0 && sumperc > 0)
+            {
+                int totaldif = 0;
+                for (TableColumn col : columns)
+                    if (col.wrelative)
+                        totaldif += col.getWidth() - col.getMinimalWidth();
+                
+                for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
+                {
+                    TableColumn col = columns.elementAt(i);
+                    if (col.wrelative)
+                    {
+                        int dif = col.getWidth() - col.getMinimalWidth();
+                        int addw = remain * dif / totaldif; 
+                        col.setColumnWidth(col.getWidth() + addw);
+                        remain -= addw;
+                        totaldif -= dif;
+                        if (remain >= 0)
+                            break;
+                    }
+                }
+            }
+        }
         
         /*System.out.println("Result:");
         for (int i = 0; i < columns.size(); i++)
