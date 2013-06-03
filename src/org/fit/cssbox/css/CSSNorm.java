@@ -88,7 +88,7 @@ public class CSSNorm
         "table           { border-spacing: 2px; }"+
         "thead, tbody,"+
         "tfoot           { vertical-align: middle }"+
-        "td, th          { vertical-align: inherit }"+
+        "tr, td, th      { vertical-align: inherit }"+
         "s, strike, del  { text-decoration: line-through }"+
         "hr              { border: 1px inset }"+
         "ol, ul, dir,"+

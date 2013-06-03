@@ -332,6 +332,26 @@ public class TableBodyBox extends BlockBox
                     c++;
             }
             
+            //compute the row baseline offset
+            int baseline = 0;
+            c = 0;
+            while (c < getColumnCount())
+            {
+                TableCellBox cell = cells[c][r];
+                if (cell != null)
+                {
+                    if (cell.getRow() == r) //if starts on this line
+                    {
+                        int cbase = cell.getFirstInlineBoxBaseline();
+                        if (cbase > baseline)
+                            baseline = cbase;
+                    }
+                    c += cell.getColspan();
+                }
+                else
+                    c++;
+            }
+            
             //enlarge all the cells to the row height (maxh)
             c = 0;
             while (c < getColumnCount())
@@ -346,7 +366,10 @@ public class TableBodyBox extends BlockBox
                             startY = rowY[cell.getRow()];
                         else
                             startY = y;
-                        cell.setHeight(y + maxh - startY);
+                        int oldheight = cell.getHeight();
+                        int newheight = y + maxh - startY;
+                        cell.setHeight(newheight);
+                        cell.applyVerticalAlign(oldheight, newheight, baseline);
                     }
                     c += cell.getColspan();
                 }

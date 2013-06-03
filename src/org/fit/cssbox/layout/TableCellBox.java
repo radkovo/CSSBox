@@ -202,6 +202,38 @@ public class TableCellBox extends BlockBox
     
     //====================================================================================
 
+    /**
+     * Applies the vertical alignment after the row height is computed. Moves all child boxes
+     * according to the vertical-align value of the cell and the difference between the original
+     * height (after the cell layout) and the new (required by the row) height. 
+     * @param origHeight the original cell height obtained from the content layout
+     * @param newHeight the cell height required by the row. It should be greater or equal to origHeight.
+     * @param baseline the row's baseline offset
+     */
+    public void applyVerticalAlign(int origHeight, int newHeight, int baseline)
+    {
+        int yofs = 0;
+        CSSProperty.VerticalAlign valign = style.getProperty("vertical-align");
+        if (valign == null) valign = CSSProperty.VerticalAlign.MIDDLE;
+        switch (valign)
+        {
+            case TOP: yofs = 0;
+                      break;
+            case BOTTOM: yofs = newHeight - origHeight;
+                         break;
+            case MIDDLE: yofs = (newHeight - origHeight) / 2;
+                         break;
+            default: yofs = baseline - getFirstInlineBoxBaseline(); //all other values should behave as BASELINE
+                     break;
+        }
+        
+        if (yofs > 0)
+        {
+            for (int i = startChild; i < endChild; i++)
+                getSubBox(i).moveDown(yofs);
+        }
+    }
+
     @Override
     public void computeEfficientMargins()
     {
