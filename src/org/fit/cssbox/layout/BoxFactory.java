@@ -474,6 +474,8 @@ public class BoxFactory
      */
     private ElementBox normalizeBox(ElementBox root)
     {
+        if (root.toString().contains("mojo"))
+            System.out.println("jo!");
         //anonymous inline and block elements if necessary
         if (root.mayContainBlocks() && ((BlockBox) root).containsBlocks())
             createAnonymousBlocks((BlockBox) root);
@@ -492,12 +494,24 @@ public class BoxFactory
         //table columns require a table parent
         createAnonymousBoxes(root,
                              ElementBox.DISPLAY_TABLE_COLUMN,
-                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_TABLE_COLUMN_GROUP, ElementBox.DISPLAY_ANY,
+                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_INLINE_TABLE, ElementBox.DISPLAY_TABLE_COLUMN_GROUP,
                              "table", "table");
         //table row groups require a table parent
         createAnonymousBoxes(root,
                              ElementBox.DISPLAY_TABLE_ROW_GROUP,
-                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_ANY, ElementBox.DISPLAY_ANY,
+                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_INLINE_TABLE, ElementBox.DISPLAY_ANY,
+                             "table", "table");
+        createAnonymousBoxes(root,
+                             ElementBox.DISPLAY_TABLE_HEADER_GROUP,
+                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_INLINE_TABLE, ElementBox.DISPLAY_ANY,
+                             "table", "table");
+        createAnonymousBoxes(root,
+                             ElementBox.DISPLAY_TABLE_FOOTER_GROUP,
+                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_INLINE_TABLE, ElementBox.DISPLAY_ANY,
+                             "table", "table");
+        createAnonymousBoxes(root,
+                             ElementBox.DISPLAY_TABLE_CAPTION,
+                             ElementBox.DISPLAY_TABLE, ElementBox.DISPLAY_INLINE_TABLE, ElementBox.DISPLAY_ANY,
                              "table", "table");
         return root;
     }

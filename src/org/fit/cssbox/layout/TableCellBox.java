@@ -367,8 +367,8 @@ public class TableCellBox extends BlockBox
         Color bg = bgcolor;
         if (bg == null)
         	bg = getOwnerRow().getBgcolor();
-        if (bg == null)
-        	bg = getOwnerColumn().getBgcolor();
+        /*if (bg == null)
+        	bg = getOwnerColumn().getBgcolor();*/
         if (bg == null)
         	bg = getOwnerRow().getOwnerBody().getBgcolor();
         
