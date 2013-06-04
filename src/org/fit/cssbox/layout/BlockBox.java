@@ -1462,7 +1462,7 @@ public class BlockBox extends ElementBox
     {
         //find the first in-flow box
         Box box = null;
-        for (int i = startChild; i < endChild; i++)
+        for (int i = root.startChild; i < root.endChild; i++)
         {
             box = root.getSubBox(i);
             if (box.isInFlow())
