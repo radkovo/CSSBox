@@ -155,6 +155,24 @@ public class BlockTableBox extends BlockBox
     }
     
     @Override
+    public int getMaximalWidth()
+    {
+        if (caption == null)
+            return table.getMaximalWidth();
+        else
+            return Math.max(table.getMaximalWidth(), caption.getMaximalWidth());
+    }
+
+    @Override
+    public int getMinimalWidth()
+    {
+        if (caption == null)
+            return table.getMinimalWidth();
+        else
+            return Math.max(table.getMinimalWidth(), caption.getMinimalWidth());
+    }
+
+    @Override
     protected int getMaximalContentWidth()
     {
         if (caption == null)
