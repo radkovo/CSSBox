@@ -133,9 +133,16 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         float intr;
         if (obj != null)
         {
-            boxw = intw = obj.getIntrinsicWidth();
-            boxh = inth = obj.getIntrinsicHeight();
+            intw = obj.getIntrinsicWidth();
+            inth = obj.getIntrinsicHeight();
+            if (intw == 0 || inth == 0)
+            {
+                System.err.println("BlockReplacedBox: Warning: Obtained a zero intrinsic width or height for " + obj.toString());
+                intw = inth = 1; //a fallback for avoiding zeros in ratios
+            }
             intr = (float) intw / inth;
+            boxw = intw;
+            boxh = inth;
         }
         else
         {
