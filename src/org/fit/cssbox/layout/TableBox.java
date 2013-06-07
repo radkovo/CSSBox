@@ -458,7 +458,7 @@ public class TableBox extends BlockBox
         //System.out.println("remain3:" + remain + " min:" + remainmin);
         
         //set the remaining columns
-        if (remain > 0 && sumnonemin > 0)
+        if (remain > 0 && sumnonemin > 0 && sumnonemax > 0)
         {
             int remainmax = sumnonemax;
             remain += sumnonemin; 
@@ -472,6 +472,8 @@ public class TableBox extends BlockBox
                     col.setColumnWidth(neww);
                     remain -= neww;
                     remainmax -= col.getMaximalWidth();
+                    if (remainmax <= 0 || remain <= 0) //the remaining columns have zero width
+                        break;
                 }
             }
         }
