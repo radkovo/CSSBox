@@ -258,16 +258,21 @@ public class Viewport extends BlockBox
     	    if (src.getBgcolor() == null && config.getUseHTML()) //for HTML, try to use the body
     	        src = getElementBoxByName("body", false);
     	    
-    	    if (src.getBgcolor() != null)
+    	    if (src != null)
     	    {
-    	        bgcolor = src.getBgcolor();
-    	        src.setBgcolor(null);
+        	    if (src.getBgcolor() != null)
+        	    {
+        	        bgcolor = src.getBgcolor();
+        	        src.setBgcolor(null);
+        	    }
+        	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
+        	    {
+        	        bgimages = loadBackgroundImages(src.getStyle());
+        	        src.getBackgroundImages().clear();
+        	    }
     	    }
-    	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
-    	    {
-    	        bgimages = loadBackgroundImages(src.getStyle());
-    	        src.getBackgroundImages().clear();
-    	    }
+    	    else
+    	        System.err.println("Warning: Viewport: couldn't find the HTML <body> element");
 	    }
 	}
 	
