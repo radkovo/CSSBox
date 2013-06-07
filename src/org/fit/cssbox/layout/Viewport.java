@@ -126,10 +126,7 @@ public class Viewport extends BlockBox
     
     public ElementBox getElementBoxByName(String name, boolean case_sensitive)
     {
-        if (rootBox == null)
-            return null;
-        else
-            return recursiveFindElementBoxByName(rootBox, name, case_sensitive);
+        return recursiveFindElementBoxByName(this, name, case_sensitive);
     }
     
 	@Override
