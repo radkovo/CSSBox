@@ -66,6 +66,7 @@ public abstract class DOMSource
                 if (stop == -1)
                     stop = t.length();
                 charset = t.substring(strt, stop).trim();
+                charset = charset.replaceAll("^\"|\"$|^\'|\'$", "").trim();
             }
         }
     }
