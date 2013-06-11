@@ -1,0 +1,84 @@
+<configuration>
+
+	<!--
+		Default CSSBox logback configuration.  
+	 -->
+
+	<!-- CSSBox output to stdout -->
+
+	<appender name="cssbox" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- <encoder> <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} 
+			- %msg%n</pattern> </encoder> -->
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%-4relative %-5level %-25logger{1} - %msg%n</Pattern>
+		</layout>
+	</appender>
+
+	<logger name="org.fit.cssbox" additivity="false">
+		<level value="warn" />
+		<appender-ref ref="cssbox" />
+	</logger>
+
+
+	<!-- jStyleParser output to stdout (by default) or to a log file -->
+
+	<appender name="jstyleparser_file"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>/tmp/jstyleparser.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>/tmp/jstyleparser.%i.log.zip</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>3</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>1024kB</MaxFileSize>
+		</triggeringPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%-4relative %-5level %logger{35} - %msg%n</Pattern>
+		</layout>
+	</appender>
+
+	<appender name="jstyleparser" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%-4relative %-5level %logger{35} - %msg%n</Pattern>
+		</layout>
+	</appender>
+	
+	<logger name="test" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+	<logger name="cz.vutbr.web.css" additivity="false">
+		<level value="error" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+	<logger name="cz.vutbr.web.csskit" additivity="false">
+		<level value="error" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+	<logger name="cz.vutbr.web.csskit.antlr" additivity="false">
+		<level value="error" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+	<logger name="cz.vutbr.web.domassign" additivity="false">
+		<level value="error" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+	<logger name="cz.vutbr.web.domassign.DeclarationTransformer" additivity="false">
+		<level value="error" />
+		<appender-ref ref="jstyleparser" />
+	</logger>
+
+
+	<root>
+		<priority value="warn" />
+		<appender-ref ref="cssbox" />
+	</root>
+
+</configuration>

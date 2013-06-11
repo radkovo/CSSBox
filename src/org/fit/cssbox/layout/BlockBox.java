@@ -26,6 +26,8 @@ import java.util.Vector;
 
 import cz.vutbr.web.css.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 
 
@@ -36,6 +38,8 @@ import org.w3c.dom.*;
  */
 public class BlockBox extends ElementBox
 {
+    private static Logger log = LoggerFactory.getLogger(BlockBox.class);
+    
     public static final CSSProperty.Float FLOAT_NONE = CSSProperty.Float.NONE;
     public static final CSSProperty.Float FLOAT_LEFT = CSSProperty.Float.LEFT;
     public static final CSSProperty.Float FLOAT_RIGHT = CSSProperty.Float.RIGHT;
@@ -1654,7 +1658,7 @@ public class BlockBox extends ElementBox
         
         //containing box sizes
         if (cblock == null)
-            { System.err.println(toString() + " has no cblock"); return; }
+            { log.debug(toString() + " has no cblock"); return; }
         int contw = cblock.getContentWidth();
         int conth = cblock.getContentHeight();
         

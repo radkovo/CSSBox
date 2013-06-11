@@ -23,6 +23,9 @@ import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.vutbr.web.css.CSSProperty;
 
 /**
@@ -32,6 +35,8 @@ import cz.vutbr.web.css.CSSProperty;
  */
 public class CSSStroke implements Stroke
 {
+    private static Logger log = LoggerFactory.getLogger(CSSStroke.class);
+
     private int width;
     private CSSProperty.BorderStyle style;
     private boolean reverse;
@@ -155,7 +160,7 @@ public class CSSStroke implements Stroke
     
     private Shape basicStrokeShape(Shape s)
     {
-    	System.err.println("Warning: CSSStroke: fallback to BasicStroke");
+    	log.debug("Warning: CSSStroke: fallback to BasicStroke");
 		BasicStroke bas = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, width);
 		return bas.createStrokedShape(s);
     }

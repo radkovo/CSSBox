@@ -24,6 +24,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 
 import cz.vutbr.web.css.CSSException;
@@ -42,6 +44,7 @@ import cz.vutbr.web.domassign.StyleMap;
  */
 public class DOMAnalyzer 
 {
+    private static Logger log = LoggerFactory.getLogger(DOMAnalyzer.class);
 	private static final String DEFAULT_MEDIA = "screen";
 	
     private Document doc;   //the root node of the DOM tree
@@ -112,9 +115,9 @@ public class DOMAnalyzer
             {
                 try {
                     this.baseUrl = new URL(baseUrl, docbase);
-                    System.err.println("DOMAnalyzer: Using specified document base " + this.baseUrl);
+                    log.info("Using specified document base " + this.baseUrl);
                 } catch (MalformedURLException e) {
-                    System.err.println("DOMAnalyzer: error: malformed base URL " + docbase);
+                    log.warn("Malformed base URL " + docbase);
                 }
             }
         }
@@ -343,9 +346,9 @@ public class DOMAnalyzer
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
         } catch (IOException e) {
-            System.err.println("DOMAnalyzer: I/O Error: "+e.getMessage());
+            log.error("I/O Error: "+e.getMessage());
         } catch (CSSException e) {
-            System.err.println("DOMAnalyzer: CSS Error: "+e.getMessage());
+            log.error("CSS Error: "+e.getMessage());
         }
     }
     
@@ -378,9 +381,9 @@ public class DOMAnalyzer
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
 	    } catch (IOException e) {
-            System.err.println("DOMAnalyzer: I/O Error: "+e.getMessage());
+            log.error("I/O Error: "+e.getMessage());
         } catch (CSSException e) {
-            System.err.println("DOMAnalyzer: CSS Error: "+e.getMessage());
+            log.error("DOMAnalyzer: CSS Error: "+e.getMessage());
         }
     }
 	

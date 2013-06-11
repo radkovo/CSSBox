@@ -23,6 +23,8 @@ import java.awt.*;
 
 import cz.vutbr.web.css.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -35,6 +37,8 @@ import org.w3c.dom.Element;
  */
 public class TableColumn extends BlockBox
 {
+    private static Logger log = LoggerFactory.getLogger(TableColumn.class);
+
     /** Column span taken from the 'span' attribute (default 1) */
     protected int span;
     
@@ -132,7 +136,7 @@ public class TableColumn extends BlockBox
             wset = true;
         } catch (NumberFormatException e) {
             if (!width.equals(""))
-                System.err.println("tableColumn: Invalid width value: " + width);
+                log.warn("Invalid width value: " + width);
         }
     }
 
@@ -275,7 +279,7 @@ public class TableColumn extends BlockBox
             else
                 span = 1;
         } catch (NumberFormatException e) {
-            System.err.println("tableColumn: Invalid span value: " + el.getAttribute("span"));
+            log.warn("Invalid span value: " + el.getAttribute("span"));
         }
         setSpecifiedWidth(el.getAttribute("width"));
     }

@@ -36,6 +36,8 @@ import cz.vutbr.web.css.CSSProperty.ZIndex;
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.misc.CSSStroke;
 import org.fit.net.DataURLHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 
 /**
@@ -47,6 +49,8 @@ import org.w3c.dom.*;
  */
 abstract public class ElementBox extends Box
 {
+    private static Logger log = LoggerFactory.getLogger(ElementBox.class);
+    
     public static final CSSProperty.Display DISPLAY_ANY = null;
     public static final CSSProperty.Display DISPLAY_NONE = CSSProperty.Display.NONE;
     public static final CSSProperty.Display DISPLAY_INLINE = CSSProperty.Display.INLINE;
@@ -567,7 +571,7 @@ abstract public class ElementBox extends Box
             if (formsStackingContext())
                 scontext = new StackingContext(this);
             else
-                System.err.println("ElementBox: getStackingContext: Warning: obtaining a stacking context from element that does not create one");
+                log.warn("getStackingContext: obtaining a stacking context from element that does not create one");
         }
         return scontext;
     }
@@ -1344,7 +1348,7 @@ abstract public class ElementBox extends Box
                 bgimages.add(bgimg);
                 return bgimages;
             } catch (MalformedURLException e) {
-                System.err.println("BackgroundImage: Warning: " + e.getMessage());
+                log.warn(e.getMessage());
                 return null;
             }
         }

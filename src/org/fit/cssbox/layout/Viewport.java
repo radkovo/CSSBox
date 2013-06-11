@@ -22,6 +22,8 @@ import java.awt.*;
 import java.util.Vector;
 
 import org.fit.cssbox.render.BoxRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSFactory;
@@ -35,6 +37,8 @@ import cz.vutbr.web.css.CSSFactory;
  */
 public class Viewport extends BlockBox
 {
+    private static Logger log = LoggerFactory.getLogger(Viewport.class);
+    
 	private int width;
 	private int height;
 	protected BrowserConfig config;
@@ -136,7 +140,7 @@ public class Viewport extends BlockBox
         if (box instanceof ElementBox && ((ElementBox) box).getElement() == root)
         {
             if (rootBox != null)
-                System.err.println("Viewport warning: another root box '" + box + "' in addition to previous '" + rootBox + "'");
+                log.debug("Viewport warning: another root box '" + box + "' in addition to previous '" + rootBox + "'");
             box.makeRoot();
             rootBox = (ElementBox) box;
         }
@@ -269,7 +273,7 @@ public class Viewport extends BlockBox
         	    }
     	    }
     	    else
-    	        System.err.println("Warning: Viewport: couldn't find the HTML <body> element");
+    	        log.debug("Couldn't find the HTML <body> element");
 	    }
 	}
 	

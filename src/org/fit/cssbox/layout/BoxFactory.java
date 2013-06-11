@@ -29,6 +29,8 @@ import java.util.Vector;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DocumentSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -62,6 +64,8 @@ import cz.vutbr.web.css.Selector.PseudoDeclaration;
  */
 public class BoxFactory
 {
+    private static Logger log = LoggerFactory.getLogger(BoxFactory.class);
+
     protected BrowserConfig config;
     protected HTMLBoxFactory html;
     
@@ -161,7 +165,7 @@ public class BoxFactory
         viewport.setConfig(config);
         BoxTreeCreationStatus stat = new BoxTreeCreationStatus(viewport);
         createSubtree(root, stat);
-        System.out.println("Root box is: " + viewport.getRootBox());
+        log.debug("Root box is: " + viewport.getRootBox());
         
         return viewport;
     }
@@ -881,7 +885,7 @@ public class BoxFactory
             Constructor<? extends DocumentSource> constr = config.getDocumentSourceClass().getConstructor(URL.class, String.class);
             return constr.newInstance(base, urlstring);
         } catch (Exception e) {
-            System.err.println("BoxFactory: Warning: could not create the DocumentSource instance: " + e.getMessage());
+            log.warn("Could not create the DocumentSource instance: " + e.getMessage());
             return null;
         }
     }
@@ -899,7 +903,7 @@ public class BoxFactory
             Constructor<? extends DOMSource> constr = config.getDOMSourceClass().getConstructor(DocumentSource.class);
             return constr.newInstance(src);
         } catch (Exception e) {
-            System.err.println("BoxFactory: Warning: could not create the DOMSource instance: " + e.getMessage());
+            log.warn("BoxFactory: Warning: could not create the DOMSource instance: " + e.getMessage());
             return null;
         }
     }

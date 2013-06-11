@@ -31,6 +31,8 @@ import cz.vutbr.web.css.NodeData;
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DocumentSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -41,6 +43,8 @@ import org.xml.sax.SAXException;
  */
 public class HTMLBoxFactory
 {
+    private static Logger log = LoggerFactory.getLogger(HTMLBoxFactory.class);
+
     private BoxFactory factory;
     private Set<String> supported;
     
@@ -132,7 +136,7 @@ public class HTMLBoxFactory
                     if (mime == null || mime.isEmpty())
                         mime = "text/html";
                 }
-                System.out.println("ctype=" + mime);
+                log.debug("ctype=" + mime);
                 
                 ReplacedContent content = null;
                 if (mime.startsWith("image/"))
@@ -141,7 +145,7 @@ public class HTMLBoxFactory
                 }
                 else if (mime.equals("text/html"))
                 {
-                    System.out.println("Parsing: " + src.getURL()); 
+                    log.info("Parsing: " + src.getURL()); 
                     DOMSource parser = new DefaultDOMSource(src);
                     Document doc = parser.parse();
                     String encoding = parser.getCharset();

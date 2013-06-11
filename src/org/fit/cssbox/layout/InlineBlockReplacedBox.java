@@ -24,6 +24,8 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSProperty;
@@ -34,6 +36,8 @@ import cz.vutbr.web.css.CSSProperty;
  */
 public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBox
 {
+    private static Logger log = LoggerFactory.getLogger(InlineBlockReplacedBox.class);
+    
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
@@ -211,13 +215,13 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
             if (!el.getAttribute("width").equals(""))
                 atrw = HTMLNorm.computeAttributeLength(el.getAttribute("width"), twidth);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid width value: " + el.getAttribute("width"));
+            log.warn("Invalid width value: " + el.getAttribute("width"));
         }
         try {
             if (!el.getAttribute("height").equals(""))
                 atrh = HTMLNorm.computeAttributeLength(el.getAttribute("height"), theight);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid height value: " + el.getAttribute("width"));
+            log.warn("Invalid height value: " + el.getAttribute("width"));
         }
         //apply intrinsic ration when necessary
         if (atrw == -1 && atrh == -1)

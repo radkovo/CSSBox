@@ -24,6 +24,8 @@ import java.awt.Graphics2D;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -32,6 +34,8 @@ import org.w3c.dom.Element;
  */
 public class TableCaptionBox extends BlockBox
 {
+    private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
+
     /**
      * Create a new table caption
      */
@@ -60,7 +64,7 @@ public class TableCaptionBox extends BlockBox
         
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
         if (cblock == null && cblock.getContainingBlock() != null)
-            { System.err.println(toString() + " has no cblock"); return; }
+            { log.debug(toString() + " has no cblock"); return; }
         contw = cblock.getContainingBlock().getContentWidth();
         
         boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;

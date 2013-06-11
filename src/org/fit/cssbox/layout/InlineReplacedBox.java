@@ -22,6 +22,8 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 import cz.vutbr.web.css.*;
 
@@ -32,6 +34,8 @@ import cz.vutbr.web.css.*;
  */
 public class InlineReplacedBox extends InlineBox implements ReplacedBox
 {
+    protected static Logger log = LoggerFactory.getLogger(InlineReplacedBox.class);
+    
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
@@ -187,7 +191,7 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
             inth = obj.getIntrinsicHeight();
             if (intw == 0 || inth == 0)
             {
-                System.err.println("InlineReplacedBox: Warning: Obtained a zero intrinsic width or height for " + obj.toString());
+                log.warn("InlineReplacedBox: Warning: Obtained a zero intrinsic width or height for " + obj.toString());
                 intw = inth = 1; //a fallback for avoiding zeros in ratios
             }
             intr = (float) intw / inth;
@@ -212,13 +216,13 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
             if (!el.getAttribute("width").equals(""))
                 atrw = HTMLNorm.computeAttributeLength(el.getAttribute("width"), twidth);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid width value: " + el.getAttribute("width"));
+            log.warn("Invalid width value: " + el.getAttribute("width"));
         }
         try {
             if (!el.getAttribute("height").equals(""))
                 atrh = HTMLNorm.computeAttributeLength(el.getAttribute("height"), theight);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid height value: " + el.getAttribute("width"));
+            log.warn("Invalid height value: " + el.getAttribute("width"));
         }
         //apply intrinsic ration when necessary
         if (atrw == -1 && atrh == -1)

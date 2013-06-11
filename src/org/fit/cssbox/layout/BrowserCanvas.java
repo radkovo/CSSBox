@@ -25,6 +25,9 @@ import java.awt.image.*;
 import java.net.URL;
 
 import javax.swing.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -40,6 +43,7 @@ import org.fit.cssbox.render.GraphicsRenderer;
 public class BrowserCanvas extends JPanel
 {
 	private static final long serialVersionUID = -8715215920271505397L;
+    private static Logger log = LoggerFactory.getLogger(BrowserCanvas.class);
 
 	protected Element root;
     protected DOMAnalyzer decoder;
@@ -136,24 +140,24 @@ public class BrowserCanvas extends JPanel
             img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         Graphics2D ig = img.createGraphics();
         
-        System.err.println("Creating boxes");
+        log.trace("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, baseurl);
         factory.setConfig(config);
         factory.reset();
         VisualContext ctx = new VisualContext(null, factory);
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
-        System.err.println("We have " + factory.next_order + " boxes");
+        log.trace("We have " + factory.next_order + " boxes");
         viewport.initSubtree();
         
-        System.err.println("Layout for "+dim.width+"px");
+        log.trace("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
-        System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+        log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
         if (autoSizeUpdate)
         {
-            System.err.println("Updating viewport size");
+            log.trace("Updating viewport size");
             viewport.updateBounds(dim);
-            System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+            log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
         }
         
         if (createImage && (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height))
@@ -164,7 +168,7 @@ public class BrowserCanvas extends JPanel
             ig = img.createGraphics();
         }
         
-        System.err.println("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
+        log.trace("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
         viewport.absolutePositions();
         
         clearCanvas();

@@ -26,6 +26,8 @@ import java.awt.Graphics2D;
 import cz.vutbr.web.css.*;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -34,6 +36,8 @@ import org.w3c.dom.Element;
  */
 public class TableCellBox extends BlockBox
 {
+    private static Logger log = LoggerFactory.getLogger(TableCellBox.class);
+
     protected int colspan;
     protected int rowspan;
     
@@ -271,7 +275,7 @@ public class TableCellBox extends BlockBox
         
         //containing box sizes
         if (cblock == null)
-            { System.err.println(toString() + " has no cblock"); return; }
+            { log.debug(toString() + " has no cblock"); return; }
         int contw = cblock.getContentWidth();
         
         //Borders
@@ -443,7 +447,7 @@ public class TableCellBox extends BlockBox
             else
                 rowspan = 1;
         } catch (NumberFormatException e) {
-            System.err.println("Invalid width value: " + e.getMessage());
+            log.warn("Invalid width value: " + e.getMessage());
         }
     }
     

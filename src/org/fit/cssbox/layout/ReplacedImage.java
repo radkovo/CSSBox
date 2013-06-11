@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.fit.net.DataURLHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents an image as the contents of a replaced element.
@@ -36,6 +38,8 @@ import org.fit.net.DataURLHandler;
  */
 public class ReplacedImage extends ContentImage
 {
+    private static Logger log = LoggerFactory.getLogger(ReplacedImage.class);
+
     /** Default image width of 20 px, used when there are no image data */
     protected final int DEFAULT_IMAGE_WIDTH = 20;
     /** Default image height of 20 px, used when there are no image data */
@@ -75,11 +79,11 @@ public class ReplacedImage extends ContentImage
                 image = loadImage(caching);
             }
         } catch (MalformedURLException e) {
-            System.err.println("ReplacedImage: URL: " + e.getMessage());
+            log.error("URL: " + e.getMessage());
             image = null;
             url = null;
         } catch (IllegalArgumentException e) {
-            System.err.println("ReplacedImage: Format error: " + e.getMessage());
+            log.error("Format error: " + e.getMessage());
             image = null;
         }
 

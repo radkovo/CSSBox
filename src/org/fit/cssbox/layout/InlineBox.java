@@ -22,6 +22,8 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 import cz.vutbr.web.css.*;
 
@@ -32,6 +34,8 @@ import cz.vutbr.web.css.*;
  */
 public class InlineBox extends ElementBox implements InlineElement
 {
+    private static Logger log = LoggerFactory.getLogger(InlineBox.class);
+    
     /** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;
     
@@ -286,7 +290,7 @@ public class InlineBox extends ElementBox implements InlineElement
                         lineBreakStop = true;
                 }
                 else
-                	System.err.println("Warning: doLayout(): subbox is not inline: " + subbox);
+                	log.debug("Warning: doLayout(): subbox is not inline: " + subbox);
                 if (subbox.getRest() != null) //is there anything remaining?
                 {
                     InlineBox rbox = copyBox();
@@ -592,7 +596,7 @@ public class InlineBox extends ElementBox implements InlineElement
         CSSDecoder dec = new CSSDecoder(ctx);
         
         if (cblock == null)
-            System.err.println(this + " has no cblock");
+            log.debug(this + " has no cblock");
         
         //containing box sizes
         int contw = cblock.getContentWidth();

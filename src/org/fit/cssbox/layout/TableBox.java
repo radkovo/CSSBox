@@ -23,6 +23,8 @@ import java.awt.Graphics2D;
 import java.util.*;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import cz.vutbr.web.css.*;
 
@@ -34,6 +36,8 @@ import cz.vutbr.web.css.*;
  */
 public class TableBox extends BlockBox
 {
+    private static Logger log = LoggerFactory.getLogger(TableBox.class);
+    
 	private final int DEFAULT_SPACING = 2;
 	
     protected TableBodyBox header;
@@ -193,7 +197,7 @@ public class TableBox extends BlockBox
 
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
         if (cblock == null && cblock.getContainingBlock() != null)
-            { System.err.println(toString() + " has no cblock"); return; }
+            { log.debug(toString() + " has no cblock"); return; }
         contw = cblock.getContainingBlock().getContentWidth();
         
         if (width == null) auto = true;
@@ -229,7 +233,7 @@ public class TableBox extends BlockBox
         
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
         if (cblock == null && cblock.getContainingBlock() != null)
-            { System.err.println(toString() + " has no cblock"); return; }
+            { log.debug(toString() + " has no cblock"); return; }
         contw = cblock.getContainingBlock().getContentWidth();
         conth = cblock.getContainingBlock().getContentHeight();
         

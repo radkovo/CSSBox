@@ -25,6 +25,8 @@ import java.net.URL;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -34,6 +36,8 @@ import org.w3c.dom.Document;
  */
 public class ReplacedText extends ReplacedContent
 {
+    private static Logger log = LoggerFactory.getLogger(ReplacedText.class);
+
     private Document doc;
     private URL base;
     private String encoding;
@@ -95,7 +99,6 @@ public class ReplacedText extends ReplacedContent
     @Override
     public void doLayout()
     {
-        System.out.println("LAYOUT");
         layoutDimension = new Dimension(owner.getContent()); //use owner content size for dimension
         checkLayout();
     }
@@ -146,7 +149,6 @@ public class ReplacedText extends ReplacedContent
         Dimension dim = getLayoutDimension();
         if (currentDimension == null || !currentDimension.equals(dim)) //the dimension has changed
         {
-            System.out.println("UPDATE: " + dim);
             createLayout(dim);
             //containing box for the new viewport
             BlockBox cblock = (owner instanceof BlockBox) ? (BlockBox) owner : owner.getContainingBlock();
@@ -156,7 +158,6 @@ public class ReplacedText extends ReplacedContent
             owner.removeAllSubBoxes();
             owner.addSubBox(viewport);
             currentDimension = new Dimension(dim);
-            System.out.println("DONE");
         }
     }
     
@@ -164,19 +165,19 @@ public class ReplacedText extends ReplacedContent
     {
         VisualContext ctx = new VisualContext(null, getOwner().getViewport().getFactory());
         
-        System.err.println("Creating boxes");
+        log.trace("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, base);
         factory.setConfig(owner.getViewport().getConfig());
         factory.reset();
         viewport = factory.createViewportTree(decoder.getRoot(), owner.getGraphics(), ctx, dim.width, dim.height);
-        System.err.println("We have " + factory.next_order + " boxes");
+        log.trace("We have " + factory.next_order + " boxes");
         viewport.initSubtree();
         
-        System.err.println("Layout for "+dim.width+"px");
+        log.trace("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
-        System.err.println("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
+        log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
 
-        System.err.println("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
+        log.trace("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
         viewport.absolutePositions();
     }
     
