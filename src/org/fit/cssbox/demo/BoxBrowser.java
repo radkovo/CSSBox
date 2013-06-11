@@ -135,7 +135,6 @@ public class BoxBrowser
             DocumentSource docSource = new DefaultDocumentSource(urlstring);
             urlText.setText(docSource.getURL().toString());
             
-            System.out.println("Parsing: " + urlstring); 
             DOMSource parser = new DefaultDOMSource(docSource);
             Document doc = parser.parse();
             String encoding = parser.getCharset();
