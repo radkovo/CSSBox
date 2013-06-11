@@ -122,4 +122,10 @@ public class ReplacedImage extends ContentImage
 
     }
 
+    @Override
+    public String toString()
+    {
+        return "ReplacedImage [url=" + url + "]";
+    }
+    
 }
