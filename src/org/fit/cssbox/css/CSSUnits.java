@@ -34,7 +34,7 @@ public class CSSUnits
 {
     //public static final double dpi = 100;  //100 DPI display
     public static final double dpi = GraphicsEnvironment.isHeadless() ? 100 : Toolkit.getDefaultToolkit().getScreenResolution();
-    public static final double medium_font = 16;
+    public static final double medium_font = 16; //16px
     private static final double font_step = 1.2;
     public static final int THIN_BORDER = 1;
     public static final int MEDIUM_BORDER = 3;
@@ -53,10 +53,10 @@ public class CSSUnits
     }
     
     /** 
-     * Converts the font size given by an identifier to absolute length in points.
+     * Converts the font size given by an identifier to absolute length in pixels.
      * @param parent Parent font size (taken as 1em)
      * @param value The size specification to be converted
-     * @return absolute font size in pt 
+     * @return absolute font size in px
      */
     public static double convertFontSize(double parent, CSSProperty.FontSize value)
     {

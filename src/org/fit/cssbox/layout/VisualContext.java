@@ -42,6 +42,7 @@ public class VisualContext
     private BoxFactory factory; //the factory used for obtaining current configuration
     private Font font; //current font
     private FontMetrics fm; //current font metrics
+    private double fontSize;
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
@@ -59,7 +60,8 @@ public class VisualContext
         em = CSSUnits.medium_font;
         ex = 0.6 * em;
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
-        font = new Font(Font.SERIF, Font.PLAIN, (int)((CSSUnits.medium_font * 72) / dpi)); //convert medium font to pixels
+        font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
+        fontSize = CSSUnits.points(CSSUnits.medium_font);
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
@@ -74,6 +76,7 @@ public class VisualContext
         ret.ex = ex;
         ret.dpi = dpi;
         ret.font = font;
+        ret.fontSize = fontSize;
         ret.fontWeight = fontWeight;
         ret.fontStyle = fontStyle;
         ret.fontVariant = fontVariant;
@@ -90,12 +93,21 @@ public class VisualContext
     }
     
     /**
-     * The font used for the box.
+     * The AWT font used for the box.
      * @return current font
      */
     public Font getFont()
     {
         return font;
+    }
+
+    /**
+     * Obtains the specified font size in pt.
+     * @return the font size in pt
+     */
+    public double getFontSize()
+    {
+        return fontSize;
     }
     
     /**
@@ -218,6 +230,7 @@ public class VisualContext
         }
         else
             size = CSSUnits.convertFontSize(psize, fsize);
+        fontSize = CSSUnits.points(size);
         
         CSSProperty.FontWeight weight = style.getProperty("font-weight");
         if (weight != null) fontWeight = weight;
