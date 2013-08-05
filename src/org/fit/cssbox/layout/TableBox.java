@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.util.*;
 
 import org.fit.cssbox.css.HTMLNorm;
+import org.fit.cssbox.layout.Box.DrawStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -297,6 +298,18 @@ public class TableBox extends BlockBox
             if (m > ret) ret = m;
         }
         return ret;
+    }
+    
+    @Override
+    protected void drawChildren(DrawStage turn)
+    {
+        //Draw only the bodies, ignore the remaining children
+        if (header != null)
+            header.draw(turn);
+        for (TableBodyBox body : bodies)
+            body.draw(turn);
+        if (footer != null)
+            footer.draw(turn);
     }
     
     //====================================================================================
