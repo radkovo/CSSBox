@@ -21,6 +21,9 @@ package org.fit.cssbox.demo;
 import javax.swing.*;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import org.fit.cssbox.css.CSSNorm;
@@ -64,8 +67,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.FlowLayout;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTabbedPane;
+
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.Declaration;
+import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.Term;
 
 /**
  * This demo implements a browser that displays the rendered box tree and the
@@ -101,12 +108,12 @@ public class BoxBrowser
     protected JPanel infoPanel = null;
     protected JScrollPane infoScroll = null;
     protected JTable infoTable = null;
-    protected JScrollPane styleScroll = null;
-    protected JTextArea styleText = null;
     protected JTabbedPane treeTabs = null;
     protected JPanel DOMPanel = null;
     protected JScrollPane domScroll = null;
     protected JTree domTree = null;
+    private JList styleList;
+    private JScrollPane styleScroll;
     
 
     public BoxBrowser()
@@ -336,7 +343,52 @@ public class BoxBrowser
         infoTable.setModel(tab);
         
         if (box instanceof ElementBox)
-            styleText.setText(((ElementBox) box).getStyleString());
+        {
+            NodeData style = ((ElementBox) box).getStyle();
+            List<String> names = new ArrayList<String>(style.getPropertyNames());
+            Collections.sort(names);
+            StyleListItem[] items = new StyleListItem[names.size()];
+            int i = 0;
+            for (String name : names)
+            {
+                CSSProperty prop = style.getProperty(name);
+                Term<?> value = style.getValue(name, true);
+                Declaration d = style.getSourceDeclaration(name);
+                
+                String text = name + ": ";
+                if (value != null)
+                    text += value.toString();
+                else
+                    text += prop.toString();
+                
+                String srcd = (d == null) ? "???" : d.toString();
+                String src = (d != null && d.getSource() != null) ? d.getSource().toString() : "<unknown>";
+                items[i++] = new StyleListItem(text, src + " - " + srcd);
+            }
+            styleList.setListData(items);
+        }
+    }
+    
+    class StyleListItem
+    {
+        private String text;
+        private String tooltip;
+
+        public StyleListItem(String text, String tooltip)
+        {
+            this.text = text;
+            this.tooltip = tooltip;
+        }
+
+        public String getToolTipText()
+        {
+            return tooltip;
+        }
+
+        public String toString()
+        {
+            return text;
+        }
     }
     
     private Vector<String> infoTableData(String prop, String value)
@@ -781,7 +833,7 @@ public class BoxBrowser
             infoPanel = new JPanel();
             infoPanel.setLayout(gridLayout2);
             infoPanel.add(getInfoScroll(), null);
-            infoPanel.add(getStyleScroll(), null);
+            infoPanel.add(getStyleScroll());
         }
         return infoPanel;
     }
@@ -816,36 +868,6 @@ public class BoxBrowser
     }
 
     /**
-     * This method initializes styleScroll	
-     * 	
-     * @return javax.swing.JScrollPane	
-     */
-    private JScrollPane getStyleScroll()
-    {
-        if (styleScroll == null)
-        {
-            styleScroll = new JScrollPane();
-            styleScroll.setViewportView(getStyleText());
-        }
-        return styleScroll;
-    }
-
-    /**
-     * This method initializes styleText	
-     * 	
-     * @return javax.swing.JTextArea	
-     */
-    private JTextArea getStyleText()
-    {
-        if (styleText == null)
-        {
-            styleText = new JTextArea();
-            styleText.setEditable(false);
-        }
-        return styleText;
-    }
-
-    /**
      * This method initializes treeTabs	
      * 	
      * @return javax.swing.JTabbedPane	
@@ -859,6 +881,34 @@ public class BoxBrowser
             treeTabs.addTab("DOM Tree", null, getDOMPanel(), null);
         }
         return treeTabs;
+    }
+
+    private JList getStyleList() {
+        if (styleList == null) {
+            styleList = new JList() {
+                private static final long serialVersionUID = 1L;
+                public String getToolTipText(MouseEvent e) {
+                       int index = locationToIndex(e.getPoint());
+                       if (-1 < index) {
+                         StyleListItem item = (StyleListItem) getModel().getElementAt(
+                             index);
+                         return item.getToolTipText();
+                       } else {
+                         //return super.getToolTipText();
+                         return null;
+                       }
+                     }
+                   };
+        }
+        return styleList;
+    }
+    
+    private JScrollPane getStyleScroll() {
+        if (styleScroll == null) {
+            styleScroll = new JScrollPane();
+            styleScroll.setViewportView(getStyleList());
+        }
+        return styleScroll;
     }
 
     /**
@@ -920,5 +970,4 @@ public class BoxBrowser
         main.setSize(1200,600);
         main.setVisible(true);
     }
-
 }
