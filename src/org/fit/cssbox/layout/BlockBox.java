@@ -398,11 +398,6 @@ public class BlockBox extends ElementBox
     		//when the height is fixed to zero, margins are adjoining
     		return content.height == 0;
     	}
-    	else if (!anyinflow)
-    	{
-    		//no in-flow elements
-    		return true;
-    	}
     	else
     	{
     		//margins can be separated by contents
