@@ -811,6 +811,7 @@ public class BoxBrowser
         if (infoSplitter == null)
         {
             infoSplitter = new JSplitPane();
+            infoSplitter.setResizeWeight(1.0);
             infoSplitter.setDividerLocation(800);
             infoSplitter.setLeftComponent(getContentPanel());
             infoSplitter.setRightComponent(getInfoPanel());
