@@ -42,8 +42,11 @@ import org.fit.cssbox.layout.Inline;
 import org.fit.cssbox.layout.InlineElement;
 import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 
 import javax.swing.JSplitPane;
@@ -73,6 +76,8 @@ import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Declaration;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Term;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
 
 /**
  * This demo implements a browser that displays the rendered box tree and the
@@ -83,6 +88,7 @@ import cz.vutbr.web.css.Term;
 public class BoxBrowser
 {
     protected DefaultMutableTreeNode root;
+    protected DefaultMutableTreeNode domRoot;
     protected BrowserConfig config;
     public static BoxBrowser browser;
     
@@ -180,7 +186,8 @@ public class BoxBrowser
             boxTree.setModel(new DefaultTreeModel(root));
             
             //dom tree
-            domTree.setModel(new DefaultTreeModel(createDomTree(doc)));
+            domRoot = createDomTree(doc);
+            domTree.setModel(new DefaultTreeModel(domRoot));
             
             //=============================================================================
             return docSource.getURL();
@@ -214,7 +221,29 @@ public class BoxBrowser
      */
     protected DefaultMutableTreeNode createDomTree(Node root)
     {
-        DefaultMutableTreeNode ret = new DefaultMutableTreeNode(root);
+        DefaultMutableTreeNode ret = new DefaultMutableTreeNode(root) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String toString()
+            {
+                Object o = getUserObject();
+                if (o instanceof Element)
+                {
+                    Element el = (Element) getUserObject();
+                    String ret = "<" + el.getNodeName(); 
+                    NamedNodeMap attrs = el.getAttributes();
+                    for (int i = 0; i < attrs.getLength(); i++)
+                        ret += " " + attrs.item(i).getNodeName() + "=\"" + attrs.item(i).getNodeValue() + "\"";
+                    ret += ">";
+                    return ret;
+                }
+                else if (o instanceof Text)
+                    return ((Text) o).getNodeValue();
+                else
+                    return super.toString();
+            }
+        };
         NodeList child = root.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
             ret.add(createDomTree(child.item(i)));
@@ -254,6 +283,25 @@ public class BoxBrowser
         return found;
 	}
 	
+    /**
+     * Locates a DOM node in the DOM tree
+     */
+    private DefaultMutableTreeNode locateObjectInTree(DefaultMutableTreeNode root, Object obj)
+    {
+        if (root.getUserObject().equals(obj))
+            return root;
+        else
+        {
+            for (int i = 0; i < root.getChildCount(); i++)
+            {
+                DefaultMutableTreeNode ret = locateObjectInTree((DefaultMutableTreeNode) root.getChildAt(i), obj); 
+                if (ret != null)
+                    return ret;
+            }
+            return null;
+        }
+    }
+    
     /** 
      * This is called when the browser canvas is clicked
      */
@@ -266,6 +314,22 @@ public class BoxBrowser
             boxTree.setSelectionPath(select);
             boxTree.expandPath(select);
             boxTree.scrollPathToVisible(select);
+            
+            if (node.getUserObject() instanceof Box)
+            {
+                Node domNode = ((Box) node.getUserObject()).getNode();
+                if (domNode != null)
+                {
+                    DefaultMutableTreeNode dt = locateObjectInTree(domRoot, domNode);
+                    if (dt != null)
+                    {
+                        TreePath dselect = new TreePath(dt.getPath());
+                        domTree.setSelectionPath(dselect);
+                        domTree.expandPath(dselect);
+                        domTree.scrollPathToVisible(dselect);
+                    }
+                }
+            }
         }
     }
 
@@ -793,6 +857,18 @@ public class BoxBrowser
                             box.drawExtent(((BrowserCanvas) contentCanvas).getImageGraphics());
                             contentCanvas.repaint();
                             displayBoxInfo(box);
+                            
+                            if (box.getNode() != null)
+                            {
+                                DefaultMutableTreeNode dt = locateObjectInTree(domRoot, box.getNode());
+                                if (dt != null)
+                                {
+                                    TreePath dselect = new TreePath(dt.getPath());
+                                    domTree.setSelectionPath(dselect);
+                                    domTree.expandPath(dselect);
+                                    domTree.scrollPathToVisible(dselect);
+                                }
+                            }
                         }
                     }
                 }
@@ -957,6 +1033,23 @@ public class BoxBrowser
         if (domTree == null)
         {
             domTree = new JTree();
+            domTree.addTreeSelectionListener(new TreeSelectionListener() 
+            {
+                public void valueChanged(TreeSelectionEvent e) 
+                {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) domTree.getLastSelectedPathComponent();
+                    /*if (node != null)
+                    {
+                        Box box = (Box) node.getUserObject();
+                        if (box != null)
+                        {
+                            box.drawExtent(((BrowserCanvas) contentCanvas).getImageGraphics());
+                            contentCanvas.repaint();
+                            displayBoxInfo(box);
+                        }
+                    }*/
+                }
+            });
         }
         return domTree;
     }
