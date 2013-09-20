@@ -1278,7 +1278,7 @@ public class BlockBox extends ElementBox
      * from the reference box (if any) */
     private void updateStaticPosition()
     {
-        if (absReference != null && cblock != null)
+        if (absReference != null)
         {
             //compute the bounds of the reference box relatively to our containing block
             Rectangle ab = new Rectangle(absReference.getAbsoluteBounds());
@@ -1288,19 +1288,14 @@ public class BlockBox extends ElementBox
             //position relatively to the border edge
             if (topstatic)
             {
-                if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //not-floating boxes
+                if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //not-floating boxes: place below
                     coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
-                else //floating blocks
+                else //floating blocks: place top-aligned
                     coords.top = ab.y - cblock.emargin.top - cblock.border.top;
             }
             if (leftstatic)
             {
-                if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //non-floating boxes
-                    coords.left = ab.x - cblock.emargin.left - cblock.border.left;
-                else if (((BlockBox) absReference).getFloating() == FLOAT_LEFT) //float:left
-                    coords.left = ab.x + ab.width - 1 - cblock.emargin.left - cblock.border.left;
-                else //float:right
-                    coords.left = cblock.padding.left;
+                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
             }
         }
         else //no reference box - use the top/left content corner
