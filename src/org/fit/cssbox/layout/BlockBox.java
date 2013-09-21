@@ -152,6 +152,10 @@ public class BlockBox extends ElementBox
      * when some of the absolute coordinates are based on the static position */
     protected Box absReference;
     
+    /** Parent box according to DOM. It's used for absolutely positioned boxes
+     * where the actual parent box is determined in different way. */
+    protected ElementBox domParent;
+    
     /** Text-align property */
     protected CSSProperty.TextAlign align;
     
@@ -499,9 +503,23 @@ public class BlockBox extends ElementBox
         return preferredWidth;
     }
     
+    /**
+     * Obtains the reference box for absolutely positioned boxes. It is used
+     * when some of the absolute coordinates are based on the static position.
+     */
     public Box getAbsReference()
     {
         return absReference;
+    }
+    
+    /**
+     * Obtains the parent box according to DOM. It's used for absolutely positioned
+     * boxes where the actual parent box obtained using {@link Box#getParent()} is 
+     * determined in a different way.
+     */
+    public ElementBox getDomParent()
+    {
+        return domParent;
     }
     
     /**

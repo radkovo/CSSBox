@@ -364,8 +364,9 @@ public class BoxFactory
             }
             else //positioned box
             {
-                newbox.getContainingBlock().addSubBox(newbox);
+                ((BlockBox) newbox).domParent = newbox.getParent(); //set the DOM parent
                 ((BlockBox) newbox).absReference = stat.lastinflow; //set the reference box for computing the static position
+                newbox.getContainingBlock().addSubBox(newbox);
             }
         }
         else //inline elements -- always in flow
