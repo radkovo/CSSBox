@@ -1038,7 +1038,7 @@ public class BoxBrowser
             {
                 public void valueChanged(TreeSelectionEvent e) 
                 {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) domTree.getLastSelectedPathComponent();
+                    //DefaultMutableTreeNode node = (DefaultMutableTreeNode) domTree.getLastSelectedPathComponent();
                     /*if (node != null)
                     {
                         Box box = (Box) node.getUserObject();

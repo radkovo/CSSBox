@@ -1316,8 +1316,27 @@ public class BlockBox extends ElementBox
                 coords.left = ab.x - cblock.emargin.left - cblock.border.left;
             }
         }
-        else //no reference box - use the top/left content corner
+        else if (domParent != null) //no reference box, we are probably the first box in our parent
         {
+            //compute the bounds of the reference box relatively to our containing block
+            Rectangle ab = new Rectangle(domParent.getAbsoluteBounds());
+            Rectangle cb = cblock.getAbsoluteBounds();
+            ab.x = ab.x - cb.x;
+            ab.y = ab.y - cb.y;
+            //position relatively to the border edge
+            if (topstatic)
+            {
+                coords.top = ab.y - cblock.emargin.top - cblock.border.top;
+            }
+            if (leftstatic)
+            {
+                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
+            }
+        }
+        else //nothing available, this should not happen
+        {
+            log.warn("No static position available for " + this.toString());
+            //use containing block as a fallback
             if (topstatic)
                 coords.top = cblock.padding.top;
             if (leftstatic)
