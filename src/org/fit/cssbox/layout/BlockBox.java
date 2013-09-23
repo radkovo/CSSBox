@@ -1319,7 +1319,7 @@ public class BlockBox extends ElementBox
         else if (domParent != null) //no reference box, we are probably the first box in our parent
         {
             //compute the bounds of the reference box relatively to our containing block
-            Rectangle ab = new Rectangle(domParent.getAbsoluteBounds());
+            Rectangle ab = new Rectangle(domParent.getAbsoluteContentBounds());
             Rectangle cb = cblock.getAbsoluteBounds();
             ab.x = ab.x - cb.x;
             ab.y = ab.y - cb.y;
