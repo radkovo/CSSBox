@@ -249,8 +249,8 @@ public class TableCellBox extends BlockBox
     public int getMinimalWidth()
     {
         int ret = getMinimalContentWidth();
-        /*if (!wrelative && hasFixedWidth() && content.width > ret)
-            ret = content.width;*/
+        if (!wrelative && hasFixedWidth() && content.width > ret)
+            ret = content.width;
         ret += margin.left + padding.left + border.left +
                margin.right + padding.right + border.right;
         return ret;

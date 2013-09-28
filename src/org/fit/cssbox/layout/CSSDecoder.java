@@ -89,7 +89,7 @@ public class CSSDecoder
         if (value == null) val = defval;
         if (auto) val = autoval;
         if (val != null)
-        	return (int) Math.round(context.pxLength(val, whole));
+            return (int) context.pxLength(val, whole);
         else
         	return 0;
     }
@@ -109,7 +109,7 @@ public class CSSDecoder
         else if (value == null)
             return defval;
         else
-            return (int) Math.round(context.pxLength(value, whole));
+            return (int) context.pxLength(value, whole);
     }
     
 }

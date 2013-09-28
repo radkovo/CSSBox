@@ -1364,6 +1364,11 @@ public class BlockBox extends ElementBox
         //return the maximum of the nested minimal widths
         else
             ret = getMinimalContentWidth();
+        //check against the maximal and minimal widths
+        if (max_size.width != -1 && ret > max_size.width)
+            ret = max_size.width;
+        if (min_size.width != -1 && ret < min_size.width)
+            ret = min_size.width;
         //increase by margin, padding, border
         ret += declMargin.left + padding.left + border.left +
                declMargin.right + padding.right + border.right;
@@ -1417,6 +1422,11 @@ public class BlockBox extends ElementBox
             ret = content.width;
         else
             ret = getMaximalContentWidth();
+        //check against the maximal and minimal widths
+        if (max_size.width != -1 && ret > max_size.width)
+            ret = max_size.width;
+        if (min_size.width != -1 && ret < min_size.width)
+            ret = min_size.width;
         //increase by margin, padding, border
         ret += declMargin.left + padding.left + border.left +
                declMargin.right + padding.right + border.right;
