@@ -242,6 +242,7 @@ public class BlockBox extends ElementBox
         align = src.align;
         topstatic = src.topstatic;
         leftstatic = src.leftstatic;
+        domParent = src.domParent;
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
     }
@@ -1318,8 +1319,12 @@ public class BlockBox extends ElementBox
         }
         else if (domParent != null) //no reference box, we are probably the first box in our parent
         {
+            //find the nearest DOM parent that is part of our box tree
+            ElementBox dparent = domParent; 
+            while (dparent != null && dparent.getContainingBlock() == null)
+                dparent = dparent.getParent();
             //compute the bounds of the reference box relatively to our containing block
-            Rectangle ab = new Rectangle(domParent.getAbsoluteContentBounds());
+            Rectangle ab = new Rectangle(dparent.getAbsoluteContentBounds());
             Rectangle cb = cblock.getAbsoluteBounds();
             ab.x = ab.x - cb.x;
             ab.y = ab.y - cb.y;

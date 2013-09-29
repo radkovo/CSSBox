@@ -381,6 +381,8 @@ public class BoxFactory
                 stat.parent.addSubBox(newbox);
                 stat.lastinflow = newbox;
             }
+            else
+                newbox.setContainingBlock(null); //indicate that the box is not part of the box tree (collapsed)
         }
         
         //Recursively process the eventual boxes that should be added tohether with the new box
