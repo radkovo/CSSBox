@@ -290,7 +290,7 @@ abstract public class Box
     /**
      * Checks if this box is visible, i.e. it has not visibility:hidden and it is at least partially
      * contained in the clipping region.
-     * @return <code>true</code> if the element is visible
+     * @return <code>true</code> if the box is visible
      */
     public boolean isVisible()
     {
