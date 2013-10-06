@@ -158,6 +158,9 @@ public class BlockBox extends ElementBox
     
     /** Text-align property */
     protected CSSProperty.TextAlign align;
+
+    /** Text indentation in pixels */
+    protected int indent;
     
     //=====================================================================
     
@@ -182,6 +185,7 @@ public class BlockBox extends ElementBox
         clearing = CLEAR_NONE;
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
+        indent = 0;
         
         topstatic = false;
         leftstatic = false;
@@ -214,6 +218,7 @@ public class BlockBox extends ElementBox
         position = src.position;
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
+        indent = 0;
 
         topset = src.topset;
         leftset = src.leftset;
@@ -240,6 +245,7 @@ public class BlockBox extends ElementBox
         clearing = src.clearing;
         overflow = src.overflow;
         align = src.align;
+        indent = src.indent;
         topstatic = src.topstatic;
         leftstatic = src.leftstatic;
         domParent = src.domParent;
@@ -562,6 +568,15 @@ public class BlockBox extends ElementBox
             return emargin.top + border.top + padding.top + content.height +
                 padding.bottom + border.bottom + emargin.bottom;
     }
+   
+    /**
+     * Obtains the first line indentation defined by the text-indent property.
+     * @return indentation in pixels
+     */
+    public int getIndent()
+    {
+        return indent;
+    }
     
    //========================================================================
     
@@ -764,6 +779,9 @@ public class BlockBox extends ElementBox
         boolean someinflow = false; //there has been any in-flow inline element?
         boolean lastwhite = false; //last inline element ends with a whitespace?
 
+        //apply indentation
+        x += indent;
+        
         //line boxes
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = firstLine;
@@ -1744,6 +1762,9 @@ public class BlockBox extends ElementBox
             emargin.left = margin.left;
             emargin.right = margin.right;
         }
+        
+        //Text indentation
+        indent = dec.getLength(getLengthValue("text-indent"), false, 0, 0, contw);
     }
     
     /**

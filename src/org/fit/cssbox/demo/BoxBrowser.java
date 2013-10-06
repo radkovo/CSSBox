@@ -402,6 +402,7 @@ public class BoxBrowser
             vals.add(infoTableData("DOM parent", (eb.getDomParent() == null) ? "- none -" : eb.getDomParent().toString()));
             vals.add(infoTableData("floatY", String.valueOf(eb.getFloatY())));
             vals.add(infoTableData("prefWidth", String.valueOf(eb.getPreferredWidth())));
+            vals.add(infoTableData("Indent", String.valueOf(eb.getIndent())));
         }
         
         DefaultTableModel tab = new DefaultTableModel(vals, cols);
