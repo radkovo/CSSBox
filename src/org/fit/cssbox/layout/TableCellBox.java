@@ -54,6 +54,9 @@ public class TableCellBox extends BlockBox
     /** relative width [%] when used */
     protected int percent;
     
+    /** vertical content offset produced by vertical alignment */
+    protected int coffset;
+    
     //====================================================================================
     
     /**
@@ -67,6 +70,7 @@ public class TableCellBox extends BlockBox
         fleft = new FloatList(this);
         fright = new FloatList(this);
         overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
+        coffset = 0;
     }
 
     /**
@@ -80,6 +84,7 @@ public class TableCellBox extends BlockBox
         fleft = new FloatList(this);
         fright = new FloatList(this);
         overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
+        coffset = 0;
     }
     
     /**
@@ -232,12 +237,16 @@ public class TableCellBox extends BlockBox
         }
         
         if (yofs > 0)
-        {
-            for (int i = startChild; i < endChild; i++)
-                getSubBox(i).moveDown(yofs);
-        }
+            coffset = yofs;
     }
 
+    @Override
+    public int getAbsoluteContentY()
+    {
+        //apply the possible content offset caused by vertical alignment
+        return super.getAbsoluteContentY() + coffset;
+    }
+    
     @Override
     public void computeEfficientMargins()
     {
