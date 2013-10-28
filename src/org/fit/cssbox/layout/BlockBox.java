@@ -822,7 +822,7 @@ public class BlockBox extends ElementBox
                 {
                     layoutBlockFloating(sb, wlimit, stat);
                     //if there were some boxes before the float on the line, move them behind
-                    if (stat.inlineWidth > 0 && curline.getStart() < i)
+                    if (sb.getFloating() == FLOAT_LEFT && stat.inlineWidth > 0 && curline.getStart() < i)
                     {
                         for (int j = curline.getStart(); j < i; j++)
                         {
@@ -975,7 +975,7 @@ public class BlockBox extends ElementBox
         setSize(totalWidth(), totalHeight());
         
         //finish the last line
-        curline.setWidth(x); 
+        curline.setWidth(x - x1); 
         curline.setLimits(x1, x2);
         curline.setEnd(getSubBoxNumber());
         //align the lines according to the real box width
