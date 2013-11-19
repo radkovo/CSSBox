@@ -301,14 +301,19 @@ public class HTMLNorm
      */
     public static int computeAttributeLength(String value, int whole) throws NumberFormatException
     {
-        if (value.endsWith("%"))
+        String sval = value.trim().toLowerCase();
+        if (sval.endsWith("%"))
         {
-            double val = Double.parseDouble(value.substring(0, value.length() - 1));
+            double val = Double.parseDouble(sval.substring(0, sval.length() - 1));
             return (int) Math.round(val * whole / 100.0);
+        }
+        else if (sval.endsWith("px"))
+        {
+            return (int) Math.rint(Double.parseDouble(sval.substring(0, sval.length() - 2)));
         }
         else
         {
-            return (int) Math.rint(Double.parseDouble(value));
+            return (int) Math.rint(Double.parseDouble(sval));
         }
     }
     

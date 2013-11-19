@@ -68,21 +68,6 @@ public class CSSDecoder
         context = c;
     }
     
-    /**
-     * If the value is defined and not empty, it is returned back. Otherwise,
-     * the default value is returned.
-     * @param value the value to be checked
-     * @param defval the default value
-     * @return the <code>value</code> if it is defined, <code>defval</code> otherwise
-     */
-    /*public String getValue(String value, String defval)
-    {
-        if (value == null || value.trim().length() == 0)
-            return defval;
-        else
-            return value;
-    }*/
-    
     /** 
      * Returns the length in pixels from a CSS definition. <code>null</code> values
      * of the lengths are interpreted as zero.
@@ -200,27 +185,28 @@ public class CSSDecoder
         {
             boxw = atrw;
             boxh = atrh;
+            intr = (float) boxw / boxh; //new intrsinsic ratio is set explicitly
         }
 
         //compute dimensions from styles (styles should override the attributes)
         CSSDecoder dec = new CSSDecoder(box.getVisualContext());
         CSSProperty.Width width = box.getStyle().getProperty("width");
+        if (width == CSSProperty.Width.AUTO) width = null; //auto and null are equal for width
         CSSProperty.Height height = box.getStyle().getProperty("height");
+        if (height == CSSProperty.Height.AUTO) height = null; //auto and null are equal for height
         if (width == null && height != null)
         {
-            //boxw remains untouched, compute boxh
+            //compute boxh, boxw is intrinsic
             int autoh = Math.round(boxw / intr);
             boxh = dec.getLength(box.getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, theight);
-            if (atrw == -1)
-                boxw = Math.round(intr * boxh);
+            boxw = Math.round(intr * boxh);
         }
         else if (width != null && height == null)
         {
-            //boxh remains untouched, compute boxw
+            //compute boxw, boxh is intrinsic
             int autow = Math.round(intr * boxh);
             boxw = dec.getLength(box.getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, twidth);
-            if (atrh == -1)
-                boxh = Math.round(boxw / intr);
+            boxh = Math.round(boxw / intr);
         }
         else
         {
