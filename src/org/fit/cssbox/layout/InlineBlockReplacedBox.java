@@ -23,12 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
-import org.fit.cssbox.css.HTMLNorm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-
-import cz.vutbr.web.css.CSSProperty;
 
 /**
  *
@@ -36,8 +31,6 @@ import cz.vutbr.web.css.CSSProperty;
  */
 public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBox
 {
-    private static Logger log = LoggerFactory.getLogger(InlineBlockReplacedBox.class);
-    
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
@@ -188,91 +181,9 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     protected void loadSizes(boolean update)
     {
         super.loadSizes(update);
-        int intw; //intrinsic sizes
-        int inth;
-        float intr;
-        if (obj != null)
-        {
-            boxw = intw = obj.getIntrinsicWidth();
-            boxh = inth = obj.getIntrinsicHeight();
-            intr = (float) intw / inth;
-        }
-        else
-        {
-            boxw = intw = 20; //some reasonable default values
-            boxh = inth = 20;
-            intr = 1.0f;
-        }
-        
-        //total widths used for percentages
-        int twidth = cblock.getContentWidth();
-        int theight = viewport.getContentHeight();
-        
-        //try to use the attributes
-        int atrw = -1;
-        int atrh = -1;
-        try {
-            if (!el.getAttribute("width").equals(""))
-                atrw = HTMLNorm.computeAttributeLength(el.getAttribute("width"), twidth);
-        } catch (NumberFormatException e) {
-            log.warn("Invalid width value: " + el.getAttribute("width"));
-        }
-        try {
-            if (!el.getAttribute("height").equals(""))
-                atrh = HTMLNorm.computeAttributeLength(el.getAttribute("height"), theight);
-        } catch (NumberFormatException e) {
-            log.warn("Invalid height value: " + el.getAttribute("width"));
-        }
-        //apply intrinsic ration when necessary
-        if (atrw == -1 && atrh == -1)
-        {
-            boxw = intw;
-            boxh = inth;
-        }
-        else if (atrw == -1)
-        {
-            boxw = Math.round(intr * atrh);
-            boxh = atrh;
-        }
-        else if (atrh == -1)
-        {
-            boxw = atrw;
-            boxh = Math.round(atrw / intr);
-        }
-        else
-        {
-            boxw = atrw;
-            boxh = atrh;
-        }
-
-        //compute dimensions from styles (styles should override the attributes)
-        CSSDecoder dec = new CSSDecoder(ctx);
-        CSSProperty.Width width = style.getProperty("width");
-        CSSProperty.Height height = style.getProperty("height");
-        if (width == null && height != null)
-        {
-            //boxw remains untouched, compute boxh
-            int autoh = Math.round(boxw / intr);
-            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, theight);
-            if (atrw == -1)
-                boxw = Math.round(intr * boxh);
-        }
-        else if (width != null && height == null)
-        {
-            //boxh remains untouched, compute boxw
-            int autow = Math.round(intr * boxh);
-            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, twidth);
-            if (atrh == -1)
-                boxh = Math.round(boxw / intr);
-        }
-        else
-        {
-            boxw = dec.getLength(getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, intw, twidth);
-            boxh = dec.getLength(getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, inth, theight);
-        }
-        
-        content.width = boxw;
-        content.height = boxh;
+        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this, el);
+        content.width = boxw = objsize.width;
+        content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());
         preferredWidth = getWidth();
         wset = true;
