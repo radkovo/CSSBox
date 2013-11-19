@@ -121,7 +121,18 @@ public class CSSDecoder
             return (int) context.pxLength(value, whole);
     }
     
-    public static Rectangle computeReplacedObjectSize(ReplacedContent obj, ElementBox box, Element el)
+    /**
+     * Computes the width and height of a replaced object based on the following properties:
+     * <ul>
+     * <li>Intrinsic width and height</li>
+     * <li>The <code>width</code> and <code>height</code> attributes</li>
+     * <li>Effective style</li>
+     * </ul>
+     * @param obj The replaced content object
+     * @param box The element box whose size should be computed
+     * @return A rectangle with the width and height set accordingly
+     */
+    public static Rectangle computeReplacedObjectSize(ReplacedContent obj, ElementBox box)
     {
         int boxw; //resulting size
         int boxh;
@@ -154,6 +165,7 @@ public class CSSDecoder
         int theight = box.getViewport().getContentHeight();
         
         //try to use the attributes
+        Element el = box.getElement();
         int atrw = -1;
         int atrh = -1;
         try {

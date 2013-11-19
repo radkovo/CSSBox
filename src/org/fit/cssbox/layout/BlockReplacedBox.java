@@ -128,7 +128,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     protected void loadSizes(boolean update)
     {
         super.loadSizes(update);
-        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this, el);
+        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this);
         content.width = boxw = objsize.width;
         content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());

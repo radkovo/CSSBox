@@ -177,7 +177,7 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     
     private void loadSizeInfo()
     {
-        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this, el);
+        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this);
         content.width = boxw = objsize.width;
         content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());

@@ -26,7 +26,7 @@ import java.awt.Shape;
 import org.w3c.dom.Element;
 
 /**
- *
+ * An inline-block replaced box.
  * @author burgetr
  */
 public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBox
@@ -36,7 +36,7 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     protected ReplacedContent obj; //the contained object
     
     /** 
-     * Creates a new instance of BlockReplacedBox 
+     * Creates a new instance of InlineBlockReplacedBox 
      */
     public InlineBlockReplacedBox(Element el, Graphics2D g, VisualContext ctx)
     {
@@ -181,7 +181,7 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     protected void loadSizes(boolean update)
     {
         super.loadSizes(update);
-        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this, el);
+        Rectangle objsize = CSSDecoder.computeReplacedObjectSize(obj, this);
         content.width = boxw = objsize.width;
         content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());
