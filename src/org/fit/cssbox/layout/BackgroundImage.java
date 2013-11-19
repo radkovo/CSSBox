@@ -98,7 +98,8 @@ public class BackgroundImage extends ContentImage
         if (image == null || abort)
             return null;
 
-        image = new ImageIcon(image).getImage();
+        //image = new ImageIcon(image).getImage();
+        image = loadImage(caching);
         
         Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
         if (bounds.width > 0 && bounds.height > 0)

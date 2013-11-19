@@ -28,6 +28,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Generic image used in the page content (used by ReplacedImage and BackgroundImage).
  * 
@@ -35,6 +38,8 @@ import java.net.URL;
  */
 public abstract class ContentImage extends ReplacedContent implements ImageObserver
 {
+    private static Logger log = LoggerFactory.getLogger(ContentImage.class);
+    
     /** Used when there are no image data */
     protected final int DEFAULT_IMAGE_WIDTH = 0;
     /** Used when there are no image data */
@@ -278,6 +283,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 {
                     image = null;
                     abort = true;
+                    log.warn("Image loading aborted for timeout: " + url + " " + loadtime);
                 }
                 Thread.sleep(25);
                 loadtime += 25;
@@ -285,6 +291,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 image = null;
                 abort = true;
+                log.warn("Image loading aborted: " + e.getMessage());
             }
         }
         if (width == -1) width = DEFAULT_IMAGE_WIDTH;
@@ -304,6 +311,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 {
                     image = null;
                     abort = true;
+                    log.warn("Image loading aborted for timeout: " + url);
                 }
                 else
                     Thread.sleep(25);
@@ -312,6 +320,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 image = null;
                 abort = true;
+                log.warn("Image loading aborted: " + e.getMessage());
             }
         }
 

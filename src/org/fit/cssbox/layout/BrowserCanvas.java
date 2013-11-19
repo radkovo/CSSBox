@@ -171,6 +171,7 @@ public class BrowserCanvas extends JPanel
         log.trace("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
         viewport.absolutePositions();
         
+        log.trace("Drawing");
         clearCanvas();
         GraphicsRenderer r = new GraphicsRenderer(ig); 
         viewport.draw(r);
