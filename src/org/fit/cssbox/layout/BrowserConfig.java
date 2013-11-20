@@ -41,6 +41,9 @@ public class BrowserConfig
     /** Should we load the CSS background images? */
     private boolean loadBackgroundImages;
     
+    /** Image loading timeout [ms] */
+    private int imageLoadTimeout;
+    
     /** Should we interpret the HTML tags? */
     private boolean useHTML;
     
@@ -60,6 +63,7 @@ public class BrowserConfig
     {
         loadImages = true;
         loadBackgroundImages = true;
+        imageLoadTimeout = 500;
         useHTML = true;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
@@ -92,6 +96,20 @@ public class BrowserConfig
     public void setLoadBackgroundImages(boolean loadBackgroundImages)
     {
         this.loadBackgroundImages = loadBackgroundImages;
+    }
+
+    public int getImageLoadTimeout()
+    {
+        return imageLoadTimeout;
+    }
+
+    /**
+     * Configures the timeout for loading images. The default value is 500ms.
+     * @param imageLoadTimeout The timeout for loading images in miliseconds.
+     */
+    public void setImageLoadTimeout(int imageLoadTimeout)
+    {
+        this.imageLoadTimeout = imageLoadTimeout;
     }
 
     public boolean getUseHTML()

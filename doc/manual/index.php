@@ -87,6 +87,8 @@ The following configuration options are available:</p><dl>
 <dd>Configures whether to load the referenced content images automatically. The default value is <code>true</code>.</dd>
 <dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setLoadBackgroundImages(boolean)" class="api">browser.getConfig().setLoadBackgroundImages(boolean)</a></dt>
 <dd>Configures whether to load the CSS background images automatically. The default value is <code>true</code>.</dd>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setImageLoadTimeout(int)" class="api">browser.getConfig().setImageLoadTimeout(int)</a></dt>
+<dd>Configures the timeout for loading images. The default value is 500ms.</dd>
 <dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#useHTML(boolean)" class="api">browser.getConfig().useHTML(boolean)</a></dt>
 <dd>Configures whether the engine should use the HTML extensions or not. Currently, the HTML extensions include the following:
      <ul>

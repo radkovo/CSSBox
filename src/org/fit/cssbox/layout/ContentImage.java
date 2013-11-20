@@ -44,8 +44,9 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     protected final int DEFAULT_IMAGE_WIDTH = 0;
     /** Used when there are no image data */
     protected final int DEFAULT_IMAGE_HEIGHT = 0;
+    
     /** Image loading timeout [ms] */
-    protected final int LOAD_TIMEOUT = 500;
+    protected int loadTimeout;
     
     protected boolean loadImages; //is the image loading switched on?
     protected boolean caching; //use picture caching?
@@ -68,6 +69,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         this.caching = true;
         this.container = null;
         this.abort = false;
+        this.loadTimeout = owner.getViewport().getConfig().getImageLoadTimeout();
     }
 
     /**
@@ -279,7 +281,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         {
             try
             {
-                if (loadtime > LOAD_TIMEOUT)
+                if (loadtime > loadTimeout)
                 {
                     image = null;
                     abort = true;
@@ -307,7 +309,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         {
             try
             {
-                if (loadtime > LOAD_TIMEOUT)
+                if (loadtime > loadTimeout)
                 {
                     image = null;
                     abort = true;
