@@ -23,6 +23,7 @@ package org.fit.cssbox.layout;
 import java.awt.Graphics2D;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 
@@ -770,6 +771,17 @@ public class BoxFactory
                     }
                     else if (c instanceof TermFunction)
                     {
+                        TermFunction f = (TermFunction) c;
+                        if (f.getFunctionName().equals("attr"))
+                        {
+                            List<Term<?>> params = f.getValue();
+                            if (params.size() > 0)
+                            {
+                                String val = n.getAttribute(params.get(0).toString());
+                                Text txt = n.getOwnerDocument().createTextNode(val);
+                                pelem.appendChild(txt);
+                            }
+                        }
                     }
                 }
 
