@@ -89,6 +89,7 @@ public class ImageRenderer
         da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
         da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
         da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
+        da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); //render form fields using css
         da.getStyleSheets(); //load the author style sheets
         
         if (type == TYPE_PNG)

@@ -130,4 +130,63 @@ public class CSSNorm
         "ul     { margin-left: 0; padding-left: 40px; }";
     }
     
+    /**
+     * A style sheet defining a basic style of form fields. This style sheet may be used
+     * for a simple rendering of form fields when their functionality is not implemented
+     * in another way.
+     * @return The style string
+     */
+    public static String formsStyleSheet()
+    {
+        return
+        "input { " +
+        "  font-size: 80%;" +
+        "  color: black;" +
+        "}" +
+        "input[type='submit']:before," +
+        "input[type='reset']:before," +
+        "input[type='button']:before {" +
+        "  display: inline-block;" +
+        "  border-right: 1px solid black;" +
+        "  border-bottom: 1px solid black;" +
+        "  border-top: 1px solid white;" +
+        "  border-left: 1px solid white;" +
+        "  background-color: #ddd;" +
+        "  content: attr(value);" +
+        "  padding: 0 0.5em;" +
+        "}" +
+        "input[type='radio']:before," +
+        "input[type='checkbox']:before {" +
+        "  display: inline-block;" +
+        "  border: 1px solid black;" +
+        "  background-color: white;" +
+        "  color: white;" +
+        "  width: 8px;" +
+        "  height: 10px;" +
+        "  line-height: 9px;" +
+        "  font-size: 10px;" +
+        "  padding: 0 1px;" +
+        "  content: 'x';" +
+        "}" +
+        "input[checked]:before {" +
+        "  color: black;" +
+        "}" +
+        "input[type='text']:before," +
+        "input[type='password']:before {" +
+        "  display: inline-block;" +
+        "  border-right: 1px solid #eee;" +
+        "  border-bottom: 1px solid #eee;" +
+        "  border-top: 1px solid black;" +
+        "  border-left: 1px solid black;" +
+        "  background-color: #fff;" +
+        "  content: attr(value);" +
+        "  width: 15em;" +
+        "  overflow: hidden;" +
+        "  padding: 0;" +
+        "}" +
+        "input[type='hidden'] {" +
+        "  display: none;" +
+        "}";
+    }
+    
 }

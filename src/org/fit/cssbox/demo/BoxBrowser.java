@@ -159,6 +159,7 @@ public class BoxBrowser
             da.attributesToStyles();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
+            da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.getStyleSheets();
             
             contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
