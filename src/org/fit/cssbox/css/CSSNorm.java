@@ -139,69 +139,93 @@ public class CSSNorm
     public static String formsStyleSheet()
     {
         return
-                "input { "+
-                "  font-size: 80%;"+
-                "  color: black;"+
-                "  white-space: pre;"+
-                "}"+
-                "input[type='submit'],"+
-                "input[type='reset'],"+
-                "input[type='button'] {"+
-                "  display: inline-block;"+
-                "  border-right: 1px solid black;"+
-                "  border-bottom: 1px solid black;"+
-                "  border-top: 1px solid white;"+
-                "  border-left: 1px solid white;"+
-                "  background-color: #ddd;"+
-                "  padding: 0 0.5em;"+
-                "}"+
-                "input[type='submit']:before,"+
-                "input[type='reset']:before,"+
-                "input[type='button']:before {"+
-                "  content: attr(value);"+
-                "}"+
-                "input[type='radio'],"+
-                "input[type='checkbox'] {"+
-                "  display: inline-block;"+
-                "  border: 1px solid black;"+
-                "  background-color: white;"+
-                "  width: 6px;"+
-                "  height: 10px;"+
-                "  line-height: 9px;"+
-                "  font-size: 10px;"+
-                "  padding: 0 2px;"+
-                "}"+
-                "input[type='radio']:before,"+
-                "input[type='checkbox']:before {"+
-                "  content: ' ';"+
-                "}"+
-                "input[checked]:before {"+
-                "  content: 'x';"+
-                "}"+
-                "input[type='text'],"+
-                "input[type='password'],"+
-                "textarea {"+
-                "  display: inline-block;"+
-                "  border-right: 1px solid #eee;"+
-                "  border-bottom: 1px solid #eee;"+
-                "  border-top: 1px solid black;"+
-                "  border-left: 1px solid black;"+
-                "  background-color: #fff;"+
-                "  width: 15em;"+
-                "  overflow: hidden;"+
-                "  padding: 0;"+
-                "}"+
-                "input[type='text']:before,"+
-                "input[type='password']:before {"+
-                "  content: attr(value);"+
-                "}"+
-                "input[type='hidden'] {"+
-                "  display: none;"+
-                "}"+
-                "textarea {"+
-                "  height: 2em;"+
-                "  width: 15em;"+
-                "}";
+            "input, textarea, select { "+
+            "  font-size: 80%;"+
+            "  color: black;"+
+            "  white-space: pre;"+
+            "}"+
+            "input[type='submit'],"+
+            "input[type='reset'],"+
+            "input[type='button'] {"+
+            "  display: inline-block;"+
+            "  box-sizing: border-box;"+
+            "  border-right: 1px solid black;"+
+            "  border-bottom: 1px solid black;"+
+            "  border-top: 1px solid white;"+
+            "  border-left: 1px solid white;"+
+            "  background-color: #ddd;"+
+            "  padding: 0 0.5em;"+
+            "}"+
+            "input[type='submit']:before,"+
+            "input[type='reset']:before,"+
+            "input[type='button']:before {"+
+            "  display: block;"+
+            "  text-align: center;"+
+            "  content: attr(value);"+
+            "}"+
+            "input[type='radio'],"+
+            "input[type='checkbox'] {"+
+            "  display: inline-block;"+
+            "  border: 1px solid black;"+
+            "  background-color: white;"+
+            "  width: 6px;"+
+            "  height: 10px;"+
+            "  line-height: 9px;"+
+            "  font-size: 10px;"+
+            "  padding: 0 2px;"+
+            "}"+
+            "input[type='radio']:before,"+
+            "input[type='checkbox']:before {"+
+            "  content: ' ';"+
+            "}"+
+            "input[checked]:before {"+
+            "  content: 'x';"+
+            "}"+
+            "input[type='text'],"+
+            "input[type='password'],"+
+            "textarea,"+
+            "select {"+
+            "  display: inline-block;"+
+            "  border-right: 1px solid #eee;"+
+            "  border-bottom: 1px solid #eee;"+
+            "  border-top: 1px solid black;"+
+            "  border-left: 1px solid black;"+
+            "  background-color: #fff;"+
+            "  width: 15em;"+
+            "  overflow: hidden;"+
+            "  padding: 0;"+
+            "}"+
+            "input[type='text']:before,"+
+            "input[type='password']:before {"+
+            "  content: attr(value);"+
+            "}"+
+            "input[type='hidden'] {"+
+            "  display: none;"+
+            "}"+
+            "textarea {"+
+            "  height: 2em;"+
+            "  width: 15em;"+
+            "}"+
+            "select {"+
+            "  white-space: normal;"+
+            "}"+
+            "select option {"+
+            "  display: none;"+
+            "}"+
+            "select option:nth-of-type(1) {"+
+            "  display: block;"+
+            "}"+
+            "select[size] option:nth-of-type(2),"+
+            "select[size] option:nth-of-type(3) {"+
+            "  display: block;"+
+            "}"+
+            "select[size='1'] option:nth-of-type(2),"+
+            "select[size='1'] option:nth-of-type(3) {"+
+            "  display: none;"+
+            "}"+
+            "select[size='2'] option:nth-of-type(3) {"+
+            "  display: none;"+
+            "}";
     }
     
 }
