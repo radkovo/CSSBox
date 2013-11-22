@@ -360,7 +360,7 @@ public class BoxFactory
                             iparent.postadd.add(iparent.nextTwin);
                     }
                     else
-                        System.err.println("BoxFactory: warning: grandpa is missing for " + newbox);
+                        log.error("(internal error) grandpa is missing for %s", newbox);
                 }
             }
             else //positioned box
@@ -372,7 +372,6 @@ public class BoxFactory
         }
         else //inline elements -- always in flow
         {
-            //System.out.println("For " + newbox + " lastbox is " + lastinflow);
             //spaces may be collapsed when the last inflow box ends with a whitespace and it allows collapsing whitespaces
             boolean lastwhite = (stat.lastinflow == null) || stat.lastinflow.isBlock() || (stat.lastinflow.endsWithWhitespace() && stat.lastinflow.collapsesSpaces());
             //the new box may be collapsed if it allows collapsing whitespaces and it is a whitespace
@@ -410,7 +409,7 @@ public class BoxFactory
                 {
                     if (!subbox.isBlock() && subbox.collapsesSpaces())
                     {
-                        if (subbox.isWhitespace())
+                        if (subbox.isWhitespace() && !(subbox instanceof InlineBlockBox))
                             it.remove();
                         else if (subbox instanceof ElementBox)
                         {
@@ -482,8 +481,6 @@ public class BoxFactory
      */
     private ElementBox normalizeBox(ElementBox root)
     {
-        if (root.toString().contains("mojo"))
-            System.out.println("jo!");
         //anonymous inline and block elements if necessary
         if (root.mayContainBlocks() && ((BlockBox) root).containsBlocks())
             createAnonymousBlocks((BlockBox) root);
