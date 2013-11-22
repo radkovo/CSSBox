@@ -59,6 +59,7 @@ DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
 da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the standard style sheet</em>
 da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the additional style sheet</em>
+da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//(optional) use the forms style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
 </d:codebox>
 <p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="attributesToStyles()">attributesToStyles()</d:api>
@@ -73,6 +74,9 @@ The <d:api class="org/fit/cssbox/css/CSSNorm" anchor="stdStyleSheet()">CSSNorm.s
 method returns the default style sheet recommended by the CSS specification and the
 <d:api class="org/fit/cssbox/css/CSSNorm" anchor="userStyleSheet()">CSSNorm.userStyleSheet()</d:api> 
 contains some additional CSSBox definitions not covered by the standard.</p>
+<p>Optionally, the <d:api class="org/fit/cssbox/css/CSSNorm" anchor="formsStyleSheet()">CSSNorm.formsStyleSheet()</d:api>
+includes a basic style of form input fields. This style sheet may be used for basic rendering of the form fields when
+their rendering and functionality is not implemented in any other way in the application.</p>
 <p>Finally, the <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="getStyleSheets()">getStyleSheets()</d:api>
 method loads and processes all the internal and external style sheets referenced from the document including the inline
 style definitions. In case of external style sheets, CSSBox tries to obtain

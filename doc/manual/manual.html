@@ -33,6 +33,7 @@ DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
 da.attributesToStyles(); <em>//convert the HTML presentation attributes to inline styles</em>
 da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the standard style sheet</em>
 da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//use the additional style sheet</em>
+da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); <em>//(optional) use the forms style sheet</em>
 da.getStyleSheets(); <em>//load the author style sheets</em>
 </pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
 method converts some HTML presentation attributes to CSS
@@ -44,7 +45,9 @@ sheets are imported as the user agent style sheets according to the <a href="htt
 The <a href="../api/org/fit/cssbox/css/CSSNorm.html#stdStyleSheet()" class="api">CSSNorm.stdStyleSheet()</a>
 method returns the default style sheet recommended by the CSS specification and the
 <a href="../api/org/fit/cssbox/css/CSSNorm.html#userStyleSheet()" class="api">CSSNorm.userStyleSheet()</a> 
-contains some additional CSSBox definitions not covered by the standard.</p><p>Finally, the <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
+contains some additional CSSBox definitions not covered by the standard.</p><p>Optionally, the <a href="../api/org/fit/cssbox/css/CSSNorm.html#formsStyleSheet()" class="api">CSSNorm.formsStyleSheet()</a>
+includes a basic style of form input fields. This style sheet may be used for basic rendering of the form fields when
+their rendering and functionality is not implemented in any other way in the application.</p><p>Finally, the <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
 method loads and processes all the internal and external style sheets referenced from the document including the inline
 style definitions. In case of external style sheets, CSSBox tries to obtain
 the file from the corresponding URL, if accessible.</p><p><em><strong>NOTE:</strong> Since the CSSBox 2.0 version, when the <code>attributesToStyles()</code> method is used
