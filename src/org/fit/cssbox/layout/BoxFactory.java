@@ -281,7 +281,7 @@ public class BoxFactory
                      else
                          block.setClipBlock(cblock.getClipBlock());
                      //A box with overflow:hidden creates a clipping box
-                     if (block.overflow != BlockBox.OVERFLOW_VISIBLE)
+                     if (block.overflow != BlockBox.OVERFLOW_VISIBLE || block.clipRegion != null)
                          newstat.clipbox = block;
                      else
                          newstat.clipbox = block.getClipBlock();

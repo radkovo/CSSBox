@@ -20,15 +20,24 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.Iterator;
 import java.util.Vector;
 
-import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.Clip;
+import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermFunction;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 
 /**
@@ -162,6 +171,9 @@ public class BlockBox extends ElementBox
     /** Text indentation in pixels */
     protected int indent;
     
+    /** Clipping region specified using the clip: property (with absolute coordinates) */
+    protected TermFunction clipRegion;
+    
     //=====================================================================
     
     /** Creates a new instance of BlockBox */
@@ -186,6 +198,7 @@ public class BlockBox extends ElementBox
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
         indent = 0;
+        clipRegion = null;
         
         topstatic = false;
         leftstatic = false;
@@ -219,6 +232,7 @@ public class BlockBox extends ElementBox
         overflow = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
         indent = 0;
+        clipRegion = null;
 
         topset = src.topset;
         leftset = src.leftset;
@@ -251,6 +265,7 @@ public class BlockBox extends ElementBox
         domParent = src.domParent;
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
+        clipRegion = src.clipRegion;
     }
     
     @Override
@@ -1644,8 +1659,73 @@ public class BlockBox extends ElementBox
         }
     }
     
-    //=======================================================================
+    @Override
+    protected Rectangle applyClip(Shape current, Rectangle newclip)
+    {
+        Rectangle cr = getClippingRectangle();
+        if (cr != null)
+            return super.applyClip(current, newclip.intersection(cr));
+        else
+            return super.applyClip(current, newclip);
+    }
+
+    @Override
+    public Rectangle getClippedBounds()
+    {
+        //absolutely positioned blocks may have clipping specified
+        Rectangle cr = getClippingRectangle();
+        if (cr == null)
+            return super.getClippedBounds();
+        else
+            return super.getClippedBounds().intersection(cr);
+    }
+
+    @Override
+    public Rectangle getClippedContentBounds()
+    {
+        //absolutely positioned blocks may have clipping specified
+        Rectangle cr = getClippingRectangle();
+        if (cr == null)
+            return super.getClippedContentBounds();
+        else
+            return super.getClippedContentBounds().intersection(cr);
+    }
+
+    /**
+     * Computes the absolute coordinates of the clipping rectangle specified using the <code>clip:</code> property.
+     * @return The absolute coordinates of the clipping rectangle or <code>null</code> when no clipping is applied.
+     */
+    protected Rectangle getClippingRectangle()
+    {
+        if (clipRegion != null && clipRegion.getFunctionName().equalsIgnoreCase("rect") && clipRegion.getValue().size() == 4)
+        {
+            CSSDecoder dec = new CSSDecoder(ctx);
+            Rectangle brd = getAbsoluteBorderBounds();
+            int x1 = brd.x;
+            int y1 = brd.y;
+            int x2 = brd.x + brd.width - 1;
+            int y2 = brd.y + brd.height - 1;
+            Term<?> top = clipRegion.get(0);
+            Term<?> right = clipRegion.get(1);
+            Term<?> bottom = clipRegion.get(2);
+            Term<?> left = clipRegion.get(3);
+            
+            if (left instanceof TermLength)
+                x1 = brd.x + dec.getLength((TermLength) left, false, 0, 0, 0);
+            if (top instanceof TermLength)
+                y1 = brd.y + dec.getLength((TermLength) top, false, 0, 0, 0);
+            if (right instanceof TermLength)
+                x2 = brd.x + dec.getLength((TermLength) right, false, 0, 0, 0);
+            if (bottom instanceof TermLength)
+                y2 = brd.y + dec.getLength((TermLength) bottom, false, 0, 0, 0);
+            
+            return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+        }
+        else
+            return null;
+    }
     
+    //=======================================================================
     
     protected void loadBlockStyle()
     {
@@ -1671,6 +1751,14 @@ public class BlockBox extends ElementBox
         else if (position == POS_ABSOLUTE || position == POS_FIXED)
         {
             floating = FLOAT_NONE;
+        }
+        
+        //absolutely positioned elements may have clipping
+        if (position == POS_ABSOLUTE)
+        {
+            CSSProperty.Clip clip = style.getProperty("clip");
+            if (clip == Clip.shape)
+                clipRegion = style.getValue(TermFunction.class, "clip");
         }
     }
     

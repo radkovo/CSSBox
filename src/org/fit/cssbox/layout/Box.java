@@ -495,7 +495,7 @@ abstract public class Box
         if (clipblock == null)
             return getAbsoluteBounds();
         else
-            return absbounds.intersection(clipblock.getAbsoluteContentBounds());
+            return clipblock.getClippedContentBounds().intersection(getAbsoluteBounds());
     }
 
     /**
