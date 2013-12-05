@@ -1,3 +1,15 @@
+2013-12-05 - Version 4.3
+- Basic support for rendering form fields using CSS (closes #37)
+- vertical-align support for tables (closes #21)
+- text-indent support
+- clip support
+- Support for attr() function in content CSS property
+- Logback framework used for logging (closes #25)
+- Replaced box size computation fixes
+- Static position computation reworked
+- Table layout fixes (closes #34)
+- Better API for font sizes (closes #35)
+
 2013-05-25 - Version 4.2
 - Drawing text decorations (underline and line-through) (closes #12)
 - z-index and stacking context support
