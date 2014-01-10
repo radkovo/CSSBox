@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sf.cssbox</groupId>
-	<artifactId>CSSBox</artifactId>
+	<artifactId>cssbox</artifactId>
 	<version>4.4-SNAPSHOT</version>
 	<name>CSSBox</name>
 	<description>
