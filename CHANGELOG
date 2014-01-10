@@ -1,3 +1,6 @@
+2014-01-10 - Version 4.4
+- Conversion to maven
+
 2013-12-05 - Version 4.3
 - Basic support for rendering form fields using CSS (closes #37)
 - vertical-align support for tables (closes #21)
