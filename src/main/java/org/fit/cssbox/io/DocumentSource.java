@@ -29,7 +29,7 @@ import java.net.URL;
  * 
  * @author burgetr
  */
-public abstract class DocumentSource
+public abstract class DocumentSource implements java.io.Closeable
 {
     
     /**
