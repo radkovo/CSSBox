@@ -696,8 +696,9 @@ public class BlockBox extends ElementBox
                     //update the bottom margin
                     if (boxempty)
                     {
-                    	if (subbox.emargin.bottom > mbottom)
-                    		mbottom = subbox.emargin.bottom;
+                        int m = Math.max(subbox.emargin.top, subbox.emargin.bottom); //margins adjoin: we may use both top or bottom
+                    	if (m > mbottom)
+                    		mbottom = m;
                     }
                     else
                     	mbottom = subbox.emargin.bottom;
@@ -714,7 +715,10 @@ public class BlockBox extends ElementBox
         
         //if the box is empty, collapse it to a single margin
         if (marginsAdjoin())
-        	emargin.top = emargin.bottom = Math.max(emargin.top, emargin.bottom);
+        {
+        	emargin.top = Math.max(emargin.top, emargin.bottom);
+        	emargin.bottom = 0;
+        }
         
     }
     
