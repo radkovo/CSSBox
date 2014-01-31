@@ -1088,7 +1088,8 @@ public class BlockBox extends ElementBox
                             mbottom = subbox.emargin.bottom;
                     }
                     
-                    stat.y = borderY - subbox.emargin.top; //place the border edge appropriately
+                    if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
+                        stat.y = borderY - subbox.emargin.top;
                     layoutBlockInFlow(subbox, wlimit, stat);
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
