@@ -1,3 +1,8 @@
+2014-02-05 - Version 4.5
+- Margin for empty boxes fixed
+- Negative top margins fixed
+- DocumentSource implements java.io.Closeable
+
 2014-01-10 - Version 4.4
 - Conversion to maven
 
