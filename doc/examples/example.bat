@@ -1,23 +1,17 @@
 @echo off
-
+setlocal enabledelayedexpansion
 if not "%1"=="" GOTO cont
 echo Usage: example.bat ExampleClassName arguments
-echo See the documentation for the available examples
+echo See the README for the available examples
 GOTO end
 
 :cont
-set CLASSPATH=%CLASSPATH%;..\..\CSSBox.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\antlr-runtime-3.1.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\slf4j-api-1.5.2.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\jStyleParser_SNAPSHOT.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\nekohtml.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\xercesImpl.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\xml-apis.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\logback-classic-0.9.9.jar
-set CLASSPATH=%CLASSPATH%;..\..\lib\logback-core-0.9.9.jar
+set CLASSPATH=
+for /r %%I in (..\..\cssbox*.jar) do set CLASSPATH=%CLASSPATH%;%%I
+for /r %%I in (..\..\lib\*.jar) do set CLASSPATH=!CLASSPATH!;%%I
+echo %CLASSPATH%
 
 java org.fit.cssbox.demo.%1 %2 %3 %4
-
 
 :end
 

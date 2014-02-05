@@ -2,7 +2,7 @@ Running the Examples
 --------------------
 The examples are implemented in the org.fit.cssbox.demo package. For running the
 examples, following jar files must be in the classpath:
-- CSSBox.jar -- the CSSBox library
+- cssbox-<version>.jar -- the CSSBox library
 - lib/*.jar -- the CSS and HTML parsers
 
 For convenience, scripts are provided for running the examples. For Unix, example.sh
