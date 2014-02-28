@@ -387,6 +387,17 @@ public class DOMAnalyzer
         }
     }
 	
+	/**
+	 * Forces recomputing the element styles. This method should be called when a new style sheet
+	 * has been added or a DOM has changed after some styles have been read from the analyzer.
+	 */
+	public void recomputeStyles()
+	{
+	    //this forces re-creating the analyzer and stylemap upon next read
+	    analyzer = null;
+	    stylemap = null;
+	}
+	
     /**
      * Gets all the style declarations for a particular element and computes 
      * the resulting element style.
