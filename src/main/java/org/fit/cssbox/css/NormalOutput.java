@@ -29,10 +29,17 @@ import org.w3c.dom.*;
  */
 public class NormalOutput extends Output
 {
+    private boolean filterStyles = true;
     
     public NormalOutput(Node root)
     {
         super(root);
+    }
+    
+    public NormalOutput(Node root, boolean filterStyles)
+    {
+        super(root);
+        this.filterStyles = filterStyles;
     }
     
     /**
@@ -53,15 +60,21 @@ public class NormalOutput extends Output
             String tag = "";
             Element el = (Element) n;
             //do not dump original style definitions
-            if (el.getTagName().equals("style")) 
-                return;
-            if (el.getTagName().equals("link") &&
-                (el.getAttribute("rel").equalsIgnoreCase("stylesheet") || 
-                 el.getAttribute("type").equalsIgnoreCase("text/css")))
-                return;
+            if (filterStyles)
+            {
+                if (el.getTagName().equals("style")) 
+                    return;
+                if (el.getTagName().equals("link") &&
+                    (el.getAttribute("rel").equalsIgnoreCase("stylesheet") || 
+                     el.getAttribute("type").equalsIgnoreCase("text/css")))
+                    return;
+            }
             //Replace meta generator
             if (el.getTagName().equals("meta") && el.getAttribute("name").equals("generator"))
                 el.setAttribute("content", "CSS Transformer by Radek Burget, burgetr@fit.vutbr.cz");
+            //Change encoding to utf-8
+            if (el.getTagName().equals("meta") && el.getAttribute("http-equiv").equalsIgnoreCase("content-type"))
+                el.setAttribute("content", "text/html; charset=utf-8");
             //Dump the tag
             tag = tag + "<" + el.getTagName();
             NamedNodeMap attrs = el.getAttributes();

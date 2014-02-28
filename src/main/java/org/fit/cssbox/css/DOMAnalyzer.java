@@ -31,6 +31,8 @@ import org.w3c.dom.*;
 import cz.vutbr.web.css.CSSException;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.RuleSet;
+import cz.vutbr.web.css.Selector;
 import cz.vutbr.web.css.StyleSheet;
 import cz.vutbr.web.css.Selector.PseudoDeclaration;
 import cz.vutbr.web.domassign.Analyzer;
@@ -295,6 +297,41 @@ public class DOMAnalyzer
         HTMLNorm.attributesToStyles(getBody(), "");
     }
     
+    /**
+     * Removes all the external style sheet links and puts the whole style sheet locally
+     * to the document head.
+     */
+    public void localizeStyles()
+    {
+        //remove the style definitions
+        Vector<Element> elems = new Vector<Element>();
+        recursiveFindStyleElements(getRoot(), elems);
+        for (Element e : elems)
+            e.getParentNode().removeChild(e);
+        //create a new style element in the header
+        Element style = doc.createElement("style");
+        style.setAttribute("type", "text/css");
+        getHead().appendChild(style);
+        //fill it with the style text
+        StringBuilder sb = new StringBuilder();
+        for (StyleSheet sheet : styles)
+        {
+            for (Object o : sheet.asList())
+            {
+                if (o instanceof RuleSet)
+                {
+                    //check the first part of the first selector
+                    Selector.SelectorPart start = ((RuleSet) o).getSelectors().get(0).get(0).get(0);
+                    //skip inline styles
+                    if (!(start instanceof Selector.ElementDOM))
+                        sb.append(o.toString());
+                }
+            }
+        }
+        Text styletext = doc.createTextNode(sb.toString());
+        style.appendChild(styletext);
+    }
+    
     /** 
      * Returns a vector of CSSStyleSheet objects referenced from the document for the specified
      * media type. The internal style sheets are read from the document directly, the external
@@ -512,6 +549,26 @@ public class DOMAnalyzer
             recursiveStylesToDomInherited(child.item(i));
     }
 
+    /**
+     * Finds all the style definitions in the document.
+     */
+    private void recursiveFindStyleElements(Element e, Vector<Element> elems)
+    {
+        if ("style".equalsIgnoreCase(e.getNodeName()) ||
+            ("link".equalsIgnoreCase(e.getNodeName()) && "stylesheet".equalsIgnoreCase(e.getAttribute("rel"))))
+        {
+            elems.add(e);
+        }
+        else
+        {
+            NodeList list = e.getChildNodes();
+            for (int i = 0; i < list.getLength(); i++)
+            {
+                if (list.item(i).getNodeType() == Node.ELEMENT_NODE)
+                    recursiveFindStyleElements((Element) list.item(i), elems);
+            }
+        }
+    }
     
     private String quote(String s)
     {
