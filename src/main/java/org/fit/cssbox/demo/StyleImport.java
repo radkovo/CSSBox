@@ -22,7 +22,7 @@ package org.fit.cssbox.demo;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.css.NormalOutput;
@@ -62,10 +62,14 @@ public class StyleImport
     
     public void dumpTo(OutputStream ostream)
     {
-        PrintStream os = new PrintStream(ostream);
         Output out = new NormalOutput(doc, false);
-        out.dumpTo(os);
-        os.close();
+        out.dumpTo(ostream);
+    }
+    
+    public void dumpTo(PrintWriter writer)
+    {
+        Output out = new NormalOutput(doc, false);
+        out.dumpTo(writer);
     }
     
     //==================================================================================================
@@ -81,7 +85,9 @@ public class StyleImport
         try
         {
             StyleImport si = new StyleImport(args[0]);
-            si.dumpTo(new FileOutputStream(args[1]));
+            FileOutputStream os = new FileOutputStream(args[1]); 
+            si.dumpTo(os);
+            os.close();
             System.out.println("Done.");
         } catch (Exception e) {
             System.err.println("Error: "+e.getMessage());

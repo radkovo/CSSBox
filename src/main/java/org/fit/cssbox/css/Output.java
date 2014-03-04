@@ -36,6 +36,8 @@ public abstract class Output
         this.root = root;
     }
     
-    public abstract void dumpTo(java.io.PrintStream out);
+    public abstract void dumpTo(java.io.OutputStream out);
+    
+    public abstract void dumpTo(java.io.PrintWriter writer);
     
 }
