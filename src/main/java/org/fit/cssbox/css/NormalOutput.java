@@ -48,7 +48,9 @@ public class NormalOutput extends Output
      */
     public void dumpTo(java.io.OutputStream out)
     {
-        recursiveDump(root, 0, new java.io.PrintWriter(out));
+        java.io.PrintWriter writer = new java.io.PrintWriter(out);
+        recursiveDump(root, 0, writer);
+        writer.close();
     }
     
     /**
