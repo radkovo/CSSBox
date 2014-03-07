@@ -205,6 +205,7 @@ public class CSSNorm
             "textarea {"+
             "  height: 2em;"+
             "  width: 15em;"+
+            "  white-space: normal;"+
             "}"+
             "select {"+
             "  white-space: normal;"+
