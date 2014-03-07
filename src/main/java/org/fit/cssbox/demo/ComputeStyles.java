@@ -20,7 +20,7 @@
 package org.fit.cssbox.demo;
 
 import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.OutputStream;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -74,7 +74,7 @@ public class ComputeStyles
             da.stylesToDomInherited();
             
             //Save the output
-            PrintStream os = new PrintStream(new FileOutputStream(args[1]));
+            OutputStream os = new FileOutputStream(args[1]);
             Output out = new NormalOutput(doc);
             out.dumpTo(os);
             os.close();

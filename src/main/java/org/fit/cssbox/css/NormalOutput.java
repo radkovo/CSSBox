@@ -20,6 +20,11 @@
 
 package org.fit.cssbox.css;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
 import org.w3c.dom.*;
 
 /**
@@ -46,9 +51,14 @@ public class NormalOutput extends Output
      * Formats the complete tag tree to an output stream.
      * @param out The output stream to be used for the output.
      */
-    public void dumpTo(java.io.OutputStream out)
+    public void dumpTo(OutputStream out)
     {
-        java.io.PrintWriter writer = new java.io.PrintWriter(out);
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+        } catch (UnsupportedEncodingException e) {
+            writer = new PrintWriter(out);
+        }
         recursiveDump(root, 0, writer);
         writer.close();
     }
@@ -57,14 +67,14 @@ public class NormalOutput extends Output
      * Formats the complete tag tree and prints using a writer.
      * @param writer The writer to be used for printing the ouput.
      */
-    public void dumpTo(java.io.PrintWriter writer)
+    public void dumpTo(PrintWriter writer)
     {
         recursiveDump(root, 0, writer);
     }
     
     //========================================================================
     
-    private void recursiveDump(Node n, int level, java.io.PrintWriter p)
+    private void recursiveDump(Node n, int level, PrintWriter p)
     {        
         //Opening tag
         if (n.getNodeType() == Node.ELEMENT_NODE)
@@ -117,7 +127,7 @@ public class NormalOutput extends Output
     }
 
     @SuppressWarnings("unused")
-	private void recursiveDumpNice(Node n, int level, java.io.PrintWriter p)
+	private void recursiveDumpNice(Node n, int level, PrintWriter p)
     {
         
         //Opening tag
@@ -156,7 +166,7 @@ public class NormalOutput extends Output
         }        
     }
     
-    private void indent(int level, java.io.PrintWriter p)
+    private void indent(int level, PrintWriter p)
     {
         String ind = "";
         for (int i = 0; i < level*4; i++) ind = ind + ' ';
