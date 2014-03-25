@@ -38,7 +38,8 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * A factory for creating box subtrees for HTML-specific elements.
+ * 
  * @author burgetr
  */
 public class HTMLBoxFactory
@@ -48,6 +49,10 @@ public class HTMLBoxFactory
     private BoxFactory factory;
     private Set<String> supported;
     
+    /**
+     * Creates a new subtree factory for a given main factory.
+     * @param parent The main factory to be used.
+     */
     public HTMLBoxFactory(BoxFactory parent)
     {
         this.factory = parent;
@@ -56,6 +61,11 @@ public class HTMLBoxFactory
         supported.add("img");
     }
     
+    /**
+     * Checks whether the given tag (DOM element) processing is supported by this factory.
+     * @param e The DOM element to be checked.
+     * @return <code>true</code> when the element may be processed by this factory.
+     */
     public boolean isTagSupported(Element e)
     {
         if (e.getNodeName() != null && supported.contains(e.getNodeName().toLowerCase())) //completely supported tags
@@ -73,10 +83,10 @@ public class HTMLBoxFactory
     
     /**
      * Creates the box according to the HTML element.
-     * @param parent
-     * @param e
-     * @param viewport
-     * @param style
+     * @param parent The box in the main box tree to be used as a parent box for the new box. 
+     * @param e The element to be processed.
+     * @param viewport The viewport to be used for the new box.
+     * @param style The style of the element.
      * @return The newly created box or <code>null</code> when the element is not supported
      * or cannot be created. 
      */
