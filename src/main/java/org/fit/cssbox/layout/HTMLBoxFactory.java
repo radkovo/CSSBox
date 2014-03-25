@@ -63,7 +63,8 @@ public class HTMLBoxFactory
         else //special cases
         {
             //empty anchor elements must be preserved
-            if (e.getNodeName().toLowerCase().equals("a") && e.hasAttribute("name") && e.getTextContent().trim().length() == 0)
+            if (e.getNodeName().toLowerCase().equals("a") && e.hasAttribute("name") 
+                    && (e.getTextContent() == null || e.getTextContent().trim().length() == 0))
                 return true;
             else
                 return false;
@@ -86,7 +87,8 @@ public class HTMLBoxFactory
             return createSubtreeObject(parent, e, viewport, style);
         else if (name.equals("img"))
             return createSubtreeImg(parent, e, viewport, style);
-        else if (name.equals("a") && e.hasAttribute("name") && e.getTextContent().trim().length() == 0)
+        else if (name.equals("a") && e.hasAttribute("name")
+                && (e.getTextContent() == null || e.getTextContent().trim().length() == 0))
         {
             //make the named anchors sticky
             ElementBox eb = factory.createElementInstance(parent, e, style);
