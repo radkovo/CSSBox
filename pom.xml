@@ -179,7 +179,7 @@
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>1.17-SNAPSHOT</version>
+			<version>1.16</version>
 		</dependency>
 	</dependencies>
 </project>
