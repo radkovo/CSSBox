@@ -30,6 +30,7 @@ import org.w3c.dom.*;
 
 import cz.vutbr.web.css.CSSException;
 import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.RuleSet;
 import cz.vutbr.web.css.Selector;
@@ -51,7 +52,7 @@ public class DOMAnalyzer
 	
     private Document doc;   //the root node of the DOM tree
     private URL baseUrl;    //base URL
-    private String media;   //media type
+    private MediaSpec media;   //media type
     private String encoding; //default character encoding for style sheet parsing
     
     private Vector<StyleSheet> styles;  //vector of StyleSheet sheets
@@ -77,7 +78,7 @@ public class DOMAnalyzer
     public DOMAnalyzer(org.w3c.dom.Document doc) 
     {
         this.doc = doc;
-        this.media = DEFAULT_MEDIA;
+        this.media = new MediaSpec(DEFAULT_MEDIA);
         baseUrl = null;
         encoding = null;
         styles = new Vector<StyleSheet>();
@@ -107,7 +108,7 @@ public class DOMAnalyzer
     {
         this.doc = doc;
         this.encoding = null;
-        this.media = DEFAULT_MEDIA;
+        this.media = new MediaSpec(DEFAULT_MEDIA);
         styles = new Vector<StyleSheet>();
         this.baseUrl = baseUrl;
         if (detectBase)
@@ -150,22 +151,41 @@ public class DOMAnalyzer
     }
 
     /**
-     * Returns current medium used.
+     * Returns the type of the current medium used.
 	 * @return the media type according to CSS
 	 */
 	public String getMedia()
 	{
-		return media;
+		return media.getType();
 	}
 
 	/**
-	 * Set the medium used for computing the style. Default is "screen".
+	 * Set the type of the medium used for computing the style. Default is "screen".
 	 * @param media the medium to set
 	 */
 	public void setMedia(String media)
 	{
-		this.media = media;
+		this.media = new MediaSpec(media);
 	}
+
+    /**
+     * Returns the full specification of the currently used medium.
+     * @return the media specification according to CSS
+     */
+    public MediaSpec getMediaSpec()
+    {
+        return media;
+    }
+
+    /**
+     * Set the specification of the medium used for computing the style. The default is "screen" with
+     * some standard features that correspond to a normal desktop station.
+     * @param media the medium to set
+     */
+    public void setMediaSpec(MediaSpec media)
+    {
+        this.media = media;
+    }
 
 	/**
 	 * Returns the root element of the document.
@@ -334,14 +354,27 @@ public class DOMAnalyzer
     
     /** 
      * Returns a vector of CSSStyleSheet objects referenced from the document for the specified
-     * media type. The internal style sheets are read from the document directly, the external
-     * ones are downloaded and parsed automatically.
+     * media type with default values of the remaining media features. The internal style sheets
+     * are read from the document directly, the external ones are downloaded and parsed automatically.
      * @param media the media type string
      */
     public void getStyleSheets(String media)
     {
-    	this.media = new String(media);
-        StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, media);
+    	this.media = new MediaSpec(media);
+        StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
+        styles.add(newsheet);
+    }
+
+    /** 
+     * Returns a vector of CSSStyleSheet objects referenced from the document for the specified
+     * media type and features. The internal style sheets are read from the document directly, the external
+     * ones are downloaded and parsed automatically.
+     * @param media the media specification
+     */
+    public void getStyleSheets(MediaSpec media)
+    {
+        this.media = media;
+        StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
         styles.add(newsheet);
     }
 
