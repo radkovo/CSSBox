@@ -466,6 +466,7 @@ public class DOMAnalyzer
 	    //this forces re-creating the analyzer and stylemap upon next read
 	    analyzer = null;
 	    stylemap = null;
+	    istylemap = null;
 	}
 	
     /**
