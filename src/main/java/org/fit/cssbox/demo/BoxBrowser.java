@@ -48,14 +48,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+
 import java.awt.GridBagConstraints;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
 import java.awt.GridLayout;
+
 import javax.swing.JTree;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -65,17 +68,23 @@ import javax.swing.tree.TreePath;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.awt.FlowLayout;
+
 import javax.swing.JTable;
 import javax.swing.JTabbedPane;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Declaration;
+import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Term;
+
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 
@@ -152,10 +161,14 @@ public class BoxBrowser
             Document doc = parser.parse();
             String encoding = parser.getCharset();
             
+            MediaSpec media = new MediaSpec("screen");
+            updateCurrentMedia(media);
+            
             DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
             if (encoding == null)
                 encoding = da.getCharacterEncoding();
             da.setDefaultEncoding(encoding);
+            da.setMediaSpec(media);
             da.attributesToStyles();
             da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
             da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
@@ -164,7 +177,7 @@ public class BoxBrowser
             
             contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
             ((BrowserCanvas) contentCanvas).setConfig(config);
-            ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize());
+            ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize(), contentScroll.getVisibleRect());
             
             docSource.close();
 
@@ -200,6 +213,26 @@ public class BoxBrowser
         }
     }
     
+	/**
+	 * Updates the given media specification according to the real screen parametres (if they may be obtained).
+	 * @param media The media specification to be updated.
+	 */
+	protected void updateCurrentMedia(MediaSpec media)
+	{
+        Dimension size = getContentScroll().getViewport().getSize();
+        Dimension deviceSize = Toolkit.getDefaultToolkit().getScreenSize();
+        ColorModel colors = Toolkit.getDefaultToolkit().getColorModel();
+        
+        media.setDimensions(size.width, size.height);
+        media.setDeviceDimensions(deviceSize.width, deviceSize.height);
+        media.setColor(colors.getComponentSize()[0]);
+        if (colors instanceof IndexColorModel)
+        {
+            media.setColorIndex(((IndexColorModel) colors).getMapSize());
+        }
+        media.setResolution(Toolkit.getDefaultToolkit().getScreenResolution());
+	}
+	
 	/**
 	 * Recursively creates a tree from the box tree
 	 */
@@ -721,7 +754,7 @@ public class BoxBrowser
                 {
                     if (contentCanvas != null && contentCanvas instanceof BrowserCanvas)
                     {
-                        ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize());
+                        ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize(), contentScroll.getVisibleRect());
                         contentScroll.repaint();
                         //new box tree
                         root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());

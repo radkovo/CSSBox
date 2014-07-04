@@ -55,6 +55,7 @@ public class BrowserCanvas extends JPanel
     protected BrowserConfig config;
     protected boolean createImage;
     protected boolean autoSizeUpdate;
+    protected boolean autoMediaUpdate;
     
     /** 
      * Creates a new instance of the browser engine for a document. After creating the engine,
@@ -71,6 +72,7 @@ public class BrowserCanvas extends JPanel
         this.config = new BrowserConfig();
         this.createImage = true;
         this.autoSizeUpdate = true;
+        this.autoMediaUpdate = true;
     }
     
     /** 
@@ -78,7 +80,7 @@ public class BrowserCanvas extends JPanel
      * 
      * @param root the &lt;body&gt; element of the document to be rendered
      * @param decoder the CSS decoder used to compute the style
-     * @param dim the viewport dimensions
+     * @param dim the preferred canvas dimensions
      * @param baseurl the document base URL   
      */
     public BrowserCanvas(org.w3c.dom.Element root,
@@ -129,16 +131,35 @@ public class BrowserCanvas extends JPanel
     }
     
     /**
-     * Creates the document layout according to the viewport size. If the size of the resulting
-     * page is greater than the specified one (e.g. there is an explicit width or height specified
-     * for the resulting page), the viewport size is updated automatically.
+     * Creates the document layout according to the given viewport size where the visible area size
+     * is equal to the whole canvas. If the size of the resulting page is greater than the specified
+     * one (e.g. there is an explicit width or height specified for the resulting page), the viewport
+     * size is updated automatically.
      * @param dim the viewport size
      */
     public void createLayout(Dimension dim)
     {
+        createLayout(dim, new Rectangle(dim));
+    }
+    
+    /**
+     * Creates the document layout according to the canvas and viewport size and position. If the size 
+     * of the resulting page is greater than the specified one (e.g. there is an explicit width or height
+     * specified for the resulting page), the total canvas size is updated automatically.
+     * @param dim the total canvas size 
+     * @param visibleRect the viewport (the visible area) size and position
+     */
+    public void createLayout(Dimension dim, Rectangle visibleRect)
+    {
         if (createImage)
             img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         Graphics2D ig = img.createGraphics();
+        
+        if (autoMediaUpdate)
+        {
+            decoder.getMediaSpec().setDimensions(visibleRect.width, visibleRect.height);
+            decoder.recomputeStyles();
+        }
         
         log.trace("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, baseurl);
@@ -251,5 +272,27 @@ public class BrowserCanvas extends JPanel
     {
         return autoSizeUpdate;
     }
+
+    /**
+     * Enables or disables automatic updating of the display area size specified in the current media specification.
+     * When enabled, the size in the media specification is updated automatically when
+     * {@link BrowserCanvas#createLayout(Dimension, Rectangle)} is called. When disabled, the media specification
+     * is not modified automatically. By default, the automatic update is enabled.
+     * 
+     * @param autoMediaUpdate {@code true} when enabled.
+     */
+    public void setAutoMediaUpdate(boolean autoMediaUpdate)
+    {
+        this.autoMediaUpdate = autoMediaUpdate;
+    }
     
+    /**
+     * Checks whether the automatic media update is enabled.
+     * @return {@code true} if enabled.
+     */
+    public boolean getAutoMediaUpdate()
+    {
+        return autoMediaUpdate;
+    }
+
 }
