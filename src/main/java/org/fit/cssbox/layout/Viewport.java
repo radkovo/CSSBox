@@ -18,7 +18,9 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.Vector;
 
 import org.fit.cssbox.render.BoxRenderer;
@@ -52,7 +54,17 @@ public class Viewport extends BlockBox
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
 
-    
+    /**
+     * Creates a new Viewport with the given initial size. The actual size may be increased during the layout. 
+     *  
+     * @param e The anonymous element representing the viewport.
+     * @param g 
+     * @param ctx
+     * @param factory The factory used for creating the child boxes.
+     * @param root The root element of the rendered document.
+     * @param width Preferred (minimal) width.
+     * @param height Preferred (minimal) height.
+     */
     public Viewport(Element e, Graphics2D g, VisualContext ctx, BoxFactory factory, Element root, int width, int height)
 	{
 		super(e, g, ctx);
