@@ -385,7 +385,6 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     {
         abort = false;
         int loadtime = 0;
-        loadTimeout = 10000;
         while (!abort && image != null && !complete)
         {
             try
