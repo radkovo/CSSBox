@@ -24,8 +24,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
-import javax.swing.ImageIcon;
-
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundPosition;
@@ -100,6 +98,9 @@ public class BackgroundImage extends ContentImage
 
         //image = new ImageIcon(image).getImage();
         image = loadImage(caching);
+        // no container that would repaint -- wait for the complete image
+        if (container == null)
+            waitForLoad();
         
         Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
         if (bounds.width > 0 && bounds.height > 0)

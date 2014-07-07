@@ -59,6 +59,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     protected Container container; //component's container, for repaint
     protected Toolkit toolkit; //system default toolkit
     protected boolean abort; //error or abort flag during loading in image observer
+    protected boolean complete; //set to true when image loading is complete
     
     public ContentImage(ElementBox owner)
     {
@@ -69,6 +70,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         this.caching = true;
         this.container = null;
         this.abort = false;
+        this.complete = false;
         this.loadTimeout = owner.getViewport().getConfig().getImageLoadTimeout();
     }
 
@@ -131,7 +133,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             }
 
             // start loading and preparation
-            toolkit.prepareImage(img, -1, -1, observer);
+            complete = toolkit.prepareImage(img, -1, -1, observer);
             return img;
         }
         return null;
@@ -194,6 +196,10 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     {
         if (image == null || abort)
             return null;
+        
+        // no container that would repaint -- wait for the complete image
+        if (container == null)
+            waitForLoad();
         
         BufferedImage img = new BufferedImage(getIntrinsicWidth(), getIntrinsicHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
@@ -351,6 +357,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     public void reset()
     {
         abort = false;
+        complete = false;
         width = -1;
         height = -1;
         if (image != null) image.flush();
@@ -374,10 +381,36 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         image = null;
     }
 
+    public boolean waitForLoad()
+    {
+        abort = false;
+        int loadtime = 0;
+        loadTimeout = 10000;
+        while (!abort && image != null && !complete)
+        {
+            try
+            {
+                if (loadtime > loadTimeout)
+                {
+                    image = null;
+                    abort = true;
+                    log.warn("Image loading aborted for timeout: " + url + " " + loadtime);
+                }
+                Thread.sleep(25);
+                loadtime += 25;
+            } catch (Exception e)
+            {
+                image = null;
+                abort = true;
+                log.warn("Image loading aborted: " + e.getMessage());
+            }
+        }
+        return complete;
+    }
+    
     public boolean imageUpdate(Image img, int flags, int x, int y, int newWidth, int newHeight)
     {
         // http://www.permadi.com/tutorial/javaImgObserverAndAnimGif/
-        if (image == null || image != img) { return false; }
 
         // error
         if ((flags & (ABORT | ERROR)) != 0)
@@ -402,6 +435,11 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         if ((flags & (FRAMEBITS | ALLBITS)) != 0)
         {
             repaint(0);
+        }
+
+        if ((flags & ALLBITS) != 0)
+        {
+            complete = true;
         }
 
         // hint : provide some "Loading..." animation...

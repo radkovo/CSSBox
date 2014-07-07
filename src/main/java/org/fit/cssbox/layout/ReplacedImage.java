@@ -110,6 +110,9 @@ public class ReplacedImage extends ContentImage
             // now update our configuration
             ctx.updateGraphics(g);
 
+            // no container that would repaint -- wait for the complete image
+            if (container == null)
+                waitForLoad();
             // draw image
             g.drawImage(image, bounds.x, bounds.y, width, height, observer);
         }
