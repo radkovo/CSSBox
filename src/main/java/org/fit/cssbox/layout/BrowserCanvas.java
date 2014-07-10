@@ -168,6 +168,7 @@ public class BrowserCanvas extends JPanel
         VisualContext ctx = new VisualContext(null, factory);
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
+        viewport.setVisibleRect(visibleRect);
         viewport.initSubtree();
         
         log.trace("Layout for "+dim.width+"px");

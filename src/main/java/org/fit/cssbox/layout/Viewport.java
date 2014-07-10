@@ -45,6 +45,7 @@ public class Viewport extends BlockBox
 	private int height;
 	protected BrowserConfig config;
 	
+	private Rectangle visibleRect;
 	private BoxFactory factory;
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
@@ -68,6 +69,7 @@ public class Viewport extends BlockBox
     public Viewport(Element e, Graphics2D g, VisualContext ctx, BoxFactory factory, Element root, int width, int height)
 	{
 		super(e, g, ctx);
+		ctx.setViewport(this);
 		this.factory = factory;
 		this.root = root;
 		style = CSSFactory.createNodeData(); //Viewport starts with an empty style
@@ -79,8 +81,27 @@ public class Viewport extends BlockBox
         isblock = true;
         contblock = true;
         root = null;
+        visibleRect = new Rectangle(0, 0, width, height);
 	}
     
+    /**
+     * Obtains the position of the visible part (CSS viewport) in the canvas.
+     * @return the visible rectangle
+     */
+    public Rectangle getVisibleRect()
+    {
+        return visibleRect;
+    }
+
+    /**
+     * Sets the position of the visible part (CSS viewport) in the canvas.
+     * @param visibleRect the visible rectangle to be set
+     */
+    public void setVisibleRect(Rectangle visibleRect)
+    {
+        this.visibleRect = visibleRect;
+    }
+
     /**
      * Obtains the current browser configuration.
      * @return current configuration.
@@ -109,7 +130,9 @@ public class Viewport extends BlockBox
     @Override
     public String toString()
     {
-        return "Viewport " + width + "x" + height;
+        return "Viewport " + width + "x" + height + 
+                "[visible " + visibleRect.x + "," +visibleRect.y + "," +
+                visibleRect.width + "," + visibleRect.height + "]"; 
     }
     
     public BoxFactory getFactory()

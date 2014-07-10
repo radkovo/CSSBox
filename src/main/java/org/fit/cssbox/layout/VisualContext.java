@@ -1,6 +1,6 @@
 /*
  * VisualContext.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2014 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,6 +21,8 @@
 package org.fit.cssbox.layout;
 
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +41,9 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
 public class VisualContext 
 {
     private VisualContext parent;
+    private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
+    private Viewport viewport; //the viewport used for obtaining the vw sizes
     private Font font; //current font
     private FontMetrics fm; //current font metrics
     private double fontSize;
@@ -48,7 +52,9 @@ public class VisualContext
     private CSSProperty.FontVariant fontVariant;
     private List<CSSProperty.TextDecoration> textDecoration;
     private double em; //number of pixels in 1em
+    private double rem; //number of pixels in 1rem 
     private double ex; //number of pixels in 1ex
+    private double ch; //number of pixels in 1ch
     private double dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
@@ -57,8 +63,11 @@ public class VisualContext
     {
         this.parent = parent;
         this.factory = factory;
+        rootContext = (parent == null) ? this : parent.rootContext;
         em = CSSUnits.medium_font;
+        rem = em;
         ex = 0.6 * em;
+        ch = 0.8 * ch; //just an initial guess, updated in updateForGraphics()
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
         font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
         fontSize = CSSUnits.points(CSSUnits.medium_font);
@@ -72,8 +81,12 @@ public class VisualContext
     public VisualContext create()
     {
         VisualContext ret = new VisualContext(this, this.factory);
+        ret.viewport = viewport;
+        ret.rootContext = rootContext;
         ret.em = em;
+        ret.rem = rem;
         ret.ex = ex;
+        ret.ch = ch;
         ret.dpi = dpi;
         ret.font = font;
         ret.fontSize = fontSize;
@@ -92,6 +105,28 @@ public class VisualContext
         return parent;
     }
     
+    public Viewport getViewport()
+    {
+        return viewport;
+    }
+
+    public void setViewport(Viewport viewport)
+    {
+        this.viewport = viewport;
+    }
+
+    public boolean isRootContext()
+    {
+        return (this == rootContext);
+    }
+
+    public void makeRootContext()
+    {
+        if (this.rootContext != null)
+            this.rootContext.rootContext = this; //the old root now points to us
+        this.rootContext = this; //we also point to us
+    }
+
     /**
      * The AWT font used for the box.
      * @return current font
@@ -167,6 +202,14 @@ public class VisualContext
     }
 
     /**
+     * @return the rem value of the context
+     */
+    public double getRem()
+    {
+        return rem;
+    }
+
+    /**
      * @return the ex value of the context
      */
     public double getEx()
@@ -174,6 +217,14 @@ public class VisualContext
         return ex;
     }
 
+    /**
+     * @return the 'ch' value of the context
+     */
+    public double getCh()
+    {
+        return ch;
+    }
+    
     /**
      * @return the dpi value used in the context
      */
@@ -231,6 +282,11 @@ public class VisualContext
         else
             size = CSSUnits.convertFontSize(psize, fsize);
         fontSize = CSSUnits.points(size);
+        
+        if (rootContext != null)
+            rem = rootContext.getEm();
+        else
+            rem = em; //we don't have a root context?
         
         CSSProperty.FontWeight weight = style.getProperty("font-weight");
         if (weight != null) fontWeight = weight;
@@ -292,7 +348,15 @@ public class VisualContext
         if (style != null) update(style);
         updateGraphics(g);
         fm = g.getFontMetrics();
-        ex = (int) (fm.getHeight() * 0.6); //em has been updated in update()
+        
+        //update the width units
+        //em has been updated in update()
+        
+        FontRenderContext frc = new FontRenderContext(null, false, false);
+        TextLayout layout = new TextLayout("x", font, frc);
+        ex = layout.getBounds().getHeight();
+        
+        ch = fm.charWidth('0');
     }
     
     
@@ -361,9 +425,33 @@ public class VisualContext
             {
                 ret = (em * nval * 72) / dpi; //em is in pixels
             }
+            else if (unit == TermLength.Unit.rem)
+            {
+                ret = (rem * nval * 72) / dpi;
+            }
             else if (unit == TermLength.Unit.ex)
             {
                 ret = (ex * nval * 72) / dpi;
+            }
+            else if (unit == TermLength.Unit.ch)
+            {
+                ret = (ch * nval * 72) / dpi;
+            }
+            else if (unit == TermLength.Unit.vw)
+            {
+                return (viewport.getVisibleRect().getWidth() * nval * 72) / (100.0 * dpi);
+            }
+            else if (unit == TermLength.Unit.vh)
+            {
+                return (viewport.getVisibleRect().getHeight() * nval * 72) / (100.0 * dpi);
+            }
+            else if (unit == TermLength.Unit.vmin)
+            {
+                return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
+            }
+            else if (unit == TermLength.Unit.vmax)
+            {
+                return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
             }
             return ret;
         }
@@ -423,9 +511,33 @@ public class VisualContext
             {
                 ret = em * nval; //em is in pixels
             }
+            else if (unit == TermLength.Unit.rem)
+            {
+                ret = rem * nval; //em is in pixels
+            }
             else if (unit == TermLength.Unit.ex)
             {
                 ret = ex * nval;
+            }
+            else if (unit == TermLength.Unit.ch)
+            {
+                ret = ch * nval;
+            }
+            else if (unit == TermLength.Unit.vw)
+            {
+                return viewport.getVisibleRect().getWidth() * nval / 100.0;
+            }
+            else if (unit == TermLength.Unit.vh)
+            {
+                return viewport.getVisibleRect().getHeight() * nval / 100.0;
+            }
+            else if (unit == TermLength.Unit.vmin)
+            {
+                return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+            }
+            else if (unit == TermLength.Unit.vmax)
+            {
+                return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
             }
             return ret;
         }

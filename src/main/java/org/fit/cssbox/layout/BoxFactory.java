@@ -452,6 +452,10 @@ public class BoxFactory
         else    
             ret.setContainingBlock(stat.contbox);
         
+        //mark the root visual context
+        if (n.getOwnerDocument().getDocumentElement() == n)
+            ret.getVisualContext().makeRootContext();
+        
         return ret;
     }
     
