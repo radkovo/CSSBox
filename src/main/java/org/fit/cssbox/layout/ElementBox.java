@@ -1240,7 +1240,7 @@ abstract public class ElementBox extends Box
             floating = BlockBox.FLOAT_NONE;
         }
         //compute the display computed value
-        if (floating != BlockBox.FLOAT_NONE || position == BlockBox.POS_ABSOLUTE || isRootElement())
+        if (floating != BlockBox.FLOAT_NONE || position == BlockBox.POS_ABSOLUTE || position == BlockBox.POS_FIXED || isRootElement())
         {
             if (display == DISPLAY_INLINE_TABLE)
                 display = DISPLAY_TABLE;

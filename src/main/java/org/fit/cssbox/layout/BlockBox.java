@@ -512,7 +512,7 @@ public class BlockBox extends ElementBox
      */
     protected boolean encloseFloats()
     {
-        return overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || display == ElementBox.DISPLAY_INLINE_BLOCK;
+        return overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || position == POS_FIXED || display == ElementBox.DISPLAY_INLINE_BLOCK;
     }
     
     /**
@@ -1935,7 +1935,7 @@ public class BlockBox extends ElementBox
     {
         mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
-    	if (position == POS_ABSOLUTE)
+    	if (position == POS_ABSOLUTE || position == POS_FIXED)
     		computeWidthsAbsolute(width, auto, exact, cblock.getContentWidth() + cblock.padding.left + cblock.padding.right, update); //containing box created by padding
     	else
     		computeWidthsInFlow(width, auto, exact, cblock.getContentWidth(), update); //containing block formed by the content only
@@ -2138,7 +2138,7 @@ public class BlockBox extends ElementBox
      */
     protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, BlockBox cblock, boolean update)
     {
-        if (position == POS_ABSOLUTE)
+        if (position == POS_ABSOLUTE || position == POS_FIXED)
         {
             int contw = cblock.getContentWidth() + cblock.padding.left + cblock.padding.right; //containing block padding edge is taken
             int conth = cblock.getContentHeight() + cblock.padding.top + cblock.padding.bottom;

@@ -444,8 +444,10 @@ public class BoxFactory
         {
             BlockBox block = (BlockBox) ret; 
             //Setup my containing box
-            if (block.position == BlockBox.POS_ABSOLUTE || block.position == BlockBox.POS_FIXED)
+            if (block.position == BlockBox.POS_ABSOLUTE)
                 ret.setContainingBlock(stat.absbox);
+            else if (block.position == BlockBox.POS_FIXED)
+                ret.setContainingBlock(viewport);
             else    
                 ret.setContainingBlock(stat.contbox);
         }
