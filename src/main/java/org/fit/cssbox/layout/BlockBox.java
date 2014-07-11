@@ -1290,6 +1290,12 @@ public class BlockBox extends ElementBox
                     }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
                     y = cblock.getAbsoluteBackgroundBounds().y + coords.top;
+                    //if fixed, update the position by the viewport visible offset
+                    if (position == POS_FIXED && cblock instanceof Viewport)
+                    {
+                        x += ((Viewport) cblock).getVisibleRect().x; 
+                        y += ((Viewport) cblock).getVisibleRect().y; 
+                    }
                 }
             }
             else if (floating == FLOAT_LEFT)

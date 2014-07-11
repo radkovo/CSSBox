@@ -435,6 +435,56 @@ public class Viewport extends BlockBox
 	}
 	
     //===================================================================================
+	
+    /*@Override
+    public int getContentX()
+    {
+        return visibleRect.x;
+    }
+
+    @Override
+    public int getContentY()
+    {
+        return visibleRect.y;
+    }
+
+    @Override
+    public int getContentWidth()
+    {
+        return visibleRect.width;
+    }
+
+    @Override
+    public int getContentHeight()
+    {
+        return visibleRect.height;
+    }
+
+	@Override
+	public Rectangle getAbsoluteBackgroundBounds()
+    {
+        return new Rectangle(visibleRect);
+    }
+
+	@Override
+    public Rectangle getAbsoluteBorderBounds()
+    {
+        return new Rectangle(visibleRect);
+    }*/
+	
+    /*@Override
+    public Rectangle getClippedBounds()
+    {
+        return getAbsoluteBounds();
+    }*/
+
+    /*@Override
+    public Rectangle getClippedContentBounds()
+    {
+        return getAbsoluteBounds();
+    }*/
+	
+    //===================================================================================
     
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
     {

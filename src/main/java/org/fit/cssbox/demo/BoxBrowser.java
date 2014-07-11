@@ -85,6 +85,7 @@ import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Term;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 
@@ -754,7 +755,7 @@ public class BoxBrowser
                 {
                     if (contentCanvas != null && contentCanvas instanceof BrowserCanvas)
                     {
-                        ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize(), contentScroll.getVisibleRect());
+                        ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize(), contentScroll.getViewport().getViewRect());
                         contentScroll.repaint();
                         //new box tree
                         root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());
@@ -762,6 +763,17 @@ public class BoxBrowser
                     }
                 }
             });
+            /*contentScroll.getViewport().addChangeListener(new javax.swing.event.ChangeListener()
+            {
+                public void stateChanged(ChangeEvent e)
+                {
+                    if (contentCanvas != null && contentCanvas instanceof BrowserCanvas)
+                    {
+                        ((BrowserCanvas) contentCanvas).updateVisibleArea(contentScroll.getViewport().getViewRect());
+                        contentScroll.repaint();
+                    }
+                }
+            });*/
         }
         return contentScroll;
     }
