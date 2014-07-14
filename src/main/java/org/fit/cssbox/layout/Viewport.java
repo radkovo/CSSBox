@@ -1,6 +1,6 @@
 /*
  * Viewport.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2014 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -31,9 +31,12 @@ import org.w3c.dom.Element;
 import cz.vutbr.web.css.CSSFactory;
 
 /**
- * This class represents a browser viewport which is implemented as a special case of a block
- * box. It differs mainly in the way the sizes are computed. Moreover, it provides the methods
- * for margin collapsing which is done before the layout itself.
+ * The viewport is a special case of BlockElement that has several widths and heights:
+ * 
+ * <ul>
+ * <li><strong>Viewport size</strong> - the width and height of the visible area used for
+ * computing the sizes of the contained blocks.</li>
+ * <li><strong>Canvas size</strong> - the width and height of the whole rendered page</li> 
  * 
  * @author radek
  */
@@ -41,11 +44,14 @@ public class Viewport extends BlockBox
 {
     private static Logger log = LoggerFactory.getLogger(Viewport.class);
     
+    /** Total canvas width */
 	private int width;
+	/** Total canvas height */
 	private int height;
-	protected BrowserConfig config;
+	/** Visible rectagle -- the position and size of the CSS viewport */
+    private Rectangle visibleRect;
 	
-	private Rectangle visibleRect;
+    protected BrowserConfig config;
 	private BoxFactory factory;
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
@@ -100,8 +106,18 @@ public class Viewport extends BlockBox
     public void setVisibleRect(Rectangle visibleRect)
     {
         this.visibleRect = visibleRect;
+        this.content = visibleRect.getSize();
     }
 
+    /**
+     * Obtains the size of the whole canvas that represents the whole rendered page.
+     * @return The canvas size.
+     */
+    public Dimension getCanvasSize()
+    {
+        return new Dimension(width, height);
+    }
+    
     /**
      * Obtains the current browser configuration.
      * @return current configuration.
@@ -436,7 +452,7 @@ public class Viewport extends BlockBox
 	
     //===================================================================================
 	
-    /*@Override
+    @Override
     public int getContentX()
     {
         return visibleRect.x;
@@ -470,19 +486,19 @@ public class Viewport extends BlockBox
     public Rectangle getAbsoluteBorderBounds()
     {
         return new Rectangle(visibleRect);
-    }*/
+    }
 	
-    /*@Override
+    @Override
     public Rectangle getClippedBounds()
     {
         return getAbsoluteBounds();
-    }*/
+    }
 
-    /*@Override
+    @Override
     public Rectangle getClippedContentBounds()
     {
         return getAbsoluteBounds();
-    }*/
+    }
 	
     //===================================================================================
     
