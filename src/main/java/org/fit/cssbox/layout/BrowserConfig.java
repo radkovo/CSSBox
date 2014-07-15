@@ -47,6 +47,9 @@ public class BrowserConfig
     /** Should we interpret the HTML tags? */
     private boolean useHTML;
     
+    /** Should the viewport clip its contents? */
+    private boolean clipViewport;
+    
     /** Registered DocumentSource implementation */
     private Class<? extends DocumentSource> documentSourceClass;
     
@@ -65,6 +68,7 @@ public class BrowserConfig
         loadBackgroundImages = true;
         imageLoadTimeout = 500;
         useHTML = true;
+        clipViewport = false;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
         initDefaultFonts();
@@ -130,7 +134,24 @@ public class BrowserConfig
     {
         this.useHTML = useHTML;
     }
-    
+
+    public boolean getClipViewport()
+    {
+        return clipViewport;
+    }
+
+    /**
+     * Configures whether the rendered page should be clipped by the viewport. When set to {@code true},
+     * the content outside the viewport won't be rendered (the generated boxes won't be visible).
+     * When set to {@code false}, the whole page will be rendered and the viewport size is only
+     * used for layout computation (positioned boxes etc.) The default is {@code false}.
+     * @param clipViewport The configuration value.
+     */
+    public void setClipViewport(boolean clipViewport)
+    {
+        this.clipViewport = clipViewport;
+    }
+
     /**
      * Sets the class used by CSSBox for obtaining documents based on their URLs.
      * @param documentSourceClass the new document source class

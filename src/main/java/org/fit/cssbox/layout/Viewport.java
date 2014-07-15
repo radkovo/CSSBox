@@ -491,13 +491,19 @@ public class Viewport extends BlockBox
     @Override
     public Rectangle getClippedBounds()
     {
-        return getAbsoluteBounds();
+        if (config.getClipViewport())
+            return getAbsoluteBounds();
+        else
+            return new Rectangle(0, 0, width, height);
     }
 
     @Override
     public Rectangle getClippedContentBounds()
     {
-        return getAbsoluteBounds();
+        if (config.getClipViewport())
+            return getAbsoluteBounds();
+        else
+            return new Rectangle(0, 0, width, height);
     }
 	
     //===================================================================================
