@@ -383,7 +383,7 @@ public class Viewport extends BlockBox
 	
     /**
      * Sets the current renderer and draws the whole subtree using the given renderer.
-     * @param g The graphic context to be used for painting.
+     * @param renderer The renderer to be used for drawing.
      */
     public void draw(BoxRenderer renderer)
     {

@@ -23,7 +23,6 @@ import java.awt.Graphics2D;
 import java.util.*;
 
 import org.fit.cssbox.css.HTMLNorm;
-import org.fit.cssbox.layout.Box.DrawStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;

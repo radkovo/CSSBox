@@ -930,7 +930,6 @@ abstract public class ElementBox extends Box
     
     /**
      * Draws the subtree as if this was a stacking context root.
-     * @param g The graphic context to be used for painting.
      * @param include include new stacking contexts to this context (currently unused)
      */
     public void drawStackingContext(boolean include)
@@ -981,7 +980,6 @@ abstract public class ElementBox extends Box
     
     /**
      * Draws all the sub-boxes in the given stage.
-     * @param g The graphic context to be used for painting.
      * @param turn The current drawing stage.
      */
     protected void drawChildren(DrawStage turn)
@@ -995,7 +993,6 @@ abstract public class ElementBox extends Box
     
     /**
      * Draws child stacking contexts of the given z-index.
-     * @param g The graphic context to be used for painting.
      * @param zindex The z-index of the contexts to draw. Only the child contexts with the given z-index will be drawn.
      */
     protected void drawChildContexts(int zindex)
@@ -1012,7 +1009,7 @@ abstract public class ElementBox extends Box
     
     /** 
      * Draw the background and border of this box (no subboxes).
-     * This method is normally called automatically from {@link Box#draw(Graphics2D, DrawStage)}.
+     * This method is normally called automatically from {@link Box#draw(DrawStage)}.
      * @param g the graphics context used for drawing 
      */
     public void drawBackground(Graphics2D g)

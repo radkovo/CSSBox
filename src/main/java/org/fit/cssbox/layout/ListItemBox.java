@@ -238,8 +238,8 @@ public class ListItemBox extends BlockBox
      * Conversion int to Roman numbers
      * from http://www.roseindia.net/java/java-tips/45examples/misc/roman/roman.shtml
      *
-     * @param binary
-     * @return
+     * @param binary the int to be converted
+     * @return the roman number string
      */
     private static String binaryToRoman(int binary)
     {
