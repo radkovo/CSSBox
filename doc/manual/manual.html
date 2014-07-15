@@ -3,7 +3,7 @@
 			@import "manual.css";
 			</style></head><body><h1>CSSBox Manual</h1><p class="author">Radek Burget<br />
 <a href="mailto:burgetr@fit.vutbr.cz">burgetr@fit.vutbr.cz</a>
-</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li><li><a href="#configOptions">Configuration Options</a></li><li><a href="#parserCustomization">Custom Document Sources and Parsers</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
+</p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#intro">Introduction</a></li><li><a href="#basic">Basic usage</a><ul><li><a href="#basicLoading">Document Loading</a></li><li><a href="#media">Media Support</a></li><li><a href="#basicLayout">Obtaining the Layout</a></li><li><a href="#basicDisplay">Displaying the document</a></li><li><a href="#configOptions">Configuration Options</a></li><li><a href="#parserCustomization">Custom Document Sources and Parsers</a></li></ul></li><li><a href="#model">Rendered Document Model</a><ul><li><a href="#modelBox">Basic Box Properties</a></li><li><a href="#modelText">Text Boxes</a></li><li><a href="#modelElement">Element Boxes</a></li><li><a href="#modelInline">Inline Boxes</a></li><li><a href="#modelBlock">Block Boxes</a></li><li><a href="#modelColors">Fonts and Colors</a></li></ul></li><li><a href="#feedback">Feedback</a></li></ul></div><div class="section" id="intro"><h2>Introduction</h2><p>CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its 
 primary purpose is to provide a complete and further processable information 
 about the rendered page contents and layout.</p><p>This manual gives a short overview of the CSSBox usage. It shows how to
 render a document and it explains how the resulting page is represented and
@@ -38,7 +38,8 @@ da.getStyleSheets(); <em>//load the author style sheets</em>
 </pre></div><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#attributesToStyles()" class="api">attributesToStyles()</a>
 method converts some HTML presentation attributes to CSS
 styles (e.g. the <code>&lt;font&gt;</code> tag attributes, table attributes and some more). If (X)HTML
-interpretation is not required, this method need not be called.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String, org.fit.cssbox.css.DOMAnalyzer.Origin)" class="api">addStyleSheet()</a> 
+interpretation is not required, this method need not be called. When used, this method should be called before
+<code>getStyleSheets()</code> is used.</p><p>The <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#addStyleSheet(java.net.URL, java.lang.String, org.fit.cssbox.css.DOMAnalyzer.Origin)" class="api">addStyleSheet()</a> 
 method is used to add a style sheet to the document. The style sheet is passed as a text
 string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style. These style
 sheets are imported as the user agent style sheets according to the <a href="http://www.w3.org/TR/CSS21/cascade.html#cascading-order">CSS specification</a>.
@@ -50,10 +51,26 @@ includes a basic style of form input fields. This style sheet may be used for ba
 their rendering and functionality is not implemented in any other way in the application.</p><p>Finally, the <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html#getStyleSheets()" class="api">getStyleSheets()</a>
 method loads and processes all the internal and external style sheets referenced from the document including the inline
 style definitions. In case of external style sheets, CSSBox tries to obtain
-the file from the corresponding URL, if accessible.</p><p><em><strong>NOTE:</strong> Since the CSSBox 2.0 version, when the <code>attributesToStyles()</code> method is used
-for interpreting the HTML presentation attributes, it must be called before <code>getStyleSheets()</code> is used.
-Otherwise, the presentation attributes will not be considered in the resulting style.</em></p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
-the document code together with the associated style.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
+the file from the corresponding URL, if accessible.</p><p>The resulting <a href="../api/org/fit/cssbox/css/DOMAnalyzer.html" class="api">DOMAnalyzer</a> object represents
+the document code together with the associated style.</p></div><div class="subsection" id="media"><h3>Media Support</h3><p>By default, the <code>DOMAnalyzer</code> assumes that the page is being rendered on a standard desktop computer
+screen. During the style sheet processing, it uses the <code>"screen"</code> media type and some
+<a href="http://cssbox.sourceforge.net/jstyleparser/api/cz/vutbr/web/css/MediaSpec.html">default display feature values</a> for
+evaluating the possible media queries.</p><p>A different media type or feature values may be specified by creating a new <em>media specification</em> represented
+as a <a href="http://cssbox.sourceforge.net/jstyleparser/api/cz/vutbr/web/css/MediaSpec.html">MediaSpec</a> object from the
+<a href="http://cssbox.sourceforge.net/jstyleparser/">jStyleParser</a> API. The typical usage would be the following:</p><div class="code"><pre>
+<em>//we will use the "screen" media type for rendering</em>
+MediaSpec media = new MediaSpec("screen");
+
+<em>//specify some media feature values</em>
+media.setDimensions(1000, 800); <em>//set the visible area size in pixels</em>
+media.setDeviceDimensions(1600, 1200); <em>//set the display size in pixels</em>
+
+<em>//use the media specification in the analyzer</em>
+DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
+da.setMediaSpec(media);
+<em>//... continue with the DOMAnalyzer initialization as above</em>
+</pre></div><p>The <a href="http://github.com/radkovo/CSSBox/blob/master/src/main/java/org/fit/cssbox/demo/BoxBrowser.java">BoxBrowser</a>
+demo shows a basic usage of the media specifications in a Swing application.</p></div><div class="subsection" id="basicLayout"><h3>Obtaining the Layout</h3><p>The whole layout engine is represented by a graphical
 <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> object.
 The simplest way of creating the layout is passing the initial viewport dimensions to the BrowserCanvas
 constructor. Then, the layout is computed automatically by creating an instance of this object.
@@ -72,7 +89,20 @@ BrowserCanvas browser =
         new BrowserCanvas(da.getRoot(), da, url);
 <em>//... modify the browser configuration here ...</em>
 browser.createLayout(new java.awt.Dimension(1000, 600));
-</pre></div><p>In both cases, the created <code>browser</code> object can be directly used for both displaying
+</pre></div><p>Optionally, the <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#createLayout(java.awt.Dimension, java.awt.Rectangle)" class="api">createLayout</a>
+method allows to specify different values for the preferred total canvas size and the visible area size and position] (the CSS viewport size):</p><div class="code"><pre>
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getRoot(), da, url);
+<em>//... modify the browser configuration here ...</em>
+browser.createLayout(new java.awt.Dimension(1200, 600), new java.awt.Rectangle(0, 0, 1000, 600));
+</pre></div><p>In this case, the preferred size of the resulting page is 1200x600 pixels (it may be adjusted during the layout
+computation based on the page contents) and the size of the visible area is 1000x600 pixels; the visible area is
+in the top left corner of the rendered page. The visible area size and position is used during the layout computation
+and it may influence the positions of positioned elements according to the CSS specification.</p><p>Setting the visible area size automatically updates the used media specification (see the <a href="#media">previous section</a>)
+so that the same size of the visible area is used for evaluating the CSS media queries. However, this behavior may be
+disabled by calling <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html#setAutoMediaUpdate(boolean)" class="api">setAutoMediaUpdate(false)</a>
+before creating the layout. In that case, the visible area size used for the layout computation may be different from
+the size used for media queries.</p><p>In all cases, the created <code>browser</code> object can be directly used for both displaying
 the rendered document and for obtaining the created layout model. The details of the browser
 configuration are described in the <a href="#configOptions">Configuration Options</a> section.</p></div><div class="subsection" id="basicDisplay"><h3>Displaying the document</h3><p>The <a href="../api/org/fit/cssbox/layout/BrowserCanvas.html" class="api">BrowserCanvas</a> class is
 directly derived from the Swing <code>javax.swing.JPanel</code> class. Therefore, it can

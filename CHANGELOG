@@ -1,3 +1,9 @@
+2014-07-15 - Version 4.6
+- Support for rendering on different output media (media query support)
+- New CSS3 length units supported: rem, ch, vw, vh, vmin, vmax
+- Basic layout of the position: fixed elements
+- Image loading and rendering fixes  
+
 2014-02-05 - Version 4.5
 - Margin for empty boxes fixed
 - Negative top margins fixed

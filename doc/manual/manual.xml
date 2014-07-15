@@ -65,7 +65,8 @@ da.getStyleSheets(); <em>//load the author style sheets</em>
 <p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="attributesToStyles()">attributesToStyles()</d:api>
 method converts some HTML presentation attributes to CSS
 styles (e.g. the <d:tag>font</d:tag> tag attributes, table attributes and some more). If (X)HTML
-interpretation is not required, this method need not be called.</p> 
+interpretation is not required, this method need not be called. When used, this method should be called before
+<code>getStyleSheets()</code> is used.</p> 
 <p>The <d:api class="org/fit/cssbox/css/DOMAnalyzer" anchor="addStyleSheet(java.net.URL, java.lang.String, org.fit.cssbox.css.DOMAnalyzer.Origin)">addStyleSheet()</d:api> 
 method is used to add a style sheet to the document. The style sheet is passed as a text
 string containing the CSS code. In our case, we add two built-in style sheets that represent the standard document style. These style
@@ -81,11 +82,37 @@ their rendering and functionality is not implemented in any other way in the app
 method loads and processes all the internal and external style sheets referenced from the document including the inline
 style definitions. In case of external style sheets, CSSBox tries to obtain
 the file from the corresponding URL, if accessible.</p>
-<p><em><strong>NOTE:</strong> Since the CSSBox 2.0 version, when the <code>attributesToStyles()</code> method is used
-for interpreting the HTML presentation attributes, it must be called before <code>getStyleSheets()</code> is used.
-Otherwise, the presentation attributes will not be considered in the resulting style.</em></p>
 <p>The resulting <d:api class="org/fit/cssbox/css/DOMAnalyzer">DOMAnalyzer</d:api> object represents
 the document code together with the associated style.</p>
+</d:subsection>
+
+<d:subsection id="media">
+<d:title>Media Support</d:title>
+<p>By default, the <code>DOMAnalyzer</code> assumes that the page is being rendered on a standard desktop computer
+screen. During the style sheet processing, it uses the <code>"screen"</code> media type and some
+<a href="http://cssbox.sourceforge.net/jstyleparser/api/cz/vutbr/web/css/MediaSpec.html">default display feature values</a> for
+evaluating the possible media queries.</p>
+<p>A different media type or feature values may be specified by creating a new <em>media specification</em> represented
+as a <a href="http://cssbox.sourceforge.net/jstyleparser/api/cz/vutbr/web/css/MediaSpec.html">MediaSpec</a> object from the
+<a href="http://cssbox.sourceforge.net/jstyleparser/">jStyleParser</a> API. The typical usage would be the following:</p>
+
+<d:codebox>
+<em>//we will use the "screen" media type for rendering</em>
+MediaSpec media = new MediaSpec("screen");
+
+<em>//specify some media feature values</em>
+media.setDimensions(1000, 800); <em>//set the visible area size in pixels</em>
+media.setDeviceDimensions(1600, 1200); <em>//set the display size in pixels</em>
+
+<em>//use the media specification in the analyzer</em>
+DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
+da.setMediaSpec(media);
+<em>//... continue with the DOMAnalyzer initialization as above</em>
+</d:codebox>
+
+<p>The <a href="http://github.com/radkovo/CSSBox/blob/master/src/main/java/org/fit/cssbox/demo/BoxBrowser.java">BoxBrowser</a>
+demo shows a basic usage of the media specifications in a Swing application.</p>
+
 </d:subsection>
 
 <d:subsection id="basicLayout">
@@ -114,7 +141,28 @@ BrowserCanvas browser =
 <em>//... modify the browser configuration here ...</em>
 browser.createLayout(new java.awt.Dimension(1000, 600));
 </d:codebox>
-<p>In both cases, the created <code>browser</code> object can be directly used for both displaying
+
+<p>Optionally, the <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="createLayout(java.awt.Dimension, java.awt.Rectangle)">createLayout</d:api>
+method allows to specify different values for the preferred total canvas size and the visible area size and position] (the CSS viewport size):</p>
+<d:codebox>
+BrowserCanvas browser = 
+        new BrowserCanvas(da.getRoot(), da, url);
+<em>//... modify the browser configuration here ...</em>
+browser.createLayout(new java.awt.Dimension(1200, 600), new java.awt.Rectangle(0, 0, 1000, 600));
+</d:codebox>
+
+<p>In this case, the preferred size of the resulting page is 1200x600 pixels (it may be adjusted during the layout
+computation based on the page contents) and the size of the visible area is 1000x600 pixels; the visible area is
+in the top left corner of the rendered page. The visible area size and position is used during the layout computation
+and it may influence the positions of positioned elements according to the CSS specification.</p>
+
+<p>Setting the visible area size automatically updates the used media specification (see the <d:ref target="media">previous section</d:ref>)
+so that the same size of the visible area is used for evaluating the CSS media queries. However, this behavior may be
+disabled by calling <d:api class="org/fit/cssbox/layout/BrowserCanvas" anchor="setAutoMediaUpdate(boolean)">setAutoMediaUpdate(false)</d:api>
+before creating the layout. In that case, the visible area size used for the layout computation may be different from
+the size used for media queries.</p>
+
+<p>In all cases, the created <code>browser</code> object can be directly used for both displaying
 the rendered document and for obtaining the created layout model. The details of the browser
 configuration are described in the <a href="#configOptions">Configuration Options</a> section.</p>
 </d:subsection>
