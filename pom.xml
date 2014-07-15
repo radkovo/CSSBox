@@ -153,7 +153,7 @@
 		<dependency>
 			<groupId>net.sourceforge.nekohtml</groupId>
 			<artifactId>nekohtml</artifactId>
-			<version>1.9.19</version>
+			<version>1.9.21</version>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
