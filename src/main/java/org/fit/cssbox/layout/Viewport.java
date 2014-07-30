@@ -200,7 +200,7 @@ public class Viewport extends BlockBox
     @Override
 	public boolean hasFixedHeight()
 	{
-		return false;
+		return true;
 	}
 
 	@Override

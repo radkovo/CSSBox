@@ -2168,18 +2168,48 @@ public class BlockBox extends ElementBox
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
         
-        //compute height when set. If not, it will be computed during the layout
-        if (cblock != null && cblock.hset)
+        if (exact && !auto && height != null)
         {
-            hset = (exact && !auto && height != null);
+            int baseh = conth;
+            if (height.isPercentage())
+            {
+                if (cblock == null)
+                {
+                    hset = false;
+                    log.error("No containing block for {}", this.toString());
+                }
+                else if (!cblock.hasFixedHeight())
+                {
+                    //we have a percentage height but the containing block has not an explicit height
+                    //CSS 2.1 says that the height should compute to "auto".
+                    //However, the browsers obviously find the nearest parent with an explicit height or use the viewport.
+                    BlockBox cb = cblock;
+                    do
+                    {
+                        cb = cb.getContainingBlock();
+                    } while (cb != null && !cb.hasFixedHeight() && !cb.isPositioned());
+                    if (cb == null || !cb.hasFixedHeight())
+                    {
+                        hset = false; //no suitable containing block
+                    }
+                    else
+                    {
+                        hset = true; //found a containing block with an explicid height
+                        baseh = cb.getContentHeight();
+                    }
+                }
+                else
+                    hset = true; //percentage and containing bloc has fixed height
+            }
+            else
+                hset = true; //not a percentage - it's a fixed height
+            
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, conth);
+                content.height = dec.getLength(height, auto, 0, 0, baseh);
         }
-        else
+        else //height not explicitly set
         {
-            hset = (exact && !auto && height != null && !height.isPercentage());
-            if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, 0);
+            hset = false;
         }
         
         //compute margins - auto margins are treated as zero
@@ -2204,18 +2234,48 @@ public class BlockBox extends ElementBox
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
     	
-        //compute height when set. If not, it will be computed during the layout
-    	if (cblock != null && cblock.hset)
+        if (exact && !auto && height != null)
         {
-            hset = (exact && !auto && height != null);
+            int baseh = conth;
+            if (height.isPercentage())
+            {
+                if (cblock == null)
+                {
+                    hset = false;
+                    log.error("No containing block for {}", this.toString());
+                }
+                else if (!cblock.hasFixedHeight())
+                {
+                    //we have a percentage height but the containing block has not an explicit height
+                    //CSS 2.1 says that the height should compute to "auto".
+                    //However, the browsers obviously find the nearest parent with an explicit height or use the viewport.
+                    BlockBox cb = cblock;
+                    do
+                    {
+                        cb = cb.getContainingBlock();
+                    } while (cb != null && !cb.hasFixedHeight() && !cb.isPositioned());
+                    if (cb == null || !cb.hasFixedHeight())
+                    {
+                        hset = false; //no suitable containing block
+                    }
+                    else
+                    {
+                        hset = true; //found a containing block with an explicid height
+                        baseh = cb.getContentHeight();
+                    }
+                }
+                else
+                    hset = true; //percentage and containing bloc has fixed height
+            }
+            else
+                hset = true; //not a percentage - it's a fixed height
+            
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, conth);
+                content.height = dec.getLength(height, auto, 0, 0, baseh);
         }
-        else
+        else //height not explicitly set
         {
-            hset = (exact && !auto && height != null && !height.isPercentage());
-            if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, 0);
+            hset = false;
         }
     	
     	//count top, bottom and height constraints
