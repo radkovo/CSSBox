@@ -60,7 +60,8 @@ public class Viewport extends BlockBox
     protected ElementBox lastparent = null;
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
-
+    private boolean recomputeAbs; //indicates that the absolute positions need to be recomputed
+    
     /**
      * Creates a new Viewport with the given initial size. The actual size may be increased during the layout. 
      *  
@@ -338,8 +339,8 @@ public class Viewport extends BlockBox
 		//first round - compute the viewport size
 		maxx = min.width;
 		maxy = min.height;
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions();
+        absolutePositionsChildren();
+
 		//update the size
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
@@ -393,9 +394,26 @@ public class Viewport extends BlockBox
 	    if (scontext != null)
             scontext.clear();
 	    
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions();
+	    absolutePositionsChildren();
     }
+	
+	/**
+	 * Computes the absolute positions of the child boxes.
+	 */
+	protected void absolutePositionsChildren()
+	{
+        //first round: position most boxes
+        recomputeAbs = false;
+        for (int i = 0; i < getSubBoxNumber(); i++)
+            getSubBox(i).absolutePositions();
+        if (recomputeAbs)
+        {
+            //second round: some reference boxes used, recompute once again
+            for (int i = 0; i < getSubBoxNumber(); i++)
+                getSubBox(i).absolutePositions();
+            recomputeAbs = false;
+        }
+	}
 	
     /**
      * Sets the current renderer and draws the whole subtree using the given renderer.
@@ -425,6 +443,16 @@ public class Viewport extends BlockBox
 		if (maxx < x) maxx = x;
 		int y = bounds.y + bounds.height - 1;
 		if (maxy < y) maxy = y;
+	}
+	
+	/**
+	 * Indicates that the absolute positions need to be recomputed onec again. This happens when
+	 * some absolutely positioned box has a 'static' position depending on some in-flow box
+	 * and the position of the in-flow box changed.
+	 */
+	public void requireRecomputePositions()
+	{
+	    recomputeAbs = true;
 	}
 	
 	/**
