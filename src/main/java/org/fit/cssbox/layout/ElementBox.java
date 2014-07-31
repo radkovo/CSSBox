@@ -849,8 +849,25 @@ abstract public class ElementBox extends Box
     @Override
     public boolean isVisible()
     {
-        //the margin is never visible - use the background bounds instead of the full bounds
-        return visible && clipblock.isVisible() && clipblock.getClippedContentBounds().intersects(getAbsoluteBorderBounds());
+        return visible && clipblock.isVisible() && clipblock.visibleInClip(this);
+    }
+    
+    /**
+     * Checks whether a box is visible in the content area of this box when this is a clipping block.
+     * @param box The box to test.
+     * @return {@code true} when at least a part of the given box is inside of our clipping area.
+     */
+    public boolean visibleInClip(Box box)
+    {
+        if (box instanceof ElementBox)
+        {
+            //the margin is never visible - use the border bounds instead of the full bounds
+            return getClippedContentBounds().intersects(((ElementBox) box).getAbsoluteBorderBounds());
+        }
+        else
+        {
+            return getClippedContentBounds().intersects(box.getAbsoluteBounds());
+        }
     }
     
     /**

@@ -207,7 +207,7 @@ public class Viewport extends BlockBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -222,6 +222,23 @@ public class Viewport extends BlockBox
         return true;
     }
 
+    @Override
+    public boolean visibleInClip(Box box)
+    {
+        if (config.getClipViewport())
+            return super.visibleInClip(box);
+        else
+        {
+            //not clipping - everything that is in positive coordinates is visible in viewport
+            Rectangle bb;
+            if (box instanceof ElementBox)
+                bb = ((ElementBox) box).getAbsoluteBorderBounds();
+            else
+                bb = box.getAbsoluteBounds();
+            return (bb.x + bb.width > 0) && (bb.y + bb.height > 0);
+        }
+    }
+    
     @Override
     protected boolean separatedFromTop(ElementBox box)
     {
