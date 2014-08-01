@@ -1659,7 +1659,10 @@ public class BlockBox extends ElementBox
                         break;
                     case DRAW_FLOAT:
                         if (floating != FLOAT_NONE)
+                        {
+                            getViewport().getRenderer().renderElementBackground(this);
                             drawStackingContext(true);
+                        }
                         else
                             drawChildren(turn);
                         break;
