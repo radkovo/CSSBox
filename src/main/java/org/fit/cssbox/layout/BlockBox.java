@@ -2016,21 +2016,26 @@ public class BlockBox extends ElementBox
                 {
                     int rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
-                    if (rest < 0) rest = 0;
-                    margin.left = (rest + 1) / 2;
-                    margin.right = rest / 2;
+                    if (rest >= 0)
+                    {
+                        margin.left = (rest + 1) / 2;
+                        margin.right = rest / 2;
+                    }
+                    else //negative margin - use it just for the right margin
+                    {
+                        margin.left = 0;
+                        margin.right = rest;
+                    }
                 }
                 else if (mleftauto)
                 {
                     margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
-                    //if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
                 else if (mrightauto)
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                     if (margin.right < 0 && cblock.canIncreaseWidth())
                         margin.right = 0;
                 }
@@ -2038,7 +2043,6 @@ public class BlockBox extends ElementBox
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                     if (margin.right < 0 && cblock.canIncreaseWidth())
                         margin.right = 0;
                 }
