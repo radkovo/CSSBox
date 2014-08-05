@@ -69,7 +69,6 @@ public class TableCellBox extends BlockBox
         loadAttributes();
         fleft = new FloatList(this);
         fright = new FloatList(this);
-        overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
         coffset = 0;
     }
 
@@ -83,7 +82,6 @@ public class TableCellBox extends BlockBox
         loadAttributes();
         fleft = new FloatList(this);
         fright = new FloatList(this);
-        overflow = OVERFLOW_HIDDEN; //just for enclosing the contained floating boxes
         coffset = 0;
     }
     
@@ -439,6 +437,12 @@ public class TableCellBox extends BlockBox
     protected boolean separatedFromBottom(ElementBox box)
     {
         return true;
+    }
+    
+    @Override
+    protected boolean encloseFloats()
+    {
+        return true; //table cell always encloses contained floats
     }
 
     /**
