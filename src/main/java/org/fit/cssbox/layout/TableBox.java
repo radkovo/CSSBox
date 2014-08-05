@@ -699,9 +699,8 @@ public class TableBox extends BlockBox
                     for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
                         columns.add(((TableColumnGroup) subbox).getColumn(i));
                 }
-                else if (!subbox.isEmpty() || subbox.isBlock()) //other element (usually TABLE_ROW), create the anonymous body for it and continue. Skip empty inline elements.
+                else //other element (usually TABLE_ROW), create the anonymous body for it and continue.
                 {
-                    //TODO what about empty table rows?
                     if (anonbody == null)
                     {
                         //the table itself may not have an owner document if it is an anonymous box itself
