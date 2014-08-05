@@ -38,7 +38,7 @@ public class TableBox extends BlockBox
 {
     private static Logger log = LoggerFactory.getLogger(TableBox.class);
     
-	private final int DEFAULT_SPACING = 2;
+	private final int DEFAULT_SPACING = 0;
 	
     protected TableBodyBox header;
     protected TableBodyBox footer;
@@ -49,7 +49,7 @@ public class TableBox extends BlockBox
     protected int columnCount;
 
     /** cell spacing */
-    protected int spacing = 2;
+    protected int spacing = 0;
     
     /** an anonymous table body (for lines that are not in any other body) */
     private TableBodyBox anonbody;
