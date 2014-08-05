@@ -1,6 +1,6 @@
 /**
  * TableBox.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2014 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -699,7 +699,7 @@ public class TableBox extends BlockBox
                     for (int i = 0; i < ((TableColumnGroup) subbox).getSpan(); i++)
                         columns.add(((TableColumnGroup) subbox).getColumn(i));
                 }
-                else if (!subbox.isEmpty()) //other non-empty element (usually TABLE_ROW), create the anonymous body for it and continue
+                else //other element (usually TABLE_ROW), create the anonymous body for it and continue.
                 {
                     if (anonbody == null)
                     {

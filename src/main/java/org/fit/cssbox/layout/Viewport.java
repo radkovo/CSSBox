@@ -1,6 +1,6 @@
 /*
  * Viewport.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2014 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -31,9 +31,12 @@ import org.w3c.dom.Element;
 import cz.vutbr.web.css.CSSFactory;
 
 /**
- * This class represents a browser viewport which is implemented as a special case of a block
- * box. It differs mainly in the way the sizes are computed. Moreover, it provides the methods
- * for margin collapsing which is done before the layout itself.
+ * The viewport is a special case of BlockElement that has several widths and heights:
+ * 
+ * <ul>
+ * <li><strong>Viewport size</strong> - the width and height of the visible area used for
+ * computing the sizes of the contained blocks.</li>
+ * <li><strong>Canvas size</strong> - the width and height of the whole rendered page</li> 
  * 
  * @author radek
  */
@@ -41,11 +44,14 @@ public class Viewport extends BlockBox
 {
     private static Logger log = LoggerFactory.getLogger(Viewport.class);
     
+    /** Total canvas width */
 	private int width;
+	/** Total canvas height */
 	private int height;
-	protected BrowserConfig config;
+	/** Visible rectagle -- the position and size of the CSS viewport */
+    private Rectangle visibleRect;
 	
-	private Rectangle visibleRect;
+    protected BrowserConfig config;
 	private BoxFactory factory;
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
@@ -54,7 +60,8 @@ public class Viewport extends BlockBox
     protected ElementBox lastparent = null;
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
-
+    private boolean recomputeAbs; //indicates that the absolute positions need to be recomputed
+    
     /**
      * Creates a new Viewport with the given initial size. The actual size may be increased during the layout. 
      *  
@@ -100,8 +107,18 @@ public class Viewport extends BlockBox
     public void setVisibleRect(Rectangle visibleRect)
     {
         this.visibleRect = visibleRect;
+        this.content = visibleRect.getSize();
     }
 
+    /**
+     * Obtains the size of the whole canvas that represents the whole rendered page.
+     * @return The canvas size.
+     */
+    public Dimension getCanvasSize()
+    {
+        return new Dimension(width, height);
+    }
+    
     /**
      * Obtains the current browser configuration.
      * @return current configuration.
@@ -184,13 +201,13 @@ public class Viewport extends BlockBox
     @Override
 	public boolean hasFixedHeight()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean hasFixedWidth()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -205,6 +222,23 @@ public class Viewport extends BlockBox
         return true;
     }
 
+    @Override
+    public boolean visibleInClip(Box box)
+    {
+        if (config.getClipViewport())
+            return super.visibleInClip(box);
+        else
+        {
+            //not clipping - everything that is in positive coordinates is visible in viewport
+            Rectangle bb;
+            if (box instanceof ElementBox)
+                bb = ((ElementBox) box).getAbsoluteBorderBounds();
+            else
+                bb = box.getAbsoluteBounds();
+            return (bb.x + bb.width > 0) && (bb.y + bb.height > 0);
+        }
+    }
+    
     @Override
     protected boolean separatedFromTop(ElementBox box)
     {
@@ -322,8 +356,8 @@ public class Viewport extends BlockBox
 		//first round - compute the viewport size
 		maxx = min.width;
 		maxy = min.height;
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions();
+        absolutePositionsChildren();
+
 		//update the size
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
@@ -377,9 +411,26 @@ public class Viewport extends BlockBox
 	    if (scontext != null)
             scontext.clear();
 	    
-		for (int i = 0; i < getSubBoxNumber(); i++)
-			getSubBox(i).absolutePositions();
+	    absolutePositionsChildren();
     }
+	
+	/**
+	 * Computes the absolute positions of the child boxes.
+	 */
+	protected void absolutePositionsChildren()
+	{
+        //first round: position most boxes
+        recomputeAbs = false;
+        for (int i = 0; i < getSubBoxNumber(); i++)
+            getSubBox(i).absolutePositions();
+        if (recomputeAbs)
+        {
+            //second round: some reference boxes used, recompute once again
+            for (int i = 0; i < getSubBoxNumber(); i++)
+                getSubBox(i).absolutePositions();
+            recomputeAbs = false;
+        }
+	}
 	
     /**
      * Sets the current renderer and draws the whole subtree using the given renderer.
@@ -412,6 +463,16 @@ public class Viewport extends BlockBox
 	}
 	
 	/**
+	 * Indicates that the absolute positions need to be recomputed onec again. This happens when
+	 * some absolutely positioned box has a 'static' position depending on some in-flow box
+	 * and the position of the in-flow box changed.
+	 */
+	public void requireRecomputePositions()
+	{
+	    recomputeAbs = true;
+	}
+	
+	/**
 	 * Uses the given block as a clipping block instead of the default Viewport.
 	 * @param block the new clipping block
 	 */
@@ -433,6 +494,62 @@ public class Viewport extends BlockBox
 	        }
 	    }
 	}
+	
+    //===================================================================================
+	
+    @Override
+    public int getContentX()
+    {
+        return visibleRect.x;
+    }
+
+    @Override
+    public int getContentY()
+    {
+        return visibleRect.y;
+    }
+
+    @Override
+    public int getContentWidth()
+    {
+        return visibleRect.width;
+    }
+
+    @Override
+    public int getContentHeight()
+    {
+        return visibleRect.height;
+    }
+
+	@Override
+	public Rectangle getAbsoluteBackgroundBounds()
+    {
+        return new Rectangle(visibleRect);
+    }
+
+	@Override
+    public Rectangle getAbsoluteBorderBounds()
+    {
+        return new Rectangle(visibleRect);
+    }
+	
+    @Override
+    public Rectangle getClippedBounds()
+    {
+        if (config.getClipViewport())
+            return getAbsoluteBounds();
+        else
+            return new Rectangle(0, 0, width, height);
+    }
+
+    @Override
+    public Rectangle getClippedContentBounds()
+    {
+        if (config.getClipViewport())
+            return getAbsoluteBounds();
+        else
+            return new Rectangle(0, 0, width, height);
+    }
 	
     //===================================================================================
     

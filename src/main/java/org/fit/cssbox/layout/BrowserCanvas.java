@@ -202,6 +202,17 @@ public class BrowserCanvas extends JPanel
         revalidate();
     }
     
+    public void updateVisibleArea(Rectangle visibleRect)
+    {
+        viewport.setVisibleRect(visibleRect);
+        viewport.absolutePositions();
+        clearCanvas();
+        GraphicsRenderer r = new GraphicsRenderer(getImageGraphics()); 
+        viewport.draw(r);
+        r.close();
+        revalidate();
+    }
+    
     public void paintComponent(Graphics g) 
     {
         super.paintComponent(g);

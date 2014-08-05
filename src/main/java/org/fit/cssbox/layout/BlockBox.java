@@ -1290,6 +1290,12 @@ public class BlockBox extends ElementBox
                     }
                     x = cblock.getAbsoluteBackgroundBounds().x + coords.left;
                     y = cblock.getAbsoluteBackgroundBounds().y + coords.top;
+                    //if fixed, update the position by the viewport visible offset
+                    if (position == POS_FIXED && cblock instanceof Viewport)
+                    {
+                        x += ((Viewport) cblock).getVisibleRect().x; 
+                        y += ((Viewport) cblock).getVisibleRect().y; 
+                    }
                 }
             }
             else if (floating == FLOAT_LEFT)
@@ -1335,55 +1341,62 @@ public class BlockBox extends ElementBox
      * from the reference box (if any) */
     private void updateStaticPosition()
     {
-        if (absReference != null)
+        if (topstatic || leftstatic)
         {
-            //compute the bounds of the reference box relatively to our containing block
-            Rectangle ab = new Rectangle(absReference.getAbsoluteBounds());
-            Rectangle cb = cblock.getAbsoluteBounds();
-            ab.x = ab.x - cb.x;
-            ab.y = ab.y - cb.y;
-            //position relatively to the border edge
-            if (topstatic)
+            if (absReference != null)
             {
-                if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //not-floating boxes: place below
-                    coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
-                else //floating blocks: place top-aligned
+                //compute the bounds of the reference box relatively to our containing block
+                Rectangle ab = new Rectangle(absReference.getAbsoluteBounds());
+                Rectangle cb = cblock.getAbsoluteBounds();
+                ab.x = ab.x - cb.x;
+                ab.y = ab.y - cb.y;
+                //position relatively to the border edge
+                if (topstatic)
+                {
+                    if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //not-floating boxes: place below
+                        coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
+                    else //floating blocks: place top-aligned
+                        coords.top = ab.y - cblock.emargin.top - cblock.border.top;
+                }
+                if (leftstatic)
+                {
+                    coords.left = ab.x - cblock.emargin.left - cblock.border.left;
+                }
+                //the reference box position may be computed later: require recomputing
+                viewport.requireRecomputePositions();
+            }
+            else if (domParent != null) //no reference box, we are probably the first box in our parent
+            {
+                //find the nearest DOM parent that is part of our box tree
+                ElementBox dparent = domParent; 
+                while (dparent != null && dparent.getContainingBlock() == null)
+                    dparent = dparent.getParent();
+                //compute the bounds of the reference box relatively to our containing block
+                Rectangle ab = new Rectangle(dparent.getAbsoluteContentBounds());
+                Rectangle cb = cblock.getAbsoluteBounds();
+                ab.x = ab.x - cb.x;
+                ab.y = ab.y - cb.y;
+                //position relatively to the border edge
+                if (topstatic)
+                {
                     coords.top = ab.y - cblock.emargin.top - cblock.border.top;
+                }
+                if (leftstatic)
+                {
+                    coords.left = ab.x - cblock.emargin.left - cblock.border.left;
+                }
+                //the reference box position may be computed later: require recomputing
+                viewport.requireRecomputePositions();
             }
-            if (leftstatic)
+            else //nothing available, this should not happen
             {
-                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
+                log.warn("No static position available for " + this.toString());
+                //use containing block as a fallback
+                if (topstatic)
+                    coords.top = cblock.padding.top;
+                if (leftstatic)
+                    coords.left = cblock.padding.left;
             }
-        }
-        else if (domParent != null) //no reference box, we are probably the first box in our parent
-        {
-            //find the nearest DOM parent that is part of our box tree
-            ElementBox dparent = domParent; 
-            while (dparent != null && dparent.getContainingBlock() == null)
-                dparent = dparent.getParent();
-            //compute the bounds of the reference box relatively to our containing block
-            Rectangle ab = new Rectangle(dparent.getAbsoluteContentBounds());
-            Rectangle cb = cblock.getAbsoluteBounds();
-            ab.x = ab.x - cb.x;
-            ab.y = ab.y - cb.y;
-            //position relatively to the border edge
-            if (topstatic)
-            {
-                coords.top = ab.y - cblock.emargin.top - cblock.border.top;
-            }
-            if (leftstatic)
-            {
-                coords.left = ab.x - cblock.emargin.left - cblock.border.left;
-            }
-        }
-        else //nothing available, this should not happen
-        {
-            log.warn("No static position available for " + this.toString());
-            //use containing block as a fallback
-            if (topstatic)
-                coords.top = cblock.padding.top;
-            if (leftstatic)
-                coords.left = cblock.padding.left;
         }
     }
 
@@ -1646,7 +1659,10 @@ public class BlockBox extends ElementBox
                         break;
                     case DRAW_FLOAT:
                         if (floating != FLOAT_NONE)
+                        {
+                            getViewport().getRenderer().renderElementBackground(this);
                             drawStackingContext(true);
+                        }
                         else
                             drawChildren(turn);
                         break;
@@ -2000,21 +2016,26 @@ public class BlockBox extends ElementBox
                 {
                     int rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
-                    if (rest < 0) rest = 0;
-                    margin.left = (rest + 1) / 2;
-                    margin.right = rest / 2;
+                    if (rest >= 0)
+                    {
+                        margin.left = (rest + 1) / 2;
+                        margin.right = rest / 2;
+                    }
+                    else //negative margin - use it just for the right margin
+                    {
+                        margin.left = 0;
+                        margin.right = rest;
+                    }
                 }
                 else if (mleftauto)
                 {
                     margin.left = contw - content.width - border.left - padding.left
                                         - padding.right - border.right - margin.right;
-                    //if (margin.left < 0) margin.left = 0; //"treated as zero"
                 }
                 else if (mrightauto)
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                     if (margin.right < 0 && cblock.canIncreaseWidth())
                         margin.right = 0;
                 }
@@ -2022,7 +2043,6 @@ public class BlockBox extends ElementBox
                 {
                     margin.right = contw - content.width - border.left - padding.left
                                     - padding.right - border.right - margin.left;
-                    //if (margin.right < 0) margin.right = 0; //"treated as zero"
                     if (margin.right < 0 && cblock.canIncreaseWidth())
                         margin.right = 0;
                 }
@@ -2162,18 +2182,48 @@ public class BlockBox extends ElementBox
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
         
-        //compute height when set. If not, it will be computed during the layout
-        if (cblock != null && cblock.hset)
+        if (!auto && height != null)
         {
-            hset = (exact && !auto && height != null);
+            int baseh = conth;
+            if (height.isPercentage())
+            {
+                if (cblock == null)
+                {
+                    hset = false;
+                    log.error("No containing block for {}", this.toString());
+                }
+                else if (!cblock.hasFixedHeight())
+                {
+                    //we have a percentage height but the containing block has not an explicit height
+                    //CSS 2.1 says that the height should compute to "auto".
+                    //However, the browsers obviously find the nearest parent with an explicit height or use the viewport.
+                    BlockBox cb = cblock;
+                    do
+                    {
+                        cb = cb.getContainingBlock();
+                    } while (cb != null && !cb.hasFixedHeight() && !cb.isPositioned());
+                    if (cb == null || !cb.hasFixedHeight())
+                    {
+                        hset = false; //no suitable containing block
+                    }
+                    else
+                    {
+                        hset = exact; //found a containing block with an explicid height
+                        baseh = cb.getContentHeight();
+                    }
+                }
+                else
+                    hset = exact; //percentage and containing bloc has fixed height
+            }
+            else
+                hset = exact; //not a percentage - it's a fixed height
+            
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, conth);
+                content.height = dec.getLength(height, auto, 0, 0, baseh);
         }
-        else
+        else //height not explicitly set
         {
-            hset = (exact && !auto && height != null && !height.isPercentage());
-            if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, 0);
+            hset = false;
         }
         
         //compute margins - auto margins are treated as zero
@@ -2198,18 +2248,33 @@ public class BlockBox extends ElementBox
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
     	
-        //compute height when set. If not, it will be computed during the layout
-    	if (cblock != null && cblock.hset)
+        if (!auto && height != null)
         {
-            hset = (exact && !auto && height != null);
+            int baseh = conth;
+            if (height.isPercentage())
+            {
+                if (cblock == null)
+                {
+                    hset = false;
+                    log.error("No containing block for {}", this.toString());
+                }
+                else
+                {
+                    //always fix the height based on the containing block
+                    hset = exact;
+                    LengthSet cpadding = cblock.getPadding(); //for position:absolute the padding height is used
+                    baseh = cblock.getContentHeight() + cpadding.top + cpadding.bottom;
+                }
+            }
+            else
+                hset = exact; //not a percentage - it's a fixed height
+            
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, conth);
+                content.height = dec.getLength(height, auto, 0, 0, baseh);
         }
-        else
+        else //height not explicitly set
         {
-            hset = (exact && !auto && height != null && !height.isPercentage());
-            if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, 0);
+            hset = false;
         }
     	
     	//count top, bottom and height constraints
