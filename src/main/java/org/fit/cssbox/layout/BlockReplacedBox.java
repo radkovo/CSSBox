@@ -175,7 +175,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     @Override
 	public void draw(DrawStage turn)
     {
-        if (isDisplayed() && isDeclaredVisible())
+        if (isDisplayed() && isVisible())
         {
             if (!this.formsStackingContext())
             {

@@ -135,8 +135,9 @@ public class ImageRenderer
      */
     protected void writeSVG(Viewport vp, Writer out) throws IOException
     {
-        int w = vp.getContentWidth();
-        int h = vp.getContentHeight();
+        //obtain the viewport bounds depending on whether we are clipping to viewport size or using the whole page
+        int w = vp.getClippedContentBounds().width;
+        int h = vp.getClippedContentBounds().height;
         
         SVGRenderer render = new SVGRenderer(w, h, out);
         vp.draw(render);

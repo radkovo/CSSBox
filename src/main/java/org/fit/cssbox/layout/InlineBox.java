@@ -545,10 +545,13 @@ public class InlineBox extends ElementBox implements InlineElement
                         //there should be no block-level or floating children here -- we do nothing
                         break;
                     case DRAW_INLINE:
-                        getViewport().getRenderer().renderElementBackground(this);
-                        getViewport().getRenderer().startElementContents(this);
-                        drawChildren(turn);
-                        getViewport().getRenderer().finishElementContents(this);
+                        if (isVisible())
+                        {
+                            getViewport().getRenderer().renderElementBackground(this);
+                            getViewport().getRenderer().startElementContents(this);
+                            drawChildren(turn);
+                            getViewport().getRenderer().finishElementContents(this);
+                        }
                         break;
                 }
             }

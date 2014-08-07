@@ -76,7 +76,7 @@ public class SVGRenderer implements BoxRenderer
     public void finishElementContents(ElementBox elem)
     {
     }
-    
+    //TODO: clipping for overflow!=visible
     public void renderElementBackground(ElementBox eb)
     {
         Rectangle bb = eb.getAbsoluteBorderBounds();
@@ -172,7 +172,7 @@ public class SVGRenderer implements BoxRenderer
             else if (cont instanceof ReplacedText) //HTML object
             {
                 //clipping rectangle for the object
-                Rectangle cb = ((Box) box).getAbsoluteContentBounds();
+                Rectangle cb = ((Box) box).getClippedBounds();
                 String clip = "cssbox-clip-" + idcounter;
                 out.print("<clipPath id=\"" + clip + "\">");
                 out.print("<rect x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" />");

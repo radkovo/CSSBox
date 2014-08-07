@@ -1653,14 +1653,16 @@ public class BlockBox extends ElementBox
                     case DRAW_NONINLINE:
                         if (floating == FLOAT_NONE)
                         {
-                            getViewport().getRenderer().renderElementBackground(this);
+                            if (isVisible())
+                                getViewport().getRenderer().renderElementBackground(this);
                             drawChildren(turn);
                         }
                         break;
                     case DRAW_FLOAT:
                         if (floating != FLOAT_NONE)
                         {
-                            getViewport().getRenderer().renderElementBackground(this);
+                            if (isVisible())
+                                getViewport().getRenderer().renderElementBackground(this);
                             drawStackingContext(true);
                         }
                         else

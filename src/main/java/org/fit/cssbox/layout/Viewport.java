@@ -135,6 +135,7 @@ public class Viewport extends BlockBox
     public void setConfig(BrowserConfig config)
     {
         this.config = config;
+        overflow = config.getClipViewport() ? OVERFLOW_HIDDEN : OVERFLOW_VISIBLE;
     }
     
     @Override
