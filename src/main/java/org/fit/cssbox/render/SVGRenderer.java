@@ -162,11 +162,7 @@ public class SVGRenderer implements BoxRenderer
         
         if (!ctx.getTextDecoration().isEmpty())
             style += ";text-decoration:" + ctx.getTextDecorationString();
-                       
-        String s = text.getText();
-        if (s.contains("angle"))
-            System.out.println("jo!");
-        
+
         out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + text.getBaselineOffset()) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(text.getText()) + "</text>");
     }
 
