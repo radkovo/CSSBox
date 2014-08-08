@@ -360,6 +360,11 @@ public class BlockBox extends ElementBox
         return clearing.toString();
     }
     
+    public CSSProperty.Overflow getOverflow()
+    {
+        return overflow;
+    }
+    
     public String getOverflowString()
     {
         return overflow.toString();

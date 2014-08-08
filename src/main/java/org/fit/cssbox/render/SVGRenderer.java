@@ -33,6 +33,7 @@ import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;
 
 import org.fit.cssbox.layout.BackgroundImage;
+import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.LengthSet;
@@ -41,6 +42,7 @@ import org.fit.cssbox.layout.ReplacedContent;
 import org.fit.cssbox.layout.ReplacedImage;
 import org.fit.cssbox.layout.ReplacedText;
 import org.fit.cssbox.layout.TextBox;
+import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.misc.Base64Coder;
 
@@ -71,15 +73,33 @@ public class SVGRenderer implements BoxRenderer
     
     public void startElementContents(ElementBox elem)
     {
+        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflow() != BlockBox.OVERFLOW_VISIBLE)
+        {
+            //for blocks with overflow != visible generate a clipping group
+            Rectangle cb = elem.getClippedContentBounds();
+            String clip = "cssbox-clip-" + idcounter;
+            out.print("<clipPath id=\"" + clip + "\">");
+            out.print("<rect x=\"" + cb.x + "\" y=\"" + cb.y + "\" width=\"" + cb.width + "\" height=\"" + cb.height + "\" />");
+            out.println("</clipPath>");
+            out.println("<g id=\"cssbox-obj-" + idcounter + "\" clip-path=\"url(#" + clip + ")\">");
+            idcounter++;
+        }
     }
 
     public void finishElementContents(ElementBox elem)
     {
+        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflow() != BlockBox.OVERFLOW_VISIBLE)
+        {
+            //for blocks with overflow != visible finish the clipping group
+            out.println("</g>");
+        }
     }
-    //TODO: clipping for overflow!=visible
+
     public void renderElementBackground(ElementBox eb)
     {
         Rectangle bb = eb.getAbsoluteBorderBounds();
+        if (eb instanceof Viewport)
+            bb = eb.getClippedBounds(); //for the root box (Viewport), use the whole clipped content
         Color bg = eb.getBgcolor();
 
         //background color
