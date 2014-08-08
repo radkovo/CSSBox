@@ -235,10 +235,17 @@ public class SVGRenderer implements BoxRenderer
         CSSProperty.BorderColor bclr = eb.getStyle().getProperty("border-"+side+"-color");
         TermColor tclr = eb.getStyle().getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = eb.getStyle().getProperty("border-"+side+"-style");
-        if (tclr != null && bst != CSSProperty.BorderStyle.HIDDEN && bclr != CSSProperty.BorderColor.TRANSPARENT)
+        if (bst != CSSProperty.BorderStyle.HIDDEN && bclr != CSSProperty.BorderColor.TRANSPARENT)
         {
-            Color clr = tclr.getValue();
-            if (clr == null) clr = Color.BLACK;
+            Color clr = null;
+            if (tclr != null)
+                clr = tclr.getValue();
+            if (clr == null)
+            {
+                clr = eb.getVisualContext().getColor();
+                if (clr == null)
+                    clr = Color.BLACK;
+            }
 
             String stroke = "";
             if (bst == CSSProperty.BorderStyle.SOLID)
