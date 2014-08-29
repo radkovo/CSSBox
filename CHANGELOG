@@ -1,3 +1,11 @@
+2014-08-29 - Version 4.7
+- Viewport size: the viewport size and the total canvas size is now properly distinguisged
+- Box height computation fixes (including percentage heights)
+- Fixed drawing backgrounds and borders of floating blocks
+- Table rendering fixes
+- Negative margin computation fix
+- Support CSS overflow in SVG renderer
+
 2014-07-15 - Version 4.6
 - Support for rendering on different output media (media query support)
 - New CSS3 length units supported: rem, ch, vw, vh, vmin, vmax
