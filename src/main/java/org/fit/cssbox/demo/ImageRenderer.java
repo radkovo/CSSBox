@@ -1,6 +1,6 @@
 /**
- * Renderer.java
- * Copyright (c) 2005-2009 Radek Burget
+ * ImageRenderer.java
+ * Copyright (c) 2005-2014 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,6 +19,7 @@
  */
 package org.fit.cssbox.demo;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,6 +42,8 @@ import org.fit.cssbox.render.SVGRenderer;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import cz.vutbr.web.css.MediaSpec;
+
 /**
  * This class provides a rendering interface for obtaining the document image
  * form an URL.
@@ -49,12 +52,30 @@ import org.xml.sax.SAXException;
  */
 public class ImageRenderer
 {
-    public static final short TYPE_PNG = 0;
-    public static final short TYPE_SVG = 1;
+    public enum Type { PNG, SVG };
     
+    private String mediaType = "screen";
+    private Dimension windowSize;
+    private boolean cropWindow = false;
     private boolean loadImages = true;
     private boolean loadBackgroundImages = true;
 
+    public ImageRenderer()
+    {
+        windowSize = new Dimension(1200, 600);
+    }
+    
+    public void setMediaType(String media)
+    {
+        mediaType = new String(media);
+    }
+    
+    public void setWindowSize(Dimension size, boolean crop)
+    {
+        windowSize = new Dimension(size);
+        cropWindow = crop;
+    }
+    
     public void setLoadImages(boolean content, boolean background)
     {
         loadImages = content;
@@ -66,11 +87,11 @@ public class ImageRenderer
      * format.
      * @param urlstring the source URL
      * @param out output stream
-     * @param type output type, one of the TYPE_XXX constants
+     * @param type output type
      * @return true in case of success, false otherwise
      * @throws SAXException 
      */
-    public boolean renderURL(String urlstring, OutputStream out, short type) throws IOException, SAXException
+    public boolean renderURL(String urlstring, OutputStream out, Type type) throws IOException, SAXException
     {
         if (!urlstring.startsWith("http:") &&
             !urlstring.startsWith("ftp:") &&
@@ -84,29 +105,35 @@ public class ImageRenderer
         DOMSource parser = new DefaultDOMSource(docSource);
         Document doc = parser.parse();
         
+        //create the media specification
+        MediaSpec media = new MediaSpec(mediaType);
+        media.setDimensions(windowSize.width, windowSize.height);
+        media.setDeviceDimensions(windowSize.width, windowSize.height);
+
         //Create the CSS analyzer
         DOMAnalyzer da = new DOMAnalyzer(doc, docSource.getURL());
+        da.setMediaSpec(media);
         da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
         da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
         da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
         da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); //render form fields using css
         da.getStyleSheets(); //load the author style sheets
         
-        if (type == TYPE_PNG)
+        BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
+        contentCanvas.setAutoMediaUpdate(false); //we have a correct media specification, do not update
+        contentCanvas.getConfig().setClipViewport(cropWindow);
+        contentCanvas.getConfig().setLoadImages(loadImages);
+        contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
+
+        if (type == Type.PNG)
         {
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
-            contentCanvas.getConfig().setLoadImages(loadImages);
-            contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
-            contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
+            contentCanvas.createLayout(windowSize);
             ImageIO.write(contentCanvas.getImage(), "png", out);
         }
-        else if (type == TYPE_SVG)
+        else if (type == Type.SVG)
         {
-            BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
-            contentCanvas.getConfig().setLoadImages(loadImages);
-            contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
             setDefaultFonts(contentCanvas.getConfig());
-            contentCanvas.createLayout(new java.awt.Dimension(1200, 600));
+            contentCanvas.createLayout(windowSize);
             Writer w = new OutputStreamWriter(out, "utf-8");
             writeSVG(contentCanvas.getViewport(), w);
             w.close();
@@ -161,11 +188,11 @@ public class ImageRenderer
         }
         
         try {
-            short type = -1;
+            Type type = null;
             if (args[2].equalsIgnoreCase("png"))
-                type = TYPE_PNG;
+                type = Type.PNG;
             else if (args[2].equalsIgnoreCase("svg"))
-                type = TYPE_SVG;
+                type = Type.SVG;
             else
             {
                 System.err.println("Error: unknown format");
