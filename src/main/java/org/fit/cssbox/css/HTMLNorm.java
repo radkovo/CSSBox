@@ -286,6 +286,8 @@ public class HTMLNorm
             }
 
             if (attrs.length() > 0) {
+            	// TODO we should even check for existing properties, and replace the existing ones, 
+            	// rather than just adding to the existing list of properties.
             	final String oldXDefaultStyle = el.getAttribute("XDefaultStyle");
             	// Check if xDefauldStyle already exists, if it does then prepend it to the newly computed style
             	final String xDefaultStyle = (oldXDefaultStyle == null ? "" : oldXDefaultStyle + ";") + attrs;
