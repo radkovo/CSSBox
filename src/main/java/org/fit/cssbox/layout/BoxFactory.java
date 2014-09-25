@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.css.HTMLNorm;
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.slf4j.Logger;
@@ -780,7 +781,7 @@ public class BoxFactory
                             List<Term<?>> params = f.getValue();
                             if (params.size() > 0)
                             {
-                                String val = n.getAttribute(params.get(0).toString());
+                                String val = HTMLNorm.getAttribute(n, params.get(0).toString());
                                 Text txt = n.getOwnerDocument().createTextNode(val);
                                 pelem.appendChild(txt);
                             }

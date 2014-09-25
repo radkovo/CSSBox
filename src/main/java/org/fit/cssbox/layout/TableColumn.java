@@ -23,6 +23,7 @@ import java.awt.*;
 
 import cz.vutbr.web.css.*;
 
+import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -274,14 +275,14 @@ public class TableColumn extends BlockBox
     protected void loadAttributes()
     {
         try {
-            if (!el.getAttribute("span").equals(""))
-                span = Integer.parseInt(el.getAttribute("span"));
+            if (!HTMLNorm.getAttribute(el, "span").equals(""))
+                span = Integer.parseInt(HTMLNorm.getAttribute(el, "span"));
             else
                 span = 1;
         } catch (NumberFormatException e) {
-            log.warn("Invalid span value: " + el.getAttribute("span"));
+            log.warn("Invalid span value: " + HTMLNorm.getAttribute(el, "span"));
         }
-        setSpecifiedWidth(el.getAttribute("width"));
+        setSpecifiedWidth(HTMLNorm.getAttribute(el, "width"));
     }
 
     /**

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import cz.vutbr.web.css.NodeData;
 
+import org.fit.cssbox.css.HTMLNorm;
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DocumentSource;
@@ -115,7 +116,7 @@ public class HTMLBoxFactory
         rbox.setViewport(viewport);
         rbox.setStyle(style);
 
-        String src = e.getAttribute("src");
+        String src = HTMLNorm.getAttribute(e, "src");
         rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
         
         if (rbox.isBlock())
@@ -134,9 +135,9 @@ public class HTMLBoxFactory
         //try to create the content object based on the mime type
         try
         {
-            String mime = e.getAttribute("type").toLowerCase();
-            String cb = e.getAttribute("codebase");
-            String dataurl = e.getAttribute("data");
+            String mime = HTMLNorm.getAttribute(e, "type").toLowerCase();
+            String cb = HTMLNorm.getAttribute(e, "codebase");
+            String dataurl = HTMLNorm.getAttribute(e, "data");
             URL base = new URL(factory.getBaseURL(), cb);
             
             if (!dataurl.trim().isEmpty())

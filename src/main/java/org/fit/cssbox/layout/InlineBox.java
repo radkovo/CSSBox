@@ -22,9 +22,11 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 
+import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
+
 import cz.vutbr.web.css.*;
 
 /**
@@ -80,8 +82,8 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public String toString()
     {
-        return "<" + el.getTagName() + " id=\"" + el.getAttribute("id") + 
-               "\" class=\""  + el.getAttribute("class") + "\">";
+        return "<" + el.getTagName() + " id=\"" + HTMLNorm.getAttribute(el, "id") + 
+               "\" class=\""  + HTMLNorm.getAttribute(el, "class") + "\">";
     }
     
     @Override

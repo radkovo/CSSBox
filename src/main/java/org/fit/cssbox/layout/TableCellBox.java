@@ -306,7 +306,7 @@ public class TableCellBox extends BlockBox
         //Load the width if set
         CSSProperty.Width wprop = null;
         TermLengthOrPercent width = null; 
-        String widthattr = getElement().getAttribute("width"); //try to load from attribute
+        String widthattr = HTMLNorm.getAttribute(getElement(), "width"); //try to load from attribute
         if (!widthattr.equals(""))
         {
             width = HTMLNorm.createLengthOrPercent(widthattr);
@@ -338,7 +338,7 @@ public class TableCellBox extends BlockBox
         }
         
         //Load the height if set
-        String heightattr = getElement().getAttribute("height"); //try to load from attribute
+        String heightattr = HTMLNorm.getAttribute(getElement(), "height"); //try to load from attribute
         CSSProperty.Height hprop = null;
         TermLengthOrPercent height = null;
         if (!heightattr.equals(""))
@@ -451,12 +451,12 @@ public class TableCellBox extends BlockBox
     protected void loadAttributes()
     {
         try {
-            if (!el.getAttribute("colspan").equals(""))
-                colspan = Integer.parseInt(el.getAttribute("colspan"));
+            if (!HTMLNorm.getAttribute(el, "colspan").equals(""))
+                colspan = Integer.parseInt(HTMLNorm.getAttribute(el, "colspan"));
             else
                 colspan = 1;
-            if (!el.getAttribute("rowspan").equals(""))
-                rowspan = Integer.parseInt(el.getAttribute("rowspan"));
+            if (!HTMLNorm.getAttribute(el, "rowspan").equals(""))
+                rowspan = Integer.parseInt(HTMLNorm.getAttribute(el, "rowspan"));
             else
                 rowspan = 1;
         } catch (NumberFormatException e) {

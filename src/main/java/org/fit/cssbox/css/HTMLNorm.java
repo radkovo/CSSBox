@@ -37,6 +37,19 @@ import org.w3c.dom.*;
  */
 public class HTMLNorm 
 {
+
+    /**
+     * Obtains the value of the given element attribute. This function fixes the difference
+     * in return values between the different DOM implementations.
+     * @param el the element
+     * @param name the attribute name
+     * @return the attribute value or an empty string when the attribute is not present
+     */
+    public static String getAttribute(Element el, String name)
+    {
+        return el.hasAttribute(name) ? el.getAttribute(name) : "";
+    }
+    
     /**
      * Recursively converts some HTML presentation attributes to the inline style of the element.
      * The original attributes are left in the DOM tree, the <code>XDefaultStyle</code> attribute is
@@ -286,7 +299,7 @@ public class HTMLNorm
             }
 
             if (attrs.length() > 0)
-                el.setAttribute("XDefaultStyle", el.getAttribute("XDefaultStyle") + ";" + attrs);            
+                el.setAttribute("XDefaultStyle", HTMLNorm.getAttribute(el, "XDefaultStyle") + ";" + attrs);
         }                
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)

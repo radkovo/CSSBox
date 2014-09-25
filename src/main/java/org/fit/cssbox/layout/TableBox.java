@@ -164,7 +164,7 @@ public class TableBox extends BlockBox
         if (!update)
         {
             //create an important 'width' style for this element
-            String width = getElement().getAttribute("width");
+            String width = HTMLNorm.getAttribute(getElement(), "width");
             if (!width.equals(""))
             {
                 TermLengthOrPercent wspec = HTMLNorm.createLengthOrPercent(width);

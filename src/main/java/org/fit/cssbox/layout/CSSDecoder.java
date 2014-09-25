@@ -154,16 +154,16 @@ public class CSSDecoder
         int atrw = -1;
         int atrh = -1;
         try {
-            if (!el.getAttribute("width").equals(""))
-                atrw = HTMLNorm.computeAttributeLength(el.getAttribute("width"), twidth);
+            if (!HTMLNorm.getAttribute(el, "width").equals(""))
+                atrw = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "width"), twidth);
         } catch (NumberFormatException e) {
-            log.info("Invalid width value: " + el.getAttribute("width"));
+            log.info("Invalid width value: " + HTMLNorm.getAttribute(el, "width"));
         }
         try {
-            if (!el.getAttribute("height").equals(""))
-                atrh = HTMLNorm.computeAttributeLength(el.getAttribute("height"), theight);
+            if (!HTMLNorm.getAttribute(el, "height").equals(""))
+                atrh = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "height"), theight);
         } catch (NumberFormatException e) {
-            log.info("Invalid height value: " + el.getAttribute("width"));
+            log.info("Invalid height value: " + HTMLNorm.getAttribute(el, "width"));
         }
         //apply intrinsic ration when necessary
         if (atrw == -1 && atrh == -1)

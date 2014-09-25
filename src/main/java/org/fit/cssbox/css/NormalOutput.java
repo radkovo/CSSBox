@@ -87,15 +87,15 @@ public class NormalOutput extends Output
                 if (el.getTagName().equals("style")) 
                     return;
                 if (el.getTagName().equals("link") &&
-                    (el.getAttribute("rel").equalsIgnoreCase("stylesheet") || 
-                     el.getAttribute("type").equalsIgnoreCase("text/css")))
+                    ("stylesheet".equalsIgnoreCase(el.getAttribute("rel")) || 
+                     "text/css".equalsIgnoreCase(el.getAttribute("type"))))
                     return;
             }
             //Replace meta generator
-            if (el.getTagName().equals("meta") && el.getAttribute("name").equals("generator"))
+            if (el.getTagName().equals("meta") && "generator".equalsIgnoreCase(el.getAttribute("name")))
                 el.setAttribute("content", "CSS Transformer by Radek Burget, burgetr@fit.vutbr.cz");
             //Change encoding to utf-8
-            if (el.getTagName().equals("meta") && el.getAttribute("http-equiv").equalsIgnoreCase("content-type"))
+            if (el.getTagName().equals("meta") && "content-type".equalsIgnoreCase(el.getAttribute("http-equiv")))
                 el.setAttribute("content", "text/html; charset=utf-8");
             //Dump the tag
             tag = tag + "<" + el.getTagName();
