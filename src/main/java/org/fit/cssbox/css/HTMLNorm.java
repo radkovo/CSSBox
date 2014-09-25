@@ -285,8 +285,12 @@ public class HTMLNorm
                 }
             }
 
-            if (attrs.length() > 0)
-                el.setAttribute("XDefaultStyle", el.getAttribute("XDefaultStyle") + ";" + attrs);            
+            if (attrs.length() > 0) {
+            	final String oldXDefaultStyle = el.getAttribute("XDefaultStyle");
+            	// Check if xDefauldStyle already exists, if it does then prepend it to the newly computed style
+            	final String xDefaultStyle = (oldXDefaultStyle == null ? "" : oldXDefaultStyle + ";") + attrs;
+            	el.setAttribute("XDefaultStyle", xDefaultStyle);
+            }
         }                
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
