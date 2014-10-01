@@ -875,8 +875,8 @@ abstract public class ElementBox extends Box
      */
     public Rectangle getAbsoluteBackgroundBounds()
     {
-        return new Rectangle(absbounds.x + margin.left + border.left,
-                             absbounds.y + margin.top + border.top,
+        return new Rectangle(absbounds.x + emargin.left + border.left,
+                             absbounds.y + emargin.top + border.top,
                              content.width + padding.left + padding.right,
                              content.height + padding.top + padding.bottom);
     }
@@ -886,8 +886,8 @@ abstract public class ElementBox extends Box
      */
     public Rectangle getAbsoluteBorderBounds()
     {
-        return new Rectangle(absbounds.x + margin.left,
-                             absbounds.y + margin.top,
+        return new Rectangle(absbounds.x + emargin.left,
+                             absbounds.y + emargin.top,
                              content.width + padding.left + padding.right + border.left + border.right,
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
     }
@@ -1043,7 +1043,7 @@ abstract public class ElementBox extends Box
 
         //border bounds
         int bx1 = x + margin.left;
-        int by1 = y + margin.top;
+        int by1 = y + emargin.top;
         int bw = border.left + padding.left + content.width + padding.right + border.right;
         int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
         int bx2 = bx1 + bw - 1;
