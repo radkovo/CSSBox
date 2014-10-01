@@ -2357,7 +2357,7 @@ public class BlockBox extends ElementBox
      */
     protected boolean separatedFromTop(ElementBox box)
     {
-        return (box.border.top > 0 || box.padding.top > 0);
+        return (box.border.top > 0 || box.padding.top > 0 || box.isRootElement());
     }
     
     /**
@@ -2365,7 +2365,7 @@ public class BlockBox extends ElementBox
      */
     protected boolean separatedFromBottom(ElementBox box)
     {
-        return (box.border.bottom > 0 || box.padding.bottom > 0);
+        return (box.border.bottom > 0 || box.padding.bottom > 0 || box.isRootElement());
     }
     
     /**
