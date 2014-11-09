@@ -447,7 +447,7 @@ public class DOMAnalyzer
 	public void addStyleSheet(URL base, String cssdata, Origin origin)
     {
 	    try {
-    	    StyleSheet newsheet = CSSFactory.parse(cssdata);
+    	    StyleSheet newsheet = CSSFactory.parseString(cssdata, base);
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
 	    } catch (IOException e) {
