@@ -37,19 +37,6 @@ import org.w3c.dom.*;
  */
 public class HTMLNorm 
 {
-
-    /**
-     * Obtains the value of the given element attribute. This function fixes the difference
-     * in return values between the different DOM implementations.
-     * @param el the element
-     * @param name the attribute name
-     * @return the attribute value or an empty string when the attribute is not present
-     */
-    public static String getAttribute(Element el, String name)
-    {
-        return el.hasAttribute(name) ? el.getAttribute(name) : "";
-    }
-    
     /**
      * Recursively converts some HTML presentation attributes to the inline style of the element.
      * The original attributes are left in the DOM tree, the <code>XDefaultStyle</code> attribute is
@@ -67,17 +54,20 @@ public class HTMLNorm
             //Analyze HTML attributes
             String attrs = "";
             //background
-            if (el.getTagName().equals("table") ||
-                el.getTagName().equals("tr") ||
-                el.getTagName().equals("th") ||
-                el.getTagName().equals("td") ||
-                el.getTagName().equals("body"))
+            if (el.getTagName().equalsIgnoreCase("table") ||
+                el.getTagName().equalsIgnoreCase("tr") ||
+                el.getTagName().equalsIgnoreCase("th") ||
+                el.getTagName().equalsIgnoreCase("td") ||
+                el.getTagName().equalsIgnoreCase("body"))
             {
+        		if (el.hasAttribute("background")){
+                    attrs = attrs + "background-image: url(" + el.getAttribute("background") + ");";
+        		}
                 if (el.getAttributes().getNamedItem("bgcolor") != null)
                     attrs = attrs + "background-color: " + el.getAttribute("bgcolor") + ";";
             }
             //setting table and cell borders
-            if (el.getTagName().equals("table"))
+            if (el.getTagName().equalsIgnoreCase("table"))
             {
                 String border = "0";
                 String frame = "void";
@@ -179,15 +169,15 @@ public class HTMLNorm
                 }
             }
             //inherited cell properties
-            if (el.getTagName().equals("th") ||
-                el.getTagName().equals("td"))
+            if (el.getTagName().equalsIgnoreCase("th") ||
+                el.getTagName().equalsIgnoreCase("td"))
             {
                 if (itab.length() > 0)
                     attrs = itab + attrs;
             }
             //other borders
-            if (el.getTagName().equals("img") ||
-                el.getTagName().equals("object"))
+            if (el.getTagName().equalsIgnoreCase("img") ||
+                el.getTagName().equalsIgnoreCase("object"))
             {
                 if (el.getAttributes().getNamedItem("border") != null)
                 {
@@ -204,11 +194,11 @@ public class HTMLNorm
                 }
             }
             //object alignment
-            if (el.getTagName().equals("img") ||
-            	el.getTagName().equals("object") ||
-            	el.getTagName().equals("applet") ||
-            	el.getTagName().equals("iframe") ||
-            	el.getTagName().equals("input"))
+            if (el.getTagName().equalsIgnoreCase("img") ||
+            	el.getTagName().equalsIgnoreCase("object") ||
+            	el.getTagName().equalsIgnoreCase("applet") ||
+            	el.getTagName().equalsIgnoreCase("iframe") ||
+            	el.getTagName().equalsIgnoreCase("input"))
             {
             	if (el.getAttributes().getNamedItem("align") != null)
             	{
@@ -220,14 +210,14 @@ public class HTMLNorm
             	}
             }
             //table alignment
-            if (el.getTagName().equals("col") ||
-                el.getTagName().equals("colgroup") ||
-                el.getTagName().equals("tbody") ||
-                el.getTagName().equals("td") ||
-                el.getTagName().equals("tfoot") ||
-                el.getTagName().equals("th") ||
-                el.getTagName().equals("thead") ||
-                el.getTagName().equals("tr"))
+            if (el.getTagName().equalsIgnoreCase("col") ||
+                el.getTagName().equalsIgnoreCase("colgroup") ||
+                el.getTagName().equalsIgnoreCase("tbody") ||
+                el.getTagName().equalsIgnoreCase("td") ||
+                el.getTagName().equalsIgnoreCase("tfoot") ||
+                el.getTagName().equalsIgnoreCase("th") ||
+                el.getTagName().equalsIgnoreCase("thead") ||
+                el.getTagName().equalsIgnoreCase("tr"))
                 {
                     if (el.getAttributes().getNamedItem("align") != null)
                     {
@@ -255,7 +245,7 @@ public class HTMLNorm
                     }
                 }
             //Text properties
-            if (el.getTagName().equals("font"))
+            if (el.getTagName().equalsIgnoreCase("font"))
             {
                 if (el.getAttributes().getNamedItem("color") != null)
                     attrs = attrs + "color: " + el.getAttribute("color") + ";";
@@ -299,7 +289,7 @@ public class HTMLNorm
             }
 
             if (attrs.length() > 0)
-                el.setAttribute("XDefaultStyle", HTMLNorm.getAttribute(el, "XDefaultStyle") + ";" + attrs);
+                el.setAttribute("XDefaultStyle", el.getAttribute("XDefaultStyle") + ";" + attrs);            
         }                
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
