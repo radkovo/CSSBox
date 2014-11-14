@@ -67,17 +67,25 @@ public class HTMLNorm
             //Analyze HTML attributes
             String attrs = "";
             //background
-            if (el.getTagName().equals("table") ||
-                el.getTagName().equals("tr") ||
-                el.getTagName().equals("th") ||
-                el.getTagName().equals("td") ||
-                el.getTagName().equals("body"))
+            if (el.getTagName().toLowerCase().equals("table") ||
+                el.getTagName().toLowerCase().equals("th") ||
+                el.getTagName().toLowerCase().equals("td") ||
+                el.getTagName().toLowerCase().equals("body"))
+            {// see dreamwaver or http://www.htmlcodetutorial.com/tables/_TABLE_BACKGROUND.html 
+                if (el.getAttributes().getNamedItem("background") != null)
+                    attrs = attrs + "background-image: url(" + el.getAttribute("background") + ");";
+            }
+            if (el.getTagName().toLowerCase().equals("table") ||
+                    el.getTagName().toLowerCase().equals("tr") ||
+                    el.getTagName().toLowerCase().equals("th") ||
+                    el.getTagName().toLowerCase().equals("td") ||
+                    el.getTagName().toLowerCase().equals("body"))
             {
-                if (el.getAttributes().getNamedItem("bgcolor") != null)
-                    attrs = attrs + "background-color: " + el.getAttribute("bgcolor") + ";";
+                    if (el.getAttributes().getNamedItem("bgcolor") != null)
+                        attrs = attrs + "background-color: " + el.getAttribute("bgcolor") + ";";
             }
             //setting table and cell borders
-            if (el.getTagName().equals("table"))
+            if (el.getTagName().toLowerCase().equals("table"))
             {
                 String border = "0";
                 String frame = "void";
@@ -179,15 +187,15 @@ public class HTMLNorm
                 }
             }
             //inherited cell properties
-            if (el.getTagName().equals("th") ||
-                el.getTagName().equals("td"))
+            if (el.getTagName().toLowerCase().equals("th") ||
+                el.getTagName().toLowerCase().equals("td"))
             {
                 if (itab.length() > 0)
                     attrs = itab + attrs;
             }
             //other borders
-            if (el.getTagName().equals("img") ||
-                el.getTagName().equals("object"))
+            if (el.getTagName().toLowerCase().equals("img") ||
+                el.getTagName().toLowerCase().equals("object"))
             {
                 if (el.getAttributes().getNamedItem("border") != null)
                 {
@@ -204,11 +212,11 @@ public class HTMLNorm
                 }
             }
             //object alignment
-            if (el.getTagName().equals("img") ||
-            	el.getTagName().equals("object") ||
-            	el.getTagName().equals("applet") ||
-            	el.getTagName().equals("iframe") ||
-            	el.getTagName().equals("input"))
+            if (el.getTagName().toLowerCase().equals("img") ||
+            	el.getTagName().toLowerCase().equals("object") ||
+            	el.getTagName().toLowerCase().equals("applet") ||
+            	el.getTagName().toLowerCase().equals("iframe") ||
+            	el.getTagName().toLowerCase().equals("input"))
             {
             	if (el.getAttributes().getNamedItem("align") != null)
             	{
@@ -220,14 +228,14 @@ public class HTMLNorm
             	}
             }
             //table alignment
-            if (el.getTagName().equals("col") ||
-                el.getTagName().equals("colgroup") ||
-                el.getTagName().equals("tbody") ||
-                el.getTagName().equals("td") ||
-                el.getTagName().equals("tfoot") ||
-                el.getTagName().equals("th") ||
-                el.getTagName().equals("thead") ||
-                el.getTagName().equals("tr"))
+            if (el.getTagName().toLowerCase().equals("col") ||
+                el.getTagName().toLowerCase().equals("colgroup") ||
+                el.getTagName().toLowerCase().equals("tbody") ||
+                el.getTagName().toLowerCase().equals("td") ||
+                el.getTagName().toLowerCase().equals("tfoot") ||
+                el.getTagName().toLowerCase().equals("th") ||
+                el.getTagName().toLowerCase().equals("thead") ||
+                el.getTagName().toLowerCase().equals("tr"))
                 {
                     if (el.getAttributes().getNamedItem("align") != null)
                     {
@@ -255,7 +263,7 @@ public class HTMLNorm
                     }
                 }
             //Text properties
-            if (el.getTagName().equals("font"))
+            if (el.getTagName().toLowerCase().equals("font"))
             {
                 if (el.getAttributes().getNamedItem("color") != null)
                     attrs = attrs + "color: " + el.getAttribute("color") + ";";
