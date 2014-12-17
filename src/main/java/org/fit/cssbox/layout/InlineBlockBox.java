@@ -303,6 +303,8 @@ public class InlineBlockBox extends BlockBox implements InlineElement
                         //everything is drawn in the DRAW_INLINE phase as a new stacking context
                         break;
                     case DRAW_INLINE:
+                        if (isVisible())
+                            getViewport().getRenderer().renderElementBackground(this);
                         drawStackingContext(true);
                         break;
                 }
