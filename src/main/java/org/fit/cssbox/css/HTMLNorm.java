@@ -64,28 +64,29 @@ public class HTMLNorm
         if (n.getNodeType() == Node.ELEMENT_NODE)
         {
             Element el = (Element) n;
+            String tagname = el.getTagName().toLowerCase();
             //Analyze HTML attributes
             String attrs = "";
             //background
-            if (el.getTagName().toLowerCase().equals("table") ||
-                el.getTagName().toLowerCase().equals("th") ||
-                el.getTagName().toLowerCase().equals("td") ||
-                el.getTagName().toLowerCase().equals("body"))
-            {// see dreamwaver or http://www.htmlcodetutorial.com/tables/_TABLE_BACKGROUND.html 
+            if (tagname.equals("table") ||
+                tagname.equals("th") ||
+                tagname.equals("td") ||
+                tagname.equals("body"))
+            { 
                 if (el.getAttributes().getNamedItem("background") != null)
                     attrs = attrs + "background-image: url(" + el.getAttribute("background") + ");";
             }
-            if (el.getTagName().toLowerCase().equals("table") ||
-                    el.getTagName().toLowerCase().equals("tr") ||
-                    el.getTagName().toLowerCase().equals("th") ||
-                    el.getTagName().toLowerCase().equals("td") ||
-                    el.getTagName().toLowerCase().equals("body"))
+            if (tagname.equals("table") ||
+                    tagname.equals("tr") ||
+                    tagname.equals("th") ||
+                    tagname.equals("td") ||
+                    tagname.equals("body"))
             {
                     if (el.getAttributes().getNamedItem("bgcolor") != null)
                         attrs = attrs + "background-color: " + el.getAttribute("bgcolor") + ";";
             }
             //setting table and cell borders
-            if (el.getTagName().toLowerCase().equals("table"))
+            if (tagname.equals("table"))
             {
                 String border = "0";
                 String frame = "void";
@@ -187,15 +188,15 @@ public class HTMLNorm
                 }
             }
             //inherited cell properties
-            if (el.getTagName().toLowerCase().equals("th") ||
-                el.getTagName().toLowerCase().equals("td"))
+            if (tagname.equals("th") ||
+                tagname.equals("td"))
             {
                 if (itab.length() > 0)
                     attrs = itab + attrs;
             }
             //other borders
-            if (el.getTagName().toLowerCase().equals("img") ||
-                el.getTagName().toLowerCase().equals("object"))
+            if (tagname.equals("img") ||
+                tagname.equals("object"))
             {
                 if (el.getAttributes().getNamedItem("border") != null)
                 {
@@ -212,11 +213,11 @@ public class HTMLNorm
                 }
             }
             //object alignment
-            if (el.getTagName().toLowerCase().equals("img") ||
-            	el.getTagName().toLowerCase().equals("object") ||
-            	el.getTagName().toLowerCase().equals("applet") ||
-            	el.getTagName().toLowerCase().equals("iframe") ||
-            	el.getTagName().toLowerCase().equals("input"))
+            if (tagname.equals("img") ||
+            	tagname.equals("object") ||
+            	tagname.equals("applet") ||
+            	tagname.equals("iframe") ||
+            	tagname.equals("input"))
             {
             	if (el.getAttributes().getNamedItem("align") != null)
             	{
@@ -228,14 +229,14 @@ public class HTMLNorm
             	}
             }
             //table alignment
-            if (el.getTagName().toLowerCase().equals("col") ||
-                el.getTagName().toLowerCase().equals("colgroup") ||
-                el.getTagName().toLowerCase().equals("tbody") ||
-                el.getTagName().toLowerCase().equals("td") ||
-                el.getTagName().toLowerCase().equals("tfoot") ||
-                el.getTagName().toLowerCase().equals("th") ||
-                el.getTagName().toLowerCase().equals("thead") ||
-                el.getTagName().toLowerCase().equals("tr"))
+            if (tagname.equals("col") ||
+                tagname.equals("colgroup") ||
+                tagname.equals("tbody") ||
+                tagname.equals("td") ||
+                tagname.equals("tfoot") ||
+                tagname.equals("th") ||
+                tagname.equals("thead") ||
+                tagname.equals("tr"))
                 {
                     if (el.getAttributes().getNamedItem("align") != null)
                     {
@@ -263,7 +264,7 @@ public class HTMLNorm
                     }
                 }
             //Text properties
-            if (el.getTagName().toLowerCase().equals("font"))
+            if (tagname.equals("font"))
             {
                 if (el.getAttributes().getNamedItem("color") != null)
                     attrs = attrs + "color: " + el.getAttribute("color") + ";";
