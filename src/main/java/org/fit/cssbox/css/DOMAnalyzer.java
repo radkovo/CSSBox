@@ -314,7 +314,11 @@ public class DOMAnalyzer
         //fix the DOM tree structure according to HTML syntax
         HTMLNorm.normalizeHTMLTree(doc);
         //convert attributes to style definitions
-        HTMLNorm.attributesToStyles(getBody(), "");
+        Element body = getBody();
+        if (body != null)
+            HTMLNorm.attributesToStyles(body, "");
+        else
+            log.error("No <body> element found in the DOM.");
     }
     
     /**
