@@ -63,8 +63,8 @@ public class HTMLNorm
         String itab = tab_inh;
         if (n.getNodeType() == Node.ELEMENT_NODE)
         {
-            Element el = (Element) n;
-            String tagname = el.getTagName().toLowerCase();
+            final Element el = (Element) n;
+            final String tagname = el.getTagName().toLowerCase();
             //Analyze HTML attributes
             String attrs = "";
             //background
