@@ -151,6 +151,7 @@ public class BoxBrowser
     {
         try {
             if (!urlstring.startsWith("http:") &&
+                !urlstring.startsWith("https:") &&
                 !urlstring.startsWith("ftp:") &&
                 !urlstring.startsWith("file:"))
                     urlstring = "http://" + urlstring;
