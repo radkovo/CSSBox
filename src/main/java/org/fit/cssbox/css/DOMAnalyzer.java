@@ -31,6 +31,7 @@ import org.w3c.dom.*;
 import cz.vutbr.web.css.CSSException;
 import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.MediaSpec;
+import cz.vutbr.web.css.NetworkProcessor;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.RuleSet;
 import cz.vutbr.web.css.Selector;
@@ -394,7 +395,7 @@ public class DOMAnalyzer
     }
 
     /**
-     * Loads a stylesheet from an URL as na author style sheet.
+     * Loads a stylesheet from an URL as an author style sheet.
      * Imports all the imported style sheets before storing it.
      * @param base the document base url
      * @param href the href specification
@@ -403,6 +404,20 @@ public class DOMAnalyzer
     public void loadStyleSheet(URL base, String href, String encoding)
     {
     	loadStyleSheet(base, href, encoding, Origin.AUTHOR);
+    }
+    
+    /**
+     * Loads a stylesheet from an URL as an author style sheet
+     * using the network processor to obtain the URL
+     * Imports all the imported style sheets before storing it.
+     * @param base the document base url
+     * @param href the href specification
+     * @param encoding the default encoding
+     * @param callback for obtaining the url
+     */
+    public void loadStyleSheet(URL base, String href, String encoding, NetworkProcessor processor)
+    {
+    	loadStyleSheet(base, href, encoding, Origin.AUTHOR, processor);
     }
     
     /**
@@ -417,6 +432,29 @@ public class DOMAnalyzer
     {
         try {
             StyleSheet newsheet = CSSFactory.parse(new URL(base, href), encoding);
+            newsheet.setOrigin(translateOrigin(origin));
+            styles.add(newsheet);
+        } catch (IOException e) {
+            log.error("I/O Error: "+e.getMessage());
+        } catch (CSSException e) {
+            log.error("CSS Error: "+e.getMessage());
+        }
+    }
+    
+    /**
+     * Loads a stylesheet from an URL and specifies the origin and the network
+	 * processor used to obtain the content of the url.
+	 * Imports all the imported style sheets before storing it.
+	 * @param base the document base url
+     * @param href the href specification
+     * @param encoding the default character encoding for the style sheet (use <code>null</code> for default system encoding)
+     * @param origin the style sheet origin (author, user agent or user)
+     * @param callback for obtaining the url
+     */
+    public void loadStyleSheet(URL base, String href, String encoding, Origin origin, NetworkProcessor processor)
+    {
+        try {
+            StyleSheet newsheet = CSSFactory.parse(new URL(base, href), processor, encoding);
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
         } catch (IOException e) {
@@ -452,6 +490,29 @@ public class DOMAnalyzer
     {
 	    try {
     	    StyleSheet newsheet = CSSFactory.parseString(cssdata, base);
+            newsheet.setOrigin(translateOrigin(origin));
+            styles.add(newsheet);
+	    } catch (IOException e) {
+            log.error("I/O Error: "+e.getMessage());
+        } catch (CSSException e) {
+            log.error("DOMAnalyzer: CSS Error: "+e.getMessage());
+        }
+    }
+	
+    /**
+     * Parses and adds an author style sheet represented as a string to the end of the used
+     * stylesheet lists. It imports all the imported style sheets before storing
+     * it, using the network processor to obtain the URL. The origin of the style sheet is set to the author, agent or user. The origin
+     * influences the rule priority according to the <a href="http://www.w3.org/TR/CSS21/cascade.html#cascading-order">CSS specification</a>.
+     * @param base the document base URL
+     * @param cssdata the style string
+     * @param origin the style sheet origin (AUTHOR, AGENT or USER)
+     * @param callback for obtaining the url
+     */
+	public void addStyleSheet(URL base, String cssdata, Origin origin, NetworkProcessor processor)
+    {
+	    try {
+    	    StyleSheet newsheet = CSSFactory.parseString(cssdata, base, processor);
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
 	    } catch (IOException e) {
