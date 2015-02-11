@@ -1,3 +1,11 @@
+2015-02-11 - Version 4.8
+- Updates to new jStyleParser API (NetworkProcessor support)
+- Fixed inline-block background rendering (affected form rendering)
+- Background position computation with efficient margins
+- Margins of the root element's box do not collapse (fixes #53)
+- DOM binding updates (allow null atribute values and missing body element)
+- Demo updates
+
 2014-08-29 - Version 4.7
 - Viewport size: the viewport size and the total canvas size is now properly distinguisged
 - Box height computation fixes (including percentage heights)
