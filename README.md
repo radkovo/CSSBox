@@ -1,7 +1,7 @@
 CSSBox
 ======
 An HTML/CSS rendering engine library
-(c) 2005-2014 Radek Burget (burgetr@fit.vutbr.cz)
+(c) 2005-2015 Radek Burget (burgetr@fit.vutbr.cz)
 
 See the project page for more information and downloads:
 [http://cssbox.sourceforge.net/](http://cssbox.sourceforge.net/)
