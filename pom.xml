@@ -12,7 +12,7 @@
 
 	<groupId>net.sf.cssbox</groupId>
 	<artifactId>cssbox</artifactId>
-	<version>4.8.1-SNAPSHOT</version>
+	<version>4.8.1</version>
 	<name>CSSBox</name>
 	<description>
 	CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its primary purpose is to provide a
