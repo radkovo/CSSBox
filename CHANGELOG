@@ -1,3 +1,5 @@
+2015-02-20 - Version 4.8.1
+- declare dependencies on xerces and xml-api's as provided, making the component friendlier to cooperate with other components in environments where isolated class loaders are used, i.e. IDE plugin development - implementations for these are shipped with JRE 6 or younger
 2015-02-11 - Version 4.8
 - Updates to new jStyleParser API (NetworkProcessor support)
 - Fixed inline-block background rendering (affected form rendering)

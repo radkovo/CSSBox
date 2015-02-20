@@ -413,7 +413,7 @@ public class DOMAnalyzer
      * @param base the document base url
      * @param href the href specification
      * @param encoding the default encoding
-     * @param callback for obtaining the url
+     * @param processor the network processor used for handling the URL connections
      */
     public void loadStyleSheet(URL base, String href, String encoding, NetworkProcessor processor)
     {
@@ -449,7 +449,7 @@ public class DOMAnalyzer
      * @param href the href specification
      * @param encoding the default character encoding for the style sheet (use <code>null</code> for default system encoding)
      * @param origin the style sheet origin (author, user agent or user)
-     * @param callback for obtaining the url
+     * @param processor the network processor used for handling the URL connections
      */
     public void loadStyleSheet(URL base, String href, String encoding, Origin origin, NetworkProcessor processor)
     {
@@ -507,7 +507,7 @@ public class DOMAnalyzer
      * @param base the document base URL
      * @param cssdata the style string
      * @param origin the style sheet origin (AUTHOR, AGENT or USER)
-     * @param callback for obtaining the url
+     * @param processor the network processor used for handling the URL connections
      */
 	public void addStyleSheet(URL base, String cssdata, Origin origin, NetworkProcessor processor)
     {
