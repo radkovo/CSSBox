@@ -37,6 +37,14 @@
 			</roles>
 		</developer>
 	</developers>
+	<contributors>
+    		<contributor>
+      			<name>Kaj Kandler</name>
+      			<email>kajkandler@conficio.com</email>
+      			<organization>Conficio</organization>
+      			<organizationUrl>http://conficio.com</organizationUrl>
+    		</contributor>
+  	</contributors>
   
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
@@ -160,11 +168,13 @@
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
 			<version>2.11.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>xml-apis</groupId>
 			<artifactId>xml-apis</artifactId>
 			<version>1.4.01</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
