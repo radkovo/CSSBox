@@ -48,18 +48,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-
 import java.awt.GridBagConstraints;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import java.awt.GridLayout;
 
-import javax.swing.JTree;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -76,16 +67,12 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.FlowLayout;
 
-import javax.swing.JTable;
-import javax.swing.JTabbedPane;
-
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Declaration;
 import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Term;
 
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 
@@ -398,7 +385,7 @@ public class BoxBrowser
         if (box instanceof ElementBox)
         {
             ElementBox eb = (ElementBox) box;
-            vals.add(infoTableData("Display", eb.getDisplayString().toString()));
+            vals.add(infoTableData("Display", eb.getDisplayString()));
             vals.add(infoTableData("BgColor", (eb.getBgcolor() == null) ? "" : eb.getBgcolor().toString()));
             vals.add(infoTableData("Margin", eb.getMargin().toString()));
             vals.add(infoTableData("EMargin", eb.getEMargin().toString()));

@@ -36,7 +36,7 @@ import cz.vutbr.web.css.*;
  */
 public class CSSDecoder 
 {
-    protected static Logger log = LoggerFactory.getLogger(CSSDecoder.class);
+    protected static final Logger log = LoggerFactory.getLogger(CSSDecoder.class);
 
     private VisualContext context;
     

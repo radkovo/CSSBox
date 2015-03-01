@@ -52,7 +52,7 @@ import cz.vutbr.web.css.MediaSpec;
  */
 public class ImageRenderer
 {
-    public enum Type { PNG, SVG };
+    public enum Type { PNG, SVG }
     
     private String mediaType = "screen";
     private Dimension windowSize;
