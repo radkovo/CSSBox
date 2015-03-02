@@ -70,7 +70,7 @@ public class DOMAnalyzer
     	AGENT, 
     	/** A user tstyle sheet */
     	USER 
-    };
+    }
     
     /**
      * Creates a new DOM analyzer.

@@ -439,7 +439,7 @@ public class BoxFactory
      */
     public ElementBox createElementBox(Element n, BoxTreeCreationStatus stat)
     {
-        ElementBox ret = createBox(stat.parent, (Element) n, null);
+        ElementBox ret = createBox(stat.parent, n, null);
         ret.setClipBlock(stat.clipbox);
         if (ret.isBlock())
         {
@@ -810,7 +810,7 @@ public class BoxFactory
      */
     public ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
     {
-        ElementBox root = new InlineBox((Element) n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        ElementBox root = new InlineBox(n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         root.setViewport(viewport);
         root.setStyle(style);
         if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
