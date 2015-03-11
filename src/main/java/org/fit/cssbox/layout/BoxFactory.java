@@ -359,6 +359,7 @@ public class BoxFactory
                         iparent.postadd.add(newbox);
                         if (iparent.nextTwin != null)
                             iparent.postadd.add(iparent.nextTwin);
+                        stat.lastinflow = null; //we have started a new block box
                     }
                     else
                         log.error("(internal error) grandpa is missing for %s", newbox);
