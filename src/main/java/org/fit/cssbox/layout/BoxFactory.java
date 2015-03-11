@@ -186,7 +186,10 @@ public class BoxFactory
             {
                 //add previously created boxes (the rest from the last twin)
                 if (stat.parent.preadd != null)
+                {
                     addToTree(stat.parent.preadd, stat);
+                    stat.parent.preadd = null; //don't need to keep this anymore
+                }
                 
                 //create :before elements
                 if (stat.parent.previousTwin == null)
@@ -392,6 +395,7 @@ public class BoxFactory
         {
             for (Box box : ((ElementBox) newbox).postadd)
                 addToTree(box, stat);
+            ((ElementBox) newbox).postadd = null; //don't need to keep this anymore
         }
         
     }
