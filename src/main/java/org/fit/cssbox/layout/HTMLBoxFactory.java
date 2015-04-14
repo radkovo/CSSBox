@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 /**
@@ -112,17 +113,41 @@ public class HTMLBoxFactory
     
     protected ElementBox createSubtreeImg(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
-        InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
-        rbox.setViewport(viewport);
-        rbox.setStyle(style);
-
-        String src = HTMLNorm.getAttribute(e, "src");
-        rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
-        
-        if (rbox.isBlock())
-            return new BlockReplacedBox(rbox);
-        else
+        if (factory.getConfig().getReplaceImagesWithAlt())
+        {
+            ElementBox rbox = new InlineBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            rbox.setViewport(viewport);
+            rbox.setStyle(style);
+            if (rbox.isBlock())
+                rbox = new BlockBox((InlineBox) rbox);
+            
+            String stext = HTMLNorm.getAttribute(e, "alt");
+            Text t = e.getOwnerDocument().createTextNode(stext);
+            TextBox tbox = new TextBox(t, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            tbox.setOrder(factory.next_order++);
+            tbox.setContainingBlock(parent.getContainingBlock());
+            tbox.setClipBlock(parent.getClipBlock());
+            tbox.setViewport(viewport);
+            tbox.setBase(parent.getBase());
+            tbox.setParent(rbox);
+            rbox.addSubBox(tbox);
+            
             return rbox;
+        }
+        else
+        {
+            InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            rbox.setViewport(viewport);
+            rbox.setStyle(style);
+    
+            String src = HTMLNorm.getAttribute(e, "src");
+            rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
+            
+            if (rbox.isBlock())
+                return new BlockReplacedBox(rbox);
+            else
+                return rbox;
+        }
     }
     
     protected ElementBox createSubtreeObject(ElementBox parent, Element e, Viewport viewport, NodeData style)

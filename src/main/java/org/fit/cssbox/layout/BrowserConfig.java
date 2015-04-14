@@ -47,6 +47,9 @@ public class BrowserConfig
     /** Should we interpret the HTML tags? */
     private boolean useHTML;
     
+    /** Should we replace the images with their ALT attribute? */
+    private boolean replaceImagesWithAlt;
+    
     /** Should the viewport clip its contents? */
     private boolean clipViewport;
     
@@ -68,6 +71,7 @@ public class BrowserConfig
         loadBackgroundImages = true;
         imageLoadTimeout = 500;
         useHTML = true;
+        replaceImagesWithAlt = false;
         clipViewport = false;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
@@ -133,6 +137,20 @@ public class BrowserConfig
     public void setUseHTML(boolean useHTML)
     {
         this.useHTML = useHTML;
+    }
+
+    public boolean getReplaceImagesWithAlt()
+    {
+        return replaceImagesWithAlt;
+    }
+
+    /**
+     * Sets whether the images should be replaced by their 'alt' text.
+     * @param replaceImagesWithAlt when set to {@code true}, the images will be treated as their 'alt' text.
+     */
+    public void setReplaceImagesWithAlt(boolean replaceImagesWithAlt)
+    {
+        this.replaceImagesWithAlt = replaceImagesWithAlt;
     }
 
     public boolean getClipViewport()
