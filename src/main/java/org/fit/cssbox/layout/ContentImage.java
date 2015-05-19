@@ -201,7 +201,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         if (container == null)
             waitForLoad();
         
-        BufferedImage img = new BufferedImage(getIntrinsicWidth(), getIntrinsicHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(getIntrinsicWidth(), getIntrinsicHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.drawImage(image, null, null);
         g.dispose();
