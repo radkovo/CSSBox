@@ -132,6 +132,8 @@ The following configuration options are available:</p><dl>
      </ul>
      The default value is <code>true</code>.
      </dd>
+<dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setReplaceImagesWithAlt(boolean)" class="api">browser.getConfig().setReplaceImagesWithAlt(boolean)</a></dt>
+<dd>Sets whether the images should be replaced by their <code>alt</code> text.</dd>
 <dt><a href="../api/org/fit/cssbox/layout/BrowserConfig.html#setDefaultFont(java.lang.String,%20java.lang.String)" class="api">browser.getConfig().setDefaultFont(String logical, String physical)</a></dt>
 <dd>Configures the default physical fonts that should be used instead of the logical Java families. The typical usage is the following:
 	<div class="code"><pre>
