@@ -346,7 +346,7 @@ public class DOMAnalyzer
                 if (o instanceof RuleSet)
                 {
                     //check the first part of the first selector
-                    Selector.SelectorPart start = ((RuleSet) o).getSelectors().get(0).get(0).get(0);
+                    Selector.SelectorPart start = ((RuleSet) o).getSelectors()[0].get(0).get(0);
                     //skip inline styles
                     if (!(start instanceof Selector.ElementDOM))
                         sb.append(o.toString());
