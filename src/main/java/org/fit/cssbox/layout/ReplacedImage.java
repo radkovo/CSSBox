@@ -73,7 +73,7 @@ public class ReplacedImage extends ContentImage
 
         try {
             url = DataURLHandler.createURL(base, src);
-            if (loadImages)
+            if (loadImages && !src.trim().isEmpty())
             {
                 // get image object (may not have picture data)
                 image = loadImage(caching);
