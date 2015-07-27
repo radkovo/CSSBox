@@ -26,7 +26,15 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Iterator;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.event.IIOReadUpdateListener;
+import javax.imageio.stream.ImageInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +43,9 @@ import org.slf4j.LoggerFactory;
  * Generic image used in the page content (used by ReplacedImage and BackgroundImage).
  * 
  * @author burgetr
+ * @author Alessandro Tucci
  */
-public abstract class ContentImage extends ReplacedContent implements ImageObserver
+public abstract class ContentImage extends ReplacedContent implements ImageObserver, IIOReadUpdateListener
 {
     private static Logger log = LoggerFactory.getLogger(ContentImage.class);
     
@@ -124,21 +133,79 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             if (cache)
             {
                 // get image and cache
-                img = toolkit.getImage(url);
+                img = ImageCache.get(url);
+                if (img == null && !ImageCache.hasFailed(url)) {
+                    try {
+                        img = loadImageFromSource(url);
+                    } catch (IOException e) {
+                        ImageCache.putFailed(url);
+                        log.error("Unable to get image from: " + url);
+                        log.error(e.getMessage());
+                        return null;
+                    }
+                    if (img != null)
+                        ImageCache.put(url, img);
+                    else
+                        ImageCache.putFailed(url);
+                }
             }
             else
             {
                 // do not cache, just get image
-                img = toolkit.createImage(url);
+                try {
+                    img = loadImageFromSource(url);
+                } catch (IOException e) {
+                    log.error("Unable to get image from: " + url);
+                    log.error(e.getMessage());
+                    return null;
+                }
             }
 
             // start loading and preparation
-            complete = toolkit.prepareImage(img, -1, -1, observer);
+            toolkit.prepareImage(img, -1, -1, observer);
             return img;
         }
         return null;
     }
 
+    private Image loadImageFromSource(URL url) throws IOException
+    {
+        Image image = null;
+        InputStream urlStream = null;
+        urlStream = url.openStream();
+        ImageInputStream imageInputStream = ImageIO.createImageInputStream(urlStream);
+        try
+        {
+            Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+            if (!imageReaders.hasNext())
+            {
+                log.warn("No image readers for URL: " + url);
+                log.warn("  owner: " + getOwner());
+            }
+            while (imageReaders.hasNext())
+            {
+                ImageReader currentImageReader = imageReaders.next();
+                currentImageReader.setInput(imageInputStream);
+                currentImageReader.addIIOReadUpdateListener(this);
+
+                try
+                {
+                    image = currentImageReader.read(0);
+                } catch (Exception e) {
+                    log.error("Image decoding error: " + e.getMessage() + " with reader " + currentImageReader);
+                } finally {
+                    currentImageReader.dispose();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Image decoding error: " + e.getMessage());
+        } finally {
+            if (urlStream != null) urlStream.close();
+        }
+
+        return image;
+    }    
+    
     /**
      * Checks if caching is used when loading images.
      * 
@@ -291,7 +358,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 {
                     image = null;
                     abort = true;
-                    log.warn("Image loading aborted for timeout: " + url + " " + loadtime);
+                    log.warn("obtainImageWidth(): Image loading aborted for timeout: " + url + " " + loadtime);
                 }
                 Thread.sleep(25);
                 loadtime += 25;
@@ -299,7 +366,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 image = null;
                 abort = true;
-                log.warn("Image loading aborted: " + e.getMessage());
+                log.warn("obtainImageWidth(): Image loading aborted: " + e.getMessage());
             }
         }
         if (width == -1) width = DEFAULT_IMAGE_WIDTH;
@@ -319,7 +386,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 {
                     image = null;
                     abort = true;
-                    log.warn("Image loading aborted for timeout: " + url);
+                    log.warn("obtainImageHeight(): Image loading aborted for timeout: " + url);
                 }
                 else
                     Thread.sleep(25);
@@ -328,7 +395,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 image = null;
                 abort = true;
-                log.warn("Image loading aborted: " + e.getMessage());
+                log.warn("obtainImageHeight(): Image loading aborted: " + e.getMessage());
             }
         }
 
@@ -385,7 +452,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     {
         abort = false;
         int loadtime = 0;
-        while (!abort && image != null && !complete)
+        while (!abort && image != null && (height = image.getHeight(observer)) == -1)
         {
             try
             {
@@ -393,7 +460,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 {
                     image = null;
                     abort = true;
-                    log.warn("Image loading aborted for timeout: " + url + " " + loadtime);
+                    log.warn("waitForLoad(): Image loading aborted for timeout: " + url + " " + loadtime);
                 }
                 Thread.sleep(25);
                 loadtime += 25;
@@ -401,12 +468,14 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 image = null;
                 abort = true;
-                log.warn("Image loading aborted: " + e.getMessage());
+                log.warn("waitForLoad(): Image loading aborted: " + e.getMessage());
             }
         }
         return complete;
     }
     
+    //======================================================================================================
+
     public boolean imageUpdate(Image img, int flags, int x, int y, int newWidth, int newHeight)
     {
         // http://www.permadi.com/tutorial/javaImgObserverAndAnimGif/
@@ -446,4 +515,53 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         return ((flags & ALLBITS) == 0) /* && owner.isVisible() */;
     }
 
+    //======================================================================================================
+    
+    public void imageUpdate(ImageReader source, BufferedImage theImage,
+            int minX, int minY, int width, int height, int periodX,
+            int periodY, int[] bands)
+    {
+        if (image == null || !image.equals(theImage))
+        {
+            repaint(0);
+            image = theImage;
+        }
+    }
+
+    public void passComplete(ImageReader source, BufferedImage theImage)
+    {
+        if (image == null || !image.equals(theImage))
+        {
+            repaint(0);
+            image = theImage;
+        }
+    }
+
+    public void passStarted(ImageReader source, BufferedImage theImage,
+            int pass, int minPass, int maxPass, int minX, int minY,
+            int periodX, int periodY, int[] bands)
+    {
+        if (image == null || !image.equals(theImage))
+        {
+            repaint(0);
+            image = theImage;
+        }
+    }
+
+    public void thumbnailPassComplete(ImageReader source, BufferedImage theThumbnail)
+    {
+    }
+
+    public void thumbnailPassStarted(ImageReader source,
+            BufferedImage theThumbnail, int pass, int minPass, int maxPass,
+            int minX, int minY, int periodX, int periodY, int[] bands)
+    {
+    }
+
+    public void thumbnailUpdate(ImageReader source, BufferedImage theThumbnail,
+            int minX, int minY, int width, int height, int periodX,
+            int periodY, int[] bands)
+    {
+    }    
+    
 }
