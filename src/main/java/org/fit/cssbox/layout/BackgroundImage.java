@@ -103,8 +103,9 @@ public class BackgroundImage extends ContentImage
             waitForLoad();
         
         Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
+        Rectangle clipped = getOwner().getClippedBounds();
         if (getOwner() instanceof Viewport)
-            bounds = getOwner().getClippedBounds();  //for the root box (Viewport), use the whole clipped content (not only the visible part)
+            bounds = clipped;  //for the root box (Viewport), use the whole clipped content (not only the visible part)
         if (bounds.width > 0 && bounds.height > 0)
         {
             computeCoordinates(bounds);
@@ -112,11 +113,11 @@ public class BackgroundImage extends ContentImage
             Graphics2D g = img.createGraphics();
             
             if (repeatx && repeaty)
-                drawRepeatBoth(g, imgx, imgy, bounds.width, bounds.height);
+                drawRepeatBoth(g, imgx, imgy, bounds.width, bounds.height, clipped);
             else if (repeatx)
-                drawRepeatX(g, imgx, imgy, bounds.width);
+                drawRepeatX(g, imgx, imgy, bounds.width, clipped);
             else if (repeaty)
-                drawRepeatY(g, imgx, imgy, bounds.height);
+                drawRepeatY(g, imgx, imgy, bounds.height, clipped);
             else
                 g.drawImage(image, imgx, imgy, observer);
             
@@ -128,36 +129,72 @@ public class BackgroundImage extends ContentImage
             return null;
     }
     
-    private void drawRepeatX(Graphics2D g, int sx, int sy, int limit)
+    private void drawRepeatX(Graphics2D g, int sx, int sy, int limit, Rectangle clip)
     {
         int width = getIntrinsicWidth();
-        if (width == 0) width = 1;
-        for (int x = sx; x < limit; x += width)
-            g.drawImage(image, x, sy, observer);
-        for (int x = sx - width; x + width - 1 >= 0; x -= width)
-            g.drawImage(image, x, sy, observer);
+        int height = getIntrinsicHeight();
+        Rectangle r = new Rectangle(0, 0, width, height);
+        if (width > 0)
+        {
+            for (int x = sx; x < limit; x += width)
+            {
+                r.setLocation(x, sy);
+                if (r.intersects(clip))
+                    g.drawImage(image, x, sy, observer);
+            }
+            for (int x = sx - width; x + width - 1 >= 0; x -= width)
+            {
+                r.setLocation(x, sy);
+                if (r.intersects(clip))
+                    g.drawImage(image, x, sy, observer);
+            }
+        }
         
     }
     
-    private void drawRepeatY(Graphics2D g, int sx, int sy, int limit)
+    private void drawRepeatY(Graphics2D g, int sx, int sy, int limit, Rectangle clip)
     {
+        int width = getIntrinsicWidth();
         int height = getIntrinsicHeight();
-        if (height == 0) height = 1;
-        for (int y = sy; y < limit; y += height)
-            g.drawImage(image, sx, y, observer);
-        for (int y = sy - height; y + height - 1 >= 0; y -= height)
-            g.drawImage(image, sx, y, observer);
+        Rectangle r = new Rectangle(0, 0, width, height);
+        if (height > 0)
+        {
+            for (int y = sy; y < limit; y += height)
+            {
+                r.setLocation(sx, y);
+                if (r.intersects(clip))
+                    g.drawImage(image, sx, y, observer);
+            }
+            for (int y = sy - height; y + height - 1 >= 0; y -= height)
+            {
+                r.setLocation(sx, y);
+                if (r.intersects(clip))
+                    g.drawImage(image, sx, y, observer);
+            }
+        }
         
     }
     
-    private void drawRepeatBoth(Graphics2D g, int sx, int sy, int limitx, int limity)
+    private void drawRepeatBoth(Graphics2D g, int sx, int sy, int limitx, int limity, Rectangle clip)
     {
+        int width = getIntrinsicWidth();
         int height = getIntrinsicHeight();
-        if (height == 0) height = 1;
-        for (int y = sy; y < limity; y += height)
-            drawRepeatX(g, sx, y, limitx);
-        for (int y = sy - height; y + height - 1 >= 0; y -= height)
-            drawRepeatX(g, sx, y, limitx);
+        Rectangle r = new Rectangle(0, 0, width, height);
+        if (height > 0)
+        {
+            for (int y = sy; y < limity; y += height)
+            {
+                r.setLocation(sx, y);
+                if (r.intersects(clip))
+                    drawRepeatX(g, sx, y, limitx, clip);
+            }
+            for (int y = sy - height; y + height - 1 >= 0; y -= height)
+            {
+                r.setLocation(sx, y);
+                if (r.intersects(clip))
+                    drawRepeatX(g, sx, y, limitx, clip);
+            }
+        }
     }
     
     
