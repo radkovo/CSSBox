@@ -871,9 +871,10 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * @return the bounds of the background - the content and padding
+     * Returns the bounds of the padding edge (the content and padding)
+     * @return a Rectangle representing the absolute padding bounds
      */
-    public Rectangle getAbsoluteBackgroundBounds()
+    public Rectangle getAbsolutePaddingBounds()
     {
         return new Rectangle(absbounds.x + emargin.left + border.left,
                              absbounds.y + emargin.top + border.top,
@@ -882,7 +883,8 @@ abstract public class ElementBox extends Box
     }
 
     /**
-     * @return the bounds of the border - the content, padding and border
+     * Returns the bounds of the border edge (the content, padding and border)
+     * @return a Rectangle representing the absolute border bounds
      */
     public Rectangle getAbsoluteBorderBounds()
     {
@@ -890,6 +892,29 @@ abstract public class ElementBox extends Box
                              absbounds.y + emargin.top,
                              content.width + padding.left + padding.right + border.left + border.right,
                              content.height + padding.top + padding.bottom + border.top + border.bottom);
+    }
+    
+    /**
+     * Returns the bounds of the background according to the background-origin property.
+     * NOTE: currently, background-origin is not supported i.e. this method is equals to getAbsolutePaddingBounds().
+     * This will change in the future.
+     * @return a Rectangle representing the absolute background bounds
+     */
+    public Rectangle getAbsoluteBackgroundBounds()
+    {
+        return getAbsolutePaddingBounds(); //TODO change this when background-origin is supported
+    }
+    
+    /**
+     * Computes the absolute clipping rectangle coordinates if this box is used as a clipping block.
+     * @return the clipping rectangle coordinates
+     */
+    public Rectangle getClippedContentBounds()
+    {
+        if (clipblock == null)
+            return getAbsolutePaddingBounds();
+        else
+            return clipblock.getClippedContentBounds().intersection(getAbsolutePaddingBounds());
     }
     
     @Override

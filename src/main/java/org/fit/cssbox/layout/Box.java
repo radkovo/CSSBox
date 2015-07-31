@@ -499,18 +499,6 @@ abstract public class Box
     }
 
     /**
-     * Computes the absolute clipping rectangle coordinates if this box is used as a clipping block.
-     * @return the clipping rectangle coordinates
-     */
-    public Rectangle getClippedContentBounds()
-    {
-        if (clipblock == null)
-            return getAbsoluteContentBounds();
-        else
-            return clipblock.getClippedContentBounds().intersection(getAbsoluteContentBounds());
-    }
-    
-    /**
      * @return maximal width that was available for the box placement during the layout processing
      */
     public int getAvailableWidth()
