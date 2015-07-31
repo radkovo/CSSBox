@@ -106,6 +106,7 @@ public class BackgroundImage extends ContentImage
         Rectangle clipped = getOwner().getClippedBounds();
         if (getOwner() instanceof Viewport)
             bounds = clipped;  //for the root box (Viewport), use the whole clipped content (not only the visible part)
+        clipped = new Rectangle(bounds.x - clipped.x, bounds.y - clipped.y, clipped.width, clipped.height); //make the clip relative to the background bounds
         if (bounds.width > 0 && bounds.height > 0)
         {
             computeCoordinates(bounds);
