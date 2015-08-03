@@ -443,6 +443,7 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Obtains the efficient background color to be used for drawing the background.
      * @return the background color or null when transparent
      */
     public Color getBgcolor()
@@ -1075,9 +1076,9 @@ abstract public class ElementBox extends Box
         int by2 = by1 + bh - 1;
         
         //draw the background - it should be visible below the border too
-        if (bgcolor != null)
+        if (getBgcolor() != null)
         {
-            g.setColor(bgcolor);
+            g.setColor(getBgcolor());
             g.fillRect(bx1, by1, bw, bh);
         }
         

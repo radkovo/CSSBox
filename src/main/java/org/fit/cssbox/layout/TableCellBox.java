@@ -389,44 +389,19 @@ public class TableCellBox extends BlockBox
     }
 
     @Override
-    public void drawBackground(Graphics2D g)
+    public Color getBgcolor()
     {
-        Color color = g.getColor(); //original color
-
-        //top left corner
-        int x = absbounds.x;
-        int y = absbounds.y;
-
-        //border bounds
-        int bx1 = x + margin.left;
-        int by1 = y + margin.top;
-        int bw = border.left + padding.left + content.width + padding.right + border.right;
-        int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
-        int bx2 = bx1 + bw - 1;
-        int by2 = by1 + bh - 1;
-        
-        //draw the background - it should be visible below the border too
         //if no background is specified for the cell, we try to use the row, row group, column, column group
         Color bg = bgcolor;
         if (bg == null)
-        	bg = getOwnerRow().getBgcolor();
+            bg = getOwnerRow().getBgcolor();
         if (bg == null)
-        	bg = getOwnerColumn().getBgcolor();
+            bg = getOwnerColumn().getBgcolor();
         if (bg == null)
-        	bg = getOwnerRow().getOwnerBody().getBgcolor();
-        
-        if (bg != null)
-        {
-            g.setColor(bg);
-            g.fillRect(bx1, by1, bw, bh);
-        }
-        
-        //draw the border
-        drawBorders(g, bx1, by1, bx2, by2);
-        
-        g.setColor(color); //restore original color
+            bg = getOwnerRow().getOwnerBody().getBgcolor();
+        return bg;
     }
-    
+
     @Override
     protected boolean separatedFromTop(ElementBox box)
     {
