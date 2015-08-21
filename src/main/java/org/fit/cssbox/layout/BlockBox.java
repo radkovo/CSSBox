@@ -1910,8 +1910,8 @@ public class BlockBox extends ElementBox
         //Minimal and maximal width
         min_size = new Dimension(dec.getLength(getLengthValue("min-width"), false, -1, -1, contw),
                 dec.getLength(getLengthValue("min-height"), false, -1, -1, conth));
-        max_size = new Dimension(dec.getLength(getLengthValue("max-width"), false, -1, -1, contw),
-                dec.getLength(getLengthValue("max-height"), false, -1, -1, conth));
+        max_size = new Dimension(dec.getLength(getLengthValue("max-width"), style.getProperty("max-width") == CSSProperty.MaxWidth.NONE, -1, -1, contw),
+                dec.getLength(getLengthValue("max-height"), style.getProperty("max-height") == CSSProperty.MaxHeight.NONE, -1, -1, conth));
         if (max_size.width != -1 && max_size.width < min_size.width)
             max_size.width = min_size.width;
         if (max_size.height != -1 && max_size.height < min_size.height)
