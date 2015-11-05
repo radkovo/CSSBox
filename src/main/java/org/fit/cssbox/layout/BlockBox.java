@@ -1632,7 +1632,7 @@ public class BlockBox extends ElementBox
     {
         if (fleft != null && fright != null)
         {
-            int mfy = Math.max(fleft.getMaxYForOwner(this), fright.getMaxYForOwner(this));
+            int mfy = Math.max(fleft.getMaxYForOwner(this, true), fright.getMaxYForOwner(this, true));
             if (this.containsBlocks())
             {
                 for (int i = 0; i < getSubBoxNumber(); i++)

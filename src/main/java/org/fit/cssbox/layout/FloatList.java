@@ -166,13 +166,13 @@ public class FloatList
      * @param owner the owning block
      * @return the maximal Y coordinate
      */
-    public int getMaxYForOwner(BlockBox owner)
+    public int getMaxYForOwner(BlockBox owner, boolean requireVisible)
     {
         int maxy = 0;
         for (int i = 0; i < size(); i++)
         {
             Box box = getBox(i);
-            if (box.getContainingBlock() == owner)
+            if ((!requireVisible || box.isVisible()) && box.getContainingBlock() == owner)
             {
                 int ny = box.bounds.y + box.bounds.height; //TODO: -1 here?
                 if (ny > maxy) maxy = ny;
