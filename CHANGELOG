@@ -1,3 +1,10 @@
+2015-11-05 - Version 4.10
+- Size computation fixes for replaced images
+- New image decoding based in ImageIO instead of Toolkit
+- Background rendering fixes
+- Fixed handling max-width:none and max-height:none
+- Static position computation fixed
+
 2015-05-20 - Version 4.9
 - Image transparency fix for SVG and PDF renderer
 - Support for treating HTML images as their ALT text only

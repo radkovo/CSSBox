@@ -39,10 +39,8 @@
 	</developers>
 	<contributors>
     		<contributor>
-      			<name>Kaj Kandler</name>
-      			<email>kajkandler@conficio.com</email>
-      			<organization>Conficio</organization>
-      			<organizationUrl>http://conficio.com</organizationUrl>
+      			<name>Contributors at GitHub</name>
+      			<url>https://github.com/radkovo/CSSBox/graphs/contributors</url>
     		</contributor>
   	</contributors>
   
@@ -148,12 +146,12 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.12</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>1.20</version>
+			<version>1.21</version>
 		</dependency>
 	</dependencies>
 	
