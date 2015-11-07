@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -162,7 +163,7 @@ public class HTMLBoxFactory
         {
             String mime = HTMLNorm.getAttribute(e, "type").toLowerCase();
             String cb = HTMLNorm.getAttribute(e, "codebase");
-            String dataurl = HTMLNorm.getAttribute(e, "data");
+            String dataurl = URLDecoder.decode(HTMLNorm.getAttribute(e, "data"), "UTF-8");
             URL base = new URL(factory.getBaseURL(), cb);
             
             if (!dataurl.trim().isEmpty())
