@@ -445,7 +445,7 @@ public class BoxBrowser
                 Declaration d = style.getSourceDeclaration(name);
                 
                 String text = name + ": ";
-                if (value != null)
+                if (prop.toString().isEmpty() && value != null)
                     text += value.toString();
                 else
                     text += prop.toString();
