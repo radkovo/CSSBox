@@ -94,6 +94,7 @@ public class ImageRenderer
     public boolean renderURL(String urlstring, OutputStream out, Type type) throws IOException, SAXException
     {
         if (!urlstring.startsWith("http:") &&
+            !urlstring.startsWith("https:") &&
             !urlstring.startsWith("ftp:") &&
             !urlstring.startsWith("file:"))
                 urlstring = "http://" + urlstring;
