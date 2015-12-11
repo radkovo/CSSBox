@@ -427,6 +427,8 @@ public class Viewport extends BlockBox
         if (recomputeAbs)
         {
             //second round: some reference boxes used, recompute once again
+            if (scontext != null) //clear the stacking context if it exists -- the child contexts will register again
+                scontext.clear();
             for (int i = 0; i < getSubBoxNumber(); i++)
                 getSubBox(i).absolutePositions();
             recomputeAbs = false;
