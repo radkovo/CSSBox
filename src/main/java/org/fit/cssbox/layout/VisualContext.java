@@ -413,6 +413,10 @@ public class VisualContext
             {
                 ret = (nval * 72) / 25.4;
             }
+            else if (unit == TermLength.Unit.q)
+            {
+                ret = (nval * 72) / (2.54 * 40.0);
+            }
             else if (unit == TermLength.Unit.pc)
             {
                 ret = nval * 12;
@@ -498,6 +502,10 @@ public class VisualContext
             else if (unit == TermLength.Unit.mm)
             {
                 ret = (nval * dpi) / 25.4;
+            }
+            else if (unit == TermLength.Unit.q)
+            {
+                ret = (nval * dpi) / (2.54 * 40.0);
             }
             else if (unit == TermLength.Unit.pc)
             {
