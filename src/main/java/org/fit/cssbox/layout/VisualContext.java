@@ -394,70 +394,41 @@ public class VisualContext
             return (whole * nval) / 100;
         else
         {
-            TermLength.Unit unit = spec.getUnit();
-            
-            double ret = 0;
-            if (unit == TermLength.Unit.pt)
+            switch (spec.getUnit())
             {
-                ret = nval;
+                case pt:
+                    return nval;
+                case in:
+                    return nval * 72;
+                case cm:
+                    return (nval * 72) / 2.54;
+                case mm:
+                    return (nval * 72) / 25.4;
+                case q:
+                    return (nval * 72) / (2.54 * 40.0);
+                case pc:
+                    return nval * 12;
+                case px:
+                    return (nval * 72) / dpi;
+                case em:
+                    return (em * nval * 72) / dpi; //em is in pixels
+                case rem:
+                    return (rem * nval * 72) / dpi;
+                case ex:
+                    return (ex * nval * 72) / dpi;
+                case ch:
+                    return (ch * nval * 72) / dpi;
+                case vw:
+                    return (viewport.getVisibleRect().getWidth() * nval * 72) / (100.0 * dpi);
+                case vh:
+                    return (viewport.getVisibleRect().getHeight() * nval * 72) / (100.0 * dpi);
+                case vmin:
+                    return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
+                case vmax:
+                    return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
+                default:
+                    return 0;
             }
-            else if (unit == TermLength.Unit.in)
-            {
-                ret = nval * 72;
-            }
-            else if (unit == TermLength.Unit.cm)
-            {
-                ret = (nval * 72) / 2.54;
-            }
-            else if (unit == TermLength.Unit.mm)
-            {
-                ret = (nval * 72) / 25.4;
-            }
-            else if (unit == TermLength.Unit.q)
-            {
-                ret = (nval * 72) / (2.54 * 40.0);
-            }
-            else if (unit == TermLength.Unit.pc)
-            {
-                ret = nval * 12;
-            }
-            else if (unit == TermLength.Unit.px)
-            {
-                ret = (nval * 72) / dpi;
-            }
-            else if (unit == TermLength.Unit.em)
-            {
-                ret = (em * nval * 72) / dpi; //em is in pixels
-            }
-            else if (unit == TermLength.Unit.rem)
-            {
-                ret = (rem * nval * 72) / dpi;
-            }
-            else if (unit == TermLength.Unit.ex)
-            {
-                ret = (ex * nval * 72) / dpi;
-            }
-            else if (unit == TermLength.Unit.ch)
-            {
-                ret = (ch * nval * 72) / dpi;
-            }
-            else if (unit == TermLength.Unit.vw)
-            {
-                return (viewport.getVisibleRect().getWidth() * nval * 72) / (100.0 * dpi);
-            }
-            else if (unit == TermLength.Unit.vh)
-            {
-                return (viewport.getVisibleRect().getHeight() * nval * 72) / (100.0 * dpi);
-            }
-            else if (unit == TermLength.Unit.vmin)
-            {
-                return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
-            }
-            else if (unit == TermLength.Unit.vmax)
-            {
-                return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
-            }
-            return ret;
         }
     }
 
@@ -484,70 +455,41 @@ public class VisualContext
             return (whole * nval) / 100;
         else
         {
-            TermLength.Unit unit = spec.getUnit();
-            
-            double ret = 0;
-            if (unit == TermLength.Unit.pt)
+            switch (spec.getUnit())
             {
-                ret = (nval * dpi) / 72;
+                case pt:
+                    return (nval * dpi) / 72;
+                case in:
+                    return nval * dpi;
+                case cm:
+                    return (nval * dpi) / 2.54;
+                case mm:
+                    return (nval * dpi) / 25.4;
+                case q:
+                    return (nval * dpi) / (2.54 * 40.0);
+                case pc:
+                    return (nval * 12 * dpi) / 72;
+                case px:
+                    return nval;
+                case em:
+                    return em * nval; //em is in pixels
+                case rem:
+                    return rem * nval; //em is in pixels
+                case ex:
+                    return ex * nval;
+                case ch:
+                    return ch * nval;
+                case vw:
+                    return viewport.getVisibleRect().getWidth() * nval / 100.0;
+                case vh:
+                    return viewport.getVisibleRect().getHeight() * nval / 100.0;
+                case vmin:
+                    return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                case vmax:
+                    return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                default:
+                    return 0;
             }
-            else if (unit == TermLength.Unit.in)
-            {
-                ret = nval * dpi;
-            }
-            else if (unit == TermLength.Unit.cm)
-            {
-                ret = (nval * dpi) / 2.54;
-            }
-            else if (unit == TermLength.Unit.mm)
-            {
-                ret = (nval * dpi) / 25.4;
-            }
-            else if (unit == TermLength.Unit.q)
-            {
-                ret = (nval * dpi) / (2.54 * 40.0);
-            }
-            else if (unit == TermLength.Unit.pc)
-            {
-                ret = (nval * 12 * dpi) / 72;
-            }
-            else if (unit == TermLength.Unit.px)
-            {
-                ret = nval;
-            }
-            else if (unit == TermLength.Unit.em)
-            {
-                ret = em * nval; //em is in pixels
-            }
-            else if (unit == TermLength.Unit.rem)
-            {
-                ret = rem * nval; //em is in pixels
-            }
-            else if (unit == TermLength.Unit.ex)
-            {
-                ret = ex * nval;
-            }
-            else if (unit == TermLength.Unit.ch)
-            {
-                ret = ch * nval;
-            }
-            else if (unit == TermLength.Unit.vw)
-            {
-                return viewport.getVisibleRect().getWidth() * nval / 100.0;
-            }
-            else if (unit == TermLength.Unit.vh)
-            {
-                return viewport.getVisibleRect().getHeight() * nval / 100.0;
-            }
-            else if (unit == TermLength.Unit.vmin)
-            {
-                return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
-            }
-            else if (unit == TermLength.Unit.vmax)
-            {
-                return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
-            }
-            return ret;
         }
     }
     
