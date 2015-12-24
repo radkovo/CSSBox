@@ -633,7 +633,12 @@ public class BoxFactory
             for (int i = 0; i < root.getSubBoxNumber(); i++)
             {
                 Box sub = root.getSubBox(i);
-                if (sub instanceof ElementBox)
+                if (sub instanceof BlockBox && ((BlockBox) sub).isPositioned())
+                {
+                    //positioned boxes are left untouched
+                    nest.add(sub);
+                }
+                else if (sub instanceof ElementBox)
                 {
                     ElementBox subel = (ElementBox) sub;
                     if (subel.getDisplay() != type)
