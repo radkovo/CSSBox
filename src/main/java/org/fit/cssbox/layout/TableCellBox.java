@@ -371,17 +371,9 @@ public class TableCellBox extends BlockBox
 	@Override
 	public boolean hasFixedWidth()
 	{
-		//return wset && !isRelative(); //for cells, the width cannot be computed from the containing box now
-	    //return false; //we can never be sure for table cells, depends on column widths
 		return true; //the width is set by the column
 	}
 
-	@Override
-	public boolean hasFixedHeight()
-	{
-		return false;
-	}
-	
     @Override
 	public boolean canIncreaseWidth()
     {
