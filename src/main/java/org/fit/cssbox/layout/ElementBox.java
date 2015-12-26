@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
+import cz.vutbr.web.css.CSSProperty.BackgroundSize;
 import cz.vutbr.web.css.CSSProperty.ZIndex;
 
 import org.fit.cssbox.css.CSSUnits;
@@ -1388,7 +1389,11 @@ abstract public class ElementBox extends Box
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
-                BackgroundImage bgimg = new BackgroundImage(this, url, position, positionValues, repeat, attachment);
+                CSSProperty.BackgroundSize size = style.getProperty("background-size");
+                TermList sizeValues = null;
+                if (size == null) size = BackgroundSize.list_values;
+                else if (size == BackgroundSize.list_values) sizeValues = style.getValue(TermList.class, "background-size"); 
+                BackgroundImage bgimg = new BackgroundImage(this, url, position, positionValues, repeat, attachment, size, sizeValues);
                 bgimages.add(bgimg);
                 return bgimages;
             } catch (MalformedURLException e) {
