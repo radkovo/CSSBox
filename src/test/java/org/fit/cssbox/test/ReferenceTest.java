@@ -71,7 +71,7 @@ public class ReferenceTest
         this.urlstring = urlstring;
     }
 
-    public void performTest() throws IOException, SAXException
+    public float performTest() throws IOException, SAXException
     {
         log.info("Loading test {}", urlstring);
         Document doc = loadDocument(urlstring);
@@ -94,6 +94,8 @@ public class ReferenceTest
             saveImage(refImg, "/tmp/test-" + path.getName() + ".srcB.png");
             saveImage(ic.getDifferenceImage(), "/tmp/test-" + path.getName() + ".diff.png");
         }
+        
+        return ic.getErrorRate();
     }
     
     private Document loadDocument(String urlstring) throws IOException, SAXException
