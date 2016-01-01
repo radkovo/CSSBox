@@ -1,5 +1,5 @@
 /*
- * TestResults.java
+ * TestBatch.java
  * Copyright (c) 2005-2015 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
@@ -45,12 +45,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * A batch of tests in a test folder. The tests are executed in separate threads with
+ * a timeout.
+ * 
  * @author burgetr
  */
-public class TestResults
+public class TestBatch
 {
-    private static Logger log = LoggerFactory.getLogger(TestResults.class);
+    private static Logger log = LoggerFactory.getLogger(TestBatch.class);
     
     private static List<String> tagBlacklist;
     static {
@@ -69,7 +71,7 @@ public class TestResults
      * file that is used for obtaining the test names.
      * @param testURL
      */
-    public TestResults(URL testURL)
+    public TestBatch(URL testURL)
     {
         this.testURL = testURL;
         this.tests = new LinkedList<SourceEntry>();
