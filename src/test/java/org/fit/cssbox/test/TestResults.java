@@ -92,7 +92,7 @@ public class TestResults
                 {
                     Element body = (Element) bodies.item(bi);
                     NodeList rows = body.getElementsByTagName("tr");
-                    for (int ri = 0; ri < rows.getLength(); ri++)
+                    for (int ri = 0; ri < 1; ri++) //consider just the first row (the other rows contain some additional references)
                     {
                         Element row = (Element) rows.item(ri);
                         //find link to test source
