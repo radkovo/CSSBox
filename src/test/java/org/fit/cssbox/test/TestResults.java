@@ -27,6 +27,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
@@ -125,13 +132,38 @@ public class TestResults
     
     public void runTests()
     {
-        int total = tests.size();
-        int cur = 0;
+        //ExecutorService exec = Executors.newSingleThreadExecutor();
+        ExecutorService exec = Executors.newFixedThreadPool(10);
+        List<Callable<Float>> list = getTestList();
+        try
+        {
+            List<Future<Float>> futures = exec.invokeAll(list, list.size() * 5, TimeUnit.SECONDS);
+            for (int i = 0; i < list.size(); i++)
+            {
+                Future<Float> future = futures.get(i);
+                ResultEntry entry = new ResultEntry();
+                entry.name = ((ReferenceTest) list.get(i)).getName();
+                System.err.println("Waiting for " + entry.name);
+                try
+                {
+                    entry.result = future.get();
+                } catch (ExecutionException e) {
+                    entry.result = 1.0f;
+                } catch (CancellationException e) {
+                    entry.result = 1.0f;
+                }
+                results.add(entry);
+            }
+        } catch (InterruptedException e) {
+            log.error("Interrupted: {}", e.getMessage());
+        }
+    }
+
+    private List<Callable<Float>> getTestList()
+    {
+        List<Callable<Float>> ret = new LinkedList<Callable<Float>>();
         for (SourceEntry entry : tests)
         {
-            cur++;
-            float perc = (float) cur / total;
-            System.err.println("=== TEST " + cur + "/" + total + " (" + perc + "%)");
             boolean blacklisted = false;
             for (String tag : entry.tags)
             {
@@ -140,20 +172,27 @@ public class TestResults
             }
             if (!blacklisted)
             {
-                ResultEntry result = runTest(entry);
-                results.add(result);
+                try
+                {
+                    URL url = new URL(testURL, entry.src);
+                    ReferenceTest test = new ReferenceTest(entry.name, url.toString());
+                    ret.add(test);
+                } catch (MalformedURLException e) {
+                    log.error("getListTest: {}", e.getMessage());
+                }
             }
             else
                 log.info("Skipped " + entry.name);
         }
+        return ret;
     }
-
+    
     public ResultEntry runTest(SourceEntry entry)
     {
         try
         {
             URL url = new URL(testURL, entry.src);
-            ReferenceTest test = new ReferenceTest(url.toString());
+            ReferenceTest test = new ReferenceTest(entry.name, url.toString());
             float res = test.performTest();
             
             ResultEntry ret = new ResultEntry();

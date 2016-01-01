@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
 
@@ -50,10 +51,11 @@ import cz.vutbr.web.css.MediaSpec;
  *
  * @author burgetr
  */
-public class ReferenceTest
+public class ReferenceTest implements Callable<Float>
 {
     private static Logger log = LoggerFactory.getLogger(ReferenceTest.class);
     
+    private String name;
     private String urlstring;
     
     private DocumentSource docSource;
@@ -66,11 +68,23 @@ public class ReferenceTest
     private boolean loadImages = true;
     private boolean loadBackgroundImages = true;
 
-    public ReferenceTest(String urlstring)
+    public ReferenceTest(String name, String urlstring)
     {
+        this.name = name;
         this.urlstring = urlstring;
     }
+    
+    public String getName()
+    {
+        return name;
+    }
 
+    @Override
+    public Float call() throws Exception
+    {
+        return performTest();
+    }
+    
     public float performTest() throws IOException, SAXException
     {
         log.info("Loading test {}", urlstring);
@@ -184,5 +198,5 @@ public class ReferenceTest
             e.printStackTrace();
         }
     }
-    
+
 }
