@@ -312,10 +312,4 @@ public class TestBatch
         }
     }
     
-    public class ResultEntry
-    {
-        public String name;
-        public float result;
-    }
-    
 }
