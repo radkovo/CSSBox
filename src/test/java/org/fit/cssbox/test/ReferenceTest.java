@@ -57,6 +57,7 @@ public class ReferenceTest implements Callable<Float>
     
     private String name;
     private String urlstring;
+    private boolean saveImages;
     
     private DocumentSource docSource;
     private DOMSource parser;
@@ -72,6 +73,14 @@ public class ReferenceTest implements Callable<Float>
     {
         this.name = name;
         this.urlstring = urlstring;
+        this.saveImages = false;
+    }
+    
+    public ReferenceTest(String name, String urlstring, boolean saveImages)
+    {
+        this.name = name;
+        this.urlstring = urlstring;
+        this.saveImages = saveImages;
     }
     
     public String getName()
@@ -101,7 +110,7 @@ public class ReferenceTest implements Callable<Float>
         
         ImageComparator ic = new ImageComparator(testImg, refImg);
         log.info(" -- error rate {}", ic.getErrorRate());
-        if (ic.getErrorRate() > 0.0f)
+        if (saveImages && ic.getErrorRate() > 0.0f)
         {
             File path = new File(srcurl.getFile());
             saveImage(testImg, "/tmp/test-" + path.getName() + ".srcA.png");

@@ -71,6 +71,9 @@ public class TestResults
         parseToc();
     }
     
+    /**
+     * Parses the HTML TOC and extracts the test names and tags. Fills the list of tests.
+     */
     private void parseToc()
     {
         try
@@ -130,7 +133,11 @@ public class TestResults
         }
     }
     
-    public void runTests()
+    /**
+     * Runs all the test from the TOC. The tests are executed as a single list of tasks
+     * passed to the executor service.
+     */
+    public void runTestsSingleList()
     {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
         ExecutorService exec = Executors.newFixedThreadPool(10);
@@ -159,6 +166,55 @@ public class TestResults
         }
     }
 
+    /**
+     * Runs all the test from the TOC. The tests are executed as separate tasks
+     * passed to the executor service.
+     */
+    public void runTests()
+    {
+        //ExecutorService exec = Executors.newSingleThreadExecutor();
+        ExecutorService exec = Executors.newFixedThreadPool(10);
+        List<Callable<Float>> list = getTestList();
+        List<Future<Float>> futures = new ArrayList<Future<Float>>(list.size());
+        //exec all tests with time limit; collect the futures
+        for (int i = 0; i < list.size(); i++)
+        {
+            try
+            {
+                List<Future<Float>> fl = exec.invokeAll(list.subList(i, i + 1), 15, TimeUnit.SECONDS);
+                futures.add(fl.get(0));
+            } catch (InterruptedException e) {
+                futures.add(null);
+            }
+        }
+        //get the results from the futures
+        for (int i = 0; i < futures.size(); i++)
+        {
+            ResultEntry entry = new ResultEntry();
+            entry.name = ((ReferenceTest) list.get(i)).getName();
+            
+            Future<Float> future = futures.get(i);
+            if (future != null)
+            {
+                System.err.println("Waiting for " + entry.name);
+                try
+                {
+                    entry.result = future.get();
+                } catch (ExecutionException e) {
+                    entry.result = 1.0f;
+                } catch (CancellationException e) {
+                    entry.result = 1.0f;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            else
+                entry.result = 1.0f;
+            
+            results.add(entry);
+        }
+    }
+    
     private List<Callable<Float>> getTestList()
     {
         List<Callable<Float>> ret = new LinkedList<Callable<Float>>();
