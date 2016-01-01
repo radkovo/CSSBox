@@ -48,7 +48,8 @@ import org.xml.sax.SAXException;
 import cz.vutbr.web.css.MediaSpec;
 
 /**
- *
+ * A callable process that represents a single reference test.
+ * 
  * @author burgetr
  */
 public class ReferenceTest implements Callable<Float>
@@ -69,6 +70,11 @@ public class ReferenceTest implements Callable<Float>
     private boolean loadImages = true;
     private boolean loadBackgroundImages = true;
 
+    /**
+     * Creates a reference test.
+     * @param name the test name (e.g. absolute-replaced-width-001)
+     * @param urlstring the source test file URL (only the HTML tests are supported right now)
+     */
     public ReferenceTest(String name, String urlstring)
     {
         this.name = name;
@@ -76,6 +82,12 @@ public class ReferenceTest implements Callable<Float>
         this.saveImages = false;
     }
     
+    /**
+     * Creates a reference test.
+     * @param name the test name (e.g. absolute-replaced-width-001)
+     * @param urlstring the source test file URL (only the HTML tests are supported right now)
+     * @param saveImages {@code true} to save the difference images when the test fails
+     */
     public ReferenceTest(String name, String urlstring, boolean saveImages)
     {
         this.name = name;
@@ -83,6 +95,10 @@ public class ReferenceTest implements Callable<Float>
         this.saveImages = saveImages;
     }
     
+    /**
+     * Obtains the test name.
+     * @return the test name
+     */
     public String getName()
     {
         return name;
@@ -94,6 +110,12 @@ public class ReferenceTest implements Callable<Float>
         return performTest();
     }
     
+    /**
+     * Runs the test and returns the result.
+     * @return The resulting failure rate (0.0 means passed, >0.0 means fail)
+     * @throws IOException
+     * @throws SAXException
+     */
     public float performTest() throws IOException, SAXException
     {
         log.info("Loading test {}", urlstring);

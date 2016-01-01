@@ -63,6 +63,12 @@ public class TestResults
     private List<SourceEntry> tests;
     private List<ResultEntry> results;
     
+    /**
+     * Creates a test batch from a test folder. The folder format must correspond to the
+     * CSS WG tests in HTML4 format. It must contain the {@code reftest-toc.htm} index
+     * file that is used for obtaining the test names.
+     * @param testURL
+     */
     public TestResults(URL testURL)
     {
         this.testURL = testURL;
@@ -215,6 +221,11 @@ public class TestResults
         }
     }
     
+    /**
+     * Creates a list of callables for performing the tests based on the TOC while
+     * skipping the blacklisted tests.
+     * @return The list of corresponding callables.
+     */
     private List<Callable<Float>> getTestList()
     {
         List<Callable<Float>> ret = new LinkedList<Callable<Float>>();
@@ -243,6 +254,11 @@ public class TestResults
         return ret;
     }
     
+    /**
+     * Runs a single test based on the given source entry.
+     * @param entry
+     * @return
+     */
     public ResultEntry runTest(SourceEntry entry)
     {
         try
@@ -263,6 +279,10 @@ public class TestResults
         return null;
     }
     
+    /**
+     * Saves all the results to a CSV file.
+     * @param filename the destination file path
+     */
     public void saveResults(String filename)
     {
         try
