@@ -25,8 +25,11 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +66,7 @@ public class TestBatch
     
     private URL testURL;
     private List<SourceEntry> tests;
-    private List<ResultEntry> results;
+    private Map<String, Float> results;
     
     /**
      * Creates a test batch from a test folder. The folder format must correspond to the
@@ -75,7 +78,7 @@ public class TestBatch
     {
         this.testURL = testURL;
         this.tests = new LinkedList<SourceEntry>();
-        this.results = new LinkedList<ResultEntry>();
+        this.results = new LinkedHashMap<String, Float>();
         parseToc();
     }
     
@@ -147,27 +150,38 @@ public class TestBatch
      */
     public void runTestsSingleList()
     {
+        runTestsSingleList(null);
+    }
+    
+    /**
+     * Runs all the test from the TOC. The tests are executed as a single list of tasks
+     * passed to the executor service.
+     * @param selected the list of selected test to be used or {@code null} to use all the
+     * tests that are not blacklisted
+     */
+    public void runTestsSingleList(List<String> selected)
+    {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
         ExecutorService exec = Executors.newFixedThreadPool(10);
-        List<Callable<Float>> list = getTestList();
+        List<Callable<Float>> list = getTestList(selected);
         try
         {
             List<Future<Float>> futures = exec.invokeAll(list, list.size() * 5, TimeUnit.SECONDS);
             for (int i = 0; i < list.size(); i++)
             {
                 Future<Float> future = futures.get(i);
-                ResultEntry entry = new ResultEntry();
-                entry.name = ((ReferenceTestCase) list.get(i)).getName();
-                System.err.println("Waiting for " + entry.name);
+                String tname = ((ReferenceTestCase) list.get(i)).getName();
+                System.err.println("Waiting for " + tname);
+                float tvalue;
                 try
                 {
-                    entry.result = future.get();
+                    tvalue = future.get();
                 } catch (ExecutionException e) {
-                    entry.result = 1.0f;
+                    tvalue = 1.0f;
                 } catch (CancellationException e) {
-                    entry.result = 1.0f;
+                    tvalue = 1.0f;
                 }
-                results.add(entry);
+                results.put(tname, tvalue);
             }
         } catch (InterruptedException e) {
             log.error("Interrupted: {}", e.getMessage());
@@ -180,9 +194,20 @@ public class TestBatch
      */
     public void runTests()
     {
+        runTests(null);
+    }
+    
+    /**
+     * Runs all the test from the TOC. The tests are executed as separate tasks
+     * passed to the executor service.
+     * @param selected the list of selected test to be used or {@code null} to use all the
+     * tests that are not blacklisted
+     */
+    public void runTests(List<String> selected)
+    {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
         ExecutorService exec = Executors.newFixedThreadPool(10);
-        List<Callable<Float>> list = getTestList();
+        List<Callable<Float>> list = getTestList(selected);
         List<Future<Float>> futures = new ArrayList<Future<Float>>(list.size());
         //exec all tests with time limit; collect the futures
         for (int i = 0; i < list.size(); i++)
@@ -198,37 +223,39 @@ public class TestBatch
         //get the results from the futures
         for (int i = 0; i < futures.size(); i++)
         {
-            ResultEntry entry = new ResultEntry();
-            entry.name = ((ReferenceTestCase) list.get(i)).getName();
+            String tname = ((ReferenceTestCase) list.get(i)).getName();
+            float tvalue;
             
             Future<Float> future = futures.get(i);
             if (future != null)
             {
-                System.err.println("Waiting for " + entry.name);
+                System.err.println("Waiting for " + tname);
                 try
                 {
-                    entry.result = future.get();
+                    tvalue = future.get();
                 } catch (ExecutionException e) {
-                    entry.result = 1.0f;
+                    tvalue = 1.0f;
                 } catch (CancellationException e) {
-                    entry.result = 1.0f;
+                    tvalue = 1.0f;
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    tvalue = 1.0f;
                 }
             }
             else
-                entry.result = 1.0f;
+                tvalue = 1.0f;
             
-            results.add(entry);
+            results.put(tname, tvalue);
         }
     }
     
     /**
      * Creates a list of callables for performing the tests based on the TOC while
      * skipping the blacklisted tests.
+     * @param selected the list of selected test to be used or {@code null} to use all the
+     * tests that are not blacklisted
      * @return The list of corresponding callables.
      */
-    private List<Callable<Float>> getTestList()
+    private List<Callable<Float>> getTestList(List<String> selected)
     {
         List<Callable<Float>> ret = new LinkedList<Callable<Float>>();
         for (SourceEntry entry : tests)
@@ -239,7 +266,7 @@ public class TestBatch
                 if (tagBlacklist.contains(tag))
                     blacklisted = true;
             }
-            if (!blacklisted)
+            if (!blacklisted && (selected == null || selected.contains(entry.name)))
             {
                 try
                 {
@@ -259,26 +286,42 @@ public class TestBatch
     /**
      * Runs a single test based on the given source entry.
      * @param entry
-     * @return
+     * @return test result or a negative value when the execution failed
      */
-    public ResultEntry runTest(SourceEntry entry)
+    public float runTest(SourceEntry entry)
     {
         try
         {
             URL url = new URL(testURL, entry.src);
             ReferenceTestCase test = new ReferenceTestCase(entry.name, url.toString());
             float res = test.performTest();
-            
-            ResultEntry ret = new ResultEntry();
-            ret.name = entry.name;
-            ret.result = res;
-            return ret;
+            return res;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SAXException e) {
             e.printStackTrace();
         }
-        return null;
+        return -1.0f;
+    }
+    
+    public Map<String, Float> getResults()
+    {
+        return results;
+    }
+    
+    /**
+     * Runs a test specified by its name when it is present in the testing batch.
+     * @param name the test name
+     * @return test result or a negative value when the execution failed
+     */
+    public float runTestByName(String name)
+    {
+        for (SourceEntry test : tests)
+        {
+            if (test.name.equals(name))
+                return runTest(test);
+        }
+        return -1.0f;
     }
     
     /**
@@ -290,9 +333,9 @@ public class TestBatch
         try
         {
             PrintWriter out = new PrintWriter(new FileWriter(filename));
-            for (ResultEntry result : results)
+            for (Entry<String, Float> result : results.entrySet())
             {
-                out.println(result.name + "," + result.result);
+                out.println(result.getKey() + "," + result.getValue());
             }
             out.close();
         } catch (IOException e) {

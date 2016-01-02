@@ -23,39 +23,49 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 /**
  * Representation of the saved reference results.
  * 
  * @author burgetr
  */
-public class ReferenceResults extends ArrayList<ResultEntry>
+public class ReferenceResults extends LinkedHashMap<String, Float>
 {
     private static final long serialVersionUID = 1L;
 
+    public static final float SUCCESS_THRESHOLD = 0.001f;
+    
+    private int successCnt;
+    private int failCnt;
+    private int fatalCnt;
+    
     public ReferenceResults()
     {
         try
         {
-            loadCSV(getClass().getResourceAsStream("test_reference.csv"));
+            successCnt = failCnt = fatalCnt = 0;
+            loadCSV(getClass().getResourceAsStream("/test_reference.csv"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-    public List<ResultEntry> getSuccessfullResults(float threshold)
+    public int getSuccessCnt()
     {
-        List<ResultEntry> ret = new ArrayList<ResultEntry>();
-        for (ResultEntry entry : this)
-        {
-            if (entry.result <= threshold)
-                ret.add(entry);
-        }
-        return ret;
+        return successCnt;
     }
-    
+
+    public int getFailCnt()
+    {
+        return failCnt;
+    }
+
+    public int getFatalCnt()
+    {
+        return fatalCnt;
+    }
+
     private void loadCSV(InputStream is) throws IOException
     {
         BufferedReader read = new BufferedReader(new InputStreamReader(is));
@@ -63,8 +73,14 @@ public class ReferenceResults extends ArrayList<ResultEntry>
         while ((line = read.readLine()) != null)
         {
             String[] vals = line.split(",");
-            ResultEntry result = new ResultEntry(vals[0], Float.parseFloat(vals[1]));
-            add(result);
+            float val = Float.parseFloat(vals[1]);
+            put(vals[0], val);
+            if (val <= SUCCESS_THRESHOLD)
+                successCnt++;
+            else
+                failCnt++;
+            if (val == 1.0f)
+                fatalCnt++;
         }
     }
     
