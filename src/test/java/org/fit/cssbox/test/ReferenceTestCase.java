@@ -52,9 +52,9 @@ import cz.vutbr.web.css.MediaSpec;
  * 
  * @author burgetr
  */
-public class ReferenceTest implements Callable<Float>
+public class ReferenceTestCase implements Callable<Float>
 {
-    private static Logger log = LoggerFactory.getLogger(ReferenceTest.class);
+    private static Logger log = LoggerFactory.getLogger(ReferenceTestCase.class);
     
     private String name;
     private String urlstring;
@@ -75,7 +75,7 @@ public class ReferenceTest implements Callable<Float>
      * @param name the test name (e.g. absolute-replaced-width-001)
      * @param urlstring the source test file URL (only the HTML tests are supported right now)
      */
-    public ReferenceTest(String name, String urlstring)
+    public ReferenceTestCase(String name, String urlstring)
     {
         this.name = name;
         this.urlstring = urlstring;
@@ -88,7 +88,7 @@ public class ReferenceTest implements Callable<Float>
      * @param urlstring the source test file URL (only the HTML tests are supported right now)
      * @param saveImages {@code true} to save the difference images when the test fails
      */
-    public ReferenceTest(String name, String urlstring, boolean saveImages)
+    public ReferenceTestCase(String name, String urlstring, boolean saveImages)
     {
         this.name = name;
         this.urlstring = urlstring;

@@ -157,7 +157,7 @@ public class TestBatch
             {
                 Future<Float> future = futures.get(i);
                 ResultEntry entry = new ResultEntry();
-                entry.name = ((ReferenceTest) list.get(i)).getName();
+                entry.name = ((ReferenceTestCase) list.get(i)).getName();
                 System.err.println("Waiting for " + entry.name);
                 try
                 {
@@ -199,7 +199,7 @@ public class TestBatch
         for (int i = 0; i < futures.size(); i++)
         {
             ResultEntry entry = new ResultEntry();
-            entry.name = ((ReferenceTest) list.get(i)).getName();
+            entry.name = ((ReferenceTestCase) list.get(i)).getName();
             
             Future<Float> future = futures.get(i);
             if (future != null)
@@ -244,7 +244,7 @@ public class TestBatch
                 try
                 {
                     URL url = new URL(testURL, entry.src);
-                    ReferenceTest test = new ReferenceTest(entry.name, url.toString());
+                    ReferenceTestCase test = new ReferenceTestCase(entry.name, url.toString());
                     ret.add(test);
                 } catch (MalformedURLException e) {
                     log.error("getListTest: {}", e.getMessage());
@@ -266,7 +266,7 @@ public class TestBatch
         try
         {
             URL url = new URL(testURL, entry.src);
-            ReferenceTest test = new ReferenceTest(entry.name, url.toString());
+            ReferenceTestCase test = new ReferenceTestCase(entry.name, url.toString());
             float res = test.performTest();
             
             ResultEntry ret = new ResultEntry();
