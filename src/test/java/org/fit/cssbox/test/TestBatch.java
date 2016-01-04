@@ -171,7 +171,6 @@ public class TestBatch
             {
                 Future<Float> future = futures.get(i);
                 String tname = ((ReferenceTestCase) list.get(i)).getName();
-                System.err.println("Waiting for " + tname);
                 float tvalue;
                 try
                 {
@@ -229,7 +228,6 @@ public class TestBatch
             Future<Float> future = futures.get(i);
             if (future != null)
             {
-                System.err.println("Waiting for " + tname);
                 try
                 {
                     tvalue = future.get();

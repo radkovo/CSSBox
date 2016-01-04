@@ -38,7 +38,7 @@ public class ReferenceComparisonTest
     public void checkForRegressions() throws MalformedURLException
     {
         ReferenceResults ref = new ReferenceResults();
-        URL url = new URL("file:///home/burgetr/tmp/css-test-built/css21_dev/html4/");
+        URL url = new URL("file://" + System.getProperty("user.home") + "/tmp/CSSBoxTesting/baseline/nightly-unstable/html4/");
         TestBatch tester = new TestBatch(url);
         
         ArrayList<String> refNames = new ArrayList<String>(); 
@@ -50,13 +50,23 @@ public class ReferenceComparisonTest
         
         tester.runTests(refNames);
         Map<String, Float> results = tester.getResults();
+        int errorcnt = 0;
         for (Map.Entry<String, Float> item : results.entrySet())
         {
             String name = item.getKey();
             float val = item.getValue();
             float refval = ref.get(name);
-            Assert.assertTrue("Test " + name + " executed ok", val >= 0.0f);
-            Assert.assertTrue("The result of " + name + " is not worse than the reference result", val <= refval);
+            if (val < 0.0f)
+            {
+                System.err.println(name + " : execution failed");
+                errorcnt++;
+            }
+            if (val > refval)
+            {
+                System.err.println(name + " : regression found (" + val + " > " + refval + ")");
+                errorcnt++;
+            }
+            Assert.assertTrue("All results passed", errorcnt == 0);
         }
     }
     
