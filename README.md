@@ -1,5 +1,8 @@
 CSSBox
 ======
+
+[![Build Status](https://travis-ci.org/radkovo/CSSBox.png)](https://travis-ci.org/radkovo/CSSBox)
+
 An HTML/CSS rendering engine library
 (c) 2005-2015 Radek Burget (burgetr@fit.vutbr.cz)
 
