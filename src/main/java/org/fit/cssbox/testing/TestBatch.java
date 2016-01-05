@@ -56,6 +56,7 @@ import org.xml.sax.SAXException;
 public class TestBatch
 {
     private static Logger log = LoggerFactory.getLogger(TestBatch.class);
+    private static int THREADS = 12;
     
     private static List<String> tagBlacklist;
     static {
@@ -67,6 +68,8 @@ public class TestBatch
     private URL testURL;
     private List<SourceEntry> tests;
     private Map<String, Float> results;
+    private int totalCount;
+    private int completedCount;
     
     /**
      * Creates a test batch from a test folder. The folder format must correspond to the
@@ -162,8 +165,10 @@ public class TestBatch
     public void runTestsSingleList(List<String> selected)
     {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
-        ExecutorService exec = Executors.newFixedThreadPool(10);
+        ExecutorService exec = Executors.newFixedThreadPool(THREADS);
         List<Callable<Float>> list = getTestList(selected);
+        totalCount = list.size();
+        completedCount = 0;
         try
         {
             List<Future<Float>> futures = exec.invokeAll(list, list.size() * 5, TimeUnit.SECONDS);
@@ -205,9 +210,11 @@ public class TestBatch
     public void runTests(List<String> selected)
     {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
-        ExecutorService exec = Executors.newFixedThreadPool(10);
+        ExecutorService exec = Executors.newFixedThreadPool(THREADS);
         List<Callable<Float>> list = getTestList(selected);
         List<Future<Float>> futures = new ArrayList<Future<Float>>(list.size());
+        totalCount = list.size();
+        completedCount = 0;
         //exec all tests with time limit; collect the futures
         for (int i = 0; i < list.size(); i++)
         {
@@ -270,6 +277,7 @@ public class TestBatch
                 {
                     URL url = new URL(testURL, entry.src);
                     ReferenceTestCase test = new ReferenceTestCase(entry.name, url.toString());
+                    //test.setBatch(this);
                     ret.add(test);
                 } catch (MalformedURLException e) {
                     log.error("getListTest: {}", e.getMessage());
@@ -339,6 +347,13 @@ public class TestBatch
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public synchronized void reportCompletion(ReferenceTestCase testCase)
+    {
+        completedCount++;
+        if (completedCount % 10 == 0)
+            log.info("Completed " + completedCount + "/" + totalCount);
     }
     
     public class SourceEntry

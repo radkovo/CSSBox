@@ -35,6 +35,7 @@ public class ReferenceResults extends LinkedHashMap<String, Float>
     private static final long serialVersionUID = 1L;
 
     public static final float SUCCESS_THRESHOLD = 0.001f;
+    public static final float COMPARISON_THRESHOLD = 0.001f;
     
     private int successCnt;
     private int failCnt;

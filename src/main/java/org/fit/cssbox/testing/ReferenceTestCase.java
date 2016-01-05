@@ -59,6 +59,7 @@ public class ReferenceTestCase implements Callable<Float>
     private String name;
     private String urlstring;
     private boolean saveImages;
+    private TestBatch batch;
     
     private DocumentSource docSource;
     private DOMSource parser;
@@ -95,6 +96,11 @@ public class ReferenceTestCase implements Callable<Float>
         this.saveImages = saveImages;
     }
     
+    public void setBatch(TestBatch batch)
+    {
+        this.batch = batch;
+    }
+    
     /**
      * Obtains the test name.
      * @return the test name
@@ -118,20 +124,20 @@ public class ReferenceTestCase implements Callable<Float>
      */
     public float performTest() throws IOException, SAXException
     {
-        log.info("Loading test {}", urlstring);
+        log.debug("Loading test {}", urlstring);
         Document doc = loadDocument(urlstring);
         URL srcurl = docSource.getURL();
         URL refurl = extractReference(doc, docSource.getURL());
         BufferedImage testImg = renderDocument(doc);
         closeDocument();
         
-        log.info("  -- reference result {}", refurl);
+        log.debug("  -- reference result {}", refurl);
         Document refDoc = loadDocument(refurl.toString());
         BufferedImage refImg = renderDocument(refDoc);
         closeDocument();
         
         ImageComparator ic = new ImageComparator(testImg, refImg);
-        log.info(" -- error rate {}", ic.getErrorRate());
+        log.debug(" -- error rate {}", ic.getErrorRate());
         if (saveImages && ic.getErrorRate() > 0.0f)
         {
             File path = new File(srcurl.getFile());
@@ -139,6 +145,9 @@ public class ReferenceTestCase implements Callable<Float>
             saveImage(refImg, "/tmp/test-" + path.getName() + ".srcB.png");
             saveImage(ic.getDifferenceImage(), "/tmp/test-" + path.getName() + ".diff.png");
         }
+        
+        if (batch != null)
+            batch.reportCompletion(this);
         
         return ic.getErrorRate();
     }
