@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.fit.cssbox.testing.ReferenceResults;
+import org.fit.cssbox.testing.TestBatch;
 import org.junit.Assert;
 import org.junit.Test;
 

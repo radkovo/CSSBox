@@ -17,7 +17,7 @@
  *
  * Created on 1. 1. 2016, 13:59:34 by burgetr
  */
-package org.fit.cssbox.test;
+package org.fit.cssbox.testing;
 
 import java.io.BufferedReader;
 import java.io.IOException;

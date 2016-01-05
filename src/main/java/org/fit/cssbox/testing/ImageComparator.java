@@ -17,7 +17,7 @@
  *
  * Created on 27. 12. 2015, 0:14:29 by burgetr
  */
-package org.fit.cssbox.test;
+package org.fit.cssbox.testing;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

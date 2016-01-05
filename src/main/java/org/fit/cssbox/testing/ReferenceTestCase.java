@@ -1,5 +1,5 @@
 /*
- * ReferenceTest.java
+ * ReferenceCase.java
  * Copyright (c) 2005-2015 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *
  * Created on 26. 12. 2015, 23:35:53 by burgetr
  */
-package org.fit.cssbox.test;
+package org.fit.cssbox.testing;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
