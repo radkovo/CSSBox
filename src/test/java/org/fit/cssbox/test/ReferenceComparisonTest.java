@@ -63,7 +63,7 @@ public class ReferenceComparisonTest
                 System.err.println(name + " : execution failed");
                 errorcnt++;
             }
-            if (val > refval)
+            if (val - refval > ReferenceResults.COMPARISON_THRESHOLD)
             {
                 System.err.println(name + " : regression found (" + val + " > " + refval + ")");
                 errorcnt++;
