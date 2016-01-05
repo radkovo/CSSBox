@@ -44,11 +44,11 @@ public class ReferenceComparisonTest
         TestBatch tester = new TestBatch(url);
         
         ArrayList<String> refNames = new ArrayList<String>(); 
-        /*for (Map.Entry<String, Float> item : ref.entrySet())
+        for (Map.Entry<String, Float> item : ref.entrySet())
         {
             if (item.getValue() <= ReferenceResults.SUCCESS_THRESHOLD)
                 refNames.add(item.getKey());
-        }*/
+        }
         
         tester.runTests(refNames);
         Map<String, Float> results = tester.getResults();
