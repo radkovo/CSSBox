@@ -1360,7 +1360,7 @@ public class BlockBox extends ElementBox
                     ab.x = ab.x - cb.x;
                     ab.y = ab.y - cb.y;
                     if (!absReference.isblock || ((BlockBox) absReference).getFloating() == FLOAT_NONE) //not-floating boxes: place below
-                        coords.top = ab.y + ab.height - 1 - cblock.emargin.top - cblock.border.top;
+                        coords.top = ab.y + ab.height - cblock.emargin.top - cblock.border.top;
                     else //floating blocks: place top-aligned
                         coords.top = ab.y - cblock.emargin.top - cblock.border.top;
                 }
