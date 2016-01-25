@@ -70,6 +70,8 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
     
+    public static final CSSProperty.Transform TRANSFORM_NONE = CSSProperty.Transform.NONE;
+    
     public static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
     public static final CSSProperty.Position POS_RELATIVE = CSSProperty.Position.RELATIVE;
     public static final CSSProperty.Position POS_ABSOLUTE = CSSProperty.Position.ABSOLUTE;
@@ -127,6 +129,9 @@ abstract public class ElementBox extends Box
     
     /** The display property value */
     protected CSSProperty.Display display;
+    
+    /** Tansform property value (output transformations) */
+    protected CSSProperty.Transform transform;
     
     /** Position property */
     protected CSSProperty.Position position;
@@ -224,6 +229,7 @@ abstract public class ElementBox extends Box
 	        isblock = false;
 	        textonly = true;
         }
+        transform = TRANSFORM_NONE;
         position = POS_STATIC;
         topset = false;
         leftset = false;
@@ -252,6 +258,7 @@ abstract public class ElementBox extends Box
         whitespace = src.whitespace;
         bgcolor = (src.bgcolor == null) ? null : new Color(src.bgcolor.getRed(), src.bgcolor.getGreen(), src.bgcolor.getBlue(), src.bgcolor.getAlpha());
         bgimages = (src.bgimages == null) ? null : new Vector<BackgroundImage>(src.bgimages);
+        transform = src.transform;
         position = src.position;
         topset = src.topset;
         leftset = src.leftset;
@@ -706,7 +713,7 @@ abstract public class ElementBox extends Box
      */
     public boolean formsStackingContext()
     {
-        return position != POS_STATIC;
+        return position != POS_STATIC || transform != TRANSFORM_NONE;
     }
     
     /**
@@ -1349,6 +1356,11 @@ abstract public class ElementBox extends Box
         }
         else
             zset = false;
+        
+        //transformations -- applied on block-level or atomic inline-level elements only
+        if (isBlock() || isReplaced())
+            transform = style.getProperty("transform");
+        if (transform == null) transform = CSSProperty.Transform.NONE;
     }
     
     /**
@@ -1445,7 +1457,7 @@ abstract public class ElementBox extends Box
         super.updateStackingContexts();
         if (stackingParent != null)
         {
-            if (position != POS_STATIC) //all the positioned boxes are considered as separate stacking contexts
+            if (formsStackingContext()) //all the positioned boxes are considered as separate stacking contexts
             {
                 stackingParent.getStackingContext().registerChildContext(this);
                 if (scontext != null) //clear this context if it exists (remove old children)
