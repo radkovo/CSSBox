@@ -504,6 +504,29 @@ public class VisualContext
     }
     
     /**
+     * Converts an angle from a CSS angle to 'rad'.
+     * @param spec the CSS angle specification
+     * @return the corresponding angle in radians
+     */
+    public double radAngle(TermAngle spec)
+    {
+        float nval = spec.getValue();
+        switch (spec.getUnit())
+        {
+            case deg:
+                return (nval * Math.PI) / 180.0; 
+            case grad:
+                return (nval * Math.PI) / 200.0;
+            case rad:
+                return nval;
+            case turn:
+                return nval * 2 * Math.PI;
+            default:
+                return 0;
+        }
+    }
+    
+    /**
      * Converts the weight value to bold / not bold
      * @param weight a CSS weight
      * @return true if the given weight corresponds to bold

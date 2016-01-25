@@ -107,6 +107,16 @@ public class CSSDecoder
     }
     
     /**
+     * Converts an angle from a CSS angle to 'rad'.
+     * @param spec the CSS angle specification
+     * @return the corresponding angle in radians
+     */
+    public double getAngle(TermAngle angle)
+    {
+        return context.radAngle(angle);
+    }
+    
+    /**
      * Computes the width and height of a replaced object based on the following properties:
      * <ul>
      * <li>Intrinsic width and height</li>
