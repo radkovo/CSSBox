@@ -157,6 +157,7 @@ public class GraphicsRenderer implements BoxRenderer
             if (trans == CSSProperty.Transform.list_values)
             {
                 ret = new AffineTransform();
+                ret.translate(ox, oy);
                 TermList values = elem.getStyle().getValue(TermList.class, "transform");
                 for (Term<?> term : values)
                 {
@@ -169,7 +170,7 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && func.get(0) instanceof TermAngle)
                             {
                                 double theta = dec.getAngle((TermAngle) func.get(0));
-                                ret.concatenate(AffineTransform.getRotateInstance(theta, ox, oy));
+                                ret.rotate(theta);
                             }
                         }
                         else if (fname.equals("translate"))
@@ -177,13 +178,13 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
                             {
                                 int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
-                                ret.concatenate(AffineTransform.getTranslateInstance(tx, 0.0));
+                                ret.translate(tx, 0.0);
                             }
                             else if (func.size() == 2 && func.get(0) instanceof TermLengthOrPercent && func.get(1) instanceof TermLengthOrPercent)
                             {
                                 int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
                                 int ty = dec.getLength((TermLengthOrPercent) func.get(1), false, 0, 0, bounds.height);
-                                ret.concatenate(AffineTransform.getTranslateInstance(tx, ty));
+                                ret.translate(tx, ty);
                             }
                         }
                         else if (fname.equals("translatex"))
@@ -191,7 +192,7 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
                             {
                                 int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
-                                ret.concatenate(AffineTransform.getTranslateInstance(tx, 0.0));
+                                ret.translate(tx, 0.0);
                             }
                         }
                         else if (fname.equals("translatey"))
@@ -199,7 +200,7 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
                             {
                                 int ty = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.height);
-                                ret.concatenate(AffineTransform.getTranslateInstance(0.0, ty));
+                                ret.translate(0.0, ty);
                             }
                         }
                         else if (fname.equals("scale"))
@@ -207,13 +208,13 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && isNumber(func.get(0)))
                             {
                                 float sx = getNumber(func.get(0));
-                                ret.concatenate(AffineTransform.getScaleInstance(sx, sx));
+                                ret.scale(sx, sx);
                             }
                             else if (func.size() == 2 && isNumber(func.get(0)) && isNumber(func.get(1)))
                             {
                                 float sx = getNumber(func.get(0));
                                 float sy = getNumber(func.get(1));
-                                ret.concatenate(AffineTransform.getScaleInstance(sx, sy));
+                                ret.scale(sx, sy);
                             }
                         }
                         else if (fname.equals("scalex"))
@@ -221,7 +222,7 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && isNumber(func.get(0)))
                             {
                                 float sx = getNumber(func.get(0));
-                                ret.concatenate(AffineTransform.getScaleInstance(sx, 1.0));
+                                ret.scale(sx, 1.0);
                             }
                         }
                         else if (fname.equals("scaley"))
@@ -229,11 +230,12 @@ public class GraphicsRenderer implements BoxRenderer
                             if (func.size() == 1 && isNumber(func.get(0)))
                             {
                                 float sy = getNumber(func.get(0));
-                                ret.concatenate(AffineTransform.getScaleInstance(1.0, sy));
+                                ret.scale(1.0, sy);
                             }
                         }
                     }
                 }
+                ret.translate(-ox, -oy);
             }
             
             return ret;
