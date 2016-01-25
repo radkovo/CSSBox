@@ -233,6 +233,55 @@ public class GraphicsRenderer implements BoxRenderer
                                 ret.scale(1.0, sy);
                             }
                         }
+                        else if (fname.equals("skew"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
+                            {
+                                double ax = dec.getAngle((TermAngle) func.get(0));
+                                ret.shear(Math.tan(ax), 0.0);
+                            }
+                            else if (func.size() == 2 && func.get(0) instanceof TermAngle && func.get(1) instanceof TermAngle)
+                            {
+                                double ax = dec.getAngle((TermAngle) func.get(0));
+                                double ay = dec.getAngle((TermAngle) func.get(1));
+                                ret.shear(Math.tan(ax), Math.tan(ay));
+                            }
+                        }
+                        else if (fname.equals("skewx"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
+                            {
+                                double ax = dec.getAngle((TermAngle) func.get(0));
+                                ret.shear(Math.tan(ax), 0.0);
+                            }
+                        }
+                        else if (fname.equals("skewy"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
+                            {
+                                double ay = dec.getAngle((TermAngle) func.get(0));
+                                ret.shear(0.0, Math.tan(ay));
+                            }
+                        }
+                        else if (fname.equals("matrix"))
+                        {
+                            if (func.size() == 6)
+                            {
+                                double[] vals = new double[6];
+                                boolean typesOk = true;
+                                for (int i = 0; i < 6; i++)
+                                {
+                                    if (isNumber(func.get(i)))
+                                        vals[i] = getNumber(func.get(i));
+                                    else
+                                        typesOk = false;
+                                }
+                                if (typesOk)
+                                {
+                                    ret.concatenate(new AffineTransform(vals));
+                                }
+                            }
+                        }
                     }
                 }
                 ret.translate(-ox, -oy);
