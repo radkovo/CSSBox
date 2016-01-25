@@ -20,7 +20,21 @@
 package org.fit.cssbox.render;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.util.HashMap;
+import java.util.Map;
 
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermAngle;
+import cz.vutbr.web.css.TermFunction;
+import cz.vutbr.web.css.TermInteger;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermList;
+import cz.vutbr.web.css.TermNumber;
+
+import org.fit.cssbox.layout.CSSDecoder;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
@@ -35,6 +49,9 @@ public class GraphicsRenderer implements BoxRenderer
     /** the used graphic context */
     protected Graphics2D g;
 
+    /** applied transformations */
+    protected Map<ElementBox, AffineTransform> savedTransforms;
+    
     /**
      * Constructs a renderer using the given graphics contexts.
      * @param g The graphics context used for painting the boxes.
@@ -42,21 +59,44 @@ public class GraphicsRenderer implements BoxRenderer
     public GraphicsRenderer(Graphics2D g)
     {
         this.g = g;
+        savedTransforms = new HashMap<ElementBox, AffineTransform>();
     }
     
     //====================================================================================================
     
     public void startElementContents(ElementBox elem)
     {
+        //setup transformations for the contents
+        AffineTransform at = createTransform(elem);
+        if (at != null)
+        {
+            savedTransforms.put(elem, g.getTransform());
+            g.transform(at);
+        }
     }
 
     public void finishElementContents(ElementBox elem)
     {
+        //restore the stransformations
+        AffineTransform origAt = savedTransforms.get(elem);
+        if (origAt != null)
+            g.setTransform(origAt);
     }
     
     public void renderElementBackground(ElementBox elem)
     {
+        AffineTransform origAt = null;
+        AffineTransform at = createTransform(elem);
+        if (at != null)
+        {
+            origAt = g.getTransform();
+            g.transform(at);
+        }
+        
         elem.drawBackground(g);
+        
+        if (origAt != null)
+            g.setTransform(origAt);
     }
 
     public void renderTextContent(TextBox text)
@@ -66,11 +106,153 @@ public class GraphicsRenderer implements BoxRenderer
 
     public void renderReplacedContent(ReplacedBox box)
     {
+        AffineTransform origAt = null;
+        if (box instanceof ElementBox)
+        {
+            AffineTransform at = createTransform((ElementBox) box);
+            if (at != null)
+            {
+                origAt = g.getTransform();
+                g.transform(at);
+            }
+        }
+        
         box.drawContent(g);
+        
+        if (origAt != null)
+            g.setTransform(origAt);
     }
 
     public void close()
     {
     }    
+    
+    //====================================================================================================
+    
+    protected AffineTransform createTransform(ElementBox elem)
+    {
+        if (elem.isBlock() || elem.isReplaced())
+        {
+            CSSDecoder dec = new CSSDecoder(elem.getVisualContext());
+            Rectangle bounds = elem.getAbsoluteBorderBounds();
+            //decode the origin
+            int ox, oy;
+            CSSProperty.TransformOrigin origin = elem.getStyle().getProperty("transform-origin");
+            if (origin == CSSProperty.TransformOrigin.list_values)
+            {
+                TermList values = elem.getStyle().getValue(TermList.class, "transform-origin");
+                ox = dec.getLength((TermLengthOrPercent) values.get(0), false, bounds.width / 2, 0, bounds.width);
+                oy = dec.getLength((TermLengthOrPercent) values.get(1), false, bounds.height / 2, 0, bounds.height);
+            }
+            else
+            {
+                ox = bounds.width / 2;
+                oy = bounds.height / 2;
+            }
+            ox += bounds.x;
+            oy += bounds.y;
+            //compute the transformation matrix
+            AffineTransform ret = null;
+            CSSProperty.Transform trans = elem.getStyle().getProperty("transform");
+            if (trans == CSSProperty.Transform.list_values)
+            {
+                ret = new AffineTransform();
+                TermList values = elem.getStyle().getValue(TermList.class, "transform");
+                for (Term<?> term : values)
+                {
+                    if (term instanceof TermFunction)
+                    {
+                        final TermFunction func = (TermFunction) term;
+                        final String fname = func.getFunctionName().toLowerCase();
+                        if (fname.equals("rotate"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
+                            {
+                                double theta = dec.getAngle((TermAngle) func.get(0));
+                                ret.concatenate(AffineTransform.getRotateInstance(theta, ox, oy));
+                            }
+                        }
+                        else if (fname.equals("translate"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
+                            {
+                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
+                                ret.concatenate(AffineTransform.getTranslateInstance(tx, 0.0));
+                            }
+                            else if (func.size() == 2 && func.get(0) instanceof TermLengthOrPercent && func.get(1) instanceof TermLengthOrPercent)
+                            {
+                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
+                                int ty = dec.getLength((TermLengthOrPercent) func.get(1), false, 0, 0, bounds.height);
+                                ret.concatenate(AffineTransform.getTranslateInstance(tx, ty));
+                            }
+                        }
+                        else if (fname.equals("translatex"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
+                            {
+                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
+                                ret.concatenate(AffineTransform.getTranslateInstance(tx, 0.0));
+                            }
+                        }
+                        else if (fname.equals("translatey"))
+                        {
+                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
+                            {
+                                int ty = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.height);
+                                ret.concatenate(AffineTransform.getTranslateInstance(0.0, ty));
+                            }
+                        }
+                        else if (fname.equals("scale"))
+                        {
+                            if (func.size() == 1 && isNumber(func.get(0)))
+                            {
+                                float sx = getNumber(func.get(0));
+                                ret.concatenate(AffineTransform.getScaleInstance(sx, sx));
+                            }
+                            else if (func.size() == 2 && isNumber(func.get(0)) && isNumber(func.get(1)))
+                            {
+                                float sx = getNumber(func.get(0));
+                                float sy = getNumber(func.get(1));
+                                ret.concatenate(AffineTransform.getScaleInstance(sx, sy));
+                            }
+                        }
+                        else if (fname.equals("scalex"))
+                        {
+                            if (func.size() == 1 && isNumber(func.get(0)))
+                            {
+                                float sx = getNumber(func.get(0));
+                                ret.concatenate(AffineTransform.getScaleInstance(sx, 1.0));
+                            }
+                        }
+                        else if (fname.equals("scaley"))
+                        {
+                            if (func.size() == 1 && isNumber(func.get(0)))
+                            {
+                                float sy = getNumber(func.get(0));
+                                ret.concatenate(AffineTransform.getScaleInstance(1.0, sy));
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return ret;
+        }
+        else
+            return null;
+    }
+    
+    private boolean isNumber(Term<?> term)
+    {
+        return term instanceof TermNumber || term instanceof TermInteger;
+    }
+
+    private float getNumber(Term<?> term)
+    {
+        if (term instanceof TermNumber)
+            return ((TermNumber) term).getValue();
+        else
+            return ((TermInteger) term).getValue();
+    }
     
 }
