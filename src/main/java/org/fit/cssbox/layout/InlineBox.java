@@ -600,11 +600,8 @@ public class InlineBox extends ElementBox implements InlineElement
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
-        if (cblock == null)
-            log.debug(this + " has no cblock");
-        
         //containing box sizes
-        int contw = cblock.getContentWidth();
+        int contw = getContainingBlock().width;
         
         //top and bottom margins take no effect for inline boxes
         // http://www.w3.org/TR/CSS21/box.html#propdef-margin-top

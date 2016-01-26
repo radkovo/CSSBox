@@ -279,9 +279,9 @@ public class BoxFactory
                     //A positioned box forms a content box for following absolutely positioned boxes
                      newstat.absbox = block;
                      //update clip box for the block
-                     BlockBox cblock = block.getContainingBlock();
-                     if (cblock.overflow != Overflow.VISIBLE || cblock.getClipBlock() == null)
-                         block.setClipBlock(cblock);
+                     ElementBox cblock = block.getContainingBlockBox();
+                     if (cblock instanceof BlockBox && (cblock.getClipBlock() == null || ((BlockBox) cblock).getOverflow() != Overflow.VISIBLE))
+                         block.setClipBlock((BlockBox) cblock);
                      else
                          block.setClipBlock(cblock.getClipBlock());
                      //A box with overflow:hidden creates a clipping box
@@ -372,7 +372,7 @@ public class BoxFactory
             {
                 ((BlockBox) newbox).domParent = newbox.getParent(); //set the DOM parent
                 ((BlockBox) newbox).absReference = stat.lastinflow; //set the reference box for computing the static position
-                newbox.getContainingBlock().addSubBox(newbox);
+                newbox.getContainingBlockBox().addSubBox(newbox);
             }
         }
         else //inline elements -- always in flow
@@ -387,7 +387,7 @@ public class BoxFactory
                 stat.lastinflow = newbox;
             }
             else
-                newbox.setContainingBlock(null); //indicate that the box is not part of the box tree (collapsed)
+                newbox.setContainingBlockBox(null); //indicate that the box is not part of the box tree (collapsed)
         }
         
         //Recursively process the eventual boxes that should be added tohether with the new box
@@ -451,14 +451,14 @@ public class BoxFactory
             BlockBox block = (BlockBox) ret; 
             //Setup my containing box
             if (block.position == BlockBox.POS_ABSOLUTE)
-                ret.setContainingBlock(stat.absbox);
+                ret.setContainingBlockBox(stat.absbox);
             else if (block.position == BlockBox.POS_FIXED)
-                ret.setContainingBlock(viewport);
+                ret.setContainingBlockBox(viewport);
             else    
-                ret.setContainingBlock(stat.contbox);
+                ret.setContainingBlockBox(stat.contbox);
         }
         else    
-            ret.setContainingBlock(stat.contbox);
+            ret.setContainingBlockBox(stat.contbox);
         
         //mark the root visual context
         if (n.getOwnerDocument().getDocumentElement() == n)
@@ -478,7 +478,7 @@ public class BoxFactory
         //TODO: in some whitespace processing modes, multiple boxes may be created
         TextBox text = new TextBox(n, (Graphics2D) stat.parent.getGraphics().create(), stat.parent.getVisualContext().create());
         text.setOrder(next_order++);
-        text.setContainingBlock(stat.contbox);
+        text.setContainingBlockBox(stat.contbox);
         text.setClipBlock(stat.clipbox);
         text.setViewport(viewport);
         text.setBase(baseurl);
@@ -654,7 +654,7 @@ public class BoxFactory
                             adiv = createBox(root, elem, display);
                             adiv.isblock = true;
                             adiv.isempty = true;
-                            adiv.setContainingBlock(sub.getContainingBlock());
+                            adiv.setContainingBlockBox(sub.getContainingBlockBox());
                             adiv.setClipBlock(sub.getClipBlock());
                             nest.add(adiv);
                         }
@@ -664,7 +664,7 @@ public class BoxFactory
                             adiv.displayed = true;
                         }
                         sub.setParent(adiv);
-                        sub.setContainingBlock((BlockBox) adiv);
+                        sub.setContainingBlockBox(adiv);
                         adiv.addSubBox(sub);
                     }
                 }
@@ -713,7 +713,7 @@ public class BoxFactory
         anbox.setOrder(next_order++);
         anbox.isempty = true;
         anbox.setBase(child.getBase());
-        anbox.setContainingBlock(child.getContainingBlock());
+        anbox.setContainingBlockBox(child.getContainingBlockBox());
         anbox.setClipBlock(child.getClipBlock());
         return anbox;
     }

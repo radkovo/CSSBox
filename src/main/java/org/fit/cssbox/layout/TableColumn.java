@@ -248,7 +248,7 @@ public class TableColumn extends BlockBox
         
         if (colwidth.equals("")) //no width set - try to get from style
         {
-            int contw = cblock.getContentWidth();
+            int contw = getContainingBlock().width;
             CSSDecoder dec = new CSSDecoder(ctx);
             CSSProperty.Width wprop = style.getProperty("width");
             if (wprop != null && wprop != CSSProperty.Width.AUTO)

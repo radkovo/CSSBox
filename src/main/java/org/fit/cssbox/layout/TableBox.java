@@ -196,9 +196,7 @@ public class TableBox extends BlockBox
         CSSDecoder dec = new CSSDecoder(ctx);
 
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        if (cblock == null && cblock.getContainingBlock() != null)
-            { log.debug(toString() + " has no cblock"); return; }
-        contw = cblock.getContainingBlock().getContentWidth();
+        contw = getContainingBlockBox().getContainingBlock().width;
         
         if (width == null) auto = true;
         if (exact) wset = !auto;
@@ -232,16 +230,14 @@ public class TableBox extends BlockBox
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        if (cblock == null && cblock.getContainingBlock() != null)
-            { log.debug(toString() + " has no cblock"); return; }
-        contw = cblock.getContainingBlock().getContentWidth();
-        conth = cblock.getContainingBlock().getContentHeight();
+        contw = getContainingBlockBox().getContainingBlock().width;
+        conth = getContainingBlockBox().getContainingBlock().height;
         
         if (height == null) auto = true; //no value behaves as "auto"
         margin.top = margin.bottom = 0; //margins are provided by the anonymous table box
         
         //compute height when set. If not, it will be computed during the layout
-        if (cblock != null && cblock.hset)
+        if (getContainingBlockBox().hasFixedWidth())
         {
             hset = (exact && !auto && height != null);
             if (!update)
@@ -714,7 +710,7 @@ public class TableBox extends BlockBox
                     }
                     anonbody.addSubBox(subbox);
                     anonbody.isempty = false;
-                    subbox.setContainingBlock(anonbody);
+                    subbox.setContainingBlockBox(anonbody);
                     subbox.setParent(anonbody);
                     it.remove();
                     endChild--;

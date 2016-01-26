@@ -223,14 +223,14 @@ public class BlockTableBox extends BlockBox
     }
     
     @Override
-    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, BlockBox cblock, boolean update)
+    protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, boolean update)
     {
         //anonymous table box has always an 'auto' width in the beginning. After the layout, the width is updated according
         //the resulting table (and caption) width
         if (!widthComputed)
-            super.computeWidths(null, true, exact, cblock, update);
+            super.computeWidths(null, true, exact, update);
         else
-            super.computeWidths(CSSFactory.getTermFactory().createLength((float) content.width, TermLength.Unit.px), false, exact, cblock, update);
+            super.computeWidths(CSSFactory.getTermFactory().createLength((float) content.width, TermLength.Unit.px), false, exact, update);
     }
     
     
@@ -266,7 +266,7 @@ public class BlockTableBox extends BlockBox
             else //other elements belong to the table itself
             {
                 table.addSubBox(box);
-                box.setContainingBlock(table);
+                box.setContainingBlockBox(table);
                 box.setParent(table);
                 it.remove();
                 endChild--;

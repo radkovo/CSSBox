@@ -126,7 +126,7 @@ public class HTMLBoxFactory
             Text t = e.getOwnerDocument().createTextNode(stext);
             TextBox tbox = new TextBox(t, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
             tbox.setOrder(factory.next_order++);
-            tbox.setContainingBlock(parent.getContainingBlock());
+            tbox.setContainingBlockBox(parent.getContainingBlockBox());
             tbox.setClipBlock(parent.getClipBlock());
             tbox.setViewport(viewport);
             tbox.setBase(parent.getBase());

@@ -172,7 +172,7 @@ public class FloatList
         for (int i = 0; i < size(); i++)
         {
             Box box = getBox(i);
-            if ((!requireVisible || box.isDeclaredVisible()) && box.getContainingBlock() == owner)
+            if ((!requireVisible || box.isDeclaredVisible()) && box.getContainingBlockBox() == owner)
             {
                 int ny = box.bounds.y + box.bounds.height; //TODO: -1 here?
                 if (ny > maxy) maxy = ny;

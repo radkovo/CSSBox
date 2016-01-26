@@ -434,7 +434,7 @@ public class TableBodyBox extends BlockBox
                 }
                 anonrow.addSubBox(box);
                 anonrow.isempty = false;
-                box.setContainingBlock(anonrow);
+                box.setContainingBlockBox(anonrow);
                 box.setParent(anonrow);
                 it.remove();
                 endChild--;

@@ -281,9 +281,7 @@ public class TableCellBox extends BlockBox
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes
-        if (cblock == null)
-            { log.debug(toString() + " has no cblock"); return; }
-        int contw = cblock.getContentWidth();
+        int contw = getContainingBlock().width;
         
         //Borders
         if (!update) //borders needn't be updated
@@ -354,11 +352,11 @@ public class TableCellBox extends BlockBox
         }
 
         boolean hauto = (hprop == null || hprop == CSSProperty.Height.AUTO); 
-        if (cblock.hset)
+        if (getContainingBlockBox().hasFixedWidth())
         {
             hset = !hauto;
             if (!update)
-                content.height = dec.getLength(height, hauto, 0, 0, cblock.getContentHeight());
+                content.height = dec.getLength(height, hauto, 0, 0, getContainingBlock().width);
         }
         else
         {

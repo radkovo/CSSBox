@@ -63,9 +63,7 @@ public class TableCaptionBox extends BlockBox
         if (width == null) auto = true; //no value behaves as 'auto'
         
         //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        if (cblock == null && cblock.getContainingBlock() != null)
-            { log.debug(toString() + " has no cblock"); return; }
-        contw = cblock.getContainingBlock().getContentWidth();
+        contw = getContainingBlockBox().getContainingBlock().width;
         
         boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");

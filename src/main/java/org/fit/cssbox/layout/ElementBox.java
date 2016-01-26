@@ -1424,8 +1424,8 @@ abstract public class ElementBox extends Box
     {
         CSSDecoder dec = new CSSDecoder(ctx);
 
-        int contw = cblock.getContentWidth();
-        int conth = cblock.getContentHeight();
+        int contw = getContainingBlock().width;
+        int conth = getContainingBlock().height;
         
         CSSProperty.Top ptop = style.getProperty("top");
         CSSProperty.Right pright = style.getProperty("right");

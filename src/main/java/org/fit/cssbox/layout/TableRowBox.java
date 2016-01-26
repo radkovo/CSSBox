@@ -154,8 +154,9 @@ public class TableRowBox extends BlockBox
     public void absolutePositions()
     {
         updateStackingContexts();
-        int x = cblock.getAbsoluteContentX() + bounds.x;
-        int y = cblock.getAbsoluteContentY() + bounds.y;
+        final Rectangle cblock = getAbsoluteContainingBlock();
+        int x = cblock.x + bounds.x;
+        int y = cblock.y + bounds.y;
 
         if (position == POS_RELATIVE)
         {
@@ -214,7 +215,7 @@ public class TableRowBox extends BlockBox
             coords = new LengthSet();
     	}
     	//row occupies the whole body width
-    	content.width = cblock.getContentWidth();
+    	content.width = getContainingBlock().width;
     }
 
     @Override
@@ -276,7 +277,7 @@ public class TableRowBox extends BlockBox
                 anoncell.addSubBox(box);
                 anoncell.isempty = false;
                 if (box.isBlock()) anoncell.contblock = true;
-                box.setContainingBlock(anoncell);
+                box.setContainingBlockBox(anoncell);
                 box.setParent(anoncell);
                 toremove.add(box);
                 endChild--;
