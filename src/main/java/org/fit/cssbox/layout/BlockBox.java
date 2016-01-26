@@ -1375,7 +1375,7 @@ public class BlockBox extends ElementBox
             if (absReference != null)
             {
                 //compute the bounds of the reference box relatively to our containing block
-                final Rectangle cb = getContainingBlock();
+                final Rectangle cb = getContainingBlockBox().getAbsoluteBounds();
                 //position relatively to the border edge
                 if (topstatic)
                 {
