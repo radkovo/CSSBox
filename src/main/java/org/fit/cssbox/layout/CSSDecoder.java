@@ -157,7 +157,13 @@ public class CSSDecoder
         
         //total widths used for percentages
         int twidth = box.getContainingBlock().getContentWidth();
-        int theight = box.getViewport().getContentHeight();
+        //total heights used for percentages -- find the nearest containing block with a fixed height
+        //this does not correspond to the CSS21 specs (the height should compute to 'auto' when the
+        //height of the containing block is not set); however it corresponds to the normal browser behavior.
+        BlockBox cbox = box.getContainingBlock();
+        while (cbox != null && !cbox.hasFixedHeight() && !(cbox instanceof Viewport))
+            cbox = cbox.getContainingBlock();
+        int theight = cbox.getContentHeight();
         
         //try to use the attributes
         Element el = box.getElement();
