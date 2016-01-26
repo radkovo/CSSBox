@@ -609,6 +609,17 @@ public class BlockBox extends ElementBox
             return super.getContainingBlock();
     }
     
+    @Override
+    public Rectangle getAbsoluteContainingBlock()
+    {
+        if (position == POS_FIXED)
+            return viewport.getVisibleRect();
+        else if (position == POS_ABSOLUTE)
+            return cbox.getAbsolutePaddingBounds();
+        else
+            return super.getAbsoluteContainingBlock();
+    }
+    
    //========================================================================
     
     /**
@@ -1358,8 +1369,9 @@ public class BlockBox extends ElementBox
      * from the reference box (if any) */
     private void updateStaticPosition()
     {
-        /*if (topstatic || leftstatic)
+        if (topstatic || leftstatic)
         {
+            ElementBox cblock = getContainingBlockBox();
             if (absReference != null)
             {
                 //compute the bounds of the reference box relatively to our containing block
@@ -1377,7 +1389,7 @@ public class BlockBox extends ElementBox
                 }
                 if (leftstatic)
                 {
-                    final BlockBox refcblock = absReference.getContainingBlock();
+                    final ElementBox refcblock = absReference.getContainingBlockBox();
                     if (refcblock != null)
                         coords.left = refcblock.getAbsoluteContentBounds().x - cb.x - cblock.emargin.left - cblock.border.left;
                     else
@@ -1390,7 +1402,7 @@ public class BlockBox extends ElementBox
             {
                 //find the nearest DOM parent that is part of our box tree
                 ElementBox dparent = domParent; 
-                while (dparent != null && dparent.getContainingBlock() == null)
+                while (dparent != null && dparent.getContainingBlockBox() == null)
                     dparent = dparent.getParent();
                 //compute the bounds of the reference box relatively to our containing block
                 Rectangle ab = new Rectangle(dparent.getAbsoluteContentBounds());
@@ -1418,7 +1430,7 @@ public class BlockBox extends ElementBox
                 if (leftstatic)
                     coords.left = cblock.padding.left;
             }
-        }*/
+        }
     }
 
     @Override

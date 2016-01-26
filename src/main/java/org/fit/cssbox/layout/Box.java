@@ -535,9 +535,15 @@ abstract public class Box
      * Obtains the containing block absolute bounds.
      * @return the containing block absolute bounds.
      */
-    public Rectangle getAbsoluteContainingBlock() //TODO this is more complicated, see specs
+    public Rectangle getAbsoluteContainingBlock()
     {
-        return cbox.getAbsoluteContentBounds();
+        if (cbox instanceof Viewport) //initial containing block
+        {
+            Rectangle visible = ((Viewport) cbox).getVisibleRect();
+            return new Rectangle(0, 0, visible.width, visible.height);
+        }
+        else //static or relative position
+            return cbox.getAbsoluteContentBounds();
     }
     
     /**
