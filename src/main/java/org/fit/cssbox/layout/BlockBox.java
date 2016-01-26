@@ -598,6 +598,17 @@ public class BlockBox extends ElementBox
         return indent;
     }
     
+    @Override
+    public Rectangle getContainingBlock()
+    {
+        if (position == POS_FIXED)
+            return viewport.getVisibleRect();
+        else if (position == POS_ABSOLUTE)
+            return cbox.getPaddingBounds();
+        else
+            return super.getContainingBlock();
+    }
+    
    //========================================================================
     
     /**

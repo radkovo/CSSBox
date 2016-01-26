@@ -883,6 +883,18 @@ abstract public class ElementBox extends Box
      * Returns the bounds of the padding edge (the content and padding)
      * @return a Rectangle representing the absolute padding bounds
      */
+    public Rectangle getPaddingBounds()
+    {
+        return new Rectangle(bounds.x + emargin.left + border.left,
+                             bounds.y + emargin.top + border.top,
+                             content.width + padding.left + padding.right,
+                             content.height + padding.top + padding.bottom);
+    }
+
+    /**
+     * Returns the absolute bounds of the padding edge (the content and padding)
+     * @return a Rectangle representing the absolute padding bounds
+     */
     public Rectangle getAbsolutePaddingBounds()
     {
         return new Rectangle(absbounds.x + emargin.left + border.left,

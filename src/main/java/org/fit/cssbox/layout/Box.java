@@ -522,7 +522,13 @@ abstract public class Box
      */
     public Rectangle getContainingBlock()
     {
-        return cbox.getContentBounds(); //TODO this is more complicated, see specs
+        if (cbox instanceof Viewport) //initial containing block
+        {
+            Rectangle visible = ((Viewport) cbox).getVisibleRect();
+            return new Rectangle(0, 0, visible.width, visible.height);
+        }
+        else //static or relative position
+            return cbox.getContentBounds();
     }
     
     /**
@@ -531,12 +537,7 @@ abstract public class Box
      */
     public Rectangle getAbsoluteContainingBlock() //TODO this is more complicated, see specs
     {
-        if (cbox instanceof Viewport)
-        {
-            return ((Viewport) cbox).getVisibleRect();
-        }
-        else
-            return cbox.getAbsoluteContentBounds();
+        return cbox.getAbsoluteContentBounds();
     }
     
     /**
