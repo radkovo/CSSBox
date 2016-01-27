@@ -539,8 +539,9 @@ abstract public class Box
     {
         if (cbox instanceof Viewport) //initial containing block
         {
+            Rectangle ab = cbox.getAbsoluteBounds(); //normally positioned at 0,0; other value for nested viewports (e.g. objects)
             Rectangle visible = ((Viewport) cbox).getVisibleRect();
-            return new Rectangle(0, 0, visible.width, visible.height);
+            return new Rectangle(ab.x, ab.y, visible.width, visible.height);
         }
         else //static or relative position
             return cbox.getAbsoluteContentBounds();
