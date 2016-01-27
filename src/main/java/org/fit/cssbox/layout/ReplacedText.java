@@ -152,7 +152,8 @@ public class ReplacedText extends ReplacedContent
             createLayout(dim);
             //containing box for the new viewport
             viewport.setContainingBlockBox(owner);
-            //viewport.clipByBlock(owner); //TODO should clip box be always a block?
+            if (owner instanceof BlockBox)
+                viewport.clipByBlock((BlockBox) owner);
             
             owner.removeAllSubBoxes();
             owner.addSubBox(viewport);
