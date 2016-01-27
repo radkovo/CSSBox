@@ -1932,11 +1932,19 @@ public class BlockBox extends ElementBox
      */
     protected void loadWidthsHeights(CSSDecoder dec, int contw, int conth, boolean update)
     {
-        //Minimal and maximal width
-        min_size = new Dimension(dec.getLength(getLengthValue("min-width"), false, -1, -1, contw),
-                dec.getLength(getLengthValue("min-height"), false, -1, -1, conth));
-        max_size = new Dimension(dec.getLength(getLengthValue("max-width"), style.getProperty("max-width") == CSSProperty.MaxWidth.NONE, -1, -1, contw),
-                dec.getLength(getLengthValue("max-height"), style.getProperty("max-height") == CSSProperty.MaxHeight.NONE, -1, -1, conth));
+        //Minimal width
+        TermLengthOrPercent minw = getLengthValue("min-width");
+        TermLengthOrPercent minh = getLengthValue("min-height");
+        boolean autoMinW = false; 
+        boolean autoMinH = (minh != null && minh.isPercentage() && !getContainingBlockBox().hasFixedHeight());
+        min_size = new Dimension(dec.getLength(minw, autoMinW, -1, -1, contw), dec.getLength(minh, autoMinH, -1, -1, conth));
+        //Maximal width
+        TermLengthOrPercent maxw = getLengthValue("max-width");
+        TermLengthOrPercent maxh = getLengthValue("max-height");
+        boolean autoMaxW = style.getProperty("max-width") == CSSProperty.MaxWidth.NONE;
+        boolean autoMaxH = style.getProperty("max-height") == CSSProperty.MaxHeight.NONE
+                || (maxh != null && maxh.isPercentage() && !getContainingBlockBox().hasFixedHeight());
+        max_size = new Dimension(dec.getLength(maxw, autoMaxW, -1, -1, contw), dec.getLength(maxh, autoMaxH, -1, -1, conth));
         if (max_size.width != -1 && max_size.width < min_size.width)
             max_size.width = min_size.width;
         if (max_size.height != -1 && max_size.height < min_size.height)
@@ -2186,16 +2194,13 @@ public class BlockBox extends ElementBox
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
      * @param height the specified width
      * @param exact true if this is the exact height, false when it's a max/min height
-     * @param cblock the containing block
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeHeights(TermLengthOrPercent height, boolean auto, boolean exact, boolean update)
     {
         final Rectangle cb = getContainingBlock(); 
         if (position == POS_ABSOLUTE || position == POS_FIXED)
-        {
             computeHeightsAbsolute(height, auto, exact, cb.width, cb.height, update);
-        }
         else
             computeHeightsInFlow(height, auto, exact, cb.width, cb.height, update);
         //the computed margins allways correspond to the declared ones
@@ -2207,50 +2212,24 @@ public class BlockBox extends ElementBox
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
-        if (height == null) auto = true; //no value behaves as "auto"
+        if (height == null) auto = true;
 
         boolean mtopauto = style.getProperty("margin-top") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mtop = getLengthValue("margin-top");
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
         
-        if (!auto && height != null)
+        if (!auto)
         {
-            int baseh = conth;
-            if (height.isPercentage())
-            {
-                if (!getContainingBlockBox().hasFixedHeight())
-                {
-                    //we have a percentage height but the containing block has not an explicit height
-                    //CSS 2.1 says that the height should compute to "auto".
-                    //However, the browsers obviously find the nearest parent with an explicit height or use the viewport.
-                    ElementBox cb = getContainingBlockBox();
-                    do
-                    {
-                        cb = cb.getContainingBlockBox();
-                    } while (cb != null && !cb.hasFixedHeight() /*&& !cb.isPositioned()*/); //TODO
-                    if (cb == null || !cb.hasFixedHeight())
-                    {
-                        hset = false; //no suitable containing block
-                    }
-                    else
-                    {
-                        hset = exact; //found a containing block with an explicid height
-                        baseh = cb.getContentHeight();
-                    }
-                }
-                else
-                    hset = exact; //percentage and containing bloc has fixed height
-            }
-            else
-                hset = exact; //not a percentage - it's a fixed height
-            
+            if (exact)
+                hset = true;
             if (!update)
-                content.height = dec.getLength(height, auto, 0, 0, baseh);
+                content.height = dec.getLength(height, false, 0, 0, conth);
         }
         else //height not explicitly set
         {
-            hset = false;
+            if (exact)
+                hset = false;
         }
         
         //compute margins - auto margins are treated as zero

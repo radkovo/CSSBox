@@ -155,15 +155,7 @@ public class CSSDecoder
             intr = 1.0f;
         }
         
-        //total widths used for percentages
-        int twidth = box.getContainingBlockBox().getContentWidth(); //TODO should be padding edge for the absolutely positined boxes?
-        //total heights used for percentages -- find the nearest containing block with a fixed height
-        //this does not correspond to the CSS21 specs (the height should compute to 'auto' when the
-        //height of the containing block is not set); however it corresponds to the normal browser behavior.
-        Box cbox = box.getContainingBlockBox();
-        while (cbox != null && !cbox.hasFixedHeight() && !(cbox instanceof Viewport))
-            cbox = cbox.getContainingBlockBox();
-        int theight = cbox.getContentHeight();
+        Rectangle cb = box.getContainingBlock();
         
         //try to use the attributes
         Element el = box.getElement();
@@ -171,13 +163,22 @@ public class CSSDecoder
         int atrh = -1;
         try {
             if (!HTMLNorm.getAttribute(el, "width").equals(""))
-                atrw = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "width"), twidth);
+            {
+                atrw = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "width"), cb.width);
+            }
         } catch (NumberFormatException e) {
             log.info("Invalid width value: " + HTMLNorm.getAttribute(el, "width"));
         }
         try {
             if (!HTMLNorm.getAttribute(el, "height").equals(""))
-                atrh = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "height"), theight);
+            {
+                //Total heights used for percentages -- find the nearest containing block with a fixed height
+                //This is a quirks mode behavior (percentages in attributes should not be used in standards mode).
+                Box cbox = box.getContainingBlockBox();
+                while (cbox != null && !cbox.hasFixedHeight() && !(cbox instanceof Viewport))
+                    cbox = cbox.getContainingBlockBox();
+                atrh = HTMLNorm.computeAttributeLength(HTMLNorm.getAttribute(el, "height"), cbox.getContentHeight());
+            }
         } catch (NumberFormatException e) {
             log.info("Invalid height value: " + HTMLNorm.getAttribute(el, "width"));
         }
@@ -204,12 +205,29 @@ public class CSSDecoder
             intr = (float) boxw / boxh; //new intrsinsic ratio is set explicitly
         }
 
+        //use standard CSS2.1 computation of the containing block height
+        final int twidth = cb.width;
+        final int theight = cb.height;
         //compute dimensions from styles (styles should override the attributes)
         CSSDecoder dec = new CSSDecoder(box.getVisualContext());
         CSSProperty.Width width = box.getStyle().getProperty("width");
-        if (width == CSSProperty.Width.AUTO) width = null; //auto and null are equal for width
+        TermLengthOrPercent vWidth = null;
+        if (width == CSSProperty.Width.AUTO)
+            width = null; //auto and null are equal for width
+        if (width != null)
+            vWidth = box.getLengthValue("width");
+        
         CSSProperty.Height height = box.getStyle().getProperty("height");
-        if (height == CSSProperty.Height.AUTO) height = null; //auto and null are equal for height
+        TermLengthOrPercent vHeight = null;
+        if (height == CSSProperty.Height.AUTO)
+            height = null; //auto and null are equal for height
+        if (height != null)
+        {
+            vHeight = box.getLengthValue("height");
+            if (vHeight.isPercentage() && !box.getContainingBlockBox().hasFixedHeight())
+                height = null; //the percentage heights are treated as 'auto' when the containing block height is not set
+        }
+        
         if (width == null && height == null)
         {
             final int[] result = applyCombinedLimits(boxw, boxh, box, dec, twidth, theight);
@@ -219,26 +237,26 @@ public class CSSDecoder
         else if (width == null && height != null)
         {
             //compute boxh, boxw is intrinsic
-            int autoh = Math.round(boxw / intr);
-            boxh = dec.getLength(box.getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, autoh, theight);
+            boxh = dec.getLength(vHeight, false, boxh, 0, theight);
             boxh = applyHeightLimits(boxh, box, dec, theight);
             //boxw intrinsic value
             boxw = Math.round(intr * boxh);
+            boxw = applyWidthLimits(boxw, box, dec, twidth);
         }
         else if (width != null && height == null)
         {
             //compute boxw, boxh is intrinsic
-            int autow = Math.round(intr * boxh);
-            boxw = dec.getLength(box.getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, autow, twidth);
+            boxw = dec.getLength(vWidth, false, boxw, 0, twidth);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
             //boxh intrinsic value
             boxh = Math.round(boxw / intr);
+            boxh = applyHeightLimits(boxh, box, dec, theight);
         }
         else
         {
-            boxw = dec.getLength(box.getLengthValue("width"), width == CSSProperty.Width.AUTO, boxw, intw, twidth);
+            boxw = dec.getLength(vWidth, false, boxw, 0, twidth);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
-            boxh = dec.getLength(box.getLengthValue("height"), height == CSSProperty.Height.AUTO, boxh, inth, theight);
+            boxh = dec.getLength(vHeight, false, boxh, 0, theight);
             boxh = applyHeightLimits(boxh, box, dec, theight);
         }
         
@@ -248,6 +266,7 @@ public class CSSDecoder
     public static int applyWidthLimits(int width, ElementBox box, CSSDecoder dec, int twidth)
     {
         int ret = width;
+        if (twidth < 0) twidth = 0; //if the containing block's width is negative, the used value is zero.
         CSSProperty.MaxWidth max = box.getStyle().getProperty("max-width");
         if (max != null && max != CSSProperty.MaxWidth.NONE)
         {
@@ -268,45 +287,71 @@ public class CSSDecoder
     public static int applyHeightLimits(int height, ElementBox box, CSSDecoder dec, int theight)
     {
         int ret = height;
+        ElementBox cbox = box.getContainingBlockBox();
         CSSProperty.MaxHeight max = box.getStyle().getProperty("max-height");
         if (max != null && max != CSSProperty.MaxHeight.NONE)
         {
-            final int maxval = dec.getLength(box.getLengthValue("max-height"), false, -1, -1, theight);
-            if (ret > maxval)
-                ret = maxval;
+            final TermLengthOrPercent val = box.getLengthValue("max-height");
+            if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
+            {
+                final int maxval = dec.getLength(val, false, -1, -1, theight);
+                if (ret > maxval)
+                    ret = maxval;
+            }
         }
         CSSProperty.MinHeight min = box.getStyle().getProperty("min-height");
         if (min != null)
         {
-            final int minval = dec.getLength(box.getLengthValue("min-height"), false, -1, -1, theight);
-            if (ret < minval)
-                ret = minval;
+            final TermLengthOrPercent val = box.getLengthValue("min-height");
+            if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
+            {
+                final int minval = dec.getLength(box.getLengthValue("min-height"), false, -1, -1, theight);
+                if (ret < minval)
+                    ret = minval;
+            }
         }
         return ret;
     }
     
     public static int[] applyCombinedLimits(int w, int h, ElementBox box, CSSDecoder dec, int twidth, int theight)
     {
+        ElementBox cbox = box.getContainingBlockBox();
         //decode min/max values from the style
         final CSSProperty.MinWidth pminw = box.getStyle().getProperty("min-width");
         final CSSProperty.MaxWidth pmaxw = box.getStyle().getProperty("max-width");
         final CSSProperty.MinHeight pminh = box.getStyle().getProperty("min-height");
         final CSSProperty.MaxHeight pmaxh = box.getStyle().getProperty("max-height");
+        
         final int minw, maxw, minh, maxh;
         if (pminw != null)
             minw = dec.getLength(box.getLengthValue("min-width"), false, 0, 0, twidth);
         else
             minw = 0;
+        
         if (pmaxw != null && pmaxw != CSSProperty.MaxWidth.NONE)
             maxw = Math.max(minw, dec.getLength(box.getLengthValue("max-width"), false, 0, 0, twidth)); //maxw >= minw musth hold
         else
             maxw = Integer.MAX_VALUE;
+        
         if (pminh != null)
-            minh = dec.getLength(box.getLengthValue("min-height"), false, 0, 0, theight);
+        {
+            TermLengthOrPercent val = box.getLengthValue("min-height");
+            if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
+                minh = dec.getLength(val, false, 0, 0, theight);
+            else
+                minh = 0;
+        }
         else
             minh = 0;
+        
         if (pmaxh != null && pmaxh != CSSProperty.MaxHeight.NONE)
-            maxh = Math.max(minh, dec.getLength(box.getLengthValue("max-height"), false, 0, 0, theight));
+        {
+            TermLengthOrPercent val = box.getLengthValue("max-height");
+            if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
+                maxh = Math.max(minh, dec.getLength(val, false, 0, 0, theight));
+            else
+                maxh = Integer.MAX_VALUE;
+        }
         else
             maxh = Integer.MAX_VALUE;
         
