@@ -157,7 +157,7 @@ public class CSSDecoder
         
         Rectangle cb = box.getContainingBlock();
         
-        //try to use the attributes
+        //decode the width/height attributes
         Element el = box.getElement();
         int atrw = -1;
         int atrh = -1;
@@ -181,28 +181,6 @@ public class CSSDecoder
             }
         } catch (NumberFormatException e) {
             log.info("Invalid height value: " + HTMLNorm.getAttribute(el, "width"));
-        }
-        //apply intrinsic ration when necessary
-        if (atrw == -1 && atrh == -1)
-        {
-            boxw = intw;
-            boxh = inth;
-        }
-        else if (atrw == -1)
-        {
-            boxw = Math.round(intr * atrh);
-            boxh = atrh;
-        }
-        else if (atrh == -1)
-        {
-            boxw = atrw;
-            boxh = Math.round(atrw / intr);
-        }
-        else
-        {
-            boxw = atrw;
-            boxh = atrh;
-            intr = (float) boxw / boxh; //new intrsinsic ratio is set explicitly
         }
 
         //use standard CSS2.1 computation of the containing block height
@@ -228,25 +206,25 @@ public class CSSDecoder
                 height = null; //the percentage heights are treated as 'auto' when the containing block height is not set
         }
         
-        if (width == null && height == null)
+        if (width == null && height == null && atrw == -1 && atrh == -1)
         {
             final int[] result = applyCombinedLimits(boxw, boxh, box, dec, twidth, theight);
             boxw = result[0];
             boxh = result[1];
         }
-        else if (width == null && height != null)
+        else if (width == null && atrw == -1 && (height != null || atrh != -1))
         {
             //compute boxh, boxw is intrinsic
-            boxh = dec.getLength(vHeight, false, boxh, 0, theight);
+            boxh = dec.getLength(vHeight, false, atrh, 0, theight);
             boxh = applyHeightLimits(boxh, box, dec, theight);
             //boxw intrinsic value
             boxw = Math.round(intr * boxh);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
         }
-        else if (width != null && height == null)
+        else if ((width != null || atrw != -1) && height == null && atrh == -1)
         {
             //compute boxw, boxh is intrinsic
-            boxw = dec.getLength(vWidth, false, boxw, 0, twidth);
+            boxw = dec.getLength(vWidth, false, atrw, 0, twidth);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
             //boxh intrinsic value
             boxh = Math.round(boxw / intr);
@@ -254,9 +232,9 @@ public class CSSDecoder
         }
         else
         {
-            boxw = dec.getLength(vWidth, false, boxw, 0, twidth);
+            boxw = dec.getLength(vWidth, false, atrw, 0, twidth);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
-            boxh = dec.getLength(vHeight, false, boxh, 0, theight);
+            boxh = dec.getLength(vHeight, false, atrh, 0, theight);
             boxh = applyHeightLimits(boxh, box, dec, theight);
         }
         
