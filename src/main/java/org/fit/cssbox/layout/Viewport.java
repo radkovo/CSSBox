@@ -337,7 +337,7 @@ public class Viewport extends BlockBox
         	        bgcolor = src.getBgcolor();
         	        src.setBgcolor(null);
         	    }
-        	    else //use white color when the body is transparent
+        	    else if (bgcolor == null) //use white color when not set already and the body is transparent
         	        bgcolor = Color.WHITE;
         	    
         	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
