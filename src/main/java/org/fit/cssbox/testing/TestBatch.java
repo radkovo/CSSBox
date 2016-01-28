@@ -57,6 +57,7 @@ public class TestBatch
 {
     private static Logger log = LoggerFactory.getLogger(TestBatch.class);
     private static int THREADS = 12;
+    private static int TASK_TIMEOUT = 30; //seconds
     
     private static List<String> tagBlacklist;
     static {
@@ -220,7 +221,7 @@ public class TestBatch
         {
             try
             {
-                List<Future<Float>> fl = exec.invokeAll(list.subList(i, i + 1), 15, TimeUnit.SECONDS);
+                List<Future<Float>> fl = exec.invokeAll(list.subList(i, i + 1), TASK_TIMEOUT, TimeUnit.SECONDS);
                 futures.add(fl.get(0));
             } catch (InterruptedException e) {
                 log.error("Test " + i + " interrupted: " + e.getMessage());
