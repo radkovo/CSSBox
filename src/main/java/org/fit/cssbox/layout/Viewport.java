@@ -18,6 +18,7 @@
 
 package org.fit.cssbox.layout;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -336,6 +337,9 @@ public class Viewport extends BlockBox
         	        bgcolor = src.getBgcolor();
         	        src.setBgcolor(null);
         	    }
+        	    else //use white color when the body is transparent
+        	        bgcolor = Color.WHITE;
+        	    
         	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
         	    {
         	        bgimages = loadBackgroundImages(src.getStyle());
