@@ -241,12 +241,15 @@ public class TestBatch
                     tvalue = future.get();
                 } catch (ExecutionException e) {
                     log.error(tname + " (" + i + "): " + e.getMessage());
+                    e.printStackTrace();
                     tvalue = 1.0f;
                 } catch (CancellationException e) {
                     log.error(tname + " (" + i + "): " + e.getMessage());
+                    e.printStackTrace();
                     tvalue = 1.0f;
                 } catch (InterruptedException e) {
                     log.error(tname + " (" + i + "): " + e.getMessage());
+                    e.printStackTrace();
                     tvalue = 1.0f;
                 }
             }
