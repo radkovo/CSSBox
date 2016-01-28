@@ -223,6 +223,7 @@ public class TestBatch
                 List<Future<Float>> fl = exec.invokeAll(list.subList(i, i + 1), 15, TimeUnit.SECONDS);
                 futures.add(fl.get(0));
             } catch (InterruptedException e) {
+                log.error("Test " + i + " interrupted: " + e.getMessage());
                 futures.add(null);
             }
         }
@@ -239,15 +240,21 @@ public class TestBatch
                 {
                     tvalue = future.get();
                 } catch (ExecutionException e) {
+                    log.error(tname + " (" + i + "): " + e.getMessage());
                     tvalue = 1.0f;
                 } catch (CancellationException e) {
+                    log.error(tname + " (" + i + "): " + e.getMessage());
                     tvalue = 1.0f;
                 } catch (InterruptedException e) {
+                    log.error(tname + " (" + i + "): " + e.getMessage());
                     tvalue = 1.0f;
                 }
             }
             else
+            {
+                log.error(tname + " (" + i + "): result not available");
                 tvalue = 1.0f;
+            }
             
             results.put(tname, tvalue);
         }

@@ -145,6 +145,8 @@ public class ReferenceTestCase implements Callable<Float>
             saveImage(refImg, "/tmp/test-" + path.getName() + ".srcB.png");
             saveImage(ic.getDifferenceImage(), "/tmp/test-" + path.getName() + ".diff.png");
         }
+        if (ic.getErrorDescription() != null)
+            log.error(name + ": " + ic.getErrorDescription());
         
         if (batch != null)
             batch.reportCompletion(this);

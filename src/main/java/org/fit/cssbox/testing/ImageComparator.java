@@ -31,15 +31,22 @@ public class ImageComparator
     private BufferedImage diff;
     private int totalcnt; //total number of pixels
     private int diffcnt; //number of different pixels
+    private String errorDescr; //error description
     
     public ImageComparator(BufferedImage img1, BufferedImage img2)
     {
+        errorDescr = null;
         diff = createDifferenceImage(img1, img2);
     }
 
     public float getErrorRate()
     {
         return (float) diffcnt / (float) totalcnt;
+    }
+    
+    public String getErrorDescription()
+    {
+        return errorDescr;
     }
     
     public BufferedImage getDifferenceImage()
@@ -56,6 +63,7 @@ public class ImageComparator
         final int h2 = img2.getHeight();
         if (w1 != w2 || h1 != h2)
         {
+            errorDescr = "Image sizes don't match";
             diffcnt = totalcnt = 1;
             return img1;
         }
