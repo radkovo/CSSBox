@@ -1,3 +1,7 @@
+2016-02-10 - Version 4.11-SNAPSHOT
+- Removed Failed URL caching.
+- URL and Image caching technology changed to Google Guava Cache, with default 1 Hour expiry time.
+
 2015-11-05 - Version 4.10
 - Size computation fixes for replaced images
 - New image decoding based in ImageIO instead of Toolkit
