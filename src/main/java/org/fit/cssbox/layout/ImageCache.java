@@ -19,51 +19,52 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Image;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
+import java.awt.*;
 import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple cache for storing already loaded images.
+ *
+ * Changes Done by Leon De Silva.
+ * ==============================
+ *      * Removed cache which stores failed URLs.
+ *      * Changed Image caching technology to Google Guava Cache.
  * 
  * @author Alessandro Tucci
+ * @author Leon De Silva.
  */
 public class ImageCache
 {
-    private static ConcurrentHashMap<URL, Image> cache;
-    static {
-        cache = new ConcurrentHashMap<URL, Image>();
+    // Cache expire time is set to 1 hour.
+    private static final int CACHE_EXPIRY_TIME_IN_HOURS = 1;
+    private static Cache<URL, Image> cache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_EXPIRY_TIME_IN_HOURS, TimeUnit.HOURS).build();
+
+    /**
+     * Method to store Urls and Images.
+     *
+     * @param url Url to store.
+     * @param image Image to store.
+     */
+    public static void put(URL url, Image image) {
+        cache.put(url, image);
     }
 
-    private static ConcurrentHashMap<URL, Boolean> failed;
-    static {
-        failed = new ConcurrentHashMap<URL, Boolean>();
-    }
-    
-    public static Image put(URL uri, Image image)
-    {
-        return cache.put(uri, image);
-    }
+    /**
+     * Method to get the Image for a given URL.
+     *
+     * @param url URL to retrieve Image.
+     * @return Image for the given URL.
+     */
+    public static Image get(URL url) {
+        Image image = null;
+        if (cache != null) {
+            image = cache.asMap().get(url);
+        }
 
-    public static Image get(URL uri)
-    {
-        return cache.get(uri);
+        return image;
     }
-
-    public static Image remove(URL uri)
-    {
-        return cache.remove(uri);
-    }
-    
-    public static void putFailed(URL uri)
-    {
-        failed.put(uri, true);
-    }
-    
-    public static boolean hasFailed(URL uri)
-    {
-        Boolean b = failed.get(uri);
-        return (b != null && b == true);
-    }
-    
 }
