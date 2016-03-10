@@ -113,7 +113,7 @@ public class BoxBrowser
     protected JPanel DOMPanel = null;
     protected JScrollPane domScroll = null;
     protected JTree domTree = null;
-    private JList styleList;
+    private JList<StyleListItem> styleList;
     private JScrollPane styleScroll;
     
 
@@ -986,9 +986,9 @@ public class BoxBrowser
         return treeTabs;
     }
 
-    private JList getStyleList() {
+    private JList<StyleListItem> getStyleList() {
         if (styleList == null) {
-            styleList = new JList() {
+            styleList = new JList<StyleListItem>() {
                 private static final long serialVersionUID = 1L;
                 public String getToolTipText(MouseEvent e) {
                        int index = locationToIndex(e.getPoint());
