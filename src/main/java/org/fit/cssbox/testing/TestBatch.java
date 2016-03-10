@@ -224,6 +224,12 @@ public class TestBatch
      */
     public void runTests(List<String> selected)
     {
+        if (threadsUsed == 1)
+        {
+            log.info("Test sequence mode");
+            runTestsInSequence(selected);
+            return;
+        }
         //ExecutorService exec = Executors.newSingleThreadExecutor();
         ExecutorService exec = Executors.newFixedThreadPool(threadsUsed);
         List<Callable<Float>> list = getTestList(selected);
@@ -275,6 +281,31 @@ public class TestBatch
             }
             
             results.put(tname, tvalue);
+        }
+    }
+    
+    /**
+     * Runs all the tests sequentionally.
+     * @param selected the list of selected test to be used or {@code null} to use all the
+     * tests that are not blacklisted
+     */
+    public void runTestsInSequence(List<String> selected)
+    {
+        Runtime runtime = Runtime.getRuntime();
+        List<Callable<Float>> list = getTestList(selected);
+        for (int i = 0; i < list.size(); i++)
+        {
+            Callable<Float> test = list.get(i);
+            String tname = ((ReferenceTestCase) test).getName();
+            log.info("Test {}/{} {}", i, list.size(), tname);
+            System.out.println("Test " + i + "/" + list.size() + " " + tname + " " + runtime.freeMemory());
+            try
+            {
+                Float result = test.call();
+                results.put(tname, result);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
         }
     }
     

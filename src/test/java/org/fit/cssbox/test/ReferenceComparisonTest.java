@@ -35,7 +35,7 @@ import org.junit.Test;
  */
 public class ReferenceComparisonTest
 {
-    private static final int THREADS = 2;
+    private static final int THREADS = 1;
 
     @Test
     public void checkForRegressions() throws MalformedURLException
