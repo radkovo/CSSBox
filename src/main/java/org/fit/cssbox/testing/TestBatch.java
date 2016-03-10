@@ -310,6 +310,7 @@ public class TestBatch
             long free = runtime.freeMemory();
             if (free < minFree) minFree = free;
             list.set(i, null); //do not hold the tests in memory
+            System.gc();
             System.out.println(" free:" + (free/1000) + " min:" + (minFree/1000));
         }
     }
