@@ -292,13 +292,14 @@ public class TestBatch
     public void runTestsInSequence(List<String> selected)
     {
         Runtime runtime = Runtime.getRuntime();
+        long minFree = runtime.freeMemory();
         List<Callable<Float>> list = getTestList(selected);
         for (int i = 0; i < list.size(); i++)
         {
             Callable<Float> test = list.get(i);
             String tname = ((ReferenceTestCase) test).getName();
             log.info("Test {}/{} {}", i, list.size(), tname);
-            System.out.println("Test " + i + "/" + list.size() + " " + tname + " " + runtime.freeMemory());
+            System.out.print("Test " + i + "/" + list.size() + " " + tname);
             try
             {
                 Float result = test.call();
@@ -306,6 +307,10 @@ public class TestBatch
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
+            long free = runtime.freeMemory();
+            if (free < minFree) minFree = free;
+            list.set(i, null); //do not hold the tests in memory
+            System.out.println(" free:" + (free/1000) + " min:" + (minFree/1000));
         }
     }
     
