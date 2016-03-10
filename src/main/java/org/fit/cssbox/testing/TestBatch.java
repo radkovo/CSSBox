@@ -56,7 +56,7 @@ import org.xml.sax.SAXException;
 public class TestBatch
 {
     private static Logger log = LoggerFactory.getLogger(TestBatch.class);
-    private static int THREADS = 12;
+    private static int DEFAULT_THREADS = 12;
     private static int TASK_TIMEOUT = 30; //seconds
     
     private static List<String> tagBlacklist;
@@ -67,6 +67,7 @@ public class TestBatch
     }
     
     private URL testURL;
+    private int threadsUsed;
     private List<SourceEntry> tests;
     private Map<String, Float> results;
     private int totalCount;
@@ -80,6 +81,19 @@ public class TestBatch
      */
     public TestBatch(URL testURL)
     {
+        this(testURL, DEFAULT_THREADS);
+    }
+    
+    /**
+     * Creates a test batch from a test folder. The folder format must correspond to the
+     * CSS WG tests in HTML4 format. It must contain the {@code reftest-toc.htm} index
+     * file that is used for obtaining the test names.
+     * @param testURL
+     * @param threadCount the number of threads to be used for parallel testing
+     */
+    public TestBatch(URL testURL, int threadCount)
+    {
+        this.threadsUsed = threadCount;
         this.testURL = testURL;
         this.tests = new LinkedList<SourceEntry>();
         this.results = new LinkedHashMap<String, Float>();
@@ -166,7 +180,7 @@ public class TestBatch
     public void runTestsSingleList(List<String> selected)
     {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
-        ExecutorService exec = Executors.newFixedThreadPool(THREADS);
+        ExecutorService exec = Executors.newFixedThreadPool(threadsUsed);
         List<Callable<Float>> list = getTestList(selected);
         totalCount = list.size();
         completedCount = 0;
@@ -211,7 +225,7 @@ public class TestBatch
     public void runTests(List<String> selected)
     {
         //ExecutorService exec = Executors.newSingleThreadExecutor();
-        ExecutorService exec = Executors.newFixedThreadPool(THREADS);
+        ExecutorService exec = Executors.newFixedThreadPool(threadsUsed);
         List<Callable<Float>> list = getTestList(selected);
         List<Future<Float>> futures = new ArrayList<Future<Float>>(list.size());
         totalCount = list.size();

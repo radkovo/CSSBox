@@ -35,13 +35,14 @@ import org.junit.Test;
  */
 public class ReferenceComparisonTest
 {
+    private static final int THREADS = 2;
 
     @Test
     public void checkForRegressions() throws MalformedURLException
     {
         ReferenceResults ref = new ReferenceResults();
         URL url = new URL("file://" + System.getProperty("user.home") + "/tmp/CSSBoxTesting/baseline/nightly-unstable/html4/");
-        TestBatch tester = new TestBatch(url);
+        TestBatch tester = new TestBatch(url, THREADS);
         
         ArrayList<String> refNames = new ArrayList<String>(); 
         for (Map.Entry<String, Float> item : ref.entrySet())
