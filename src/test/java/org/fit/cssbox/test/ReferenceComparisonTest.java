@@ -44,38 +44,43 @@ public class ReferenceComparisonTest
         URL url = new URL("file://" + System.getProperty("user.home") + "/tmp/CSSBoxTesting/baseline/nightly-unstable/html4/");
         TestBatch tester = new TestBatch(url, THREADS);
         
-        ArrayList<String> refNames = new ArrayList<String>(); 
-        for (Map.Entry<String, Float> item : ref.entrySet())
-        {
-            if (item.getValue() <= ReferenceResults.SUCCESS_THRESHOLD)
-                refNames.add(item.getKey());
-        }
-        
-        tester.runTests(refNames);
-        Map<String, Float> results = tester.getResults();
         int errorcnt = 0;
-        for (Map.Entry<String, Float> item : results.entrySet())
+        if (tester.getTestCount() > 0)
         {
-            String name = item.getKey();
-            float val = item.getValue();
-            float refval = ref.get(name);
-            if (val < 0.0f)
+            ArrayList<String> refNames = new ArrayList<String>(); 
+            for (Map.Entry<String, Float> item : ref.entrySet())
             {
-                System.err.println(name + " : execution failed");
-                errorcnt++;
+                if (item.getValue() <= ReferenceResults.SUCCESS_THRESHOLD)
+                    refNames.add(item.getKey());
             }
-            if (val - refval > ReferenceResults.COMPARISON_THRESHOLD)
+            
+            tester.runTests(refNames);
+            Map<String, Float> results = tester.getResults();
+            for (Map.Entry<String, Float> item : results.entrySet())
             {
-                System.err.println(name + " : regression found (" + val + " > " + refval + ")");
-                if (refval == 0.0f)
+                String name = item.getKey();
+                float val = item.getValue();
+                float refval = ref.get(name);
+                if (val < 0.0f)
                 {
-                    errorcnt++; //count as error when the original rate was 0.0 (a broken test)
-                    System.err.println("  (broken test)");
+                    System.err.println(name + " : execution failed");
+                    errorcnt++;
                 }
-                else
-                    System.err.println("  (but the original value was not 0.0 neither)");
+                if (val - refval > ReferenceResults.COMPARISON_THRESHOLD)
+                {
+                    System.err.println(name + " : regression found (" + val + " > " + refval + ")");
+                    if (refval == 0.0f)
+                    {
+                        errorcnt++; //count as error when the original rate was 0.0 (a broken test)
+                        System.err.println("  (broken test)");
+                    }
+                    else
+                        System.err.println("  (but the original value was not 0.0 neither)");
+                }
             }
         }
+        else
+            System.err.println("No tests found, giving up testing.");
         Assert.assertTrue("All results passed", errorcnt == 0);
     }
     

@@ -101,6 +101,15 @@ public class TestBatch
     }
     
     /**
+     * Obtain the number of tests available.
+     * @return
+     */
+    public int getTestCount()
+    {
+        return tests.size();
+    }
+    
+    /**
      * Parses the HTML TOC and extracts the test names and tags. Fills the list of tests.
      */
     private void parseToc()
@@ -156,7 +165,7 @@ public class TestBatch
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         } catch (SAXException e) {
             e.printStackTrace();
         }
