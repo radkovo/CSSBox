@@ -1,3 +1,12 @@
+2016-03-11 - Version 4.11
+- transform: support for basic 2D transformations
+- Table cell and floating block height computation fixes
+- Image size computation fixes
+- background-size property support
+- Data url processing fixes
+- Positioned element rendering fixed (avoid duplicates)
+- Containing block computation according to CSS specs
+
 2015-11-05 - Version 4.10
 - Size computation fixes for replaced images
 - New image decoding based in ImageIO instead of Toolkit
