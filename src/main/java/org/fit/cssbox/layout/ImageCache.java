@@ -28,11 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A simple cache for storing already loaded images.
- *
- * Changes Done by Leon De Silva.
- * ==============================
- *      * Removed cache which stores failed URLs.
- *      * Changed Image caching technology to Google Guava Cache.
  * 
  * @author Alessandro Tucci
  * @author Leon De Silva.

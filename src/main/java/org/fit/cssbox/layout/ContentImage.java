@@ -36,10 +36,6 @@ import java.util.Iterator;
 
 /**
  * Generic image used in the page content (used by ReplacedImage and BackgroundImage).
- *
- * Changes done by Leon De Silva.
- * ==============================
- *      * Removed caching of failed URLs.
  * 
  * @author burgetr
  * @author Alessandro Tucci
