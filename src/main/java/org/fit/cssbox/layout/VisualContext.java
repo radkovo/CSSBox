@@ -394,7 +394,10 @@ public class VisualContext
             return (whole * nval) / 100;
         else
         {
-            switch (spec.getUnit())
+            final TermLength.Unit unit = spec.getUnit();
+            if (unit == null)
+                return 0;
+            switch (unit)
             {
                 case pt:
                     return nval;
@@ -455,7 +458,10 @@ public class VisualContext
             return (whole * nval) / 100;
         else
         {
-            switch (spec.getUnit())
+            final TermLength.Unit unit = spec.getUnit();
+            if (unit == null)
+                return 0;
+            switch (unit)
             {
                 case pt:
                     return (nval * dpi) / 72;
@@ -511,7 +517,10 @@ public class VisualContext
     public double radAngle(TermAngle spec)
     {
         float nval = spec.getValue();
-        switch (spec.getUnit())
+        final TermLength.Unit unit = spec.getUnit();
+        if (unit == null)
+            return 0;
+        switch (unit)
         {
             case deg:
                 return (nval * Math.PI) / 180.0; 
