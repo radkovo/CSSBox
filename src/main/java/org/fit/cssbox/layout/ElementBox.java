@@ -384,7 +384,19 @@ abstract public class ElementBox extends Box
         {
             CSSProperty.BorderWidth prop = style.getProperty(property);
             if (prop == CSSProperty.BorderWidth.length)
-                return dec.getLength(style.getValue(TermLengthOrPercent.class, property), false, CSSUnits.MEDIUM_BORDER, 0, 0);
+            {
+                TermLengthOrPercent w = style.getValue(TermLengthOrPercent.class, property);
+                if (w == null)
+                    return CSSUnits.MEDIUM_BORDER;
+                else
+                {
+                    double pxw = dec.getContext().pxLength(w);
+                    if (pxw > 0 && pxw < 1)
+                        return 1; //thinner borders should be drawn with 1px line
+                    else
+                        return (int) pxw;
+                }
+            }
             else
                 return CSSUnits.convertBorderWidth(prop);
         }
