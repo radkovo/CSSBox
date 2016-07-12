@@ -157,7 +157,7 @@
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>1.23-SNAPSHOT</version>
+			<version>1.23</version>
 		</dependency>
 		<dependency>
 		      <groupId>junit</groupId>
