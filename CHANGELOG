@@ -1,3 +1,7 @@
+2016-07-12 - Version 4.12
+- Fix decoding CSS lengths with no unit
+- Thin line drawing fix
+
 2016-03-11 - Version 4.11
 - transform: support for basic 2D transformations
 - Table cell and floating block height computation fixes
