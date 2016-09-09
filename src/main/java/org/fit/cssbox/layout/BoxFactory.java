@@ -597,6 +597,8 @@ public class BoxFactory
                 }
                 adiv.addSubBox(sub);
             }
+            else
+                sub.setContainingBlockBox(null);
         }
         if (adiv != null && !adiv.isempty)
         {
