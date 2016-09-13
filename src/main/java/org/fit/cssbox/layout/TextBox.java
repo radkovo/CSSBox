@@ -605,6 +605,8 @@ public class TextBox extends Box implements Inline
             if ((linestart || ignoreinitialws) && collapsews)
                 while (textStart < end && isWhitespace(text.charAt(textStart)))
                     textStart++;
+            if (textStart == end)
+                empty = true; //collapsed to an empty box
             //try to place the text
             do
             {
@@ -614,7 +616,9 @@ public class TextBox extends Box implements Inline
                 {
                     if (empty) //empty or just spaces - don't place at all
                     {
-                        w = 0; h = 0; split = false; break;
+                        w = 0; h = 0;
+                        split = false;
+                        break;
                     }
                     int wordend = text.substring(0, end).lastIndexOf(' '); //find previous word
                     while (wordend > 0 && text.charAt(wordend-1) == ' ') wordend--; //skip trailing spaces
