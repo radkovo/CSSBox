@@ -85,6 +85,9 @@ public class TextBox extends Box implements Inline
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
     
+    /** Collapsed to an empty box? (e.g. whitespaces only) */
+    protected boolean collapsedCompletely;
+    
     /** Used text transformation */
     protected CSSProperty.TextTransform transform;
     
@@ -110,6 +113,7 @@ public class TextBox extends Box implements Inline
         collapsews = true;
         containsLineBreak = false;
         lineBreakStop = false;
+        collapsedCompletely = false;
     }
 
     /**
@@ -603,10 +607,15 @@ public class TextBox extends Box implements Inline
         {
             //ignore spaces at the begining of a line
             if ((linestart || ignoreinitialws) && collapsews)
+            {
                 while (textStart < end && isWhitespace(text.charAt(textStart)))
                     textStart++;
-            if (textStart == end)
-                empty = true; //collapsed to an empty box
+                if (textStart == end)
+                {
+                    collapsedCompletely = true;
+                    empty = true; //collapsed to an empty box
+                }
+            }
             //try to place the text
             do
             {
@@ -785,6 +794,11 @@ public class TextBox extends Box implements Inline
         return lineBreakStop;
     }
 
+    public boolean collapsedCompletely()
+    {
+        return collapsedCompletely;
+    }
+    
     /**
      * Computes the lengths of the first, last and longest lines.
      */

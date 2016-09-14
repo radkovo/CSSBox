@@ -134,6 +134,11 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         return false;
     }
     
+    public boolean collapsedCompletely()
+    {
+        return false;
+    }
+    
 	//========================================================================
 	
     @Override

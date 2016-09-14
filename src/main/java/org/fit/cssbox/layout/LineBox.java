@@ -183,8 +183,7 @@ public class LineBox
     
     public void considerBox(Inline box)
     {
-        if (((Box) box).isDisplayed() && 
-                ((((Box) box).getWidth() > 0 && ((Box) box).getHeight() > 0) || box.finishedByLineBreak()))
+        if (((Box) box).isDisplayed() && !box.collapsedCompletely())
         {
             int a = box.getBaselineOffset();
             int b = box.getBelowBaseline();
