@@ -142,6 +142,13 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 	//========================================================================
 	
     @Override
+    public void setIgnoreInitialWhitespace(boolean b)
+    {
+        if (endChild > startChild)
+            getSubBox(startChild).setIgnoreInitialWhitespace(b);
+    }
+    
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
         this.availw = availw;

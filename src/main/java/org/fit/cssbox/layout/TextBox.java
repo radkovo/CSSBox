@@ -551,6 +551,18 @@ public class TextBox extends Box implements Inline
     public void setIgnoreInitialWhitespace(boolean b)
     {
         this.ignoreinitialws = b;
+        //collapse spaces when necessary
+        if (ignoreinitialws && collapsews)
+        {
+            while (textStart < textEnd && isWhitespace(text.charAt(textStart)))
+                textStart++;
+            if (textStart == textEnd)
+                collapsedCompletely = true;
+            //recompute widths (possibly different wrapping)
+            computeLineLengths();
+            minwidth = computeMinimalWidth();
+            maxwidth = computeMaximalWidth();
+        }
     }
     
 	@Override
