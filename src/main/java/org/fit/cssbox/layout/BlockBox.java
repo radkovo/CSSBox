@@ -823,7 +823,6 @@ public class BlockBox extends ElementBox
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
         boolean someinflow = false; //there has been any in-flow inline element?
-        boolean lastwhite = false; //last inline element ends with a whitespace?
 
         //apply indentation
         x += indent;
@@ -911,8 +910,6 @@ public class BlockBox extends ElementBox
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr || !allowsWrapping()) && !narrowed;
-                //if the previous box ends with a whitespace, ignore initial whitespaces here
-                if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
                 //do the layout                
                 boolean fit = false;
                 if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
@@ -988,8 +985,6 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                 }
-                if (!subbox.isEmpty())
-                    lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace();
             } while (split);
             
             if (subbox.canSplitAfter())

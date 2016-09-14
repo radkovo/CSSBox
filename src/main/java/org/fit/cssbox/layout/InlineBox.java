@@ -278,7 +278,6 @@ public class InlineBox extends ElementBox implements InlineElement
         rest = null;
 
         int lastbreak = startChild; //last possible position of a line break
-        boolean lastwhite = false; //last box ends with a whitespace
         collapsedCompletely = true;
         
         for (int i = startChild; i < endChild; i++)
@@ -289,7 +288,6 @@ public class InlineBox extends ElementBox implements InlineElement
             //when forcing, force the first child only and the children before
             //the first possible break
             boolean f = force && (i == startChild || lastbreak == startChild);
-            if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
             boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
             if (fit) //something has been placed
             {
@@ -352,8 +350,6 @@ public class InlineBox extends ElementBox implements InlineElement
                 }
             }
             
-            if (!subbox.isEmpty())
-                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }

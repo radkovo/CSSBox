@@ -519,6 +519,8 @@ abstract public class ElementBox extends Box
      */
     public void addSubBox(Box box)
     {
+        Box last = nested.size() > 0 ? nested.lastElement() : null;
+        
         box.setParent(this);
         nested.add(box);
         endChild++;
@@ -526,6 +528,9 @@ abstract public class ElementBox extends Box
             isempty = false;
         if (!(box instanceof TextBox))
             textonly = false;
+        
+        if (last != null && last.collapsesSpaces() && last.endsWithWhitespace())
+            box.setIgnoreInitialWhitespace(true);
     }
     
     /**
