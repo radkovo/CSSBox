@@ -519,8 +519,20 @@ abstract public class ElementBox extends Box
      */
     public void addSubBox(Box box)
     {
-        Box last = nested.size() > 0 ? nested.lastElement() : null;
-        
+        //find the last non-empty inline box to match white spaces
+        Box last = null;
+        int i = nested.size() - 1;
+        while (i >= 0)
+        {
+            Box cand = nested.get(i);
+            if (cand instanceof Inline && !cand.isEmpty() && !((Inline) cand).collapsedCompletely())
+            {
+                last = cand;
+                break;
+            }
+            i--;
+        }
+        //add the subbox
         box.setParent(this);
         nested.add(box);
         endChild++;
@@ -528,7 +540,7 @@ abstract public class ElementBox extends Box
             isempty = false;
         if (!(box instanceof TextBox))
             textonly = false;
-        
+        //collapse initiall white spaces when necessary
         if (last != null && last.collapsesSpaces() && last.endsWithWhitespace())
             box.setIgnoreInitialWhitespace(true);
     }
