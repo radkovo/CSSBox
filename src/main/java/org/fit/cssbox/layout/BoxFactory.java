@@ -583,7 +583,7 @@ public class BoxFactory
                 adiv = null;
                 nest.add(sub);
             }
-            else if (adiv != null || !sub.isWhitespace()) //omit whitespace boxes at the beginning of the blocks
+            else if (adiv != null || !(sub instanceof InlineBox) || !sub.isWhitespace()) //omit whitespace inline boxes at the beginning of the blocks
             {
                 if (adiv == null)
                 {
