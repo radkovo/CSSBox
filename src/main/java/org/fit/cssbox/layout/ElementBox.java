@@ -525,7 +525,7 @@ abstract public class ElementBox extends Box
         while (i >= 0)
         {
             Box cand = nested.get(i);
-            if (cand instanceof Inline && !cand.isEmpty() && !((Inline) cand).collapsedCompletely())
+            if (cand instanceof Inline && !((Inline) cand).collapsedCompletely())
             {
                 last = cand;
                 break;
