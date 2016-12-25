@@ -234,7 +234,7 @@ public class SVGRenderer implements BoxRenderer
     {
         TermColor tclr = eb.getStyle().getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = eb.getStyle().getProperty("border-"+side+"-style");
-        if (bst != CSSProperty.BorderStyle.HIDDEN && tclr != null && !tclr.isTransparent())
+        if (bst != CSSProperty.BorderStyle.HIDDEN && (tclr == null || !tclr.isTransparent()))
         {
             Color clr = null;
             if (tclr != null)

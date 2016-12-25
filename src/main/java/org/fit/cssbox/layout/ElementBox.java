@@ -1167,7 +1167,7 @@ abstract public class ElementBox extends Box
     {
         TermColor tclr = style.getColorValue("border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
-        if (bst != CSSProperty.BorderStyle.HIDDEN && tclr != null && !tclr.isTransparent())
+        if (bst != CSSProperty.BorderStyle.HIDDEN && (tclr == null || !tclr.isTransparent()))
         {
             //System.out.println("Elem: " + this + "side: " + side + "color: " + tclr);
             Color clr = null;
