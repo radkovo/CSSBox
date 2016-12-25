@@ -321,7 +321,7 @@ public class VisualContext
         }
         
         //color
-        TermColor clr = style.getValue(TermColor.class, "color");
+        TermColor clr = style.getColorValue("color");
         if (clr != null) color = clr.getValue();
     }
     

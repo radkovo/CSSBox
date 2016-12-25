@@ -1165,7 +1165,7 @@ abstract public class ElementBox extends Box
     private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 
                             int right, int down, String side, boolean reverse)
     {
-        TermColor tclr = style.getValue(TermColor.class, "border-"+side+"-color");
+        TermColor tclr = style.getColorValue("border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
         if (bst != CSSProperty.BorderStyle.HIDDEN && tclr != null && !tclr.isTransparent())
         {
@@ -1411,7 +1411,7 @@ abstract public class ElementBox extends Box
         CSSProperty.BackgroundColor bg = style.getProperty("background-color");
         if (bg == CSSProperty.BackgroundColor.color)
         {
-            TermColor bgc = style.getValue(TermColor.class, "background-color");
+            TermColor bgc = style.getColorValue("background-color");
             bgcolor = bgc.getValue();
         }
         else
