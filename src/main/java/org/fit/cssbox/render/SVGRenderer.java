@@ -232,10 +232,9 @@ public class SVGRenderer implements BoxRenderer
 
     private void writeBorderSVG(ElementBox eb, int x1, int y1, int x2, int y2, String side, int width, int right, int down)
     {
-        CSSProperty.BorderColor bclr = eb.getStyle().getProperty("border-"+side+"-color");
         TermColor tclr = eb.getStyle().getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = eb.getStyle().getProperty("border-"+side+"-style");
-        if (bst != CSSProperty.BorderStyle.HIDDEN && bclr != CSSProperty.BorderColor.TRANSPARENT)
+        if (bst != CSSProperty.BorderStyle.HIDDEN && tclr != null && !tclr.isTransparent())
         {
             Color clr = null;
             if (tclr != null)
