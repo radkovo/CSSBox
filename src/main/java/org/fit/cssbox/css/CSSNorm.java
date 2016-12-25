@@ -118,7 +118,7 @@ public class CSSNorm
     public static String userStyleSheet()
     {
         return
-        "body   { color: black; background-color: #fafafa;}"+
+        "body   { color: black; background-color: white; }"+
         "a[href]{ color: blue; text-decoration: underline; }"+
         "script { display: none; }"+
         "style  { display: none; }"+
