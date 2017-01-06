@@ -1112,7 +1112,12 @@ public class BlockBox extends ElementBox
                     
                     if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
                         stat.y = borderY - subbox.emargin.top;
-                    layoutBlockInFlow(subbox, wlimit, stat);
+                    
+                    if (subbox.getOverflow() == OVERFLOW_VISIBLE)
+                        layoutBlockInFlow(subbox, wlimit, stat);
+                    else
+                        layoutBlockInFlowOverflow(subbox, wlimit, stat);
+                        
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
                     nexty = stat.y; //the flow influences current y
@@ -1177,6 +1182,30 @@ public class BlockBox extends ElementBox
         subbox.setFloats(fleft, fright, newfloatXl, newfloatXr, stat.y + newfloatY);
         subbox.setPosition(0,  stat.y);
         subbox.doLayout(wlimit, true, true);
+        stat.y += subbox.getHeight();
+        //maximal width
+        if (subbox.getWidth() > stat.maxw)
+            stat.maxw = subbox.getWidth();
+        //preferred width
+        int pref = subbox.getPreferredWidth();
+        if (pref == -1) pref = subbox.getMaximalWidth(); //nothing preferred, we use the maximal width
+        if (pref > stat.prefw)
+            stat.prefw = pref;
+    }
+    
+    //TODO narrow the box
+    // http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float 
+    protected void layoutBlockInFlowOverflow(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    {
+        int fy = stat.y + floatY;
+        int flx = fleft.getWidth(fy);
+        int frx = fright.getWidth(fy);
+        int avail = wlimit - flx - frx;
+        
+        //position the box
+        subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
+        subbox.setPosition(flx,  stat.y);
+        subbox.doLayout(avail, true, true);
         stat.y += subbox.getHeight();
         //maximal width
         if (subbox.getWidth() > stat.maxw)
