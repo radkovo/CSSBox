@@ -126,6 +126,11 @@ public class BlockBox extends ElementBox
     /** true if the right margin is set to auto */
     protected boolean mrightauto;
     
+    /** Width adjustment in pixels. The computed width is adjusted by the given value
+     * automatically when updateSizes() is called. This value should be set by setWidthAdjust()
+     * and it is reset to zero when loadSizes() is called. */
+    protected int widthAdjust;
+    
     /** True means that the layout inside has been already computed
      * and the width shouldn't be changed anymore */
     protected boolean widthComputed = false;
@@ -197,6 +202,7 @@ public class BlockBox extends ElementBox
         
         topstatic = false;
         leftstatic = false;
+        widthAdjust = 0;
         
       	if (style != null)
       		loadBlockStyle();
@@ -234,6 +240,7 @@ public class BlockBox extends ElementBox
         rightset = src.rightset;
         topstatic = false;
         leftstatic = false;
+        widthAdjust = 0;
         
         nested = src.nested;
         startChild = src.startChild;
@@ -559,6 +566,19 @@ public class BlockBox extends ElementBox
         if (min_size.height != -1 && h < min_size.height)
             h = min_size.height;
         content.height = h;
+    }
+    
+    /**
+     * Adjusts the content width by the given value. This value is later automatically applied when
+     * {@link #updateSizes()} is called and it is reset to zero when {@link #loadSizes()} is called. This function has no
+     * effect when the width is explicitly set (i.e. it is not {@code auto}).
+     * @param adjust the value to be added to the width
+     */
+    public void setWidthAdjust(int adjust)
+    {
+        if (!wset)
+            setContentWidth(getContentWidth() - widthAdjust + adjust);
+        widthAdjust = adjust;
     }
     
     @Override
@@ -1081,10 +1101,10 @@ public class BlockBox extends ElementBox
                     if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
                         stat.y = borderY - subbox.emargin.top;
                     
-                    //if (subbox.getOverflow() == OVERFLOW_VISIBLE)
+                    if (subbox.getOverflow() == OVERFLOW_VISIBLE)
                         layoutBlockInFlow(subbox, wlimit, stat);
-                    //else
-                    //    layoutBlockInFlowOverflow(subbox, wlimit, stat);
+                    else
+                        layoutBlockInFlowOverflow(subbox, wlimit, stat);
                         
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
@@ -1167,11 +1187,34 @@ public class BlockBox extends ElementBox
         if (frx < 0) frx = 0;
         int avail = wlimit - flx - frx;
         
-        System.out.println("floatXl=" + floatXl + " floatXr=" + floatXr);
+        //if it does not fit the width, try to move down
+        while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
+               && (subbox.getMinimalWidth() > avail)) //the subbox doesn't fit in this Y coordinate
+        {
+            int nexty1 = fleft.getNextY(fy);
+            int nexty2 = fright.getNextY(fy);
+            if (nexty1 != -1 && nexty2 != -1)
+                fy = Math.min(fleft.getNextY(fy), fright.getNextY(fy));
+            else if (nexty2 != -1)
+                fy = nexty2;
+            else if (nexty1 != -1)
+                fy = nexty1;
+            else
+                fy += Math.max(stat.maxh, getLineHeight()); //we don't know, try increasing by one line
+            //recompute the limits for the new fy
+            flx = fleft.getWidth(fy) - floatXl;
+            if (flx < 0) flx = 0;
+            frx = fright.getWidth(fy) - floatXr;
+            if (frx < 0) frx = 0;
+            avail = wlimit - flx - frx;
+            
+            stat.y = fy;
+        }
         
         //position the box
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.setPosition(flx,  stat.y);
+        subbox.setWidthAdjust(-flx - frx);
         subbox.doLayout(avail, true, true);
         stat.y += subbox.getHeight();
         //maximal width
@@ -1879,7 +1922,10 @@ public class BlockBox extends ElementBox
         loadWidthsHeights(dec, contw, conth, update);
         
         if (!update)
+        {
         	emargin = new LengthSet(margin);
+        	widthAdjust = 0; //reset width adjust when not updating
+        }
         else
         { //efficient top and bottom margins already computed; update just left and right
             emargin.left = margin.left;
@@ -1958,6 +2004,17 @@ public class BlockBox extends ElementBox
         {
             height = getLengthValue("min-height");
             computeHeights(height, false, false, update);
+        }
+        
+        //apply width adjustment when updating
+        if (update && widthAdjust != 0)
+        {
+            if (!wset)
+                content.width += widthAdjust;
+            else if (mleftauto)
+                margin.left += widthAdjust;
+            else
+                margin.right += widthAdjust;
         }
     }
     
