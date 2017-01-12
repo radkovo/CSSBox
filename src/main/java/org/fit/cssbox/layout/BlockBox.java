@@ -1198,9 +1198,13 @@ public class BlockBox extends ElementBox
     protected void layoutBlockInFlowOverflow(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
     {
         int fy = stat.y + floatY;
-        int flx = fleft.getWidth(fy);
-        int frx = fright.getWidth(fy);
+        int flx = fleft.getWidth(fy) - floatXl;
+        if (flx < 0) flx = 0;
+        int frx = fright.getWidth(fy) - floatXr;
+        if (frx < 0) frx = 0;
         int avail = wlimit - flx - frx;
+        
+        System.out.println("floatXl=" + floatXl + " floatXr=" + floatXr);
         
         //position the box
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
