@@ -132,7 +132,6 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         content.width = boxw = objsize.width;
         content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());
-        preferredWidth = getWidth();
         wset = true;
         hset = true;
     }

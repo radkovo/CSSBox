@@ -201,7 +201,6 @@ public class TableBox extends BlockBox
         if (width == null) auto = true;
         if (exact) wset = !auto;
         if (wset && exact && width.isPercentage()) wrelative = true;
-        preferredWidth = -1;
         margin.left = margin.right = 0; //margins are provided by the anonymous table box
         
         //if column widths haven't been calculated yet,
@@ -219,8 +218,6 @@ public class TableBox extends BlockBox
             //load the content width
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, contw);
-            //preferred width is derived from the
-            preferredWidth = border.left + padding.left + content.width + padding.right + border.right;
         }
     }
     

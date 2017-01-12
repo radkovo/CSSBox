@@ -126,12 +126,6 @@ public class BlockBox extends ElementBox
     /** true if the right margin is set to auto */
     protected boolean mrightauto;
     
-    /** the preferred width or -1 if something is set to "auto" */
-    protected int preferredWidth;
-    
-    /** Minimal width necessary for the last executed layout. */
-    protected int lastPreferredWidth;
-    
     /** True means that the layout inside has been already computed
      * and the width shouldn't be changed anymore */
     protected boolean widthComputed = false;
@@ -521,16 +515,6 @@ public class BlockBox extends ElementBox
     }
     
     /**
-     * If none of the width parts is "auto", returns the total preferred width. Otherwise,
-     * -1 is returned.
-     * @return the preferred width
-     */
-    public int getPreferredWidth()
-    {
-        return preferredWidth;
-    }
-    
-    /**
      * Obtains the reference box for absolutely positioned boxes. It is used
      * when some of the absolute coordinates are based on the static position.
      */
@@ -817,12 +801,8 @@ public class BlockBox extends ElementBox
         if (minx2 < 0) minx2 = 0;
         int x = x1; //current x
         int y = 0; //current y
-        int maxw = 0; //width of the longest line found
-        //int maxh = 0; //maximal height on the linebox
-        int prefw = 0; //preferred width of the not-in-flow boxes
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
-        boolean someinflow = false; //there has been any in-flow inline element?
 
         //apply indentation
         x += indent;
@@ -883,8 +863,6 @@ public class BlockBox extends ElementBox
                     layoutBlockPositioned(sb, stat);
                 }
                 
-                //preferred width
-                if (stat.prefw > prefw) prefw = stat.prefw;
                 //in case the block was floating, we need to update the bounds
                 x1 = fleft.getWidth(y + floatY) - floatXl;
                 x2 = fright.getWidth(y + floatY) - floatXr;
@@ -900,7 +878,6 @@ public class BlockBox extends ElementBox
             //process inline elements
             if (subbox.canSplitBefore())
                 lastbreak = i;
-            someinflow = true;
             boolean split;
             do //repeat while the box is being split to sub-boxes
             {
@@ -939,7 +916,6 @@ public class BlockBox extends ElementBox
                         lines.add(curline);
                     }
                     //go to the new line
-                    if (x > maxw) maxw = x;
                     y += getLineHeight();
                     curline.setY(y);
                     x1 = fleft.getWidth(y + floatY) - floatXl;
@@ -958,7 +934,6 @@ public class BlockBox extends ElementBox
                     curline.setWidth(x - x1);
                     curline.setLimits(x1, x2);
                     //go to the new line
-                    if (x > maxw) maxw = x;
                     y += curline.getMaxLineHeight();
                     x1 = fleft.getWidth(y + floatY) - floatXl;
                     x2 = fright.getWidth(y + floatY) - floatXr;
@@ -991,13 +966,6 @@ public class BlockBox extends ElementBox
             	lastbreak = i+1;
        }
         
-        //block width
-        if (someinflow)
-        {
-            if (x > maxw) maxw = x; //update maxw with the last line
-            if (maxw > prefw) prefw = maxw; //update preferred width with in-flow elements
-        }
-        lastPreferredWidth = prefw;
         //block height
         if (!hasFixedHeight())
         {
@@ -1113,10 +1081,10 @@ public class BlockBox extends ElementBox
                     if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
                         stat.y = borderY - subbox.emargin.top;
                     
-                    if (subbox.getOverflow() == OVERFLOW_VISIBLE)
+                    //if (subbox.getOverflow() == OVERFLOW_VISIBLE)
                         layoutBlockInFlow(subbox, wlimit, stat);
-                    else
-                        layoutBlockInFlowOverflow(subbox, wlimit, stat);
+                    //else
+                    //    layoutBlockInFlowOverflow(subbox, wlimit, stat);
                         
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
@@ -1186,11 +1154,6 @@ public class BlockBox extends ElementBox
         //maximal width
         if (subbox.getWidth() > stat.maxw)
             stat.maxw = subbox.getWidth();
-        //preferred width
-        int pref = subbox.getPreferredWidth();
-        if (pref == -1) pref = subbox.getMaximalWidth(); //nothing preferred, we use the maximal width
-        if (pref > stat.prefw)
-            stat.prefw = pref;
     }
     
     //TODO narrow the box
@@ -1214,11 +1177,6 @@ public class BlockBox extends ElementBox
         //maximal width
         if (subbox.getWidth() > stat.maxw)
             stat.maxw = subbox.getWidth();
-        //preferred width
-        int pref = subbox.getPreferredWidth();
-        if (pref == -1) pref = subbox.getMaximalWidth(); //nothing preferred, we use the maximal width
-        if (pref > stat.prefw)
-            stat.prefw = pref;
     }
     
     /**
@@ -1279,11 +1237,6 @@ public class BlockBox extends ElementBox
         //maximal width
         if (floatw > stat.maxw) stat.maxw = floatw;
         if (stat.maxw > wlimit) stat.maxw = wlimit;
-        //preferred width
-        int pref = subbox.getPreferredWidth();
-        if (pref == -1) pref = wlimit; //nothing preferred, we use the maximal width
-        if (pref > stat.prefw)
-            stat.prefw = pref;
     }
     
     protected void layoutBlockPositioned(BlockBox subbox, BlockLayoutStatus stat)
@@ -2034,7 +1987,6 @@ public class BlockBox extends ElementBox
         
         TermLengthOrPercent mleft = getLengthValue("margin-left");
         TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
         
         if (!widthComputed) update = false;
         
@@ -2053,7 +2005,6 @@ public class BlockBox extends ElementBox
                                   - padding.right - border.right - margin.right;
                 if (content.width < 0) content.width = 0;
             }
-            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
@@ -2070,13 +2021,6 @@ public class BlockBox extends ElementBox
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
-            //We will include the margins in the preferred width if they're not percentages
-            int prefml = (mleft == null) || mleft.isPercentage() || mleftauto ? 0 : margin.left;
-            int prefmr = (mright == null) || mright.isPercentage() || mrightauto ? 0 : margin.right;
-            //Compute the preferred width
-            if (prefer)
-                preferredWidth = prefml + border.left + padding.left + content.width +
-                                 padding.right + border.right + prefmr;
             
             //Compute the margins if we're in flow and we know the width
             if (isInFlow() && prefer) 
@@ -2127,7 +2071,6 @@ public class BlockBox extends ElementBox
 
         TermLengthOrPercent mleft = getLengthValue("margin-left");
         TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
         
         if (!widthComputed) update = false;
     	
@@ -2136,7 +2079,6 @@ public class BlockBox extends ElementBox
             if (exact) wset = false;
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, contw);
-            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
@@ -2408,9 +2350,6 @@ class BlockLayoutStatus
     /** maximal width of the boxes laid out */
     public int maxw;
     
-    /** preferred width of the boxes laid out */
-    public int prefw;
-    
     /** maximal height of the boxes laid out on current line */
     public int maxh;
     
@@ -2429,7 +2368,6 @@ class BlockLayoutStatus
         inlineWidth = 0;
         y = 0;
         maxw = 0;
-        prefw = 0;
         maxh = 0;
         firstseparated = null;
         lastseparated = null;

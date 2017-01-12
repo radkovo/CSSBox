@@ -185,7 +185,6 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         content.width = boxw = objsize.width;
         content.height = boxh = objsize.height;
         bounds.setSize(totalWidth(), totalHeight());
-        preferredWidth = getWidth();
         wset = true;
         hset = true;
     }

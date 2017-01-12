@@ -225,7 +225,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         TermLengthOrPercent mleft = getLengthValue("margin-left");
         boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
         
         if (!widthComputed) update = false;
         
@@ -234,7 +233,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             if (exact) wset = false;
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, contw);
-            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {

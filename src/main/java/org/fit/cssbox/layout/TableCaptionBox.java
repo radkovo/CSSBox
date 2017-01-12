@@ -69,7 +69,6 @@ public class TableCaptionBox extends BlockBox
         TermLengthOrPercent mleft = getLengthValue("margin-left");
         boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
         
         if (!widthComputed) update = false;
         
@@ -88,7 +87,6 @@ public class TableCaptionBox extends BlockBox
                                   - padding.right - border.right - margin.right;
                 if (content.width < 0) content.width = 0;
             }
-            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
@@ -105,13 +103,6 @@ public class TableCaptionBox extends BlockBox
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
-            //We will include the margins in the preferred width if they're not percentages
-            int prefml = (mleft == null) || mleft.isPercentage() || mleftauto ? 0 : margin.left;
-            int prefmr = (mright == null) || mright.isPercentage() || mrightauto ? 0 : margin.right;
-            //Compute the preferred width
-            if (prefer)
-                preferredWidth = prefml + border.left + padding.left + content.width +
-                                 padding.right + border.right + prefmr;
             
             //Compute the margins if we're in flow and we know the width
             if (isInFlow() && prefer) 
