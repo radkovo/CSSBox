@@ -1200,6 +1200,7 @@ public class BlockBox extends ElementBox
         final int minw = subbox.getMinimalDecorationWidth();
         
         //if it does not fit the width, try to move down
+        final int startfy = fy;
         while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
                && (minw > avail)) //the subbox doesn't fit in this Y coordinate
         {
@@ -1220,6 +1221,13 @@ public class BlockBox extends ElementBox
             if (frx < 0) frx = 0;
             avail = wlimit - flx - frx;
             
+            stat.y = fy;
+        }
+        //do not consider the top margin when moving down
+        if (fy > startfy && subbox.margin.top > 0)
+        {
+            fy -= subbox.margin.top;
+            if (fy < startfy) fy = startfy;
             stat.y = fy;
         }
         
