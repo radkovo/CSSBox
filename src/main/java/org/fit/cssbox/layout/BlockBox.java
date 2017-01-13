@@ -1547,7 +1547,7 @@ public class BlockBox extends ElementBox
     {
         int ret = 0;
         //if the width is set or known implicitely, return the width
-        if (wset && !wrelative)
+        if (wset)
             ret = content.width;
         //check against the maximal and minimal widths
         if (max_size.width != -1 && ret > max_size.width)

@@ -210,8 +210,10 @@ public class BlockTableBox extends BlockBox
     @Override
     protected int getMinimalDecorationWidth()
     {
-        //all the content is considered for tables
-        return getMinimalWidth();
+        if (caption == null)
+            return table.getMinimalDecorationWidth();
+        else
+            return Math.max(table.getMinimalDecorationWidth(), caption.getMinimalDecorationWidth());
     }
 
     @Override

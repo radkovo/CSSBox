@@ -293,6 +293,15 @@ public class TableBox extends BlockBox
     }
     
     @Override
+    protected int getMinimalDecorationWidth()
+    {
+        if (wset)
+            return super.getMinimalDecorationWidth();
+        else
+            return getMinimalWidth(); //all the content is considered for tables
+    }
+    
+    @Override
     protected void drawChildren(DrawStage turn)
     {
         //Draw only the bodies, ignore the remaining children
