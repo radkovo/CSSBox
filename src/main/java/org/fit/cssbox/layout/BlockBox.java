@@ -522,6 +522,16 @@ public class BlockBox extends ElementBox
     }
     
     /**
+     * Checks whether the block bounds may overlap floating element bounds when the block is in flow.
+     * See http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float
+     * @return {@code true} when the block bounds may overlap floating block bounds
+     */
+    protected boolean mayOverlapFloats()
+    {
+        return overflow == OVERFLOW_VISIBLE;
+    }
+    
+    /**
      * Obtains the reference box for absolutely positioned boxes. It is used
      * when some of the absolute coordinates are based on the static position.
      */
@@ -1101,10 +1111,10 @@ public class BlockBox extends ElementBox
                     if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
                         stat.y = borderY - subbox.emargin.top;
                     
-                    if (subbox.getOverflow() == OVERFLOW_VISIBLE)
+                    if (subbox.mayOverlapFloats())
                         layoutBlockInFlow(subbox, wlimit, stat);
                     else
-                        layoutBlockInFlowOverflow(subbox, wlimit, stat);
+                        layoutBlockInFlowAvoidFloats(subbox, wlimit, stat);
                         
                     if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
                         insertSubBox(i+1, subbox.getRest());
@@ -1176,9 +1186,8 @@ public class BlockBox extends ElementBox
             stat.maxw = subbox.getWidth();
     }
     
-    //TODO narrow the box
     // http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float 
-    protected void layoutBlockInFlowOverflow(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    protected void layoutBlockInFlowAvoidFloats(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
     {
         int fy = stat.y + floatY;
         int flx = fleft.getWidth(fy) - floatXl;

@@ -102,6 +102,12 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
+    protected boolean mayOverlapFloats()
+    {
+        return false; //tables may not overlap floats
+    }
+
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
         setAvailableWidth(availw);
