@@ -208,6 +208,13 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
+    protected int getMinimalDecorationWidth()
+    {
+        //all the content is considered for tables
+        return getMinimalWidth();
+    }
+
+    @Override
     protected void loadBackground()
     {
         //anonymous table box has never a background

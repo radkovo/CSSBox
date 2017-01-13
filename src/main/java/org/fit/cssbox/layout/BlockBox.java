@@ -1196,9 +1196,12 @@ public class BlockBox extends ElementBox
         if (frx < 0) frx = 0;
         int avail = wlimit - flx - frx;
         
+        //minimal subbox width for computing the space -- content is not considered (based on other browser observations)
+        final int minw = subbox.getMinimalDecorationWidth();
+        
         //if it does not fit the width, try to move down
         while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
-               && (subbox.getMinimalWidth() > avail)) //the subbox doesn't fit in this Y coordinate
+               && (minw > avail)) //the subbox doesn't fit in this Y coordinate
         {
             int nexty1 = fleft.getNextY(fy);
             int nexty2 = fright.getNextY(fy);
@@ -1535,6 +1538,28 @@ public class BlockBox extends ElementBox
         return ret;
     }
 
+    /**
+     * Get the minimal width of the margins, borders and paddings. The box content width
+     * is used only when it is explicitly specified.
+     * @return
+     */
+    protected int getMinimalDecorationWidth()
+    {
+        int ret = 0;
+        //if the width is set or known implicitely, return the width
+        if (wset && !wrelative)
+            ret = content.width;
+        //check against the maximal and minimal widths
+        if (max_size.width != -1 && ret > max_size.width)
+            ret = max_size.width;
+        if (min_size.width != -1 && ret < min_size.width)
+            ret = min_size.width;
+        //increase by margin, padding, border
+        ret += declMargin.left + padding.left + border.left +
+               declMargin.right + padding.right + border.right;
+        return ret;
+    }
+    
     @Override
     public int getMaximalWidth()
     {
