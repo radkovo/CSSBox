@@ -163,7 +163,7 @@ public class TableBox extends BlockBox
         //load the content width from the attribute (transform to declaration)
         if (!update)
         {
-            //create an important 'width' style for this element
+            //create an important 'width' and 'height' styles for this element
             String width = HTMLNorm.getAttribute(getElement(), "width");
             if (!width.equals(""))
             {
@@ -178,6 +178,21 @@ public class TableBox extends BlockBox
                     style.push(dec);
                 }
             }
+            String height = HTMLNorm.getAttribute(getElement(), "height");
+            if (!height.equals(""))
+            {
+                TermLengthOrPercent hspec = HTMLNorm.createLengthOrPercent(height);
+                if (hspec != null)
+                {
+                    Declaration dec = CSSFactory.getRuleFactory().createDeclaration();
+                    dec.setProperty("height");
+                    dec.unlock();
+                    dec.add(hspec);
+                    dec.setImportant(true);
+                    style.push(dec);
+                }
+            }
+            //TODO the table height is not applied yet
         }
         super.loadSizes(update);
     }
