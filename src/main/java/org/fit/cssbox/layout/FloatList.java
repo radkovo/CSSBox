@@ -20,7 +20,8 @@
 
 package org.fit.cssbox.layout;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A list of floating boxes
@@ -30,7 +31,7 @@ import java.util.*;
 public class FloatList 
 {
 	private BlockBox owner;
-    private Vector<BlockBox> floats;
+    private List<BlockBox> floats;
     //private int maxY;
     //private int lastY; //Y coordinate of the last box. New boxes shouldn't be placed above this limit
     private BlockBox bottomBox = null; //Bottom-most box.
@@ -43,7 +44,7 @@ public class FloatList
     public FloatList(BlockBox ownerBox) 
     {
     	owner = ownerBox;
-        floats = new Vector<BlockBox>();
+        floats = new ArrayList<>();
     }
     
     /**
@@ -83,7 +84,7 @@ public class FloatList
      */
     public BlockBox getBox(int index)
     {
-        return floats.elementAt(index);
+        return floats.get(index);
     }
     
     /**

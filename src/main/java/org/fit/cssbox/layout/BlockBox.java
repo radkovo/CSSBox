@@ -1274,7 +1274,7 @@ public class BlockBox extends ElementBox
             int nexty1 = f.getNextY(fy);
             int nexty2 = of.getNextY(fy);
             if (nexty1 != -1 && nexty2 != -1)
-                fy = Math.min(f.getNextY(fy), of.getNextY(fy));
+                fy = Math.min(nexty1, nexty2);
             else if (nexty2 != -1)
                 fy = nexty2;
             else if (nexty1 != -1)
