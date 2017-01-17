@@ -1189,52 +1189,61 @@ public class BlockBox extends ElementBox
     // http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float 
     protected void layoutBlockInFlowAvoidFloats(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
     {
-        int fy = stat.y + floatY;
-        int flx = fleft.getWidth(fy) - floatXl;
-        if (flx < 0) flx = 0;
-        int frx = fright.getWidth(fy) - floatXr;
-        if (frx < 0) frx = 0;
-        int avail = wlimit - flx - frx;
-        
-        //minimal subbox width for computing the space -- content is not considered (based on other browser observations)
-        final int minw = subbox.getMinimalDecorationWidth();
-        
-        //if it does not fit the width, try to move down
-        //TODO the available space must be tested for the whole height of the subbox
-        final int startfy = fy;
-        while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
-               && (minw > avail)) //the subbox doesn't fit in this Y coordinate
+        final int minw = subbox.getMinimalDecorationWidth(); //minimal subbox width for computing the space -- content is not considered (based on other browser observations) 
+        int yoffset = stat.y + floatY; //starting offset
+        int availw = 0;
+        do
         {
-            int nexty1 = fleft.getNextY(fy);
-            int nexty2 = fright.getNextY(fy);
-            if (nexty1 != -1 && nexty2 != -1)
-                fy = Math.min(fleft.getNextY(fy), fright.getNextY(fy));
-            else if (nexty2 != -1)
-                fy = nexty2;
-            else if (nexty1 != -1)
-                fy = nexty1;
-            else
-                fy += Math.max(stat.maxh, getLineHeight()); //we don't know, try increasing by one line
-            //recompute the limits for the new fy
-            flx = fleft.getWidth(fy) - floatXl;
+            int fy = yoffset;
+            int flx = fleft.getWidth(fy) - floatXl;
             if (flx < 0) flx = 0;
-            frx = fright.getWidth(fy) - floatXr;
+            int frx = fright.getWidth(fy) - floatXr;
             if (frx < 0) frx = 0;
-            avail = wlimit - flx - frx;
-        }
-        //do not consider the top margin when moving down
-        if (fy > startfy && subbox.margin.top > 0)
-        {
-            fy -= subbox.margin.top;
-            if (fy < startfy) fy = startfy;
-        }
-        stat.y = fy - floatY;
+            int avail = wlimit - flx - frx;
+            
+            //if it does not fit the width, try to move down
+            //TODO the available space must be tested for the whole height of the subbox
+            final int startfy = fy;
+            //System.out.println("minw=" + minw + " avail=" + avail + " availw=" + availw);
+            while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
+                   && (minw > avail)) //the subbox doesn't fit in this Y coordinate
+            {
+                int nexty = FloatList.getNextY(fleft, fright, fy);
+                if (nexty == -1)
+                    fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
+                else
+                    fy = nexty;
+                //recompute the limits for the new fy
+                flx = fleft.getWidth(fy) - floatXl;
+                if (flx < 0) flx = 0;
+                frx = fright.getWidth(fy) - floatXr;
+                if (frx < 0) frx = 0;
+                avail = wlimit - flx - frx;
+            }
+            //do not consider the top margin when moving down
+            if (fy > startfy && subbox.margin.top > 0)
+            {
+                fy -= subbox.margin.top;
+                if (fy < startfy) fy = startfy;
+            }
+            stat.y = fy - floatY;
+            
+            //position the box
+            subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
+            subbox.setPosition(flx,  stat.y);
+            subbox.setWidthAdjust(-flx - frx);
+            //if (availw != 0)
+            //    System.out.println("jo!");
+            subbox.doLayout(avail, true, true);
+            //System.out.println("H=" + subbox.getHeight());
+            
+            //check the colisions after the layout
+            int xlimit[] = computeFloatLimits(fy, fy + subbox.getBounds().height, new int[]{flx, frx});
+            availw = wlimit - xlimit[0] - xlimit[1];
+            if (minw > availw) //the whole box still does not fit
+                yoffset = FloatList.getNextY(fleft, fright, fy); //new starting Y 
+        } while (minw > availw && yoffset != -1);
         
-        //position the box
-        subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
-        subbox.setPosition(flx,  stat.y);
-        subbox.setWidthAdjust(-flx - frx);
-        subbox.doLayout(avail, true, true);
         stat.y += subbox.getHeight();
         //maximal width
         if (subbox.getWidth() > stat.maxw)
@@ -1916,6 +1925,42 @@ public class BlockBox extends ElementBox
         return ret;
     }
 
+    /**
+     * Computes the maximal widths of floats on both left and right for the given range of y coordinate.
+     * @param y1 starting y coordinate
+     * @param y2 ending y coordinate
+     * @param fx starting values of [left, right] width (for y1) 
+     * @return updated fx[] containging [maxleft, maxright] coordinates.
+     */
+    protected int[] computeFloatLimits(int y1, int y2, int[] fx)
+    {
+        int fy = y1;
+        while (fy < y2)
+        {
+            int nexty1 = fleft.getNextY(fy);
+            int nexty2 = fright.getNextY(fy);
+            if (nexty1 != -1 && nexty2 != -1)
+                fy = Math.min(nexty1, nexty2);
+            else if (nexty2 != -1)
+                fy = nexty2;
+            else if (nexty1 != -1)
+                fy = nexty1;
+            else
+                break;
+            // recompute the limits for the new fy
+            int flx = fleft.getWidth(fy) - floatXl;
+            if (flx < 0) flx = 0;
+            int frx = fright.getWidth(fy) - floatXr;
+            if (frx < 0) frx = 0;
+            
+            if (fx[0] < flx)
+                fx[0] = flx;
+            if (fx[1] < frx)
+                fx[1] = frx;
+        }
+        return fx;
+    }
+    
     @Override
     protected void loadSizes()
     {

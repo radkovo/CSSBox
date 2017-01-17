@@ -182,4 +182,29 @@ public class FloatList
         return maxy;
     }
     
+    /**
+     * Finds the nearest higher Y coordinate in two float lists where the float widths are different from the given starting coordinate.
+     * @param fleft left float list
+     * @param fright right float list
+     * @param y starting Y coordinate
+     * @return the nearest higher Y coordinate or -1 when no further change exists
+     */
+    public static int getNextY(FloatList fleft, FloatList fright, int y)
+    {
+        int fy = y;
+        int nexty1 = fleft.getNextY(fy);
+        int nexty2 = fright.getNextY(fy);
+        if (nexty1 != -1 && nexty2 != -1)
+            fy = Math.min(nexty1, nexty2);
+        else if (nexty2 != -1)
+            fy = nexty2;
+        else if (nexty1 != -1)
+            fy = nexty1;
+        else
+            fy = -1;
+        
+        return fy;
+    }
+    
+    
 }
