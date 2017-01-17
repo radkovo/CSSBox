@@ -596,6 +596,10 @@ public class TextBox extends Box implements Inline
             return true;
         }
         
+        //reset textEnd if we are doing a new layout
+        if (!splitted)
+            textEnd = text.length();
+        
         setAvailableWidth(widthlimit);
         
         boolean split = false; //should we split to more boxes?
