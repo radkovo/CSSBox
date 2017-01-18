@@ -1948,15 +1948,18 @@ public class BlockBox extends ElementBox
             else
                 break;
             // recompute the limits for the new fy
-            int flx = fleft.getWidth(fy) - floatXl;
-            if (flx < 0) flx = 0;
-            int frx = fright.getWidth(fy) - floatXr;
-            if (frx < 0) frx = 0;
-            
-            if (fx[0] < flx)
-                fx[0] = flx;
-            if (fx[1] < frx)
-                fx[1] = frx;
+            if (fy < y2)
+            {
+                int flx = fleft.getWidth(fy) - floatXl;
+                if (flx < 0) flx = 0;
+                int frx = fright.getWidth(fy) - floatXr;
+                if (frx < 0) frx = 0;
+                
+                if (fx[0] < flx)
+                    fx[0] = flx;
+                if (fx[1] < frx)
+                    fx[1] = frx;
+            }
         }
         return fx;
     }
