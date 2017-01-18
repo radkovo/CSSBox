@@ -1280,16 +1280,11 @@ public class BlockBox extends ElementBox
         while ((fx > floatX || ofx > oFloatX || stat.inlineWidth > 0) //if the space can be narrower at least at one side
                && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
-            int nexty1 = f.getNextY(fy);
-            int nexty2 = of.getNextY(fy);
-            if (nexty1 != -1 && nexty2 != -1)
-                fy = Math.min(nexty1, nexty2);
-            else if (nexty2 != -1)
-                fy = nexty2;
-            else if (nexty1 != -1)
-                fy = nexty1;
+            int nexty = FloatList.getNextY(fleft, fright, fy);
+            if (nexty == -1)
+                fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
             else
-                fy += Math.max(stat.maxh, getLineHeight()); //we don't know, try increasing by one line
+                fy = nexty;
             //recompute the limits for the new fy
             fx = f.getWidth(fy);
             if (fx < floatX) fx = floatX;
@@ -1937,14 +1932,9 @@ public class BlockBox extends ElementBox
         int fy = y1;
         while (fy < y2)
         {
-            int nexty1 = fleft.getNextY(fy);
-            int nexty2 = fright.getNextY(fy);
-            if (nexty1 != -1 && nexty2 != -1)
-                fy = Math.min(nexty1, nexty2);
-            else if (nexty2 != -1)
-                fy = nexty2;
-            else if (nexty1 != -1)
-                fy = nexty1;
+            int nexty = FloatList.getNextY(fleft, fright, fy);
+            if (nexty != -1)
+                fy = nexty;
             else
                 break;
             // recompute the limits for the new fy
