@@ -113,6 +113,7 @@ public class TableBox extends BlockBox
     {
         loadTableStyle();
         organizeContent(); //organize the child elements according to their display property
+        propagateCellSpacing(spacing);
     }
 	
     @Override
@@ -129,7 +130,6 @@ public class TableBox extends BlockBox
         //layout the bodies
         if (header != null)
         {
-        	header.setSpacing(spacing);
             header.doLayout(wlimit, columns);
             header.setPosition(0, y);
             if (header.getWidth() > maxw)
@@ -139,7 +139,6 @@ public class TableBox extends BlockBox
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
         {
             TableBodyBox body = it.next();
-            body.setSpacing(spacing);
             body.doLayout(wlimit, columns);
             body.setPosition(0, y);
             if (body.getWidth() > maxw)
@@ -148,7 +147,6 @@ public class TableBox extends BlockBox
         }
         if (footer != null)
         {
-            footer.setSpacing(spacing);
             footer.doLayout(wlimit, columns);
             footer.setPosition(0, y);
             if (footer.getWidth() > maxw)
@@ -748,5 +746,14 @@ public class TableBox extends BlockBox
         }
     }
 
+    private void propagateCellSpacing(int spacing)
+    {
+        if (header != null)
+            header.setSpacing(spacing);
+        for (TableBodyBox body : bodies)
+            body.setSpacing(spacing);
+        if (footer != null)
+            footer.setSpacing(spacing);
+    }
     
 }
