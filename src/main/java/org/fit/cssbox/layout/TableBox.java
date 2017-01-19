@@ -20,13 +20,17 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.fit.cssbox.css.HTMLNorm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import cz.vutbr.web.css.*;
+
+import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.Declaration;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermList;
 
 /**
  * A box that represents a table.
@@ -36,7 +40,7 @@ import cz.vutbr.web.css.*;
  */
 public class TableBox extends BlockBox
 {
-    private static Logger log = LoggerFactory.getLogger(TableBox.class);
+    //private static Logger log = LoggerFactory.getLogger(TableBox.class);
     
 	private final int DEFAULT_SPACING = 0;
 	
@@ -210,9 +214,6 @@ public class TableBox extends BlockBox
     {
         CSSDecoder dec = new CSSDecoder(ctx);
 
-        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        contw = getContainingBlockBox().getContainingBlock().width;
-        
         if (width == null) auto = true;
         if (exact) wset = !auto;
         if (wset && exact && width.isPercentage()) wrelative = true;
@@ -231,8 +232,10 @@ public class TableBox extends BlockBox
         else  //explicitly specified content width
         {
             //load the content width
+            //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
+            int fullw = getContainingBlockBox().getContainingBlock().width;
             if (!update)
-                content.width = dec.getLength(width, auto, 0, 0, contw);
+                content.width = dec.getLength(width, auto, 0, 0, fullw);
         }
     }
     

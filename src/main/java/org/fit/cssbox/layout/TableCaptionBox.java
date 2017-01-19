@@ -24,8 +24,6 @@ import java.awt.Graphics2D;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -34,7 +32,7 @@ import org.w3c.dom.Element;
  */
 public class TableCaptionBox extends BlockBox
 {
-    private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
+    //private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
 
     /**
      * Create a new table caption
@@ -62,8 +60,8 @@ public class TableCaptionBox extends BlockBox
         
         if (width == null) auto = true; //no value behaves as 'auto'
         
-        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        contw = getContainingBlockBox().getContainingBlock().width;
+        //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
+        int fullw = getContainingBlockBox().getContainingBlock().width;
         
         boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");
@@ -75,8 +73,8 @@ public class TableCaptionBox extends BlockBox
         if (auto)
         {
             if (exact) wset = false;
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, fullw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, fullw);
             declMargin.left = margin.left;
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
@@ -95,9 +93,9 @@ public class TableCaptionBox extends BlockBox
                 wset = true;
                 wrelative = width.isPercentage();
             }
-            content.width = dec.getLength(width, auto, 0, 0, contw);
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
+            content.width = dec.getLength(width, auto, 0, 0, fullw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, fullw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, fullw);
             declMargin.left = margin.left;
             declMargin.right = margin.right;
             
