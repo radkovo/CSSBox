@@ -253,8 +253,13 @@ public class BlockTableBox extends BlockBox
 
     protected void loadCaptionStyle()
     {
-        CSSProperty.CaptionSide side = style.getProperty("caption-side");
-        captionbottom = (side == CSSProperty.CaptionSide.BOTTOM);
+        if (caption != null)
+        {
+            CSSProperty.CaptionSide side = caption.getStyle().getProperty("caption-side");
+            captionbottom = (side == CSSProperty.CaptionSide.BOTTOM);
+        }
+        else
+            captionbottom = false;
     }
     
     /**
