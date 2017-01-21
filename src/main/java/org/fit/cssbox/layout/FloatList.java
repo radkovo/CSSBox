@@ -20,7 +20,8 @@
 
 package org.fit.cssbox.layout;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A list of floating boxes
@@ -30,7 +31,7 @@ import java.util.*;
 public class FloatList 
 {
 	private BlockBox owner;
-    private Vector<BlockBox> floats;
+    private List<BlockBox> floats;
     //private int maxY;
     //private int lastY; //Y coordinate of the last box. New boxes shouldn't be placed above this limit
     private BlockBox bottomBox = null; //Bottom-most box.
@@ -43,7 +44,7 @@ public class FloatList
     public FloatList(BlockBox ownerBox) 
     {
     	owner = ownerBox;
-        floats = new Vector<BlockBox>();
+        floats = new ArrayList<>();
     }
     
     /**
@@ -83,7 +84,7 @@ public class FloatList
      */
     public BlockBox getBox(int index)
     {
-        return floats.elementAt(index);
+        return floats.get(index);
     }
     
     /**
@@ -180,5 +181,30 @@ public class FloatList
         }
         return maxy;
     }
+    
+    /**
+     * Finds the nearest higher Y coordinate in two float lists where the float widths are different from the given starting coordinate.
+     * @param fleft left float list
+     * @param fright right float list
+     * @param y starting Y coordinate
+     * @return the nearest higher Y coordinate or -1 when no further change exists
+     */
+    public static int getNextY(FloatList fleft, FloatList fright, int y)
+    {
+        int fy = y;
+        int nexty1 = fleft.getNextY(fy);
+        int nexty2 = fright.getNextY(fy);
+        if (nexty1 != -1 && nexty2 != -1)
+            fy = Math.min(nexty1, nexty2);
+        else if (nexty2 != -1)
+            fy = nexty2;
+        else if (nexty1 != -1)
+            fy = nexty1;
+        else
+            fy = -1;
+        
+        return fy;
+    }
+    
     
 }

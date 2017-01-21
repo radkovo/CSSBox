@@ -53,6 +53,9 @@ public class InlineBox extends ElementBox implements InlineElement
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
     
+    /** Collapsed to an empty box by ws collapsing during the layout? */
+    protected boolean collapsedCompletely;
+    
     //========================================================================
     
     /** Creates a new instance of InlineBox */
@@ -61,6 +64,7 @@ public class InlineBox extends ElementBox implements InlineElement
         super(n, g, ctx);
         halflead = 0;
         lineBreakStop = false;
+        collapsedCompletely = false;
     }
     
     public void copyValues(InlineBox src)
@@ -221,6 +225,11 @@ public class InlineBox extends ElementBox implements InlineElement
         return lineBreakStop;
     }
     
+    public boolean collapsedCompletely()
+    {
+        return collapsedCompletely;
+    }
+    
     //========================================================================
     
     @Override
@@ -269,7 +278,7 @@ public class InlineBox extends ElementBox implements InlineElement
         rest = null;
 
         int lastbreak = startChild; //last possible position of a line break
-        boolean lastwhite = false; //last box ends with a whitespace
+        collapsedCompletely = true;
         
         for (int i = startChild; i < endChild; i++)
         {
@@ -279,7 +288,6 @@ public class InlineBox extends ElementBox implements InlineElement
             //when forcing, force the first child only and the children before
             //the first possible break
             boolean f = force && (i == startChild || lastbreak == startChild);
-            if (lastwhite) subbox.setIgnoreInitialWhitespace(true);
             boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
             if (fit) //something has been placed
             {
@@ -290,6 +298,8 @@ public class InlineBox extends ElementBox implements InlineElement
                     curline.considerBox((Inline) subbox);
                     if (((Inline) subbox).finishedByLineBreak())
                         lineBreakStop = true;
+                    if (!((Inline) subbox).collapsedCompletely())
+                        collapsedCompletely = false;
                 }
                 else
                 	log.debug("Warning: doLayout(): subbox is not inline: " + subbox);
@@ -340,8 +350,6 @@ public class InlineBox extends ElementBox implements InlineElement
                 }
             }
             
-            if (!subbox.isEmpty())
-                lastwhite = subbox.collapsesSpaces() && subbox.endsWithWhitespace(); 
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }

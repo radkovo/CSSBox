@@ -20,9 +20,6 @@
 
 package org.fit.cssbox.css;
 
-import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
-
 import cz.vutbr.web.css.CSSProperty;
 
 /**
@@ -32,8 +29,7 @@ import cz.vutbr.web.css.CSSProperty;
  */
 public class CSSUnits 
 {
-    //public static final double dpi = 100;  //100 DPI display
-    public static final double dpi = GraphicsEnvironment.isHeadless() ? 100 : Toolkit.getDefaultToolkit().getScreenResolution();
+    public static final double dpi = 96; //CSS3 assumes fixed 96 dpi
     public static final double medium_font = 16; //16px
     private static final double font_step = 1.2;
     public static final int THIN_BORDER = 1;

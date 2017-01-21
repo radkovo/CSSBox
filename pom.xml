@@ -12,7 +12,7 @@
 
 	<groupId>net.sf.cssbox</groupId>
 	<artifactId>cssbox</artifactId>
-	<version>4.12-usn-20170121-upstream</version>
+	<version>4.13-SNAPSHOT</version>
 	<name>CSSBox</name>
 	<description>
 	CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its primary purpose is to provide a
@@ -48,7 +48,7 @@
 		<url>https://github.com/radkovo/CSSBox</url>
 		<connection>scm:git:git@github.com:radkovo/CSSBox.git</connection>
 		<developerConnection>scm:git:git@github.com:radkovo/CSSBox.git</developerConnection>
-	  <tag>cssbox-4.12</tag>
+	  <tag>HEAD</tag>
 	</scm>
 	
     <properties>
@@ -72,10 +72,10 @@
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.5.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 
@@ -157,7 +157,7 @@
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>1.23</version>
+			<version>2.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 		      <groupId>junit</groupId>

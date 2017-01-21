@@ -102,6 +102,12 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
+    protected boolean mayOverlapFloats()
+    {
+        return false; //tables may not overlap floats
+    }
+
+    @Override
     public boolean doLayout(int availw, boolean force, boolean linestart)
     {
         setAvailableWidth(availw);
@@ -202,6 +208,15 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
+    protected int getMinimalDecorationWidth()
+    {
+        if (caption == null)
+            return table.getMinimalDecorationWidth();
+        else
+            return Math.max(table.getMinimalDecorationWidth(), caption.getMinimalDecorationWidth());
+    }
+
+    @Override
     protected void loadBackground()
     {
         //anonymous table box has never a background
@@ -238,8 +253,13 @@ public class BlockTableBox extends BlockBox
 
     protected void loadCaptionStyle()
     {
-        CSSProperty.CaptionSide side = style.getProperty("caption-side");
-        captionbottom = (side == CSSProperty.CaptionSide.BOTTOM);
+        if (caption != null)
+        {
+            CSSProperty.CaptionSide side = caption.getStyle().getProperty("caption-side");
+            captionbottom = (side == CSSProperty.CaptionSide.BOTTOM);
+        }
+        else
+            captionbottom = false;
     }
     
     /**

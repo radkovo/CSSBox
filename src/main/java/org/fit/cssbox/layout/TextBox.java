@@ -85,6 +85,9 @@ public class TextBox extends Box implements Inline
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
     
+    /** Collapsed to an empty box? (e.g. whitespaces only) */
+    protected boolean collapsedCompletely;
+    
     /** Used text transformation */
     protected CSSProperty.TextTransform transform;
     
@@ -110,6 +113,7 @@ public class TextBox extends Box implements Inline
         collapsews = true;
         containsLineBreak = false;
         lineBreakStop = false;
+        collapsedCompletely = false;
     }
 
     /**
@@ -547,6 +551,18 @@ public class TextBox extends Box implements Inline
     public void setIgnoreInitialWhitespace(boolean b)
     {
         this.ignoreinitialws = b;
+        //collapse spaces when necessary
+        if (ignoreinitialws && collapsews)
+        {
+            while (textStart < textEnd && isWhitespace(text.charAt(textStart)))
+                textStart++;
+            if (textStart == textEnd)
+                collapsedCompletely = true;
+            //recompute widths (possibly different wrapping)
+            computeLineLengths();
+            minwidth = computeMinimalWidth();
+            maxwidth = computeMaximalWidth();
+        }
     }
     
 	@Override
@@ -580,6 +596,10 @@ public class TextBox extends Box implements Inline
             return true;
         }
         
+        //reset textEnd if we are doing a new layout
+        if (!splitted)
+            textEnd = text.length();
+        
         setAvailableWidth(widthlimit);
         
         boolean split = false; //should we split to more boxes?
@@ -603,8 +623,15 @@ public class TextBox extends Box implements Inline
         {
             //ignore spaces at the begining of a line
             if ((linestart || ignoreinitialws) && collapsews)
+            {
                 while (textStart < end && isWhitespace(text.charAt(textStart)))
                     textStart++;
+                if (textStart == end)
+                {
+                    collapsedCompletely = true;
+                    empty = true; //collapsed to an empty box
+                }
+            }
             //try to place the text
             do
             {
@@ -614,7 +641,9 @@ public class TextBox extends Box implements Inline
                 {
                     if (empty) //empty or just spaces - don't place at all
                     {
-                        w = 0; h = 0; split = false; break;
+                        w = 0; h = 0;
+                        split = false;
+                        break;
                     }
                     int wordend = text.substring(0, end).lastIndexOf(' '); //find previous word
                     while (wordend > 0 && text.charAt(wordend-1) == ' ') wordend--; //skip trailing spaces
@@ -781,6 +810,11 @@ public class TextBox extends Box implements Inline
         return lineBreakStop;
     }
 
+    public boolean collapsedCompletely()
+    {
+        return collapsedCompletely;
+    }
+    
     /**
      * Computes the lengths of the first, last and longest lines.
      */

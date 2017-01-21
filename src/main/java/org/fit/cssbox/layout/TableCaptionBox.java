@@ -24,8 +24,6 @@ import java.awt.Graphics2D;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -34,7 +32,7 @@ import org.w3c.dom.Element;
  */
 public class TableCaptionBox extends BlockBox
 {
-    private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
+    //private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
 
     /**
      * Create a new table caption
@@ -62,22 +60,21 @@ public class TableCaptionBox extends BlockBox
         
         if (width == null) auto = true; //no value behaves as 'auto'
         
-        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        contw = getContainingBlockBox().getContainingBlock().width;
+        //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
+        int fullw = getContainingBlockBox().getContainingBlock().width;
         
         boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");
         boolean mrightauto = style.getProperty("margin-right") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mright = getLengthValue("margin-right");
-        preferredWidth = -1;
         
         if (!widthComputed) update = false;
         
         if (auto)
         {
             if (exact) wset = false;
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, fullw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, fullw);
             declMargin.left = margin.left;
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
@@ -88,7 +85,6 @@ public class TableCaptionBox extends BlockBox
                                   - padding.right - border.right - margin.right;
                 if (content.width < 0) content.width = 0;
             }
-            preferredWidth = -1; //we don't prefer anything (auto width)
         }
         else
         {
@@ -97,21 +93,14 @@ public class TableCaptionBox extends BlockBox
                 wset = true;
                 wrelative = width.isPercentage();
             }
-            content.width = dec.getLength(width, auto, 0, 0, contw);
-            margin.left = dec.getLength(mleft, mleftauto, 0, 0, contw);
-            margin.right = dec.getLength(mright, mrightauto, 0, 0, contw);
+            content.width = dec.getLength(width, auto, 0, 0, fullw);
+            margin.left = dec.getLength(mleft, mleftauto, 0, 0, fullw);
+            margin.right = dec.getLength(mright, mrightauto, 0, 0, fullw);
             declMargin.left = margin.left;
             declMargin.right = margin.right;
             
             //We will prefer some width if the value is not percentage
             boolean prefer = !width.isPercentage();
-            //We will include the margins in the preferred width if they're not percentages
-            int prefml = (mleft == null) || mleft.isPercentage() || mleftauto ? 0 : margin.left;
-            int prefmr = (mright == null) || mright.isPercentage() || mrightauto ? 0 : margin.right;
-            //Compute the preferred width
-            if (prefer)
-                preferredWidth = prefml + border.left + padding.left + content.width +
-                                 padding.right + border.right + prefmr;
             
             //Compute the margins if we're in flow and we know the width
             if (isInFlow() && prefer) 

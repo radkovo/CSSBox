@@ -20,13 +20,17 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.fit.cssbox.css.HTMLNorm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import cz.vutbr.web.css.*;
+
+import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.Declaration;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermList;
 
 /**
  * A box that represents a table.
@@ -36,7 +40,7 @@ import cz.vutbr.web.css.*;
  */
 public class TableBox extends BlockBox
 {
-    private static Logger log = LoggerFactory.getLogger(TableBox.class);
+    //private static Logger log = LoggerFactory.getLogger(TableBox.class);
     
 	private final int DEFAULT_SPACING = 0;
 	
@@ -109,6 +113,7 @@ public class TableBox extends BlockBox
     {
         loadTableStyle();
         organizeContent(); //organize the child elements according to their display property
+        propagateCellSpacing(spacing);
     }
 	
     @Override
@@ -125,7 +130,6 @@ public class TableBox extends BlockBox
         //layout the bodies
         if (header != null)
         {
-        	header.setSpacing(spacing);
             header.doLayout(wlimit, columns);
             header.setPosition(0, y);
             if (header.getWidth() > maxw)
@@ -135,7 +139,6 @@ public class TableBox extends BlockBox
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
         {
             TableBodyBox body = it.next();
-            body.setSpacing(spacing);
             body.doLayout(wlimit, columns);
             body.setPosition(0, y);
             if (body.getWidth() > maxw)
@@ -144,7 +147,6 @@ public class TableBox extends BlockBox
         }
         if (footer != null)
         {
-            footer.setSpacing(spacing);
             footer.doLayout(wlimit, columns);
             footer.setPosition(0, y);
             if (footer.getWidth() > maxw)
@@ -163,7 +165,7 @@ public class TableBox extends BlockBox
         //load the content width from the attribute (transform to declaration)
         if (!update)
         {
-            //create an important 'width' style for this element
+            //create an important 'width' and 'height' styles for this element
             String width = HTMLNorm.getAttribute(getElement(), "width");
             if (!width.equals(""))
             {
@@ -178,6 +180,21 @@ public class TableBox extends BlockBox
                     style.push(dec);
                 }
             }
+            String height = HTMLNorm.getAttribute(getElement(), "height");
+            if (!height.equals(""))
+            {
+                TermLengthOrPercent hspec = HTMLNorm.createLengthOrPercent(height);
+                if (hspec != null)
+                {
+                    Declaration dec = CSSFactory.getRuleFactory().createDeclaration();
+                    dec.setProperty("height");
+                    dec.unlock();
+                    dec.add(hspec);
+                    dec.setImportant(true);
+                    style.push(dec);
+                }
+            }
+            //TODO the table height is not applied yet
         }
         super.loadSizes(update);
     }
@@ -195,13 +212,9 @@ public class TableBox extends BlockBox
     {
         CSSDecoder dec = new CSSDecoder(ctx);
 
-        //According to CSS spec. 17.4, we should take the size of the original containing box, not the anonymous box
-        contw = getContainingBlockBox().getContainingBlock().width;
-        
         if (width == null) auto = true;
         if (exact) wset = !auto;
         if (wset && exact && width.isPercentage()) wrelative = true;
-        preferredWidth = -1;
         margin.left = margin.right = 0; //margins are provided by the anonymous table box
         
         //if column widths haven't been calculated yet,
@@ -217,10 +230,10 @@ public class TableBox extends BlockBox
         else  //explicitly specified content width
         {
             //load the content width
+            //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
+            int fullw = getContainingBlockBox().getContainingBlock().width;
             if (!update)
-                content.width = dec.getLength(width, auto, 0, 0, contw);
-            //preferred width is derived from the
-            preferredWidth = border.left + padding.left + content.width + padding.right + border.right;
+                content.width = dec.getLength(width, auto, 0, 0, fullw);
         }
     }
     
@@ -293,6 +306,15 @@ public class TableBox extends BlockBox
             if (m > ret) ret = m;
         }
         return ret;
+    }
+    
+    @Override
+    protected int getMinimalDecorationWidth()
+    {
+        if (wset)
+            return super.getMinimalDecorationWidth();
+        else
+            return getMinimalWidth(); //all the content is considered for tables
     }
     
     @Override
@@ -724,5 +746,14 @@ public class TableBox extends BlockBox
         }
     }
 
+    private void propagateCellSpacing(int spacing)
+    {
+        if (header != null)
+            header.setSpacing(spacing);
+        for (TableBodyBox body : bodies)
+            body.setSpacing(spacing);
+        if (footer != null)
+            footer.setSpacing(spacing);
+    }
     
 }

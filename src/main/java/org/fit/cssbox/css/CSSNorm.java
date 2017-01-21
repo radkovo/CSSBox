@@ -97,7 +97,7 @@ public class CSSNorm
         "ol ul, ul ol,"+
         "ul ul, ol ol    { margin-top: 0; margin-bottom: 0 }"+
         "u, ins          { text-decoration: underline }"+
-        //"br:before       { content: \"\\A\" }"+
+        "br:before       { content: \"\\A\" }"+
         //":before, :after { white-space: pre-line }"+
         "center          { text-align: center }"+
         "abbr, acronym   { font-variant: small-caps; letter-spacing: 0.1em }"+
@@ -118,12 +118,12 @@ public class CSSNorm
     public static String userStyleSheet()
     {
         return
-        "body   { color: black; background-color: #fafafa;}"+
+        "body   { color: black; background-color: white; }"+
         "a[href]{ color: blue; text-decoration: underline; }"+
         "script { display: none; }"+
         "style  { display: none; }"+
         "option { display: none; }"+
-        "br     { display: block; }"+
+        "br     { display: inline; white-space: pre; }"+
         "hr     { display: block; margin-top: 1px solid; }"+
         
         //standard <ul> margin according to Mozilla

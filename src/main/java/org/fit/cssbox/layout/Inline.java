@@ -89,4 +89,12 @@ public interface Inline
      */
     public boolean finishedByLineBreak();
     
+    /**
+     * Indicates whether the box was completely collapsed to empty string during the laytout.
+     * For example, it contains only whitespace characters, whitespace collapsing is applied
+     * and the previous box already ends with a whitespace.
+     * @return <code>true</code> when the box has been completely collapsed
+     */
+    public boolean collapsedCompletely();
+    
 }
