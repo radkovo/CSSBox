@@ -623,8 +623,8 @@ public class DOMAnalyzer
             if (decl != null)
             {
                 String decls = decl.toString().replace("\n", "");
-                if (!decls.isEmpty()) //+usn
-                    el.setAttribute("style", quote(decls)); //~usn
+                if (!decls.isEmpty())
+                    el.setAttribute("style", quote(decls));
             }
         }                
         NodeList child = n.getChildNodes();
