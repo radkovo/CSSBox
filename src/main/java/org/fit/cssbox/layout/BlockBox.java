@@ -1088,7 +1088,7 @@ public class BlockBox extends ElementBox
     		        	if (clearance) //some clearance, cannot collapse
     		        		borderY += mtop + mbottom;
     		        	else //do collapse
-    		        		borderY += Math.max(mtop, mbottom);
+    		        		borderY += collapsedMarginHeight(mtop, mbottom);
 			        }
 			        
 			        stat.lastinflow = subbox;
@@ -2452,6 +2452,23 @@ public class BlockBox extends ElementBox
     protected boolean separatedFromBottom(ElementBox box)
     {
         return (box.border.bottom > 0 || box.padding.bottom > 0 || box.isRootElement());
+    }
+    
+    /**
+     * Computes the collapsed margin height from two adjoining margin heights.
+     * @see http://www.w3.org/TR/CSS22/box.html#collapsing-margins
+     * @param m1 The first margin height
+     * @param m2 The second margin height
+     * @return The collapsed margin height
+     */
+    protected int collapsedMarginHeight(int m1, int m2)
+    {
+        if (m1 >= 0 && m2 >= 0)
+            return Math.max(m1, m2);
+        else if (m1 < 0 && m2 < 0)
+            return Math.min(m1, m2);
+        else
+            return m1 + m2;
     }
     
     /**
