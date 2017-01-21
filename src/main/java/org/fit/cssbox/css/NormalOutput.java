@@ -112,6 +112,12 @@ public class NormalOutput extends Output
         {
             p.print(n.getNodeValue());
         }
+        else if (n.getNodeType() == Node.COMMENT_NODE)
+        {
+            p.print("<!--");
+            p.print(n.getNodeValue());
+            p.print("-->");
+        }
                                 
         NodeList child = n.getChildNodes();
         for (int i = 0; i < child.getLength(); i++)
@@ -152,6 +158,13 @@ public class NormalOutput extends Output
         {
             indent(level, p);
             p.println(n.getNodeValue());
+        }
+        else if (n.getNodeType() == Node.COMMENT_NODE)
+        {
+            indent(level, p);
+            p.print("<!--");
+            p.print(n.getNodeValue());
+            p.print("-->");
         }
                                 
         NodeList child = n.getChildNodes();
