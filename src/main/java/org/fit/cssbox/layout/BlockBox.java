@@ -1221,7 +1221,7 @@ public class BlockBox extends ElementBox
                 avail = wlimit - flx - frx;
             }
             //do not consider the top margin when moving down
-            if (fy > startfy && subbox.margin.top > 0)
+            if (fy > startfy && subbox.margin.top != 0)
             {
                 fy -= subbox.margin.top;
                 if (fy < startfy) fy = startfy;
