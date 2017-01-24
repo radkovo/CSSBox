@@ -156,31 +156,55 @@ public class LineBox
         this.right = right;
     }
 
+    /**
+     * Returns the total line box height which is the same as {@code getBaselineOffset() + getBelowBaseline}.
+     * @return the line box height
+     */
     public int getTotalLineHeight()
     {
         return above + below;
     }
     
+    /**
+     * Returns the maximal declared line height for the contained inline boxes.
+     * @return the maximal declared line height
+     */
     public int getMaxLineHeight()
     {
         return maxlineheight;
     }
     
+    /**
+     * Returns the line box height above the baseline.
+     * @return the baseline Y offset
+     */
     public int getBaselineOffset()
     {
     	return above;
     }
 
+    /**
+     * Returns the line box height below the baseline.
+     * @return the bottom Y offset
+     */
     public int getBelowBaseline()
     {
     	return below;
     }
     
+    /**
+     * Obtains the lead - the difference between the declared line height and the actual line box height.
+     * @return the lead value
+     */
     public int getLead()
     {
     	return maxlineheight - (above + below);
     }
     
+    /**
+     * Updates the line box sizes according to a new inline box.
+     * @param box the new box
+     */
     public void considerBox(Inline box)
     {
         if (((Box) box).isDisplayed() && !box.collapsedCompletely())
@@ -209,6 +233,10 @@ public class LineBox
         }
     }
     
+    /**
+     * Initializes the above and below offsets based on the font properties of the given box.
+     * @param box The box whose font properties should be used for initialization.
+     */
     public void considerBoxProperties(ElementBox box)
     {
         VisualContext ctx = box.getVisualContext();
