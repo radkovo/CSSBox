@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 import java.awt.Graphics2D;
 
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.Overflow;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
@@ -156,14 +157,25 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         super.doLayout(availw, force, linestart);
         if (force || fitsSpace())
         {
-            baseline = getLastInlineBoxBaseline(this);
-            if (baseline == -1)
-                baseline = getHeight();
+            //inline-block baseline as defined in
+            //http://www.w3.org/TR/CSS22/visudet.html#propdef-vertical-align
+            if (getOverflow() == Overflow.VISIBLE)
+            {
+                baseline = getLastInlineBoxBaseline(this);
+                if (baseline == -1)
+                    baseline = getHeight();
+                else
+                {
+                    baseline += getContentOffsetY();
+                    if (baseline > getHeight()) baseline = getHeight();
+                }
+            }
             else
             {
-                baseline += getContentOffsetY();
-                if (baseline > getHeight()) baseline = getHeight();
+                //inline-block boxes with overflow different from visible use the bottom margin edge as baseline
+                baseline = getHeight();
             }
+                
             return true;
         }
         else
@@ -265,11 +277,11 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxLineHeight() - getHeight();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxBoxHeight() - getHeight();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
-                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+                absbounds.y = getParent().getAbsoluteContentY() + linebox.getTopOffset() + bounds.y;
             }
 
             //consider the relative position

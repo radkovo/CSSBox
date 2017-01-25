@@ -156,7 +156,7 @@ public class InlineBox extends ElementBox implements InlineElement
         if (curline == null)
             return lineHeight;
         else
-            return Math.max(lineHeight, curline.getMaxLineHeight());
+            return Math.max(lineHeight, curline.getMaxAlignedHeight());
     }
     
     public int getLineboxOffset()
@@ -381,11 +381,11 @@ public class InlineBox extends ElementBox implements InlineElement
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxLineHeight() - getContentHeight() - getContentOffsetY();
+                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxBoxHeight() - getContentHeight() - getContentOffsetY();
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
-                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+                absbounds.y = getParent().getAbsoluteContentY() + linebox.getTopOffset() + bounds.y;
             }
 
             //consider the relative position

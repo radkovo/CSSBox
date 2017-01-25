@@ -55,8 +55,15 @@ public class LineBox
     /** Maximal height below the baseline (excluding baseline) */
     private int below;
     
-    /** Maximal declared line-height of the boxes on the line */
-    private int maxlineheight;
+    /** Maximal aligned height of the boxes on the line */
+    private int maxAlignedHeight;
+    
+    /** Maximal height of both aligned and unaligned boxes */
+    private int maxBoxHeight;
+    
+    /** An additional top Y offset used for alligning the boxes with vertical-align: bottom with the baseline-aligned boxes */
+    private int heightFromBottom;
+    
     
     public LineBox(ElementBox parent, int start, int y)
     {
@@ -73,7 +80,7 @@ public class LineBox
     @Override
     public String toString()
     {
-        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " total=" + (above+below) + " maxlineh=" + maxlineheight + " lead=" + getLead();
+        return "LineBox " + start + ".." + end + " y=" + y +  " width=" + width + " above=" + above + " below=" + below + " total=" + (above+below) + " alignedHeight=" + maxAlignedHeight + " lead=" + getLead();
     }
 
     public ElementBox getParent()
@@ -165,15 +172,30 @@ public class LineBox
         return above + below;
     }
     
-    /**
-     * Returns the maximal declared line height for the contained inline boxes.
-     * @return the maximal declared line height
-     */
-    public int getMaxLineHeight()
+    public int getTopOffset()
     {
-        return maxlineheight;
+        int ofs = heightFromBottom - getMaxAlignedHeight();
+        return ofs >= 0 ? ofs : 0;
+    }
+
+    /**
+     * Returns the maximal height of the aligned boxes (that have vertical-align different from top and bottom).
+     * @return the maximal aligned height.
+     */
+    public int getMaxAlignedHeight()
+    {
+        return maxAlignedHeight;
     }
     
+    /**
+     * Returns the maximal inline height of both the aligned and unaligned boxes.
+     * @return the maximal height.
+     */
+    public int getMaxBoxHeight()
+    {
+        return maxBoxHeight;
+    }
+
     /**
      * Returns the line box height above the baseline.
      * @return the baseline Y offset
@@ -198,7 +220,7 @@ public class LineBox
      */
     public int getLead()
     {
-    	return maxlineheight - (above + below);
+    	return maxAlignedHeight - (above + below);
     }
     
     /**
@@ -221,15 +243,19 @@ public class LineBox
     	            b += dif; //what from the box is below
     	            above = Math.max(above, a);
     	            below = Math.max(below, b);
+    	            maxAlignedHeight = Math.max(maxAlignedHeight, box.getMaxLineHeight());
     	        }
+    	        else if (va == VerticalAlign.BOTTOM)
+    	            heightFromBottom = Math.max(heightFromBottom, box.getMaxLineHeight());
         	}
         	else
         	{
     	        above = Math.max(above, a);
     	        below = Math.max(below, b);
+                maxAlignedHeight = Math.max(maxAlignedHeight, box.getMaxLineHeight());
         	}
-    
-        	maxlineheight = Math.max(maxlineheight, box.getMaxLineHeight());
+        	
+            maxBoxHeight = Math.max(maxBoxHeight, box.getMaxLineHeight());
         }
     }
     
@@ -245,7 +271,7 @@ public class LineBox
         above = Math.max(above, a);
         below = Math.max(below, b);
 
-        maxlineheight = Math.max(maxlineheight, box.getLineHeight());
+        maxAlignedHeight = Math.max(maxAlignedHeight, box.getLineHeight());
     }
     
     /**
