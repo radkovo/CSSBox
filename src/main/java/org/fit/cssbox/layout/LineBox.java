@@ -284,13 +284,9 @@ public class LineBox
     	if (box instanceof InlineElement)
     	{
 	        VerticalAlign va = ((InlineElement) box).getVerticalAlign();
-	        if (va == VerticalAlign.TOP)
+	        if (va == VerticalAlign.TOP || va == VerticalAlign.BOTTOM)
 	        {
-	            return 0;
-	        }
-	        else if (va == VerticalAlign.BOTTOM)
-	        {
-	            return getTotalLineHeight() - ((ElementBox) box).getContentHeight() + 1;
+	            return 0; //top and bottom boxes are aligned to the line box in their absolutePositions()
 	        }
 	        else
 	        {
@@ -318,10 +314,10 @@ public class LineBox
             dif = 0; //just sits on the baseline
         else if (va == CSSProperty.VerticalAlign.MIDDLE)
         {
-            int midbox = (a + b) / 2;
+            int midbox = box.getLineHeight() / 2;
             int halfex = (int) Math.round(parent.getVisualContext().getEx() / 2);
-            int na = midbox + halfex;
-            dif = a - na;
+            //int na = midbox + halfex;
+            dif = midbox - halfex;
         }
         else if (va == CSSProperty.VerticalAlign.SUB)
             dif = (int) Math.round(0.3 * parent.getLineHeight());

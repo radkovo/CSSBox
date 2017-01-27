@@ -698,7 +698,7 @@ public class BlockBox extends ElementBox
                     ((InlineElement) subbox).setLineBox(line);
                 
                 //the Y position is used for the boxes that are not "top" or "bottom" aligned
-                int y = line.getY() + (line.getLead() / 2) + dif;
+                int y = line.getY() + line.getTopOffset() + (line.getLead() / 2) + dif;
                 subbox.moveDown(y);
             }
         }

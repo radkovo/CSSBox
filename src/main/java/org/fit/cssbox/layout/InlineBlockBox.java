@@ -281,7 +281,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
             {
-                absbounds.y = getParent().getAbsoluteContentY() + linebox.getTopOffset() + bounds.y;
+                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
             }
 
             //consider the relative position
