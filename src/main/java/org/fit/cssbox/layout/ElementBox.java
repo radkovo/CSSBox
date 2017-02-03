@@ -1112,39 +1112,30 @@ abstract public class ElementBox extends Box
             g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
         ctx.updateGraphics(g);
         
-        //top left corner
-        int x = absbounds.x;
-        int y = absbounds.y;
-
         //border bounds
-        int bx1 = x + margin.left;
-        int by1 = y + emargin.top;
-        int bw = border.left + padding.left + content.width + padding.right + border.right;
-        int bh = border.top + padding.top + content.height + padding.bottom + border.bottom;
-        int bx2 = bx1 + bw - 1;
-        int by2 = by1 + bh - 1;
+        Rectangle brd = getAbsoluteBorderBounds();
         
         //draw the background - it should be visible below the border too
         if (getBgcolor() != null)
         {
             g.setColor(getBgcolor());
-            g.fillRect(bx1, by1, bw, bh);
+            g.fillRect(brd.x, brd.y, brd.width, brd.height);
         }
         
         //draw the background images
         if (bgimages != null)
         {
+            Rectangle bg = getAbsoluteBackgroundBounds();
             for (BackgroundImage img : bgimages)
             {
-                //img.draw(g, 0, 0);
                 BufferedImage bimg = img.getBufferedImage();
                 if (bimg != null)
-                    g.drawImage(bimg, bx1 + border.left, by1 + border.top, null);
+                    g.drawImage(bimg, bg.x, bg.y, null);
             }
         }
         
         //draw the border
-        drawBorders(g, bx1, by1, bx2, by2);
+        drawBorders(g, brd.x, brd.y, brd.x + brd.width - 1, brd.y + brd.height - 1);
         
         g.setClip(oldclip); //restore the clipping
         g.setColor(color); //restore original color
@@ -1412,7 +1403,10 @@ abstract public class ElementBox extends Box
         if (bg == CSSProperty.BackgroundColor.color)
         {
             TermColor bgc = style.getSpecifiedValue(TermColor.class, "background-color");
-            bgcolor = bgc.getValue();
+            if (bgc.isTransparent())
+                bgcolor = null;
+            else
+                bgcolor = bgc.getValue();
         }
         else
             bgcolor = null;

@@ -57,6 +57,7 @@ public class Viewport extends BlockBox
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
+	private ElementBox bgSrc; //source element for the background
     private boolean rootOverflowVisible = true; //has the root box originally had overflow:visible?
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
@@ -323,14 +324,15 @@ public class Viewport extends BlockBox
 	 */
 	private void loadBackgroundFromContents()
 	{
-	    if (rootBox != null)
+	    if (rootBox != null && bgSrc == null)
 	    {
     	    ElementBox src = rootBox;
-    	    if (src.getBgcolor() == null && config.getUseHTML()) //for HTML, try to use the body
+    	    if (src.getBgcolor() == null && src.getBackgroundImages() == null && config.getUseHTML()) //for HTML, try to use the body
     	        src = getElementBoxByName("body", false);
     	    
     	    if (src != null)
     	    {
+    	        bgSrc = src;
         	    if (src.getBgcolor() != null)
         	    {
         	        bgcolor = src.getBgcolor();
@@ -346,7 +348,7 @@ public class Viewport extends BlockBox
         	    }
     	    }
     	    else
-    	        log.debug("Couldn't find the HTML <body> element");
+    	        log.debug("Couldn't find background source for viewport");
 	    }
 	}
 	

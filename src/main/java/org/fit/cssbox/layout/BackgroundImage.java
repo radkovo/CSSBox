@@ -315,7 +315,16 @@ public class BackgroundImage extends ContentImage
         else
             imgy = 0;
         
-        //System.out.println(url + ": x=" + imgx + " y=" + imgy);
+        if (getOwner() instanceof Viewport)
+        {
+            ElementBox rootBox = ((Viewport) getOwner()).getRootBox();
+            if (rootBox != null)
+            {
+                Rectangle cbounds = rootBox.getAbsoluteBackgroundBounds(); //use root box bounds for viewport image coordinates
+                imgx += cbounds.x;
+                imgy += cbounds.y;
+            }
+        }
     }
 
     protected void computeSize(Rectangle bounds)
