@@ -148,8 +148,11 @@ public class BlockBox extends ElementBox
     /** Clearing property */
     protected CSSProperty.Clear clearing;
     
-    /** Overflow property */
-    protected CSSProperty.Overflow overflow;
+    /** Overflow-X property */
+    protected CSSProperty.Overflow overflowX;
+        
+    /** Overflow-Y property */
+    protected CSSProperty.Overflow overflowY;
         
     /** the left position should be set to static position during the layout */
     protected boolean leftstatic;
@@ -195,7 +198,8 @@ public class BlockBox extends ElementBox
         
         floating = FLOAT_NONE;
         clearing = CLEAR_NONE;
-        overflow = OVERFLOW_VISIBLE;
+        overflowX = OVERFLOW_VISIBLE;
+        overflowY = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
         indent = 0;
         clipRegion = null;
@@ -229,7 +233,8 @@ public class BlockBox extends ElementBox
         floating = FLOAT_NONE;
         clearing = CLEAR_NONE;
         position = src.position;
-        overflow = OVERFLOW_VISIBLE;
+        overflowX = OVERFLOW_VISIBLE;
+        overflowY = OVERFLOW_VISIBLE;
         align = ALIGN_LEFT;
         indent = 0;
         clipRegion = null;
@@ -258,7 +263,8 @@ public class BlockBox extends ElementBox
         fown = src.fown;
         floating = src.floating;
         clearing = src.clearing;
-        overflow = src.overflow;
+        overflowX = src.overflowX;
+        overflowY = src.overflowY;
         align = src.align;
         indent = src.indent;
         topstatic = src.topstatic;
@@ -361,14 +367,24 @@ public class BlockBox extends ElementBox
         return clearing.toString();
     }
     
-    public CSSProperty.Overflow getOverflow()
+    public CSSProperty.Overflow getOverflowX()
     {
-        return overflow;
+        return overflowX;
     }
     
-    public String getOverflowString()
+    public CSSProperty.Overflow getOverflowY()
     {
-        return overflow.toString();
+        return overflowY;
+    }
+    
+    public String getOverflowXString()
+    {
+        return overflowX.toString();
+    }
+    
+    public String getOverflowYString()
+    {
+        return overflowY.toString();
     }
     
     public int getFloatY()
@@ -518,7 +534,7 @@ public class BlockBox extends ElementBox
      */
     protected boolean encloseFloats()
     {
-        return overflow != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || position == POS_FIXED || display == ElementBox.DISPLAY_INLINE_BLOCK;
+        return overflowX != OVERFLOW_VISIBLE || floating != FLOAT_NONE || position == POS_ABSOLUTE || position == POS_FIXED || display == ElementBox.DISPLAY_INLINE_BLOCK;
     }
     
     /**
@@ -528,7 +544,7 @@ public class BlockBox extends ElementBox
      */
     protected boolean mayOverlapFloats()
     {
-        return overflow == OVERFLOW_VISIBLE;
+        return overflowX == OVERFLOW_VISIBLE;
     }
     
     /**
@@ -1860,8 +1876,15 @@ public class BlockBox extends ElementBox
         clearing = style.getProperty("clear");
         if (clearing == null) clearing = CLEAR_NONE;
         
-        overflow = style.getProperty("overflow");
-        if (overflow == null) overflow = OVERFLOW_VISIBLE;
+        overflowX = style.getProperty("overflow-x");
+        if (overflowX == null) overflowX = OVERFLOW_VISIBLE;
+        overflowY = style.getProperty("overflow-y");
+        if (overflowY == null) overflowY = OVERFLOW_VISIBLE;
+        //overflow: visible should compute to auto if the other one is not visible
+        if (overflowX == OVERFLOW_VISIBLE && overflowY != OVERFLOW_VISIBLE)
+            overflowX = OVERFLOW_AUTO;
+        else if (overflowY == OVERFLOW_VISIBLE && overflowX != OVERFLOW_VISIBLE)
+            overflowY = OVERFLOW_AUTO;
         
         align = style.getProperty("text-align");
         if (align == null) align = ALIGN_LEFT;

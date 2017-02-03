@@ -159,7 +159,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         {
             //inline-block baseline as defined in
             //http://www.w3.org/TR/CSS22/visudet.html#propdef-vertical-align
-            if (getOverflow() == Overflow.VISIBLE)
+            if (getOverflowX() == Overflow.VISIBLE)
             {
                 baseline = getLastInlineBoxBaseline(this);
                 if (baseline == -1)

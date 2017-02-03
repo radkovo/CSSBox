@@ -280,12 +280,12 @@ public class BoxFactory
                      newstat.absbox = block;
                      //update clip box for the block
                      ElementBox cblock = block.getContainingBlockBox();
-                     if (cblock instanceof BlockBox && (cblock.getClipBlock() == null || ((BlockBox) cblock).getOverflow() != Overflow.VISIBLE))
+                     if (cblock instanceof BlockBox && (cblock.getClipBlock() == null || ((BlockBox) cblock).getOverflowX() != Overflow.VISIBLE))
                          block.setClipBlock((BlockBox) cblock);
                      else
                          block.setClipBlock(cblock.getClipBlock());
                      //A box with overflow:hidden creates a clipping box
-                     if (block.overflow != BlockBox.OVERFLOW_VISIBLE || block.clipRegion != null)
+                     if (block.overflowX != BlockBox.OVERFLOW_VISIBLE || block.clipRegion != null)
                          newstat.clipbox = block;
                      else
                          newstat.clipbox = block.getClipBlock();
@@ -293,7 +293,7 @@ public class BoxFactory
                 else //not positioned element
                 {
                     //A box with overflow:hidden creates a clipping box
-                    if (block.overflow != BlockBox.OVERFLOW_VISIBLE)
+                    if (block.overflowX != BlockBox.OVERFLOW_VISIBLE)
                         newstat.clipbox = block;
                 }
                 //Any block box forms a containing box for not positioned elements

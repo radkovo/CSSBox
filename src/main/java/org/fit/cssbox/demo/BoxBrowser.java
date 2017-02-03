@@ -417,7 +417,8 @@ public class BoxBrowser
             BlockBox eb = (BlockBox) box;
             vals.add(infoTableData("Content layout", (eb.containsBlocks() ? "blocks" : "inline")));
             vals.add(infoTableData("Float", eb.getFloatingString()));
-            vals.add(infoTableData("Overflow", eb.getOverflowString()));
+            vals.add(infoTableData("Overflow-X", eb.getOverflowXString()));
+            vals.add(infoTableData("Overflow-Y", eb.getOverflowYString()));
             vals.add(infoTableData("Clear", eb.getClearingString()));
             vals.add(infoTableData("Reference", (eb.getAbsReference() == null) ? "- none -" : eb.getAbsReference().toString()));
             vals.add(infoTableData("DOM parent", (eb.getDomParent() == null) ? "- none -" : eb.getDomParent().toString()));

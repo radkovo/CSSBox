@@ -73,7 +73,7 @@ public class SVGRenderer implements BoxRenderer
     
     public void startElementContents(ElementBox elem)
     {
-        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflow() != BlockBox.OVERFLOW_VISIBLE)
+        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflowX() != BlockBox.OVERFLOW_VISIBLE)
         {
             //for blocks with overflow != visible generate a clipping group
             Rectangle cb = elem.getClippedContentBounds();
@@ -88,7 +88,7 @@ public class SVGRenderer implements BoxRenderer
 
     public void finishElementContents(ElementBox elem)
     {
-        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflow() != BlockBox.OVERFLOW_VISIBLE)
+        if (elem instanceof BlockBox && ((BlockBox) elem).getOverflowX() != BlockBox.OVERFLOW_VISIBLE)
         {
             //for blocks with overflow != visible finish the clipping group
             out.println("</g>");
