@@ -57,8 +57,7 @@ public class Viewport extends BlockBox
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
-    protected ElementBox lastbox = null;
-    protected ElementBox lastparent = null;
+    private boolean rootOverflowVisible = true; //has the root box originally had overflow:visible?
     private int maxx; //maximal X position of all the content
     private int maxy; //maximal Y position of all the content
     private boolean recomputeAbs; //indicates that the absolute positions need to be recomputed
@@ -500,6 +499,56 @@ public class Viewport extends BlockBox
 	                recursivelySetClipBlock(eb.getSubBox(i), clip);
 	        }
 	    }
+	}
+	
+	/**
+	 * Tries to propagate the overflow value to viewport from the element based on
+	 * https://drafts.csswg.org/css-overflow-3/#overflow-propagation
+	 * If the conditions are met, the overflow values are propagated. Othervise, no action is taken.
+	 * 
+	 * @param block the box to be used as a possible source of the overflow values
+	 * @return {@code true} when the propagation is finished (no more boxes may be used as the source), {@code false} when other boxes should be tried.
+	 */
+	public boolean checkPropagateOverflow(BlockBox block)
+	{
+	    if (rootBox == null && block.getElement() == root) //this block will become a new root block; use it
+	    {
+	        rootOverflowVisible = (block.getOverflowX() == BlockBox.OVERFLOW_VISIBLE);
+	        takeBoxOverflow(block);
+	        return !rootOverflowVisible || !config.getUseHTML(); //in HTML mode, the "body" element may be used as well thus we should continue when root element is not visible
+	    }
+	    else if ("body".equals(block.getElement().getTagName()))
+	    {
+	        if (config.getUseHTML())
+	            takeBoxOverflow(block);
+	        return true; //that should be all, we are finished
+	    }
+	    else
+	        return false; //this one could not be used, go on
+	}
+	
+	private void takeBoxOverflow(BlockBox srcBlock)
+	{
+        //use the propagated value for the viewport
+        overflowX = srcBlock.overflowX;
+        overflowY = srcBlock.overflowY;
+        //use VISIBLE for the original block
+        srcBlock.overflowX = BlockBox.OVERFLOW_VISIBLE;
+        srcBlock.overflowY = BlockBox.OVERFLOW_VISIBLE;
+        //apply CSSBox-specific viewport clipping config
+        if (config.getClipViewport())
+        {
+            overflowX = BlockBox.OVERFLOW_HIDDEN;
+            overflowY = BlockBox.OVERFLOW_HIDDEN;
+        }
+        else
+        {
+            //CSSBox treats the overflow:visible as scrollable for now, i.e. scroll and auto values should be converted to visible
+            if (overflowX != BlockBox.OVERFLOW_HIDDEN)
+                overflowX = BlockBox.OVERFLOW_VISIBLE;
+            if (overflowY != BlockBox.OVERFLOW_HIDDEN)
+                overflowY = BlockBox.OVERFLOW_VISIBLE;
+        }
 	}
 	
     //===================================================================================

@@ -76,6 +76,7 @@ public class BoxFactory
     protected Viewport viewport;
 
     protected int next_order;
+    protected boolean overflowPropagated;
     
     /**
      * Create a new factory.
@@ -87,6 +88,7 @@ public class BoxFactory
         this.decoder = decoder;
         this.baseurl = baseurl;
         this.next_order = 0;
+        this.overflowPropagated = false;
         this.config = new BrowserConfig();
         this.html = new HTMLBoxFactory(this);
     }
@@ -148,6 +150,7 @@ public class BoxFactory
     public void reset()
     {
         next_order = 0;
+        overflowPropagated = false;
     }
     
     /**
@@ -165,6 +168,7 @@ public class BoxFactory
         Element vp = createAnonymousElement(root.getOwnerDocument(), "Xdiv", "block");
         viewport = new Viewport(vp, g, ctx, this, root, width, height);
         viewport.setConfig(config);
+        overflowPropagated = false;
         BoxTreeCreationStatus stat = new BoxTreeCreationStatus(viewport);
         createSubtree(root, stat);
         log.debug("Root box is: " + viewport.getRootBox());
@@ -271,6 +275,9 @@ public class BoxFactory
             if (((ElementBox) newbox).mayContainBlocks()) //the new box forms a block context
             {
                 BlockBox block = (BlockBox) newbox;
+                //propagate overflow if necessary
+                if (!overflowPropagated)
+                    overflowPropagated = viewport.checkPropagateOverflow(block);
                 //positioned element?
                 if (block.position == BlockBox.POS_ABSOLUTE ||
                     block.position == BlockBox.POS_RELATIVE ||
