@@ -19,6 +19,7 @@
  */
 package org.fit.cssbox.layout;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,9 @@ import org.fit.cssbox.io.DocumentSource;
  */
 public class BrowserConfig
 {
+    /** The viewport background color */
+    private Color viewportBackgroundColor;
+    
     /** Should we load the external images? */
     private boolean loadImages;
     
@@ -67,6 +71,7 @@ public class BrowserConfig
      */
     public BrowserConfig()
     {
+        viewportBackgroundColor = Color.WHITE;
         loadImages = true;
         loadBackgroundImages = true;
         imageLoadTimeout = 500;
@@ -76,6 +81,22 @@ public class BrowserConfig
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
         initDefaultFonts();
+    }
+
+    public Color getViewportBackgroundColor()
+    {
+        return viewportBackgroundColor;
+    }
+
+    /**
+     * Sets the background color of the viewport. This color is used when no background color
+     * is defined for the root element (and neither the body element for HTML mode). Default
+     * walue is white.
+     * @param viewportBackgroundColor
+     */
+    public void setViewportBackgroundColor(Color viewportBackgroundColor)
+    {
+        this.viewportBackgroundColor = viewportBackgroundColor;
     }
 
     public boolean getLoadImages()
