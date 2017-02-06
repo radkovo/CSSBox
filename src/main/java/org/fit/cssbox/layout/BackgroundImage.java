@@ -53,6 +53,7 @@ public class BackgroundImage extends ContentImage
     private CSSProperty.BackgroundSize size;
     private TermList positionValues;
     private TermList sizeValues;
+    private boolean viewportOwner; //the owner is viewport? (special coordinate system)
 
     //the coordinates of the image within the element
     private int imgx;
@@ -80,6 +81,14 @@ public class BackgroundImage extends ContentImage
             image = loadImage(caching);
         repeatx = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_X);
         repeaty = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_Y);
+        viewportOwner = (owner instanceof Viewport);
+    }
+
+    @Override
+    public void setOwner(ElementBox owner)
+    {
+        super.setOwner(owner);
+        viewportOwner = (owner instanceof Viewport);
     }
 
     public CSSProperty.BackgroundPosition getPosition()
@@ -126,7 +135,7 @@ public class BackgroundImage extends ContentImage
         
         Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
         Rectangle clipped = getOwner().getClippedBounds();
-        if (getOwner() instanceof Viewport)
+        if (viewportOwner)
             bounds = clipped;  //for the root box (Viewport), use the whole clipped content (not only the visible part)
         clipped = new Rectangle(bounds.x - clipped.x, bounds.y - clipped.y, clipped.width, clipped.height); //make the clip relative to the background bounds
         if (bounds.width > 0 && bounds.height > 0)
@@ -283,8 +292,18 @@ public class BackgroundImage extends ContentImage
     
     protected void computeCoordinates(Rectangle bounds)
     {
-        computeSize(bounds);
-        CSSDecoder dec = new CSSDecoder(getOwner().getVisualContext());
+        ElementBox contextBox;
+        if (viewportOwner)
+        {
+            contextBox = ((Viewport) getOwner()).getBackgroundSource(); //for viewport, we take context of the original box with the background 
+            if (contextBox == null)
+                contextBox = getOwner();
+        }
+        else
+            contextBox = getOwner();
+        
+        CSSDecoder dec = new CSSDecoder(contextBox.getVisualContext());
+        computeSize(bounds, dec);
         
         //X position
         if (position == BackgroundPosition.LEFT)
@@ -315,7 +334,7 @@ public class BackgroundImage extends ContentImage
         else
             imgy = 0;
         
-        if (getOwner() instanceof Viewport)
+        if (viewportOwner)
         {
             ElementBox rootBox = ((Viewport) getOwner()).getRootBox();
             if (rootBox != null)
@@ -327,10 +346,8 @@ public class BackgroundImage extends ContentImage
         }
     }
 
-    protected void computeSize(Rectangle bounds)
+    protected void computeSize(Rectangle bounds, CSSDecoder dec)
     {
-        CSSDecoder dec = new CSSDecoder(getOwner().getVisualContext());
-        
         final float ir = getIntrinsicRatio();
         
         if (size == BackgroundSize.COVER)

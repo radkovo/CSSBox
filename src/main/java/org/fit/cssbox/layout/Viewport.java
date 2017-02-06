@@ -318,6 +318,15 @@ public class Viewport extends BlockBox
 	    bgcolor = null; //during the initialization, the background is not known
     }
 
+    /**
+     * Gets the box that was used as the source of the viewport background (usually the root box or the body box).
+     * @return The corresponding element box or {@code null} when no such box was found (e.g. an empty rendering tree).
+     */
+    public ElementBox getBackgroundSource()
+    {
+        return bgSrc;
+    }
+    
 	/**
 	 * Use the root box or the body box (for HTML documents) for obtaining the backgrounds.
 	 */
