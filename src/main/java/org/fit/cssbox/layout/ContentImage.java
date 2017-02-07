@@ -19,11 +19,14 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Container;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.event.IIOReadUpdateListener;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
@@ -31,19 +34,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.event.IIOReadUpdateListener;
-import javax.imageio.stream.ImageInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Generic image used in the page content (used by ReplacedImage and BackgroundImage).
  * 
  * @author burgetr
  * @author Alessandro Tucci
+ * @author Leon De Silva.
  */
 public abstract class ContentImage extends ReplacedContent implements ImageObserver, IIOReadUpdateListener
 {
@@ -134,19 +130,17 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             {
                 // get image and cache
                 img = ImageCache.get(url);
-                if (img == null && !ImageCache.hasFailed(url)) {
+                if (img == null) {
                     try {
                         img = loadImageFromSource(url);
                     } catch (IOException e) {
-                        ImageCache.putFailed(url);
                         log.error("Unable to get image from: " + url);
                         log.error(e.getMessage());
                         return null;
                     }
-                    if (img != null)
+                    if (img != null) {
                         ImageCache.put(url, img);
-                    else
-                        ImageCache.putFailed(url);
+                    }
                 }
             }
             else
@@ -165,6 +159,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
             toolkit.prepareImage(img, -1, -1, observer);
             return img;
         }
+
         return null;
     }
 
