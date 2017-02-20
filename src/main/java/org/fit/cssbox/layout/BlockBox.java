@@ -25,12 +25,15 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
+import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.Clip;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermFloatValue;
 import cz.vutbr.web.css.TermFunction;
 import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
@@ -1838,29 +1841,35 @@ public class BlockBox extends ElementBox
      */
     protected Rectangle getClippingRectangle()
     {
-        if (clipRegion != null && clipRegion.getFunctionName().equalsIgnoreCase("rect") && clipRegion.getValue().size() == 4)
+        if (clipRegion != null && clipRegion.getFunctionName().equalsIgnoreCase("rect"))
         {
-            CSSDecoder dec = new CSSDecoder(ctx);
-            Rectangle brd = getAbsoluteBorderBounds();
-            int x1 = brd.x;
-            int y1 = brd.y;
-            int x2 = brd.x + brd.width - 1;
-            int y2 = brd.y + brd.height - 1;
-            Term<?> top = clipRegion.get(0);
-            Term<?> right = clipRegion.get(1);
-            Term<?> bottom = clipRegion.get(2);
-            Term<?> left = clipRegion.get(3);
-            
-            if (left instanceof TermLength)
-                x1 = brd.x + dec.getLength((TermLength) left, false, 0, 0, 0);
-            if (top instanceof TermLength)
-                y1 = brd.y + dec.getLength((TermLength) top, false, 0, 0, 0);
-            if (right instanceof TermLength)
-                x2 = brd.x + dec.getLength((TermLength) right, false, 0, 0, 0);
-            if (bottom instanceof TermLength)
-                y2 = brd.y + dec.getLength((TermLength) bottom, false, 0, 0, 0);
-            
-            return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+            List<TermFloatValue> args = clipRegion.getSeparatedValues(CSSFactory.getTermFactory().createOperator(','));
+            if (args.size() == 4)
+            {
+                CSSDecoder dec = new CSSDecoder(ctx);
+                Rectangle brd = getAbsoluteBorderBounds();
+                int x1 = brd.x;
+                int y1 = brd.y;
+                int x2 = brd.x + brd.width - 1;
+                int y2 = brd.y + brd.height - 1;
+                Term<?> top = args.get(0);
+                Term<?> right = args.get(1);
+                Term<?> bottom = args.get(2);
+                Term<?> left = args.get(3);
+                
+                if (left instanceof TermLength)
+                    x1 = brd.x + dec.getLength((TermLength) left, false, 0, 0, 0);
+                if (top instanceof TermLength)
+                    y1 = brd.y + dec.getLength((TermLength) top, false, 0, 0, 0);
+                if (right instanceof TermLength)
+                    x2 = brd.x + dec.getLength((TermLength) right, false, 0, 0, 0);
+                if (bottom instanceof TermLength)
+                    y2 = brd.y + dec.getLength((TermLength) bottom, false, 0, 0, 0);
+                
+                return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+            }
+            else
+                return null;
         }
         else
             return null;
