@@ -36,6 +36,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.event.IIOReadUpdateListener;
 import javax.imageio.stream.ImageInputStream;
 
+import org.fit.cssbox.io.URLResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     protected Toolkit toolkit; //system default toolkit
     protected boolean abort; //error or abort flag during loading in image observer
     protected boolean complete; //set to true when image loading is complete
+    protected URLResolver urlResolver; //used to get the image URL contents
     
     public ContentImage(ElementBox owner)
     {
@@ -81,6 +83,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         this.abort = false;
         this.complete = false;
         this.loadTimeout = owner.getViewport().getConfig().getImageLoadTimeout();
+        this.urlResolver = owner.getViewport().getConfig().getUrlResolver();
     }
 
     /**
@@ -172,7 +175,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     {
         Image image = null;
         InputStream urlStream = null;
-        urlStream = url.openStream();
+        urlStream = this.urlResolver.resolve(url);
         ImageInputStream imageInputStream = ImageIO.createImageInputStream(urlStream);
         try
         {

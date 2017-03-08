@@ -24,10 +24,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.fit.cssbox.io.DOMSource;
-import org.fit.cssbox.io.DefaultDOMSource;
-import org.fit.cssbox.io.DefaultDocumentSource;
-import org.fit.cssbox.io.DocumentSource;
+import org.fit.cssbox.io.*;
 
 /**
  * A rendering engine configuration.
@@ -65,6 +62,9 @@ public class BrowserConfig
     
     /** Default font families */
     private Map<String, String> defaultFonts;
+
+    /* Default URL resolver */
+    private URLResolver urlResolver;
     
     /**
      * Creates a new config with default values of the options.
@@ -80,6 +80,7 @@ public class BrowserConfig
         clipViewport = false;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
+        urlResolver = new URLResolver();
         initDefaultFonts();
     }
 
@@ -246,7 +247,18 @@ public class BrowserConfig
     {
         return defaultFonts.get(logical);
     }
-    
+
+    /** Obtains the class used by CSSBox to obtain data from external URLs
+     * @return the used class
+     */
+    public URLResolver getUrlResolver() {  return this.urlResolver; }
+
+    /**
+     * Sets a URL resolver for external URLs
+     * @param value the URL resolver
+     */
+    public void setUrlResolver(URLResolver value) { this.urlResolver = value; }
+
     /**
      * Initializes the default fonts. Current implementation just defines the same physical names for basic
      * AWT logical fonts.
