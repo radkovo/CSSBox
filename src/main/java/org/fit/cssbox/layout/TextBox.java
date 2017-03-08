@@ -646,6 +646,17 @@ public class TextBox extends Box implements Inline
                         break;
                     }
                     int wordend = text.substring(0, end).lastIndexOf(' '); //find previous word
+                    
+                    if(wordend < 0 && splitws){//add by huangyifu
+                    	//for long word or asian text(eg. chinese has no white-space char)
+                    	for(int e=textStart+1;e<=end;e++){
+                    		if(fm.stringWidth(text.substring(textStart, e))>wlimit){
+                    			wordend=e-1;
+                    			break;
+                    		}
+                    	}
+                    }
+                    
                     while (wordend > 0 && text.charAt(wordend-1) == ' ') wordend--; //skip trailing spaces
                     if (wordend <= textStart || !splitws) //no previous word, cannot split or splitting not allowed
                     {
