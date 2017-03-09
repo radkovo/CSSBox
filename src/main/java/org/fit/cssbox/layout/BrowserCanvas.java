@@ -200,6 +200,7 @@ public class BrowserCanvas extends JPanel
         r.close();
         setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
         revalidate();
+        repaint();
     }
     
     public void updateVisibleArea(Rectangle visibleRect)
