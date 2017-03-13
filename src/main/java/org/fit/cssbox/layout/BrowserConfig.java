@@ -21,6 +21,8 @@ package org.fit.cssbox.layout;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.lang.reflect.Constructor;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +30,8 @@ import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A rendering engine configuration.
@@ -36,6 +40,8 @@ import org.fit.cssbox.io.DocumentSource;
  */
 public class BrowserConfig
 {
+    private static Logger log = LoggerFactory.getLogger(BrowserConfig.class);
+
     /** The viewport background color */
     private Color viewportBackgroundColor;
     
@@ -210,6 +216,41 @@ public class BrowserConfig
     }
     
     /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DocumentSource} class registered in the browser configuration.
+     * @param url the URL to be given to the document source.
+     * @return the document source.
+     */
+    public DocumentSource createDocumentSource(URL url)
+    {
+        try
+        {
+            Constructor<? extends DocumentSource> constr = getDocumentSourceClass().getConstructor(URL.class);
+            return constr.newInstance(url);
+        } catch (Exception e) {
+            log.warn("Could not create the DocumentSource instance: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DocumentSource} class registered in the browser configuration.
+     * @param base the base URL
+     * @param urlstring the URL suffix
+     * @return the document source.
+     */
+    public DocumentSource createDocumentSource(URL base, String urlstring)
+    {
+        try
+        {
+            Constructor<? extends DocumentSource> constr = getDocumentSourceClass().getConstructor(URL.class, String.class);
+            return constr.newInstance(base, urlstring);
+        } catch (Exception e) {
+            log.warn("Could not create the DocumentSource instance: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Sets the class used by CSSBox for the DOM tree from documents.
      * @param domSourceClass the new DOM source class
      */
@@ -227,6 +268,24 @@ public class BrowserConfig
         return domSourceClass;
     }
 
+    /**
+     * Creates a new instance of the {@link org.fit.cssbox.io.DOMSource} class registered in the browser configuration
+     * ({@link org.fit.cssbox.layout.BrowserConfig}).
+     * @param src the document source to be given to the DOM source.
+     * @return the DOM source.
+     */
+    public DOMSource createDOMSource(DocumentSource src)
+    {
+        try
+        {
+            Constructor<? extends DOMSource> constr = getDOMSourceClass().getConstructor(DocumentSource.class);
+            return constr.newInstance(src);
+        } catch (Exception e) {
+            log.warn("BoxFactory: Warning: could not create the DOMSource instance: " + e.getMessage());
+            return null;
+        }
+    }
+    
     /**
      * Sets a default physical font to be used for a logical name.
      * @param logical the logical font name

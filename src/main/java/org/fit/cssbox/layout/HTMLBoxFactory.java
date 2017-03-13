@@ -168,7 +168,7 @@ public class HTMLBoxFactory
             
             if (!dataurl.trim().isEmpty())
             {
-                final DocumentSource src = factory.createDocumentSource(base, dataurl);
+                final DocumentSource src = factory.getConfig().createDocumentSource(base, dataurl);
                 if (src != null) //data url successfully decoded
                 {
                     if (mime.isEmpty())
