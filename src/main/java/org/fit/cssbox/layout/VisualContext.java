@@ -615,17 +615,17 @@ public class VisualContext
      *
      * @author burgetr
      */
-    private class PxEvaluator implements CalcArgs.Evaluator<Double>
+    private abstract class CalcEvaluator implements CalcArgs.Evaluator<Double>
     {
-        private VisualContext ctx;
-        private double whole; //whole size used for percentages
+        protected VisualContext ctx;
+        protected double whole; //whole size used for percentages
         
-        public PxEvaluator(VisualContext ctx)
+        public CalcEvaluator(VisualContext ctx)
         {
             this.ctx = ctx;
         }
 
-        public PxEvaluator setWhole(double whole)
+        public CalcEvaluator setWhole(double whole)
         {
             this.whole = whole;
             return this;
@@ -636,10 +636,8 @@ public class VisualContext
         {
             if (val instanceof TermNumber || val instanceof TermInteger)
                 return Double.valueOf(val.getValue());
-            else if (val instanceof TermLengthOrPercent)
-                return ctx.pxLength((TermLengthOrPercent) val, whole);
             else
-                return 0.0; //this should not happen
+                return resolveValue(val);
         }
 
         @Override
@@ -655,6 +653,26 @@ public class VisualContext
                     log.error("Unknown operator {} in expression", op);
                     return 0.0;
             }
+        }
+        
+        abstract double resolveValue(TermFloatValue val);
+        
+    }
+    
+    private class PxEvaluator extends CalcEvaluator
+    {
+        public PxEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.pxLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
         }
         
     }
