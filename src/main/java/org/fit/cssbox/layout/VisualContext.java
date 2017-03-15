@@ -27,10 +27,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.FontFamily;
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
+import cz.vutbr.web.csskit.CalcArgs;
 
 /**
  * The visual context represents the context of the element - the current font properties, EM and EX values,
@@ -40,10 +43,13 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
  */
 public class VisualContext 
 {
+    protected static final Logger log = LoggerFactory.getLogger(VisualContext.class);
+
     private VisualContext parent;
     private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
     private Viewport viewport; //the viewport used for obtaining the vw sizes
+    private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
     private Font font; //current font
     private FontMetrics fm; //current font metrics
     private double fontSize;
@@ -455,7 +461,14 @@ public class VisualContext
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
+        {
             return (whole * nval) / 100;
+        }
+        else if (spec instanceof TermCalc)
+        {
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getPxEval().setWhole(whole));
+        }
         else
         {
             final TermLength.Unit unit = spec.getUnit();
@@ -587,28 +600,63 @@ public class VisualContext
             if (avail[i].equalsIgnoreCase(family)) return avail[i];
         return null;
     }
+
+    private PxEvaluator getPxEval()
+    {
+        if (pxEval == null)
+            pxEval = new PxEvaluator(this);
+        return pxEval;
+    }
+    
+    //============================================================================================================================
     
     /**
-     * Creates a new java Color instance according to a CSS specification rgb(r,g,b)
-     * @param spec the CSS color specification
-     * @return the Color instance
+     * A CSS calc() expression evaluator.
+     *
+     * @author burgetr
      */
-    public Color getColor(String spec)
+    private class PxEvaluator implements CalcArgs.Evaluator<Double>
     {
-        if (spec.startsWith("rgb("))
+        private VisualContext ctx;
+        private double whole; //whole size used for percentages
+        
+        public PxEvaluator(VisualContext ctx)
         {
-            String s = spec.substring(4, spec.length() - 1);
-            String[] lst = s.split(",");
-            try {
-                int r = Integer.parseInt(lst[0].trim());
-                int g = Integer.parseInt(lst[1].trim());
-                int b = Integer.parseInt(lst[2].trim());
-                return new Color(r, g, b);
-            } catch (NumberFormatException e) {
-                return null;
+            this.ctx = ctx;
+        }
+
+        public PxEvaluator setWhole(double whole)
+        {
+            this.whole = whole;
+            return this;
+        }
+
+        @Override
+        public Double evaluateArgument(TermFloatValue val)
+        {
+            if (val instanceof TermNumber || val instanceof TermInteger)
+                return Double.valueOf(val.getValue());
+            else if (val instanceof TermLengthOrPercent)
+                return ctx.pxLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
+        }
+
+        @Override
+        public Double evaluateOperator(Double val1, Double val2, TermOperator op)
+        {
+            switch (op.getValue())
+            {
+                case '+': return val1 + val2;
+                case '-': return val1 - val2;
+                case '*': return val1 * val2;
+                case '/': return val1 / val2;
+                default:
+                    log.error("Unknown operator {} in expression", op);
+                    return 0.0;
             }
         }
-        else
-            return null;
+        
     }
+    
 }
