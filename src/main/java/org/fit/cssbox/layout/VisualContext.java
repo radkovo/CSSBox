@@ -49,7 +49,6 @@ public class VisualContext
     private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
     private Viewport viewport; //the viewport used for obtaining the vw sizes
-    private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
     private Font font; //current font
     private FontMetrics fm; //current font metrics
     private double fontSize;
@@ -64,6 +63,10 @@ public class VisualContext
     private double dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
+
+    private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
+    private PtEvaluator ptEval; //expression evaluator for obtaining points values of expressions
+
     
     public VisualContext(VisualContext parent, BoxFactory factory)
     {
@@ -397,7 +400,14 @@ public class VisualContext
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
+        {
             return (whole * nval) / 100;
+        }
+        else if (spec instanceof TermCalc)
+        {
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getPtEval().setWhole(whole));
+        }
         else
         {
             final TermLength.Unit unit = spec.getUnit();
@@ -608,58 +618,38 @@ public class VisualContext
         return pxEval;
     }
     
+    private PtEvaluator getPtEval()
+    {
+        if (ptEval == null)
+            ptEval = new PtEvaluator(this);
+        return ptEval;
+    }
+    
     //============================================================================================================================
     
     /**
-     * A CSS calc() expression evaluator.
+     * A base of all the evaluators that use the VisualContext for evaluating the calc() expressions.
      *
      * @author burgetr
      */
-    private abstract class CalcEvaluator implements CalcArgs.Evaluator<Double>
+    private abstract class UnitEvaluator extends CalcArgs.DoubleEvaluator
     {
         protected VisualContext ctx;
         protected double whole; //whole size used for percentages
         
-        public CalcEvaluator(VisualContext ctx)
+        public UnitEvaluator(VisualContext ctx)
         {
             this.ctx = ctx;
         }
 
-        public CalcEvaluator setWhole(double whole)
+        public UnitEvaluator setWhole(double whole)
         {
             this.whole = whole;
             return this;
         }
-
-        @Override
-        public Double evaluateArgument(TermFloatValue val)
-        {
-            if (val instanceof TermNumber || val instanceof TermInteger)
-                return Double.valueOf(val.getValue());
-            else
-                return resolveValue(val);
-        }
-
-        @Override
-        public Double evaluateOperator(Double val1, Double val2, TermOperator op)
-        {
-            switch (op.getValue())
-            {
-                case '+': return val1 + val2;
-                case '-': return val1 - val2;
-                case '*': return val1 * val2;
-                case '/': return val1 / val2;
-                default:
-                    log.error("Unknown operator {} in expression", op);
-                    return 0.0;
-            }
-        }
-        
-        abstract double resolveValue(TermFloatValue val);
-        
     }
     
-    private class PxEvaluator extends CalcEvaluator
+    private class PxEvaluator extends UnitEvaluator
     {
         public PxEvaluator(VisualContext ctx)
         {
@@ -667,14 +657,30 @@ public class VisualContext
         }
 
         @Override
-        double resolveValue(TermFloatValue val)
+        public double resolveValue(TermFloatValue val)
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.pxLength((TermLengthOrPercent) val, whole);
             else
                 return 0.0; //this should not happen
         }
-        
+    }
+    
+    private class PtEvaluator extends UnitEvaluator
+    {
+        public PtEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.ptLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
+        }
     }
     
 }
