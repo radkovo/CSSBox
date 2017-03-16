@@ -34,6 +34,7 @@ import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.FontFamily;
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
 import cz.vutbr.web.csskit.CalcArgs;
+import cz.vutbr.web.csskit.TermCalcAngleImpl;
 
 /**
  * The visual context represents the context of the element - the current font properties, EM and EX values,
@@ -66,6 +67,7 @@ public class VisualContext
 
     private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
     private PtEvaluator ptEval; //expression evaluator for obtaining points values of expressions
+    private RadEvaluator radEval; //expression evaluator for obtaining radian values of expressions
 
     
     public VisualContext(VisualContext parent, BoxFactory factory)
@@ -541,20 +543,28 @@ public class VisualContext
     {
         float nval = spec.getValue();
         final TermLength.Unit unit = spec.getUnit();
-        if (unit == null)
-            return 0;
-        switch (unit)
+        if (spec instanceof TermCalcAngleImpl)
         {
-            case deg:
-                return (nval * Math.PI) / 180.0; 
-            case grad:
-                return (nval * Math.PI) / 200.0;
-            case rad:
-                return nval;
-            case turn:
-                return nval * 2 * Math.PI;
-            default:
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getRadEval());
+        }
+        else
+        {
+            if (unit == null)
                 return 0;
+            switch (unit)
+            {
+                case deg:
+                    return (nval * Math.PI) / 180.0; 
+                case grad:
+                    return (nval * Math.PI) / 200.0;
+                case rad:
+                    return nval;
+                case turn:
+                    return nval * 2 * Math.PI;
+                default:
+                    return 0;
+            }
         }
     }
     
@@ -625,6 +635,13 @@ public class VisualContext
         return ptEval;
     }
     
+    private RadEvaluator getRadEval()
+    {
+        if (radEval == null)
+            radEval = new RadEvaluator(this);
+        return radEval;
+    }
+    
     //============================================================================================================================
     
     /**
@@ -678,6 +695,23 @@ public class VisualContext
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.ptLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
+        }
+    }
+    
+    private class RadEvaluator extends UnitEvaluator
+    {
+        public RadEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.radAngle((TermAngle) val);
             else
                 return 0.0; //this should not happen
         }
