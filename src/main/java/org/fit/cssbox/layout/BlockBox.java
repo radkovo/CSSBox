@@ -1843,8 +1843,10 @@ public class BlockBox extends ElementBox
     {
         if (clipRegion != null && clipRegion.getFunctionName().equalsIgnoreCase("rect"))
         {
-            List<TermFloatValue> args = clipRegion.getSeparatedValues(CSSFactory.getTermFactory().createOperator(','));
-            if (args.size() == 4)
+            List<TermFloatValue> args = clipRegion.getValues(); //try the rect(0 0 0 0) syntax
+            if (args == null || args.size() != 4)
+                args = clipRegion.getSeparatedValues(CSSFactory.getTermFactory().createOperator(',')); //try the rect(0, 0, 0, 0) syntax
+            if (args != null && args.size() == 4)
             {
                 CSSDecoder dec = new CSSDecoder(ctx);
                 Rectangle brd = getAbsoluteBorderBounds();
