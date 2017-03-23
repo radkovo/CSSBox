@@ -399,6 +399,12 @@ public class TableBodyBox extends BlockBox
     	//the background is drawn in the individual cells
 	}
     
+    @Override
+    protected void loadPadding(CSSDecoder dec, int contw)
+    {
+        padding = new LengthSet(); //padding does not apply to table body boxes
+    }
+    
     //====================================================================================
     
 	/**
