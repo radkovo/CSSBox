@@ -27,10 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.FontFamily;
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
+import cz.vutbr.web.csskit.CalcArgs;
+import cz.vutbr.web.csskit.TermCalcAngleImpl;
 
 /**
  * The visual context represents the context of the element - the current font properties, EM and EX values,
@@ -40,6 +44,8 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
  */
 public class VisualContext 
 {
+    protected static final Logger log = LoggerFactory.getLogger(VisualContext.class);
+
     private VisualContext parent;
     private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
@@ -58,6 +64,11 @@ public class VisualContext
     private double dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
+
+    private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
+    private PtEvaluator ptEval; //expression evaluator for obtaining points values of expressions
+    private RadEvaluator radEval; //expression evaluator for obtaining radian values of expressions
+
     
     public VisualContext(VisualContext parent, BoxFactory factory)
     {
@@ -391,7 +402,14 @@ public class VisualContext
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
+        {
             return (whole * nval) / 100;
+        }
+        else if (spec instanceof TermCalc)
+        {
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getPtEval().setWhole(whole));
+        }
         else
         {
             final TermLength.Unit unit = spec.getUnit();
@@ -455,7 +473,14 @@ public class VisualContext
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
+        {
             return (whole * nval) / 100;
+        }
+        else if (spec instanceof TermCalc)
+        {
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getPxEval().setWhole(whole));
+        }
         else
         {
             final TermLength.Unit unit = spec.getUnit();
@@ -518,20 +543,28 @@ public class VisualContext
     {
         float nval = spec.getValue();
         final TermLength.Unit unit = spec.getUnit();
-        if (unit == null)
-            return 0;
-        switch (unit)
+        if (spec instanceof TermCalcAngleImpl)
         {
-            case deg:
-                return (nval * Math.PI) / 180.0; 
-            case grad:
-                return (nval * Math.PI) / 200.0;
-            case rad:
-                return nval;
-            case turn:
-                return nval * 2 * Math.PI;
-            default:
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getRadEval());
+        }
+        else
+        {
+            if (unit == null)
                 return 0;
+            switch (unit)
+            {
+                case deg:
+                    return (nval * Math.PI) / 180.0; 
+                case grad:
+                    return (nval * Math.PI) / 200.0;
+                case rad:
+                    return nval;
+                case turn:
+                    return nval * 2 * Math.PI;
+                default:
+                    return 0;
+            }
         }
     }
     
@@ -587,28 +620,101 @@ public class VisualContext
             if (avail[i].equalsIgnoreCase(family)) return avail[i];
         return null;
     }
+
+    private PxEvaluator getPxEval()
+    {
+        if (pxEval == null)
+            pxEval = new PxEvaluator(this);
+        return pxEval;
+    }
+    
+    private PtEvaluator getPtEval()
+    {
+        if (ptEval == null)
+            ptEval = new PtEvaluator(this);
+        return ptEval;
+    }
+    
+    private RadEvaluator getRadEval()
+    {
+        if (radEval == null)
+            radEval = new RadEvaluator(this);
+        return radEval;
+    }
+    
+    //============================================================================================================================
     
     /**
-     * Creates a new java Color instance according to a CSS specification rgb(r,g,b)
-     * @param spec the CSS color specification
-     * @return the Color instance
+     * A base of all the evaluators that use the VisualContext for evaluating the calc() expressions.
+     *
+     * @author burgetr
      */
-    public Color getColor(String spec)
+    private abstract class UnitEvaluator extends CalcArgs.DoubleEvaluator
     {
-        if (spec.startsWith("rgb("))
+        protected VisualContext ctx;
+        protected double whole; //whole size used for percentages
+        
+        public UnitEvaluator(VisualContext ctx)
         {
-            String s = spec.substring(4, spec.length() - 1);
-            String[] lst = s.split(",");
-            try {
-                int r = Integer.parseInt(lst[0].trim());
-                int g = Integer.parseInt(lst[1].trim());
-                int b = Integer.parseInt(lst[2].trim());
-                return new Color(r, g, b);
-            } catch (NumberFormatException e) {
-                return null;
-            }
+            this.ctx = ctx;
         }
-        else
-            return null;
+
+        public UnitEvaluator setWhole(double whole)
+        {
+            this.whole = whole;
+            return this;
+        }
     }
+    
+    private class PxEvaluator extends UnitEvaluator
+    {
+        public PxEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.pxLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
+        }
+    }
+    
+    private class PtEvaluator extends UnitEvaluator
+    {
+        public PtEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.ptLength((TermLengthOrPercent) val, whole);
+            else
+                return 0.0; //this should not happen
+        }
+    }
+    
+    private class RadEvaluator extends UnitEvaluator
+    {
+        public RadEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.radAngle((TermAngle) val);
+            else
+                return 0.0; //this should not happen
+        }
+    }
+    
 }

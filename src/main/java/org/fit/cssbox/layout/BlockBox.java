@@ -25,15 +25,15 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.Clip;
 import cz.vutbr.web.css.NodeData;
-import cz.vutbr.web.css.Term;
-import cz.vutbr.web.css.TermFunction;
 import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermRect;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
@@ -175,7 +175,7 @@ public class BlockBox extends ElementBox
     protected int indent;
     
     /** Clipping region specified using the clip: property (with absolute coordinates) */
-    protected TermFunction clipRegion;
+    protected TermRect clipRegion;
     
     //=====================================================================
     
@@ -1838,26 +1838,27 @@ public class BlockBox extends ElementBox
      */
     protected Rectangle getClippingRectangle()
     {
-        if (clipRegion != null && clipRegion.getFunctionName().equalsIgnoreCase("rect") && clipRegion.getValue().size() == 4)
+        if (clipRegion != null)
         {
+            List<TermLength> args = clipRegion.getValue();
             CSSDecoder dec = new CSSDecoder(ctx);
             Rectangle brd = getAbsoluteBorderBounds();
             int x1 = brd.x;
             int y1 = brd.y;
             int x2 = brd.x + brd.width - 1;
             int y2 = brd.y + brd.height - 1;
-            Term<?> top = clipRegion.get(0);
-            Term<?> right = clipRegion.get(1);
-            Term<?> bottom = clipRegion.get(2);
-            Term<?> left = clipRegion.get(3);
+            TermLength top = args.get(0);
+            TermLength right = args.get(1);
+            TermLength bottom = args.get(2);
+            TermLength left = args.get(3);
             
-            if (left instanceof TermLength)
+            if (left != null)
                 x1 = brd.x + dec.getLength((TermLength) left, false, 0, 0, 0);
-            if (top instanceof TermLength)
+            if (top != null)
                 y1 = brd.y + dec.getLength((TermLength) top, false, 0, 0, 0);
-            if (right instanceof TermLength)
+            if (right != null)
                 x2 = brd.x + dec.getLength((TermLength) right, false, 0, 0, 0);
-            if (bottom instanceof TermLength)
+            if (bottom != null)
                 y2 = brd.y + dec.getLength((TermLength) bottom, false, 0, 0, 0);
             
             return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
@@ -1906,7 +1907,7 @@ public class BlockBox extends ElementBox
         {
             CSSProperty.Clip clip = style.getProperty("clip");
             if (clip == Clip.shape)
-                clipRegion = style.getValue(TermFunction.class, "clip");
+                clipRegion = style.getValue(TermRect.class, "clip");
         }
     }
     
