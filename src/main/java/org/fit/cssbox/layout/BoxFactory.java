@@ -69,8 +69,11 @@ public class BoxFactory
 
     private static final Set<CSSProperty.Display> properTableChild;
     static {
-        properTableChild = new HashSet<>(4);
+        properTableChild = new HashSet<>(7);
         properTableChild.add(ElementBox.DISPLAY_TABLE_ROW);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_ROW_GROUP);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_HEADER_GROUP);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_FOOTER_GROUP);
         properTableChild.add(ElementBox.DISPLAY_TABLE_COLUMN);
         properTableChild.add(ElementBox.DISPLAY_TABLE_COLUMN_GROUP);
         properTableChild.add(ElementBox.DISPLAY_TABLE_CAPTION);
@@ -528,11 +531,11 @@ public class BoxFactory
         //generate missing child wrappers
         // https://www.w3.org/TR/CSS22/tables.html#anonymous-boxes
         if (root.getDisplay() == ElementBox.DISPLAY_TABLE || root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
-            createAnonymousWrappers((BlockBox) root, "tr", "table-row", properTableChild);
+            createAnonymousWrappers(root, "tr", "table-row", properTableChild);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP)
-            createAnonymousWrappers((BlockBox) root, "tr", "table-row", properTableRowGroupChild);
+            createAnonymousWrappers(root, "tr", "table-row", properTableRowGroupChild);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
-            createAnonymousWrappers((BlockBox) root, "td", "table-cell", properTableRowChild);
+            createAnonymousWrappers(root, "td", "table-cell", properTableRowChild);
         //table cells require a row parent
         createAnonymousBoxes(root, 
                              ElementBox.DISPLAY_TABLE_CELL,
@@ -644,7 +647,7 @@ public class BoxFactory
         root.endChild = nest.size();
     }
     
-    private void createAnonymousWrappers(BlockBox root, String name, String display, Set<CSSProperty.Display> allowed)
+    private void createAnonymousWrappers(ElementBox root, String name, String display, Set<CSSProperty.Display> allowed)
     {
         Vector<Box> nest = new Vector<Box>();
         ElementBox adiv = null;
