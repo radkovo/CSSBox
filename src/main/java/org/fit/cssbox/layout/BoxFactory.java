@@ -22,8 +22,10 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.Vector;
 
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -65,6 +67,27 @@ public class BoxFactory
 {
     private static Logger log = LoggerFactory.getLogger(BoxFactory.class);
 
+    private static final Set<CSSProperty.Display> properTableChild;
+    static {
+        properTableChild = new HashSet<>(4);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_ROW);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_COLUMN);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_COLUMN_GROUP);
+        properTableChild.add(ElementBox.DISPLAY_TABLE_CAPTION);
+    }
+    
+    private static final Set<CSSProperty.Display> properTableRowGroupChild;
+    static {
+        properTableRowGroupChild = new HashSet<>(1);
+        properTableRowGroupChild.add(ElementBox.DISPLAY_TABLE_ROW);
+    }
+    
+    private static final Set<CSSProperty.Display> properTableRowChild;
+    static {
+        properTableRowChild = new HashSet<>(1);
+        properTableRowChild.add(ElementBox.DISPLAY_TABLE_CELL);
+    }
+    
     protected BrowserConfig config;
     protected HTMLBoxFactory html;
     
@@ -502,6 +525,14 @@ public class BoxFactory
             createAnonymousBlocks((BlockBox) root);
         else if (root.containsMixedContent())
             createAnonymousInline(root);
+        //generate missing child wrappers
+        // https://www.w3.org/TR/CSS22/tables.html#anonymous-boxes
+        if (root.getDisplay() == ElementBox.DISPLAY_TABLE || root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
+            createAnonymousWrappers((BlockBox) root, "tr", "table-row", properTableChild);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP)
+            createAnonymousWrappers((BlockBox) root, "tr", "table-row", properTableRowGroupChild);
+        else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW)
+            createAnonymousWrappers((BlockBox) root, "td", "table-cell", properTableRowChild);
         //table cells require a row parent
         createAnonymousBoxes(root, 
                              ElementBox.DISPLAY_TABLE_CELL,
@@ -613,6 +644,55 @@ public class BoxFactory
         root.endChild = nest.size();
     }
     
+    private void createAnonymousWrappers(BlockBox root, String name, String display, Set<CSSProperty.Display> allowed)
+    {
+        Vector<Box> nest = new Vector<Box>();
+        ElementBox adiv = null;
+        for (int i = 0; i < root.getSubBoxNumber(); i++)
+        {
+            Box sub = root.getSubBox(i);
+            if (sub.isBlock() && allowed.contains(((BlockBox) sub).getDisplay()))
+            {
+                if (adiv != null && !adiv.isempty)
+                {
+                    normalizeBox(adiv); //normalize even the newly created blocks
+                    removeTrailingWhitespaces(adiv);
+                }
+                adiv = null;
+                nest.add(sub);
+            }
+            else if (adiv != null || !(sub instanceof InlineBox) || !sub.isWhitespace()) //omit whitespace inline boxes at the beginning of the blocks
+            {
+                if (adiv == null)
+                {
+                    Element elem = createAnonymousElement(root.getElement().getOwnerDocument(), name, display);
+                    adiv = createBox(root, elem, display);
+                    adiv.isblock = true;
+                    adiv.isempty = true;
+                    adiv.setContainingBlockBox(sub.getContainingBlockBox());
+                    adiv.setClipBlock(sub.getClipBlock());
+                    nest.add(adiv);
+                }
+                if (sub.isDisplayed() && !sub.isEmpty()) 
+                { 
+                    adiv.isempty = false;
+                    adiv.displayed = true;
+                }
+                adiv.addSubBox(sub);
+                sub.setContainingBlockBox(adiv);
+            }
+            else
+                sub.setContainingBlockBox(null);
+        }
+        if (adiv != null && !adiv.isempty)
+        {
+            normalizeBox(adiv); //normalize even the newly created blocks
+            removeTrailingWhitespaces(adiv);
+        }
+        root.nested = nest;
+        root.endChild = nest.size();
+    }
+
     /**
      * Checks the child boxes of the specified root box wheter they require creating an anonymous
      * parent box.
