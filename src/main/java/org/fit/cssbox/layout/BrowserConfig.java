@@ -21,6 +21,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.HashMap;
@@ -219,15 +220,23 @@ public class BrowserConfig
      * Creates a new instance of the {@link org.fit.cssbox.io.DocumentSource} class registered in the browser configuration.
      * @param url the URL to be given to the document source.
      * @return the document source.
+     * @throws IOException 
      */
-    public DocumentSource createDocumentSource(URL url)
+    public DocumentSource createDocumentSource(URL url) throws IOException
     {
         try
         {
             Constructor<? extends DocumentSource> constr = getDocumentSourceClass().getConstructor(URL.class);
             return constr.newInstance(url);
         } catch (Exception e) {
-            log.warn("Could not create the DocumentSource instance: " + e.getMessage());
+            Throwable cause = e; //find if there is an IOException cause and throw it
+            while (cause != null && !(cause instanceof IOException))
+                cause = e.getCause();
+            if (cause != null && cause instanceof IOException)
+                throw (IOException) cause;
+            //no IO exception cause, this should not happen (some internal reflection problem)
+            log.error("Could not create the DocumentSource instance: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
