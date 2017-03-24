@@ -1861,7 +1861,7 @@ public class BlockBox extends ElementBox
             if (bottom != null)
                 y2 = brd.y + dec.getLength((TermLength) bottom, false, 0, 0, 0);
             
-            return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+            return new Rectangle(x1, y1, x2 - x1, y2 - y1);
         }
         else
             return null;
