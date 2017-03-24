@@ -656,10 +656,11 @@ public class BoxFactory
             Box sub = root.getSubBox(i);
             if (sub.isBlock() && allowed.contains(((BlockBox) sub).getDisplay()))
             {
-                if (adiv != null && !adiv.isempty)
+                if (adiv != null)
                 {
                     normalizeBox(adiv); //normalize even the newly created blocks
-                    removeTrailingWhitespaces(adiv);
+                    if (!adiv.isempty)
+                        removeTrailingWhitespaces(adiv);
                 }
                 adiv = null;
                 nest.add(sub);
@@ -687,10 +688,11 @@ public class BoxFactory
             else
                 sub.setContainingBlockBox(null);
         }
-        if (adiv != null && !adiv.isempty)
+        if (adiv != null)
         {
             normalizeBox(adiv); //normalize even the newly created blocks
-            removeTrailingWhitespaces(adiv);
+            if (!adiv.isempty)
+                removeTrailingWhitespaces(adiv);
         }
         root.nested = nest;
         root.endChild = nest.size();
