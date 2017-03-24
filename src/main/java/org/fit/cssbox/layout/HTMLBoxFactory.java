@@ -21,6 +21,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -141,7 +142,13 @@ public class HTMLBoxFactory
             rbox.setViewport(viewport);
             rbox.setStyle(style);
     
-            String src = HTMLNorm.getAttribute(e, "src");
+            String src;
+            try
+            {
+                src = URLDecoder.decode(HTMLNorm.getAttribute(e, "src"), "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                src = "";
+            }
             rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
             
             if (rbox.isBlock())
