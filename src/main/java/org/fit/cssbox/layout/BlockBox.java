@@ -69,6 +69,9 @@ public class BlockBox extends ElementBox
     public static final CSSProperty.Overflow OVERFLOW_SCROLL = CSSProperty.Overflow.SCROLL;
     public static final CSSProperty.Overflow OVERFLOW_AUTO = CSSProperty.Overflow.AUTO;
     
+    public static final CSSProperty.BoxSizing CONTENT_BOX = CSSProperty.BoxSizing.CONTENT_BOX;
+    public static final CSSProperty.BoxSizing BORDER_BOX = CSSProperty.BoxSizing.BORDER_BOX;
+    
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
     protected static final int INFLOW_SPACE_THRESHOLD = 15;
@@ -153,6 +156,9 @@ public class BlockBox extends ElementBox
         
     /** Overflow-Y property */
     protected CSSProperty.Overflow overflowY;
+    
+    /** Box-sizing property */
+    protected CSSProperty.BoxSizing boxSizing;
         
     /** the left position should be set to static position during the layout */
     protected boolean leftstatic;
@@ -200,6 +206,7 @@ public class BlockBox extends ElementBox
         clearing = CLEAR_NONE;
         overflowX = OVERFLOW_VISIBLE;
         overflowY = OVERFLOW_VISIBLE;
+        boxSizing = CONTENT_BOX;
         align = ALIGN_LEFT;
         indent = 0;
         clipRegion = null;
@@ -235,6 +242,7 @@ public class BlockBox extends ElementBox
         position = src.position;
         overflowX = OVERFLOW_VISIBLE;
         overflowY = OVERFLOW_VISIBLE;
+        boxSizing = CONTENT_BOX;
         align = ALIGN_LEFT;
         indent = 0;
         clipRegion = null;
@@ -265,6 +273,7 @@ public class BlockBox extends ElementBox
         clearing = src.clearing;
         overflowX = src.overflowX;
         overflowY = src.overflowY;
+        boxSizing = src.boxSizing;
         align = src.align;
         indent = src.indent;
         topstatic = src.topstatic;
@@ -1887,6 +1896,9 @@ public class BlockBox extends ElementBox
         else if (overflowY == OVERFLOW_VISIBLE && overflowX != OVERFLOW_VISIBLE)
             overflowY = OVERFLOW_AUTO;
         
+        boxSizing = style.getProperty("box-sizing");
+        if (boxSizing == null) boxSizing = CONTENT_BOX;
+        
         align = style.getProperty("text-align");
         if (align == null) align = ALIGN_LEFT;
         
@@ -2082,7 +2094,8 @@ public class BlockBox extends ElementBox
 
         //Calculate widths and margins
         TermLengthOrPercent width = getLengthValue("width");
-        computeWidths(width, style.getProperty("width") == CSSProperty.Width.AUTO, true, update);
+        boolean wauto = (width == null) || (style.getProperty("width") == CSSProperty.Width.AUTO);
+        computeWidths(width, wauto, true, update);
         if (max_size.width != -1 && content.width > max_size.width)
         {
             width = getLengthValue("max-width");
@@ -2097,7 +2110,8 @@ public class BlockBox extends ElementBox
         //Calculate heights and margins
         // http://www.w3.org/TR/CSS21/visudet.html#Computing_heights_and_margins
         TermLengthOrPercent height = getLengthValue("height");
-        computeHeights(height, style.getProperty("height") == CSSProperty.Height.AUTO, true, update);
+        boolean hauto = (height == null) || (style.getProperty("height") == CSSProperty.Height.AUTO);
+        computeHeights(height, hauto, true, update);
         if (max_size.height != -1 && content.height > max_size.height)
         {
             height = getLengthValue("max-height");
@@ -2107,6 +2121,21 @@ public class BlockBox extends ElementBox
         {
             height = getLengthValue("min-height");
             computeHeights(height, false, false, update);
+        }
+        
+        //apply box-sizing if different from content-box
+        if (boxSizing == BORDER_BOX)
+        {
+            if (!wauto)
+            {
+                content.width -= border.left + border.right + padding.left + padding.right;
+                if (content.width < 0) content.width = 0;
+            }
+            if (!hauto)
+            {
+                content.height -= border.top + border.bottom + padding.top + padding.bottom;
+                if (content.height < 0) content.height = 0;
+            }
         }
         
         //apply width adjustment when updating
