@@ -1,3 +1,11 @@
+2017-09-07 - Version 4.13
+- Several layout computation fixes
+- Table width computation fixes
+- White space collapsing fixes
+- calc() evaluation support
+- Basic box-sizing support
+- Ported to jStyleParser 3
+
 2016-07-12 - Version 4.12
 - Fix decoding CSS lengths with no unit
 - Thin line drawing fix
