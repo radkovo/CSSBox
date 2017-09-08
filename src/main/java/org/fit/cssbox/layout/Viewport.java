@@ -18,6 +18,7 @@
 
 package org.fit.cssbox.layout;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -617,6 +618,20 @@ public class Viewport extends BlockBox
             return new Rectangle(0, 0, width, height);
     }
 	
+    @Override
+    public void drawBackground(Graphics2D g)
+    {
+        //fill the complete packground with the background color first
+        if (bgcolor != null)
+        {
+            Color color = g.getColor();
+            g.setColor(bgcolor);
+            g.fillRect(0, 0, width, height);
+            g.setColor(color);
+        }
+        super.drawBackground(g);
+    }
+
     //===================================================================================
     
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
