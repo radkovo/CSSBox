@@ -36,6 +36,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.event.IIOReadUpdateListener;
 import javax.imageio.stream.ImageInputStream;
 
+import org.fit.cssbox.io.ContentObserver;
 import org.fit.cssbox.io.DocumentSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +140,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                     try {
                         img = loadImageFromSource(url);
                     } catch (IOException e) {
+                        observeLoadFailed(url);
                         ImageCache.putFailed(url);
                         log.error("Unable to get image from: " + url);
                         log.error(e.getMessage());
@@ -156,6 +158,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 try {
                     img = loadImageFromSource(url);
                 } catch (IOException e) {
+                    observeLoadFailed(url);
                     log.error("Unable to get image from: " + url);
                     log.error(e.getMessage());
                     return null;
@@ -206,6 +209,13 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
 
         return image;
     }    
+    
+    private void observeLoadFailed(URL url)
+    {
+        final ContentObserver observer = getOwner().getViewport().getConfig().getContentObserver();
+        if (observer != null)
+            observer.contentLoadFailed(url);
+    }
     
     /**
      * Checks if caching is used when loading images.
@@ -465,13 +475,14 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                 }
                 Thread.sleep(25);
                 loadtime += 25;
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 image = null;
                 abort = true;
                 log.warn("waitForLoad(): Image loading aborted: " + e.getMessage());
             }
         }
+        if (image == null)
+            observeLoadFailed(url);
         return complete;
     }
     

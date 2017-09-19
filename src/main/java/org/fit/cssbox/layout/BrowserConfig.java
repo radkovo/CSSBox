@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.fit.cssbox.io.ContentObserver;
 import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
@@ -70,6 +71,9 @@ public class BrowserConfig
     /** Registered DOMSource implementation */
     private Class<? extends DOMSource> domSourceClass;
     
+    /** Registered content observer that tracks the image loading */
+    private ContentObserver contentObserver;
+    
     /** Default font families */
     private Map<String, String> defaultFonts;
     
@@ -87,6 +91,7 @@ public class BrowserConfig
         clipViewport = false;
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
+        contentObserver = null;
         initDefaultFonts();
     }
 
@@ -146,6 +151,20 @@ public class BrowserConfig
     public void setImageLoadTimeout(int imageLoadTimeout)
     {
         this.imageLoadTimeout = imageLoadTimeout;
+    }
+
+    /**
+     * Registers the content observer that tracks the image loading.
+     * @param contentObserver the content observer to be used or {@code null} for none.
+     */
+    public void setContentObserver(ContentObserver contentObserver)
+    {
+        this.contentObserver = contentObserver;
+    }
+
+    public ContentObserver getContentObserver()
+    {
+        return contentObserver;
     }
 
     public boolean getUseHTML()
