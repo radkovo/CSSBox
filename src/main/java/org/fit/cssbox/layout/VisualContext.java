@@ -333,7 +333,7 @@ public class VisualContext
         
         //color
         TermColor clr = style.getSpecifiedValue(TermColor.class, "color");
-        if (clr != null) color = clr.getValue();
+        if (clr != null) color = CSSUnits.convertColor(clr.getValue());
     }
     
     /** 

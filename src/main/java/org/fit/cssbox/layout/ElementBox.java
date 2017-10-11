@@ -1163,7 +1163,7 @@ abstract public class ElementBox extends Box
             //System.out.println("Elem: " + this + "side: " + side + "color: " + tclr);
             Color clr = null;
             if (tclr != null)
-                clr = tclr.getValue();
+                clr = CSSUnits.convertColor(tclr.getValue());
             if (clr == null)
             {
                 clr = ctx.getColor();
@@ -1406,7 +1406,7 @@ abstract public class ElementBox extends Box
             if (bgc.isTransparent())
                 bgcolor = null;
             else
-                bgcolor = bgc.getValue();
+                bgcolor = CSSUnits.convertColor(bgc.getValue());
         }
         else
             bgcolor = null;

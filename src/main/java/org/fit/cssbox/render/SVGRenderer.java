@@ -32,6 +32,7 @@ import javax.imageio.ImageIO;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;
 
+import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
@@ -238,7 +239,7 @@ public class SVGRenderer implements BoxRenderer
         {
             Color clr = null;
             if (tclr != null)
-                clr = tclr.getValue();
+                clr = CSSUnits.convertColor(tclr.getValue());
             if (clr == null)
             {
                 clr = eb.getVisualContext().getColor();
