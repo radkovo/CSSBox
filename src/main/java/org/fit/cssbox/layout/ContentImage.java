@@ -203,7 +203,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
                             currentImageReader.dispose();
                         }
                     }
-                    while (imageReaders.hasNext());
+                    while (image == null && imageReaders.hasNext());
                 }
             } catch (Exception e) {
                 log.error("Image decoding error: " + e.getMessage());
