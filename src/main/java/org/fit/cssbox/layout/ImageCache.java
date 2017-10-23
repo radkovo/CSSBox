@@ -21,49 +21,17 @@ package org.fit.cssbox.layout;
 
 import java.awt.Image;
 import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A simple cache for storing already loaded images.
+ * Image cache interface. Simple singleton implementation is not enough.
+ * For example we can try to load failed image later, set some limits to memory storage or store them on local FS.
  * 
- * @author Alessandro Tucci
+ * @author dedrakot
  */
-public class ImageCache
+public interface ImageCache
 {
-    private static ConcurrentHashMap<URL, Image> cache;
-    static {
-        cache = new ConcurrentHashMap<URL, Image>();
-    }
-
-    private static ConcurrentHashMap<URL, Boolean> failed;
-    static {
-        failed = new ConcurrentHashMap<URL, Boolean>();
-    }
-    
-    public static Image put(URL uri, Image image)
-    {
-        return cache.put(uri, image);
-    }
-
-    public static Image get(URL uri)
-    {
-        return cache.get(uri);
-    }
-
-    public static Image remove(URL uri)
-    {
-        return cache.remove(uri);
-    }
-    
-    public static void putFailed(URL uri)
-    {
-        failed.put(uri, true);
-    }
-    
-    public static boolean hasFailed(URL uri)
-    {
-        Boolean b = failed.get(uri);
-        return (b != null && b == true);
-    }
-    
+    void put(URL uri, Image image);
+    Image get(URL uri);
+    void putFailed(URL uri);
+    boolean hasFailed(URL uri);
 }

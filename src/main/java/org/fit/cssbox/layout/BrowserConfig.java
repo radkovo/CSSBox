@@ -73,6 +73,8 @@ public class BrowserConfig
     
     /** Registered content observer that tracks the image loading */
     private ContentObserver contentObserver;
+
+    private ImageCache imageCache;
     
     /** Default font families */
     private Map<String, String> defaultFonts;
@@ -165,6 +167,15 @@ public class BrowserConfig
     public ContentObserver getContentObserver()
     {
         return contentObserver;
+    }
+
+    public ImageCache getImageCache()
+    {
+        return imageCache;
+    }
+
+    public void setImageCache(ImageCache imageCache) {
+        this.imageCache = imageCache;
     }
 
     public boolean getUseHTML()
