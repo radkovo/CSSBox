@@ -132,79 +132,85 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         Image img;
         if (url != null)
         {
-            if (cache)
+            ImageCache imageCache = getImageCache(cache);
+            if (imageCache != null)
             {
                 // get image and cache
-                img = ImageCache.get(url);
-                if (img == null && !ImageCache.hasFailed(url)) {
-                    try {
-                        img = loadImageFromSource(url);
-                    } catch (IOException e) {
-                        observeLoadFailed(url);
-                        ImageCache.putFailed(url);
-                        log.error("Unable to get image from: " + url);
-                        log.error(e.getMessage());
-                        return null;
-                    }
+                img = imageCache.get(url);
+                if (img == null && !imageCache.hasFailed(url)) {
+                    img = loadImageFromSource(url);
                     if (img != null)
-                        ImageCache.put(url, img);
+                        imageCache.put(url, img);
                     else
-                        ImageCache.putFailed(url);
+                        imageCache.putFailed(url);
                 }
             }
             else
             {
                 // do not cache, just get image
-                try {
-                    img = loadImageFromSource(url);
-                } catch (IOException e) {
-                    observeLoadFailed(url);
-                    log.error("Unable to get image from: " + url);
-                    log.error(e.getMessage());
-                    return null;
-                }
+                img = loadImageFromSource(url);
             }
 
-            // start loading and preparation
-            toolkit.prepareImage(img, -1, -1, observer);
-            return img;
+            if(img != null)
+            {
+                // start loading and preparation
+                toolkit.prepareImage(img, -1, -1, observer);
+                return img;
+            }
+            // observer need to know that resource with this url will be absent.
+            // Even if we only check that url has failed earlier.
+            observeLoadFailed(url);
         }
         return null;
     }
 
-    private Image loadImageFromSource(URL url) throws IOException
+    private ImageCache getImageCache(boolean cache)
+    {
+        return cache ? getOwner().getViewport().getConfig().getImageCache() : null;
+    }
+
+    private Image loadImageFromSource(URL url)
     {
         Image image = null;
-        DocumentSource imgsrc = owner.getViewport().getConfig().createDocumentSource(url);
-        InputStream urlStream = imgsrc.getInputStream();
-        ImageInputStream imageInputStream = ImageIO.createImageInputStream(urlStream);
-        try
-        {
-            Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
-            if (!imageReaders.hasNext())
-            {
-                log.warn("No image readers for URL: " + url);
-                log.warn("  owner: " + getOwner());
-            }
-            while (imageReaders.hasNext())
-            {
-                ImageReader currentImageReader = imageReaders.next();
-                currentImageReader.setInput(imageInputStream);
-                currentImageReader.addIIOReadUpdateListener(this);
 
-                try
+        // I need to catch IOExceptions starting from this moment and close imgsrc if set
+        try (DocumentSource imgsrc = owner.getViewport().getConfig().createDocumentSource(url))
+        {
+            InputStream urlStream = imgsrc.getInputStream();
+            ImageInputStream imageInputStream = ImageIO.createImageInputStream(urlStream);
+            try
+            {
+                Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+                if (!imageReaders.hasNext())
                 {
-                    image = currentImageReader.read(0);
-                } catch (Exception e) {
-                    log.error("Image decoding error: " + e.getMessage() + " with reader " + currentImageReader);
-                } finally {
-                    currentImageReader.dispose();
+                    log.warn("No image readers for URL: " + url);
+                    log.warn("  owner: " + getOwner());
                 }
+                else
+                {
+                    do
+                    {
+                        ImageReader currentImageReader = imageReaders.next();
+                        currentImageReader.setInput(imageInputStream);
+                        currentImageReader.addIIOReadUpdateListener(this);
+
+                        try
+                        {
+                            image = currentImageReader.read(0);
+                        } catch (Exception e) {
+                            log.error("Image decoding error: " + e.getMessage() + " with reader " + currentImageReader);
+                        } finally {
+                            currentImageReader.dispose();
+                        }
+                    }
+                    while (image == null && imageReaders.hasNext());
+                }
+            } catch (Exception e) {
+                log.error("Image decoding error: " + e.getMessage());
             }
-        } catch (Exception e) {
-            log.error("Image decoding error: " + e.getMessage());
-        } finally {
-            imgsrc.close();
+        } catch (IOException e) {
+            log.error("Unable to get image from: " + url);
+            log.error(e.getMessage());
         }
 
         return image;
