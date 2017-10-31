@@ -20,6 +20,8 @@
 
 package org.fit.cssbox.css;
 
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -33,6 +35,8 @@ import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NetworkProcessor;
 import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.RuleBlock;
+import cz.vutbr.web.css.RuleFontFace;
 import cz.vutbr.web.css.RuleSet;
 import cz.vutbr.web.css.Selector;
 import cz.vutbr.web.css.StyleSheet;
@@ -368,6 +372,7 @@ public class DOMAnalyzer
     	this.media = new MediaSpec(media);
         StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
         styles.add(newsheet);
+        processCustomFonts();
     }
 
     /** 
@@ -381,6 +386,7 @@ public class DOMAnalyzer
         this.media = media;
         StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
         styles.add(newsheet);
+        processCustomFonts();
     }
 
     /** 
@@ -392,6 +398,48 @@ public class DOMAnalyzer
     public void getStyleSheets()
     {
     	getStyleSheets(media);
+    }
+    
+    public void processCustomFonts() {
+    	for (StyleSheet sheet : styles) {
+    		for (RuleBlock<?> block : sheet.asList()) {
+    			if (block instanceof RuleFontFace) {
+    				processFontFaceRule((RuleFontFace)block);
+    			}
+    		}
+    	}
+    }
+    
+    private void processFontFaceRule(RuleFontFace rule) {
+    	String name = rule.getFontFamily();
+    	URL sourceURL = rule.getSource();
+    	if (name == null || sourceURL == null) {
+    		log.warn("Skipping incomplete font-face rule: " + rule);
+    		return;
+    	}
+    	// Style and weight from the rule don't help us with AWT registration.  
+    	    	
+    	InputStream is = null;
+    	try {
+    	is = sourceURL.openStream();
+    	} catch (IOException e) {
+    		log.error("Can not load font-face font. Failed to open stream from: " + sourceURL.toExternalForm());
+    		return;
+    	}
+    	
+    	Font font = null;
+    	try {
+			font = Font.createFont(Font.TRUETYPE_FONT, is);
+		} catch (Exception e) {
+			log.error("Can not load font-face font. Failed to read data from: " + sourceURL.toExternalForm());
+			return;
+		}
+    	
+    	if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font)) {
+    		log.debug("Registered font-face font:" + name);
+    	} else {
+    		log.error("Failed to register font-face font: " + name);
+    	}
     }
 
     /**
