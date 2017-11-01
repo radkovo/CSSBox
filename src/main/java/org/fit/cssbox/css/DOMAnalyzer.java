@@ -20,8 +20,6 @@
 
 package org.fit.cssbox.css;
 
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -64,6 +62,7 @@ public class DOMAnalyzer
     private Analyzer analyzer; //style sheet analyzer
     private StyleMap stylemap; //style map for DOM nodes
     private StyleMap istylemap; //style map with inheritance
+    private FontTable fontTable; //local font table
     
     /** The origin of a style sheet */
     public enum Origin 
@@ -372,7 +371,6 @@ public class DOMAnalyzer
     	this.media = new MediaSpec(media);
         StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
         styles.add(newsheet);
-        processCustomFonts();
     }
 
     /** 
@@ -386,7 +384,6 @@ public class DOMAnalyzer
         this.media = media;
         StyleSheet newsheet = CSSFactory.getUsedStyles(doc, encoding, baseUrl, this.media);
         styles.add(newsheet);
-        processCustomFonts();
     }
 
     /** 
@@ -400,48 +397,6 @@ public class DOMAnalyzer
     	getStyleSheets(media);
     }
     
-    public void processCustomFonts() {
-    	for (StyleSheet sheet : styles) {
-    		for (RuleBlock<?> block : sheet.asList()) {
-    			if (block instanceof RuleFontFace) {
-    				processFontFaceRule((RuleFontFace)block);
-    			}
-    		}
-    	}
-    }
-    
-    private void processFontFaceRule(RuleFontFace rule) {
-    	String name = rule.getFontFamily();
-    	URL sourceURL = rule.getSource();
-    	if (name == null || sourceURL == null) {
-    		log.warn("Skipping incomplete font-face rule: " + rule);
-    		return;
-    	}
-    	// Style and weight from the rule don't help us with AWT registration.  
-    	    	
-    	InputStream is = null;
-    	try {
-    	is = sourceURL.openStream();
-    	} catch (IOException e) {
-    		log.error("Can not load font-face font. Failed to open stream from: " + sourceURL.toExternalForm());
-    		return;
-    	}
-    	
-    	Font font = null;
-    	try {
-			font = Font.createFont(Font.TRUETYPE_FONT, is);
-		} catch (Exception e) {
-			log.error("Can not load font-face font. Failed to read data from: " + sourceURL.toExternalForm());
-			return;
-		}
-    	
-    	if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font)) {
-    		log.debug("Registered font-face font:" + name);
-    	} else {
-    		log.error("Failed to register font-face font: " + name);
-    	}
-    }
-
     /**
      * Loads a stylesheet from an URL as an author style sheet.
      * Imports all the imported style sheets before storing it.
@@ -580,6 +535,7 @@ public class DOMAnalyzer
 	    analyzer = null;
 	    stylemap = null;
 	    istylemap = null;
+	    fontTable = null;
 	}
 	
     /**
@@ -660,6 +616,37 @@ public class DOMAnalyzer
         istylemap.put(el, pseudo, style);
     }
     
+    public FontTable getFontTable()
+    {
+        if (fontTable == null)
+        {
+            fontTable = new FontTable();
+            scanLocalFonts();
+        }
+        return fontTable;
+    }
+    
+    private void scanLocalFonts()
+    {
+        for (StyleSheet sheet : styles)
+        {
+            for (RuleBlock<?> block : sheet.asList())
+            {
+                if (block instanceof RuleFontFace)
+                {
+                    processFontFaceRule((RuleFontFace) block);
+                }
+            }
+        }
+    }
+    
+    private void processFontFaceRule(RuleFontFace rule)
+    {
+        FontSpec spec = new FontSpec(rule.getFontFamily(), rule.getFontWeight(), rule.getFontStyle());
+        List<RuleFontFace.Source> sources = rule.getSources();
+        fontTable.put(spec, sources);
+    }
+
     //====================================================================
     
     private void recursiveStylesToDom(Node n)
