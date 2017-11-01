@@ -99,4 +99,16 @@ public class FontSpec
         return true;
     }
     
+    /**
+     * Check whether the specified font corresponds to this font specification.
+     * @param font The font properties (it shouldn't contain any {@code null} values
+     * @return {@code true} when the font corresponds to this font spec
+     */
+    public boolean meets(FontSpec font)
+    {
+        return this.family.equalsIgnoreCase(font.family)
+                && (this.weight == null || this.weight == font.weight)
+                && (this.style == null || this.style == font.style);
+    }
+    
 }

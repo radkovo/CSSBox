@@ -495,6 +495,7 @@ public class DOMAnalyzer
     	    StyleSheet newsheet = CSSFactory.parseString(cssdata, base);
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
+            fontTable = null; //force recomputing the font table the next time
 	    } catch (IOException e) {
             log.error("I/O Error: "+e.getMessage());
         } catch (CSSException e) {
@@ -518,6 +519,7 @@ public class DOMAnalyzer
     	    StyleSheet newsheet = CSSFactory.parseString(cssdata, base, processor);
             newsheet.setOrigin(translateOrigin(origin));
             styles.add(newsheet);
+            fontTable = null; //force recomputing the font table the next time
 	    } catch (IOException e) {
             log.error("I/O Error: "+e.getMessage());
         } catch (CSSException e) {
@@ -535,7 +537,6 @@ public class DOMAnalyzer
 	    analyzer = null;
 	    stylemap = null;
 	    istylemap = null;
-	    fontTable = null;
 	}
 	
     /**

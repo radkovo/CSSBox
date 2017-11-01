@@ -23,10 +23,17 @@ package org.fit.cssbox.layout;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.fit.cssbox.css.FontDecoder;
+import org.fit.cssbox.css.FontSpec;
+import org.fit.cssbox.io.DocumentSource;
+import org.fit.net.DataURLHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -254,17 +261,24 @@ public class VisualContext
     public void update(NodeData style)
     {
         //setup the font
+        CSSProperty.FontWeight weight = style.getProperty("font-weight");
+        if (weight != null) fontWeight = weight;
+        CSSProperty.FontStyle fstyle =  style.getProperty("font-style");
+        if (fstyle != null) fontStyle = fstyle;
+        
         String family = null;
         CSSProperty.FontFamily ff = style.getProperty("font-family");
         if (ff == null)
+        {
             family = font.getFamily(); //use current
+        }
         else if (ff == FontFamily.list_values)
         {
             TermList fmlspec = style.getValue(TermList.class, "font-family");
             if (fmlspec == null)
                 family = font.getFamily();
             else
-                family = getFontName(fmlspec);
+                family = getFontName(fmlspec, fontWeight, fontStyle);
         }
         else
         {
@@ -299,17 +313,7 @@ public class VisualContext
         else
             rem = em; //we don't have a root context?
         
-        CSSProperty.FontWeight weight = style.getProperty("font-weight");
-        if (weight != null) fontWeight = weight;
-        CSSProperty.FontStyle fstyle =  style.getProperty("font-style");
-        if (fstyle != null) fontStyle = fstyle;
-        int fs = Font.PLAIN;
-        if (representsBold(fontWeight))
-            fs = Font.BOLD;
-        if (fontStyle == CSSProperty.FontStyle.ITALIC || fontStyle == CSSProperty.FontStyle.OBLIQUE)
-            fs = fs | Font.ITALIC;
-        
-        font = new Font(family, fs, (int) Math.round(size));
+        font = createFont(family, (int) Math.round(size), fontWeight, fontStyle);
         em = size;
         
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
@@ -593,9 +597,8 @@ public class VisualContext
      * @param list of terms obtained from the font-family property
      * @return a font name string according to java.awt.Font
      */
-    public String getFontName(TermList list)
+    private String getFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
     {
-        String avail[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         for (Term<?> term : list)
         {
             Object value = term.getValue();
@@ -603,12 +606,89 @@ public class VisualContext
                 return ((CSSProperty.FontFamily) value).getAWTValue();
             else
             {
-                String name = fontAvailable(value.toString(), avail);
+                String name = lookupFont(value.toString(), weight, style);
                 if (name != null) return name;
             }
         }
         //nothing found, use Serif
         return java.awt.Font.SERIF;
+    }
+    
+    /**
+     * Check if the font family is available either among the CSS defined fonts or the system fonts.
+     * If found, registers a system font with the given name. 
+     * @param family Required font family
+     * @param weight Required font weight
+     * @param style Required font style
+     * @return The corresponding system font name or {@code null} when no candidates have been found. 
+     */
+    private String lookupFont(String family, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    {
+        final String systemFontNames[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        //try to look in the style font table
+        String nameFound = null;
+        FontSpec spec = new FontSpec(family, weight, style);
+        List<RuleFontFace.Source> srcs = factory.getDecoder().getFontTable().findLastMatch(spec);
+        if (srcs != null)
+        {
+            for (RuleFontFace.Source src : srcs)
+            {
+                if (src instanceof RuleFontFace.SourceLocal)
+                {
+                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName(), systemFontNames);
+                    if (name != null)
+                    {
+                        nameFound = name;
+                        break;
+                    }
+                }
+                else if (src instanceof RuleFontFace.SourceURL)
+                {
+                    try
+                    {
+                        TermURI urlstring = ((RuleFontFace.SourceURL) src).getURI();
+                        URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
+                        String regName = FontDecoder.findRegisteredFont(url);
+                        if (regName == null)
+                        {
+                            DocumentSource imgsrc = viewport.getConfig().createDocumentSource(url);
+                            Font newFont = FontDecoder.decodeFont(imgsrc);
+                            if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
+                                log.debug("Registered font: {}", newFont.getFontName());
+                            else
+                                log.debug("Failed to register font: {}", newFont.getFontName());
+                            regName = newFont.getFontName();
+                            FontDecoder.registerFont(url, regName);
+                        }
+                        nameFound = regName;
+                    } catch (MalformedURLException e) {
+                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
+                    } catch (IOException e) {
+                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
+                    } catch (FontFormatException e) {
+                        log.error("Couldn't decode font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
+                    }
+                }
+            }
+        }
+        //if nothing found, try the system font names
+        if (nameFound == null)
+        {
+            nameFound = fontAvailable(family, systemFontNames);
+        }
+        //create the font when found
+        return nameFound;
+    }
+    
+    public Font createFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    {
+        int fs = Font.PLAIN;
+        if (representsBold(weight))
+            fs = Font.BOLD;
+        if (style == CSSProperty.FontStyle.ITALIC || style == CSSProperty.FontStyle.OBLIQUE)
+            fs = fs | Font.ITALIC;
+        
+        return new Font(family, fs, size);
     }
     
     /** Returns true if the font family is available.

@@ -1,5 +1,5 @@
 /*
- * FontMap.java
+ * FontDecoder.java
  * Copyright (c) 2005-2017 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
@@ -15,36 +15,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 1. 11. 2017, 16:20:14 by burgetr
+ * Created on 1. 11. 2017, 23:23:03 by burgetr
  */
 package org.fit.cssbox.css;
 
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
-import cz.vutbr.web.css.RuleFontFace;
-import cz.vutbr.web.css.RuleFontFace.Source;
+import org.fit.cssbox.io.DocumentSource;
+
 
 /**
- * A table of registered font sources.
- * 
+ *
  * @author burgetr
  */
-public class FontTable extends LinkedHashMap<FontSpec, List<RuleFontFace.Source>>
+public class FontDecoder
 {
-    private static final long serialVersionUID = 1L;
+    private static Map<URL, String> registeredFonts = new HashMap<>();
 
-    
-    public List<RuleFontFace.Source> findLastMatch(FontSpec font)
+    public static void registerFont(URL url, String family)
     {
-        List<RuleFontFace.Source> ret = null;
-        for (Map.Entry<FontSpec, List<Source>> entry : entrySet())
-        {
-            if (entry.getKey().meets(font))
-                ret = entry.getValue();
-        }
-        return ret;
+        registeredFonts.put(url, family);
     }
+    
+    public static String findRegisteredFont(URL url)
+    {
+        return registeredFonts.get(url);
+    }
+    
+    public static Font decodeFont(DocumentSource fontSource) throws FontFormatException, IOException
+    {
+        //TODO decode other formats than TTF
+        return Font.createFont(Font.TRUETYPE_FONT, fontSource.getInputStream());
+    }
+    
     
 }

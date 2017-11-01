@@ -168,6 +168,15 @@ public class BoxFactory
     }
     
     /**
+     * Obtains the CSS analyzer and decoder used by the boxes.
+     * @return A DOMAnalyzer
+     */
+    public DOMAnalyzer getDecoder()
+    {
+        return decoder;
+    }
+    
+    /**
      * Reset the factory for creating a new tree.
      */
     public void reset()
