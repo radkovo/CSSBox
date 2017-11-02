@@ -627,20 +627,24 @@ public class VisualContext
                     try
                     {
                         TermURI urlstring = ((RuleFontFace.SourceURL) src).getURI();
-                        URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
-                        String regName = FontDecoder.findRegisteredFont(url);
-                        if (regName == null)
+                        String format = ((RuleFontFace.SourceURL) src).getFormat();
+                        if (format == null || FontDecoder.supportedFormats.contains(format))
                         {
-                            DocumentSource imgsrc = viewport.getConfig().createDocumentSource(url);
-                            Font newFont = FontDecoder.decodeFont(imgsrc);
-                            if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
-                                log.debug("Registered font: {}", newFont.getFontName());
-                            else
-                                log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
-                            regName = newFont.getFontName();
-                            FontDecoder.registerFont(url, regName);
+                            URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
+                            String regName = FontDecoder.findRegisteredFont(url);
+                            if (regName == null)
+                            {
+                                DocumentSource imgsrc = viewport.getConfig().createDocumentSource(url);
+                                Font newFont = FontDecoder.decodeFont(imgsrc, format);
+                                if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
+                                    log.debug("Registered font: {}", newFont.getFontName());
+                                else
+                                    log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
+                                regName = newFont.getFontName();
+                                FontDecoder.registerFont(url, regName);
+                            }
+                            nameFound = regName;
                         }
-                        nameFound = regName;
                     } catch (MalformedURLException e) {
                         log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
                     } catch (IOException e) {

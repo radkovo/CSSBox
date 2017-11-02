@@ -645,7 +645,8 @@ public class DOMAnalyzer
     {
         FontSpec spec = new FontSpec(rule.getFontFamily(), rule.getFontWeight(), rule.getFontStyle());
         List<RuleFontFace.Source> sources = rule.getSources();
-        fontTable.put(spec, sources);
+        if (sources != null)
+            fontTable.put(spec, sources);
     }
 
     //====================================================================

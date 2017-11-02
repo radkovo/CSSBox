@@ -23,7 +23,9 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.fit.cssbox.io.DocumentSource;
@@ -35,6 +37,12 @@ import org.fit.cssbox.io.DocumentSource;
  */
 public class FontDecoder
 {
+    public static List<String> supportedFormats;
+    static {
+        supportedFormats = new ArrayList<String>(1);
+        supportedFormats.add("truetype");
+    }
+    
     private static Map<URL, String> registeredFonts = new HashMap<>();
 
     public static void registerFont(URL url, String family)
@@ -47,7 +55,7 @@ public class FontDecoder
         return registeredFonts.get(url);
     }
     
-    public static Font decodeFont(DocumentSource fontSource) throws FontFormatException, IOException
+    public static Font decodeFont(DocumentSource fontSource, String format) throws FontFormatException, IOException
     {
         //TODO decode other formats than TTF
         return Font.createFont(Font.TRUETYPE_FONT, fontSource.getInputStream());
