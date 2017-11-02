@@ -572,26 +572,6 @@ public class VisualContext
         }
     }
     
-    /**
-     * Converts the weight value to bold / not bold
-     * @param weight a CSS weight
-     * @return true if the given weight corresponds to bold
-     */
-    public boolean representsBold(CSSProperty.FontWeight weight)
-    {
-        if (weight == CSSProperty.FontWeight.BOLD ||
-            weight == CSSProperty.FontWeight.BOLDER ||
-            weight == CSSProperty.FontWeight.numeric_600 ||    
-            weight == CSSProperty.FontWeight.numeric_700 ||    
-            weight == CSSProperty.FontWeight.numeric_800 ||    
-            weight == CSSProperty.FontWeight.numeric_900)
-        {
-            return true;
-        }
-        else
-            return false;
-    }
-    
     /** 
      * Scans a list of font definitions and chooses the first one that is available
      * @param list of terms obtained from the font-family property
@@ -628,7 +608,7 @@ public class VisualContext
         //try to look in the style font table
         String nameFound = null;
         FontSpec spec = new FontSpec(family, weight, style);
-        List<RuleFontFace.Source> srcs = factory.getDecoder().getFontTable().findLastMatch(spec);
+        List<RuleFontFace.Source> srcs = factory.getDecoder().getFontTable().findBestMatch(spec);
         if (srcs != null)
         {
             for (RuleFontFace.Source src : srcs)
@@ -656,7 +636,7 @@ public class VisualContext
                             if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
                                 log.debug("Registered font: {}", newFont.getFontName());
                             else
-                                log.debug("Failed to register font: {}", newFont.getFontName());
+                                log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
                             regName = newFont.getFontName();
                             FontDecoder.registerFont(url, regName);
                         }
@@ -683,7 +663,7 @@ public class VisualContext
     public Font createFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
     {
         int fs = Font.PLAIN;
-        if (representsBold(weight))
+        if (FontSpec.representsBold(weight))
             fs = Font.BOLD;
         if (style == CSSProperty.FontStyle.ITALIC || style == CSSProperty.FontStyle.OBLIQUE)
             fs = fs | Font.ITALIC;

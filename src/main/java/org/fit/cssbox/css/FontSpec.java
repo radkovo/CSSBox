@@ -102,13 +102,48 @@ public class FontSpec
     /**
      * Check whether the specified font corresponds to this font specification.
      * @param font The font properties (it shouldn't contain any {@code null} values
-     * @return {@code true} when the font corresponds to this font spec
+     * @return The match score (0 = no match, greater is better)
      */
-    public boolean meets(FontSpec font)
+    public int match(FontSpec font)
     {
-        return this.family.equalsIgnoreCase(font.family)
-                && (this.weight == null || this.weight == font.weight)
-                && (this.style == null || this.style == font.style);
+        if (this.family.equalsIgnoreCase(font.family))
+        {
+            int ret = 100;
+            
+            if (this.weight == null)
+                ret++;
+            else if  (representsBold(this.weight) == representsBold(font.weight))
+                ret += 10;
+            
+            if (this.style == null)
+                ret++;
+            else if (this.style == font.style)
+                ret += 10;
+            
+            return ret;
+        }
+        else
+            return 0;
     }
     
+    /**
+     * Converts the weight value to bold / not bold
+     * @param weight a CSS weight
+     * @return true if the given weight corresponds to bold
+     */
+    public static boolean representsBold(CSSProperty.FontWeight weight)
+    {
+        if (weight == CSSProperty.FontWeight.BOLD ||
+            weight == CSSProperty.FontWeight.BOLDER ||
+            weight == CSSProperty.FontWeight.numeric_600 ||    
+            weight == CSSProperty.FontWeight.numeric_700 ||    
+            weight == CSSProperty.FontWeight.numeric_800 ||    
+            weight == CSSProperty.FontWeight.numeric_900)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+
 }

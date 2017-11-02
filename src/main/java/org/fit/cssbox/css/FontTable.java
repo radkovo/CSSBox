@@ -36,13 +36,17 @@ public class FontTable extends LinkedHashMap<FontSpec, List<RuleFontFace.Source>
     private static final long serialVersionUID = 1L;
 
     
-    public List<RuleFontFace.Source> findLastMatch(FontSpec font)
+    public List<RuleFontFace.Source> findBestMatch(FontSpec font)
     {
         List<RuleFontFace.Source> ret = null;
+        int max = 0;
         for (Map.Entry<FontSpec, List<Source>> entry : entrySet())
         {
-            if (entry.getKey().meets(font))
+            if (entry.getKey().match(font) > max)
+            {
                 ret = entry.getValue();
+                max = entry.getKey().match(font);
+            }
         }
         return ret;
     }
