@@ -608,7 +608,7 @@ public class VisualContext
         //try to look in the style font table
         String nameFound = null;
         FontSpec spec = new FontSpec(family, weight, style);
-        List<RuleFontFace.Source> srcs = factory.getDecoder().getFontTable().findBestMatch(spec);
+        List<RuleFontFace.Source> srcs = findMatchingFontSources(spec);
         if (srcs != null)
         {
             for (RuleFontFace.Source src : srcs)
@@ -662,6 +662,14 @@ public class VisualContext
         }
         //create the font when found
         return nameFound;
+    }
+    
+    private List<RuleFontFace.Source> findMatchingFontSources(FontSpec spec)
+    {
+        if (factory != null)
+            return factory.getDecoder().getFontTable().findBestMatch(spec);
+        else
+            return null; //no factory available, boxes have been created in some alternative way, no font table is available
     }
     
     public Font createFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
