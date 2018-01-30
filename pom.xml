@@ -54,9 +54,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-	<prerequisites>
-		<maven>3.2.3</maven>
-	</prerequisites>
 
 	<build>
 		<resources>
@@ -157,7 +154,7 @@
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>3.2-SNAPSHOT</version>
+			<version>3.2</version>
 		</dependency>
 		<dependency>
 		      <groupId>junit</groupId>
