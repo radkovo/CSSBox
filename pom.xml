@@ -12,7 +12,7 @@
 
 	<groupId>net.sf.cssbox</groupId>
 	<artifactId>cssbox</artifactId>
-	<version>4.14-SNAPSHOT</version>
+	<version>4.14</version>
 	<name>CSSBox</name>
 	<description>
 	CSSBox is an (X)HTML/CSS rendering engine written in pure Java. Its primary purpose is to provide a
@@ -48,7 +48,7 @@
 		<url>https://github.com/radkovo/CSSBox</url>
 		<connection>scm:git:git@github.com:radkovo/CSSBox.git</connection>
 		<developerConnection>scm:git:git@github.com:radkovo/CSSBox.git</developerConnection>
-	  <tag>HEAD</tag>
+	  <tag>cssbox-4.14</tag>
 	</scm>
 	
     <properties>
