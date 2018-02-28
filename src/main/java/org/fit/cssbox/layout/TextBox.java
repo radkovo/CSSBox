@@ -816,6 +816,27 @@ public class TextBox extends Box implements Inline
     }
     
     /**
+     * Computes the X pixel offset of the given character of the box text. 
+     * @param pos the character position in the string (0 is the first character in the box)
+     * @return the X offset in pixels
+     */
+    public int getCharOffsetX(int pos)
+    {
+        if (text != null)
+        {
+            FontMetrics fm = g.getFontMetrics();
+            if (pos <= textStart)
+                return 0;
+            else if (pos > textStart && pos < textEnd)
+                return fm.stringWidth(text.substring(textStart, pos));
+            else
+                return fm.stringWidth(text.substring(textStart, textEnd));
+        }
+        else
+            return 0;
+    }
+    
+    /**
      * Computes the lengths of the first, last and longest lines.
      */
     protected void computeLineLengths()
