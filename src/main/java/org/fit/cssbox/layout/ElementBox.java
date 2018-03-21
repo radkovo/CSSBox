@@ -114,7 +114,7 @@ abstract public class ElementBox extends Box
     protected NodeData style;
     
     /** Efficient styles for the pseudo classes */
-    protected Map<Selector.PseudoDeclaration, NodeData> pseudoStyle;
+    protected Map<Selector.PseudoClassType, NodeData> pseudoStyle;
     
     /** Background images or null when there are no background images */
     protected Vector<BackgroundImage> bgimages;
@@ -123,7 +123,7 @@ abstract public class ElementBox extends Box
     protected boolean textonly;
     
     /** The map of related pseudo-elements (if any) */
-    protected Map<Selector.PseudoDeclaration, ElementBox> pseudoElements;
+    protected Map<Selector.PseudoElementType, ElementBox> pseudoElements;
     
     //============================== Computed style ======================
     
@@ -213,7 +213,7 @@ abstract public class ElementBox extends Box
         super(n, g, ctx);
         minAbsBounds = null;
         style = null;
-        pseudoStyle = new HashMap<Selector.PseudoDeclaration, NodeData>();
+        pseudoStyle = new HashMap<>();
         if (n != null)
         {
 	        el = n;
@@ -223,7 +223,7 @@ abstract public class ElementBox extends Box
 	        nextTwin = null;
 	        
 	        nested = new Vector<Box>();
-	        pseudoElements = new HashMap<Selector.PseudoDeclaration, ElementBox>();
+	        pseudoElements = new HashMap<>();
 	        startChild = 0;
 	        endChild = 0;
 	        isblock = false;
@@ -246,9 +246,9 @@ abstract public class ElementBox extends Box
         super.copyValues(src);
         nested.addAll(src.nested);
         textonly = src.textonly;
-        pseudoElements = new HashMap<Selector.PseudoDeclaration, ElementBox>(src.pseudoElements);
+        pseudoElements = new HashMap<>(src.pseudoElements);
         style = src.style; 
-        pseudoStyle = new HashMap<Selector.PseudoDeclaration, NodeData>(src.pseudoStyle);
+        pseudoStyle = new HashMap<>(src.pseudoStyle);
         startChild = src.startChild;
         endChild = src.endChild;
         isblock = src.isblock;
@@ -619,7 +619,7 @@ abstract public class ElementBox extends Box
      * @param pseudo the name of the pseudo-element
      * @param box the corresponding pseudo-element box
      */
-    public void setPseudoElement(Selector.PseudoDeclaration pseudo, ElementBox box)
+    public void setPseudoElement(Selector.PseudoElementType pseudo, ElementBox box)
     {
         pseudoElements.put(pseudo, box);
     }
@@ -629,7 +629,7 @@ abstract public class ElementBox extends Box
      * @param pseudo the name of the pseudo-element
      * @return the related box
      */
-    public ElementBox getPseudoElement(Selector.PseudoDeclaration pseudo)
+    public ElementBox getPseudoElement(Selector.PseudoElementType pseudo)
     {
         return pseudoElements.get(pseudo);
     }
@@ -639,7 +639,7 @@ abstract public class ElementBox extends Box
      * @param pseudo the name of the pseudo-element
      * @return the related box
      */
-    public boolean hasPseudoElement(Selector.PseudoDeclaration pseudo)
+    public boolean hasPseudoElement(Selector.PseudoElementType pseudo)
     {
         return pseudoElements.containsKey(pseudo);
     }

@@ -37,8 +37,8 @@ import cz.vutbr.web.css.RuleBlock;
 import cz.vutbr.web.css.RuleFontFace;
 import cz.vutbr.web.css.RuleSet;
 import cz.vutbr.web.css.Selector;
+import cz.vutbr.web.css.Selector.PseudoElementType;
 import cz.vutbr.web.css.StyleSheet;
-import cz.vutbr.web.css.Selector.PseudoDeclaration;
 import cz.vutbr.web.domassign.Analyzer;
 import cz.vutbr.web.domassign.StyleMap;
 
@@ -587,7 +587,7 @@ public class DOMAnalyzer
      * @param pseudo the pseudo class or element used for style computation
      * @return the resulting style declaration 
      */
-    public NodeData getElementStyleInherited(Element el, PseudoDeclaration pseudo)
+    public NodeData getElementStyleInherited(Element el, PseudoElementType pseudo)
     {
         checkStylesInherited();
         return istylemap.get(el, pseudo);
@@ -599,7 +599,7 @@ public class DOMAnalyzer
      * @param pseudo The pseudo element specification
      * @return <code>true</code> if there is some style defined for the given pseudo-element
      */
-    public boolean hasPseudoDef(Element el, PseudoDeclaration pseudo)
+    public boolean hasPseudoDef(Element el, PseudoElementType pseudo)
     {
         checkStylesInherited();
         return istylemap.hasPseudo(el, pseudo);
@@ -611,7 +611,7 @@ public class DOMAnalyzer
      * @param pseudo The pseudo-element or <code>null</code> if none is required
      * @param style the assigned style
      */
-    public void useStyle(Element el, PseudoDeclaration pseudo, NodeData style)
+    public void useStyle(Element el, PseudoElementType pseudo, NodeData style)
     {
         checkStylesInherited();
         istylemap.put(el, pseudo, style);

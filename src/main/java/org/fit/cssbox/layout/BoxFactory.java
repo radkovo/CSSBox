@@ -42,7 +42,7 @@ import cz.vutbr.web.css.CSSFactory;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Declaration;
 import cz.vutbr.web.css.NodeData;
-import cz.vutbr.web.css.Selector;
+import cz.vutbr.web.css.Selector.PseudoElementType;
 import cz.vutbr.web.css.Term;
 import cz.vutbr.web.css.TermFunction;
 import cz.vutbr.web.css.TermIdent;
@@ -50,7 +50,6 @@ import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermString;
 import cz.vutbr.web.css.TermURI;
 import cz.vutbr.web.css.CSSProperty.Overflow;
-import cz.vutbr.web.css.Selector.PseudoDeclaration;
 
 
 /**
@@ -230,7 +229,7 @@ public class BoxFactory
                 //create :before elements
                 if (stat.parent.previousTwin == null)
                 {
-                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.BEFORE);
+                    Node n = createPseudoElement(stat.parent, PseudoElementType.BEFORE);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
                         stat.curchild = -1;
@@ -253,7 +252,7 @@ public class BoxFactory
                 //create :after elements
                 if (stat.parent.nextTwin == null)
                 {
-                    Node n = createPseudoElement(stat.parent, PseudoDeclaration.AFTER);
+                    Node n = createPseudoElement(stat.parent, PseudoElementType.AFTER);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
                         stat.curchild = children.getLength();
@@ -856,7 +855,7 @@ public class BoxFactory
      * @param pseudo The pseudo element name
      * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
      */
-    private Node createPseudoElement(ElementBox box, Selector.PseudoDeclaration pseudo) 
+    private Node createPseudoElement(ElementBox box, PseudoElementType pseudo) 
     {
         Element n = box.getElement();
         //New box style
