@@ -27,12 +27,9 @@ import org.fit.cssbox.layout.ElementBox;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Term;
-import cz.vutbr.web.css.TermAngle;
 import cz.vutbr.web.css.TermFunction;
-import cz.vutbr.web.css.TermInteger;
 import cz.vutbr.web.css.TermLengthOrPercent;
 import cz.vutbr.web.css.TermList;
-import cz.vutbr.web.css.TermNumber;
 
 /**
  * Shared graphical transformation methods that may be shared among renderers.
@@ -81,127 +78,64 @@ public class Transform
                 TermList values = elem.getStyle().getValue(TermList.class, "transform");
                 for (Term<?> term : values)
                 {
-                    if (term instanceof TermFunction)
+                    if (term instanceof TermFunction.Rotate)
                     {
-                        final TermFunction func = (TermFunction) term;
-                        final String fname = func.getFunctionName().toLowerCase();
-                        if (fname.equals("rotate"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
-                            {
-                                double theta = dec.getAngle((TermAngle) func.get(0));
-                                ret.rotate(theta);
-                            }
-                        }
-                        else if (fname.equals("translate"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
-                            {
-                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
-                                ret.translate(tx, 0.0);
-                            }
-                            else if (func.size() == 2 && func.get(0) instanceof TermLengthOrPercent && func.get(1) instanceof TermLengthOrPercent)
-                            {
-                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
-                                int ty = dec.getLength((TermLengthOrPercent) func.get(1), false, 0, 0, bounds.height);
-                                ret.translate(tx, ty);
-                            }
-                        }
-                        else if (fname.equals("translatex"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
-                            {
-                                int tx = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.width);
-                                ret.translate(tx, 0.0);
-                            }
-                        }
-                        else if (fname.equals("translatey"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermLengthOrPercent)
-                            {
-                                int ty = dec.getLength((TermLengthOrPercent) func.get(0), false, 0, 0, bounds.height);
-                                ret.translate(0.0, ty);
-                            }
-                        }
-                        else if (fname.equals("scale"))
-                        {
-                            if (func.size() == 1 && isNumber(func.get(0)))
-                            {
-                                float sx = getNumber(func.get(0));
-                                ret.scale(sx, sx);
-                            }
-                            else if (func.size() == 2 && isNumber(func.get(0)) && isNumber(func.get(1)))
-                            {
-                                float sx = getNumber(func.get(0));
-                                float sy = getNumber(func.get(1));
-                                ret.scale(sx, sy);
-                            }
-                        }
-                        else if (fname.equals("scalex"))
-                        {
-                            if (func.size() == 1 && isNumber(func.get(0)))
-                            {
-                                float sx = getNumber(func.get(0));
-                                ret.scale(sx, 1.0);
-                            }
-                        }
-                        else if (fname.equals("scaley"))
-                        {
-                            if (func.size() == 1 && isNumber(func.get(0)))
-                            {
-                                float sy = getNumber(func.get(0));
-                                ret.scale(1.0, sy);
-                            }
-                        }
-                        else if (fname.equals("skew"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
-                            {
-                                double ax = dec.getAngle((TermAngle) func.get(0));
-                                ret.shear(Math.tan(ax), 0.0);
-                            }
-                            else if (func.size() == 2 && func.get(0) instanceof TermAngle && func.get(1) instanceof TermAngle)
-                            {
-                                double ax = dec.getAngle((TermAngle) func.get(0));
-                                double ay = dec.getAngle((TermAngle) func.get(1));
-                                ret.shear(Math.tan(ax), Math.tan(ay));
-                            }
-                        }
-                        else if (fname.equals("skewx"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
-                            {
-                                double ax = dec.getAngle((TermAngle) func.get(0));
-                                ret.shear(Math.tan(ax), 0.0);
-                            }
-                        }
-                        else if (fname.equals("skewy"))
-                        {
-                            if (func.size() == 1 && func.get(0) instanceof TermAngle)
-                            {
-                                double ay = dec.getAngle((TermAngle) func.get(0));
-                                ret.shear(0.0, Math.tan(ay));
-                            }
-                        }
-                        else if (fname.equals("matrix"))
-                        {
-                            if (func.size() == 6)
-                            {
-                                double[] vals = new double[6];
-                                boolean typesOk = true;
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    if (isNumber(func.get(i)))
-                                        vals[i] = getNumber(func.get(i));
-                                    else
-                                        typesOk = false;
-                                }
-                                if (typesOk)
-                                {
-                                    ret.concatenate(new AffineTransform(vals));
-                                }
-                            }
-                        }
+                        double theta = dec.getAngle(((TermFunction.Rotate) term).getAngle());
+                        ret.rotate(theta);
+                    }
+                    else if (term instanceof TermFunction.Translate)
+                    {
+                        int tx = dec.getLength(((TermFunction.Translate) term).getTranslateX(), false, 0, 0, bounds.width);
+                        int ty = dec.getLength(((TermFunction.Translate) term).getTranslateY(), false, 0, 0, bounds.height);
+                        ret.translate(tx, ty);
+                    }
+                    else if (term instanceof TermFunction.TranslateX)
+                    {
+                        int tx = dec.getLength(((TermFunction.TranslateX) term).getTranslate(), false, 0, 0, bounds.width);
+                        ret.translate(tx, 0.0);
+                    }
+                    else if (term instanceof TermFunction.TranslateY)
+                    {
+                        int ty = dec.getLength(((TermFunction.TranslateY) term).getTranslate(), false, 0, 0, bounds.height);
+                        ret.translate(0.0, ty);
+                    }
+                    else if (term instanceof TermFunction.Scale)
+                    {
+                        float sx = ((TermFunction.Scale) term).getScaleX();
+                        float sy = ((TermFunction.Scale) term).getScaleY();
+                        ret.scale(sx, sy);
+                    }
+                    else if (term instanceof TermFunction.ScaleX)
+                    {
+                        float sx = ((TermFunction.ScaleX) term).getScale();
+                        ret.scale(sx, 1.0);
+                    }
+                    else if (term instanceof TermFunction.ScaleY)
+                    {
+                        float sy = ((TermFunction.ScaleY) term).getScale();
+                        ret.scale(1.0, sy);
+                    }
+                    else if (term instanceof TermFunction.Skew)
+                    {
+                        double ax = dec.getAngle(((TermFunction.Skew) term).getSkewX());
+                        double ay = dec.getAngle(((TermFunction.Skew) term).getSkewY());
+                        ret.shear(Math.tan(ax), Math.tan(ay));
+                    }
+                    else if (term instanceof TermFunction.SkewX)
+                    {
+                        double ax = dec.getAngle(((TermFunction.SkewX) term).getSkew());
+                        ret.shear(Math.tan(ax), 0.0);
+                    }
+                    else if (term instanceof TermFunction.SkewY)
+                    {
+                        double ay = dec.getAngle(((TermFunction.SkewY) term).getSkew());
+                        ret.shear(0.0, Math.tan(ay));
+                    }
+                    
+                    else if (term instanceof TermFunction.Matrix)
+                    {
+                        float[] vals = ((TermFunction.Matrix) term).getValues();
+                        ret.concatenate(new AffineTransform(vals));
                     }
                 }
                 ret.translate(-ox, -oy);
@@ -211,19 +145,6 @@ public class Transform
         }
         else
             return null;
-    }
-    
-    private static boolean isNumber(Term<?> term)
-    {
-        return term instanceof TermNumber || term instanceof TermInteger;
-    }
-
-    private static float getNumber(Term<?> term)
-    {
-        if (term instanceof TermNumber)
-            return ((TermNumber) term).getValue();
-        else
-            return ((TermInteger) term).getValue();
     }
     
 }
