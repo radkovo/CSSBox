@@ -156,7 +156,7 @@ public class SVGRenderer implements BoxRenderer
         
         String style = "font-size:" + ctx.getFontSize() + "pt;" + 
                        "font-weight:" + (ctx.getFont().isBold()?"bold":"normal") + ";" + 
-                       "font-variant:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
+                       "font-style:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
                        "font-family:" + ctx.getFont().getFamily() + ";" +
                        "fill:" + colorString(ctx.getColor()) + ";" +
                        "stroke:none";
