@@ -91,7 +91,7 @@ public class ListItemBox extends BlockBox
         if (displayed && isDeclaredVisible())
         {
             if (turn == DrawStage.DRAW_INLINE && floating == FLOAT_NONE && position == POS_STATIC)
-                drawMarker(g);
+                getViewport().getRenderer().renderMarker(this);
             
             super.draw(turn);
     	}
@@ -104,6 +104,15 @@ public class ListItemBox extends BlockBox
     public boolean hasVisibleBullet()
     {
         return styleType != CSSProperty.ListStyleType.NONE;
+    }
+    
+    /**
+     * Returns the list-style-type property value.
+     * @return the list-style-type property value as a string
+     */
+    public String getListStyleType()
+    {
+        return styleType.toString();
     }
     
     /**

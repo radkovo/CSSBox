@@ -20,6 +20,7 @@
 package org.fit.cssbox.render;
 
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
 
@@ -51,6 +52,12 @@ public interface BoxRenderer
      * @param elem
      */
     public void renderElementBackground(ElementBox elem);
+    
+    /**
+     * Renders the marker (the bullet or item number) used by the list-item boxes.
+     * @param elem the list-item box
+     */
+    public void renderMarker(ListItemBox elem);
     
     /**
      * Renders the text represented by a text box according to its computed style.

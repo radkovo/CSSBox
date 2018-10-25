@@ -38,6 +38,7 @@ import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.LengthSet;
+import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.ReplacedContent;
 import org.fit.cssbox.layout.ReplacedImage;
@@ -147,6 +148,13 @@ public class SVGRenderer implements BoxRenderer
             writeBorderSVG(eb, bb.x, bb.y + bb.height, bb.x + bb.width, bb.y + bb.height, "bottom", borders.bottom, 0, -borders.bottom/2);
         if (borders.left > 0)
             writeBorderSVG(eb, bb.x, bb.y, bb.x, bb.y + bb.height, "left", borders.left, borders.left/2, 0);
+    }
+
+    @Override
+    public void renderMarker(ListItemBox elem)
+    {
+        // TODO implement marker rendering
+        
     }
 
     public void renderTextContent(TextBox text)

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
 
@@ -86,6 +87,12 @@ public class GraphicsRenderer implements BoxRenderer
         
         if (origAt != null)
             g.setTransform(origAt);
+    }
+
+    @Override
+    public void renderMarker(ListItemBox elem)
+    {
+        elem.drawMarker(g);
     }
 
     public void renderTextContent(TextBox text)
