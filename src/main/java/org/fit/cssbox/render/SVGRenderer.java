@@ -153,26 +153,17 @@ public class SVGRenderer implements BoxRenderer
     @Override
     public void renderMarker(ListItemBox elem)
     {
-        // TODO implement marker rendering
-        
+        if (elem.getMarkerImage() != null)
+            writeMarkerImage(elem);
+        else
+            writeBullet(elem);
     }
 
     public void renderTextContent(TextBox text)
     {
         Rectangle b = text.getAbsoluteBounds();
-        VisualContext ctx = text.getVisualContext();
-        
-        String style = "font-size:" + ctx.getFontSize() + "pt;" + 
-                       "font-weight:" + (ctx.getFont().isBold()?"bold":"normal") + ";" + 
-                       "font-style:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
-                       "font-family:" + ctx.getFont().getFamily() + ";" +
-                       "fill:" + colorString(ctx.getColor()) + ";" +
-                       "stroke:none";
-        
-        if (!ctx.getTextDecoration().isEmpty())
-            style += ";text-decoration:" + ctx.getTextDecorationString();
-
-        out.println("<text x=\"" + b.x + "\" y=\"" + (b.y + text.getBaselineOffset()) + "\" width=\"" + b.width + "\" height=\"" + b.height + "\" style=\"" + style + "\">" + htmlEntities(text.getText()) + "</text>");
+        String style = textStyle(text.getVisualContext());
+        writeText(b.x, b.y + text.getBaselineOffset(), b.width, b.height, style, text.getText());
     }
 
     public void renderReplacedContent(ReplacedBox box)
@@ -284,6 +275,72 @@ public class SVGRenderer implements BoxRenderer
         }
     }
     
+    private void writeText(int x, int y, String style, String text)
+    {
+        out.println("<text x=\"" + x + "\" y=\"" + y + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
+    }
+    
+    private void writeText(int x, int y, int width, int height, String style, String text)
+    {
+        out.println("<text x=\"" + x + "\" y=\"" + y + "\" width=\"" + width + "\" height=\"" + height + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
+    }
+    
+    private void writeBullet(ListItemBox lb)
+    {
+        if (lb.hasVisibleBullet())
+        {
+            VisualContext ctx = lb.getVisualContext();
+            int x = (int) Math.round(lb.getAbsoluteContentX() - 1.2 * ctx.getEm());
+            int y = (int) Math.round(lb.getAbsoluteContentY() + 0.5 * ctx.getEm());
+            int r = (int) Math.round(0.4 * ctx.getEm());
+            
+            String tclr = colorString(ctx.getColor());
+            String style = "";
+            
+            switch (lb.getListStyleType())
+            {
+                case "circle":
+                    style = "fill:none;fill-opacity:1;stroke:" + tclr + ";stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1";
+                    out.println("<circle style=\"" + style + "\" cx=\"" + (x + r / 2) + "\" cy=\"" + (y + r / 2) + "\" r=\"" + (r / 2) + "\" />");
+                    break;
+                case "square":
+                    style = "fill:" + tclr +";fill-opacity:1;stroke:" + tclr + ";stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1";
+                    out.println("<rect style=\"" + style + "\" x=\"" + x + "\" y=\"" + y + "\" width=\"" + r + "\" height=\"" + r + "\" />");
+                    break;
+                case "disc":
+                    style = "fill:" + tclr +";fill-opacity:1;stroke:" + tclr + ";stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1";
+                    out.println("<circle style=\"" + style + "\" cx=\"" + (x + r / 2) + "\" cy=\"" + (y + r / 2) + "\" r=\"" + (r / 2) + "\" />");
+                    break;
+                default:
+                    
+                    int baseline = lb.getFirstInlineBoxBaseline();
+                    if (baseline == -1)
+                        baseline = ctx.getBaselineOffset(); //use the font baseline
+                    style = textStyle(ctx) + ";text-align:end;text-anchor:end";
+                    writeText((int) Math.round(lb.getAbsoluteContentX() - 0.5 * ctx.getEm()), lb.getAbsoluteContentY() + baseline, style, lb.getMarkerText());
+                    break;
+            }
+        }
+    }
+    
+    private void writeMarkerImage(ListItemBox lb)
+    {
+        //TODO
+    }
+    
+    private String textStyle(VisualContext ctx)
+    {
+        String style = "font-size:" + ctx.getFontSize() + "pt;" + 
+                       "font-weight:" + (ctx.getFont().isBold()?"bold":"normal") + ";" + 
+                       "font-style:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
+                       "font-family:" + ctx.getFont().getFamily() + ";" +
+                       "fill:" + colorString(ctx.getColor()) + ";" +
+                       "stroke:none";
+        if (!ctx.getTextDecoration().isEmpty())
+            style += ";text-decoration:" + ctx.getTextDecorationString();
+        return style;
+    }
+
     private String colorString(Color color)
     {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());

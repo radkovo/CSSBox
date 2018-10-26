@@ -116,6 +116,15 @@ public class ListItemBox extends BlockBox
     }
     
     /**
+     * Returns the image used as a list item marker if any.
+     * @return The image or {@code null} when no image is specified or available.
+     */
+    public ReplacedImage getMarkerImage()
+    {
+        return image;
+    }
+
+    /**
      * Return item number in ordered list.
      *
      * @return item number
@@ -189,8 +198,8 @@ public class ListItemBox extends BlockBox
     {
         ctx.updateGraphics(g);
     	int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
-    	int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
-    	int r = (int) Math.round(0.6 * ctx.getEm());
+    	int y = (int) Math.round(getAbsoluteContentY() + 0.5 * ctx.getEm());
+    	int r = (int) Math.round(0.4 * ctx.getEm());
     	if (styleType == CSSProperty.ListStyleType.CIRCLE) 
     		g.drawOval(x, y, r, r);
     	else if (styleType == CSSProperty.ListStyleType.SQUARE) 
