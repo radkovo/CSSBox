@@ -154,7 +154,10 @@ public class SVGRenderer implements BoxRenderer
     public void renderMarker(ListItemBox elem)
     {
         if (elem.getMarkerImage() != null)
-            writeMarkerImage(elem);
+        {
+            if (!writeMarkerImage(elem))
+                writeBullet(elem);
+        }
         else
             writeBullet(elem);
     }
@@ -323,9 +326,35 @@ public class SVGRenderer implements BoxRenderer
         }
     }
     
-    private void writeMarkerImage(ListItemBox lb)
+    private boolean writeMarkerImage(ListItemBox lb)
     {
-        //TODO
+        VisualContext ctx = lb.getVisualContext();
+        int ofs = lb.getFirstInlineBoxBaseline();
+        if (ofs == -1)
+            ofs = ctx.getBaselineOffset(); //use the font baseline
+        int x = (int) Math.round(lb.getAbsoluteContentX() - 0.5 * ctx.getEm());
+        int y = lb.getAbsoluteContentY() + ofs;
+        BufferedImage img = lb.getMarkerImage().getBufferedImage();
+        if (img != null)
+        {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            try
+            {
+                ImageIO.write(img, "png", os);
+            } catch (IOException e) {
+                out.println("<!-- I/O error: " + e.getMessage() + " -->");
+            }
+            char[] data = Base64Coder.encode(os.toByteArray());
+            String imgdata = "data:image/png;base64," + new String(data);
+            int iw = img.getWidth();
+            int ih = img.getHeight();
+            int ix = x - iw;
+            int iy = y - ih;
+            out.println("<image x=\"" + ix + "\" y=\"" + iy + "\" width=\"" + iw + "\" height=\"" + ih + "\" xlink:href=\"" + imgdata + "\" />");
+            return true;
+        }
+        else
+            return false;
     }
     
     private String textStyle(VisualContext ctx)

@@ -83,6 +83,21 @@ public class ListItemBox extends BlockBox
         styleType = style.getProperty("list-style-type");
         if (styleType == null)
             styleType = ListStyleType.DISC;
+        image = loadMarkerImage(s);
+    }
+    
+    private ReplacedImage loadMarkerImage(NodeData style)
+    {
+        CSSProperty.ListStyleImage img = style.getProperty("list-style-image");
+        if (img == CSSProperty.ListStyleImage.uri)
+        {
+            TermURI urlstring = style.getValue(TermURI.class, "list-style-image");
+            ReplacedImage bgimg = new ReplacedImage(this, ctx, urlstring.getBase(), urlstring.getValue());
+            return bgimg;
+        }
+        else
+            return null;
+        
     }
 
     @Override
@@ -184,7 +199,10 @@ public class ListItemBox extends BlockBox
             g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
         
         if (image != null)
-            drawImage(g);
+        {
+            if (!drawImage(g))
+                drawBullet(g);
+        }
         else
             drawBullet(g);
         
@@ -215,19 +233,23 @@ public class ListItemBox extends BlockBox
     /**
      * Draws an image marker 
      */
-    protected void drawImage(Graphics2D g)
+    protected boolean drawImage(Graphics2D g)
     {
-        int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
-        int y = (int) Math.round(getAbsoluteContentY() + 0.4 * ctx.getEm());
+        int ofs = getFirstInlineBoxBaseline();
+        if (ofs == -1)
+            ofs = ctx.getBaselineOffset(); //use the font baseline
+        int x = (int) Math.round(getAbsoluteContentX() - 0.5 * ctx.getEm());
+        int y = getAbsoluteContentY() + ofs;
         Image img = image.getImage();
         if (img != null)
         {
             int w = img.getWidth(image);
             int h = img.getHeight(image);
-            x = x - w / 2;
-            y = y + h / 2;
-            g.drawImage(img, x, y, image);
+            g.drawImage(img, x - w, y - h, image);
+            return true;
         }
+        else
+            return false; //could not decode the image
     }
 
     /**
