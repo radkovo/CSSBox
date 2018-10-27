@@ -816,11 +816,23 @@ public class TextBox extends Box implements Inline
     }
     
     /**
-     * Computes the X pixel offset of the given character of the box text. 
-     * @param pos the character position in the string (0 is the first character in the box)
+     * Computes the X pixel offset of the given character of the box text. The character position is specified relatively
+     * to the box text.
+     * @param pos the character position in the string relative to the start of the box (0 is the first character in the box)
      * @return the X offset in pixels
      */
     public int getCharOffsetX(int pos)
+    {
+        return getCharOffsetXElem(pos + textStart);
+    }
+    
+    /**
+     * Computes the X pixel offset of the given character of the box text. The character position is specified within the
+     * whole source text node.
+     * @param pos the character position in the string absolutely within the source text node (0 is the first character in the node)
+     * @return the X offset in pixels or 0 when the position does not fit to this box
+     */
+    public int getCharOffsetXElem(int pos)
     {
         if (text != null)
         {
