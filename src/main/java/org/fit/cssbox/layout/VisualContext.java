@@ -622,7 +622,7 @@ public class VisualContext
                         break;
                     }
                 }
-                else if (src instanceof RuleFontFace.SourceURL)
+                else if (src instanceof RuleFontFace.SourceURL && viewport.getConfig().isLoadFonts())
                 {
                     try
                     {

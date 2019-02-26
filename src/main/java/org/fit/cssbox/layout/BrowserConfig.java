@@ -53,10 +53,13 @@ public class BrowserConfig
     /** Should we load the CSS background images? */
     private boolean loadBackgroundImages;
     
+    /** Should we load CSS fonts? */
+    private boolean loadFonts;
+    
     /** Image loading timeout [ms] */
     private int imageLoadTimeout;
     
-    /** Should we interpret the HTML tags? */
+    /** Should we interpret HTML tags? */
     private boolean useHTML;
     
     /** Should we replace the images with their ALT attribute? */
@@ -87,6 +90,7 @@ public class BrowserConfig
         viewportBackgroundColor = Color.WHITE;
         loadImages = true;
         loadBackgroundImages = true;
+        loadFonts = true;
         imageLoadTimeout = 500;
         useHTML = true;
         replaceImagesWithAlt = false;
@@ -130,6 +134,20 @@ public class BrowserConfig
     public boolean getLoadBackgroundImages()
     {
         return loadBackgroundImages;
+    }
+
+    /**
+     * Sets whether to load the CSS fonts automatically. The default value is <code>true</code>.
+     * @param loadImages
+     */
+    public void setLoadFonts(boolean loadFonts)
+    {
+        this.loadFonts = loadFonts;
+    }
+
+    public boolean isLoadFonts()
+    {
+        return loadFonts;
     }
 
     /**
