@@ -133,6 +133,7 @@ public class InlineBox extends ElementBox implements InlineElement
     
     //========================================================================
     
+    @Override
     public int getBaselineOffset()
     {
     	if (curline == null)
@@ -141,6 +142,7 @@ public class InlineBox extends ElementBox implements InlineElement
     		return curline.getBaselineOffset();
     }
     
+    @Override
     public int getBelowBaseline()
     {
     	if (curline == null)
@@ -149,6 +151,7 @@ public class InlineBox extends ElementBox implements InlineElement
     		return curline.getBelowBaseline();
     }
     
+    @Override
     public int getTotalLineHeight()
     {
     	if (curline == null)
@@ -157,6 +160,7 @@ public class InlineBox extends ElementBox implements InlineElement
     		return curline.getTotalLineHeight();
     }
     
+    @Override
     public int getMaxLineHeight()
     {
         if (curline == null)
@@ -165,6 +169,7 @@ public class InlineBox extends ElementBox implements InlineElement
             return Math.max(lineHeight, curline.getMaxBoxHeight());
     }
     
+    @Override
     public int getLineboxOffset()
     {
         if (curline == null)
@@ -176,11 +181,13 @@ public class InlineBox extends ElementBox implements InlineElement
      * Returns the half-lead value used for positioning the nested boxes within this inline box
      * @return half-lead value in pixels
      */
+    @Override
     public int getHalfLead()
     {
         return halflead;
     }
     
+    @Override
     public int getFirstLineLength()
     {
         if (preservesLineBreaks())
@@ -199,6 +206,7 @@ public class InlineBox extends ElementBox implements InlineElement
         }
     }
 
+    @Override
     public int getLastLineLength()
     {
         if (preservesLineBreaks())
@@ -217,6 +225,7 @@ public class InlineBox extends ElementBox implements InlineElement
         }
     }
     
+    @Override
     public boolean containsLineBreak()
     {
         for (int i = startChild; i < endChild; i++)
@@ -226,14 +235,55 @@ public class InlineBox extends ElementBox implements InlineElement
         
     }
 
+    @Override
     public boolean finishedByLineBreak()
     {
         return lineBreakStop;
     }
     
+    @Override
     public boolean collapsedCompletely()
     {
         return collapsedCompletely;
+    }
+    
+    @Override
+    public int getWidthExpansionPoints()
+    {
+        //TODO
+        return 0;
+    }
+
+    @Override
+    public void extendWidth(int dif)
+    {
+        //compute total width of child boxes
+        int totalw = 0;
+        for (int i = startChild; i < endChild; i++)
+        {
+            final Box subbox = getSubBox(i);
+            if (subbox instanceof Inline)
+                totalw += subbox.getWidth();
+        }
+        //distribute the offset among the children
+        int ofsx = 0;
+        int remain = dif;
+        for (int i = startChild; i < endChild; i++)
+        {
+            final Box subbox = getSubBox(i);
+            if (subbox instanceof Inline)
+            {
+                int toadd = Math.round(dif * subbox.getWidth() / (float) totalw);
+                if (toadd > remain)
+                    toadd = remain;
+                subbox.moveRight(ofsx);
+                ((Inline) subbox).extendWidth(toadd);
+                ofsx += toadd;
+                remain -= toadd;
+            }
+        }
+        bounds.width += dif;
+        content.width += dif;
     }
     
     /**

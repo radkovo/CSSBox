@@ -687,19 +687,30 @@ public class BlockBox extends ElementBox
      */
     private void alignLineHorizontally(LineBox line)
     {
-    	//TODO: align: justify
-        int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+        final int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
         if (align != ALIGN_LEFT && dif > 0)
         {
+            int ofsx = 0;
+            int remain = dif;
             for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
             {
                 Box subbox = getSubBox(i);
-                if (!subbox.isBlock())
+                if (subbox instanceof Inline)
                 {
                     if (align == ALIGN_RIGHT)
                         subbox.moveRight(dif);
                     else if (align == ALIGN_CENTER)
                         subbox.moveRight(dif/2);
+                    else if (align == ALIGN_JUSTIFY)
+                    {
+                        int toadd = Math.round(dif * subbox.getWidth() / (float) line.getWidth());
+                        if (toadd > remain)
+                            toadd = remain;
+                        subbox.moveRight(ofsx);
+                        ((Inline) subbox).extendWidth(toadd);
+                        ofsx += toadd;
+                        remain -= toadd;
+                    }
                 }
             }
         }

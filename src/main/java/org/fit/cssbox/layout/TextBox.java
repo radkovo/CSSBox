@@ -790,31 +790,49 @@ public class TextBox extends Box implements Inline
         return ret;
     }
 
+    @Override
     public int getFirstLineLength()
     {
         return firstLineLength;
     }
 
+    @Override
     public int getLastLineLength()
     {
         return lastLineLength;
     }
 
+    @Override
     public boolean containsLineBreak()
     {
         return containsLineBreak;
     }
     
+    @Override
     public boolean finishedByLineBreak()
     {
         return lineBreakStop;
     }
 
+    @Override
     public boolean collapsedCompletely()
     {
         return collapsedCompletely;
     }
     
+    @Override
+    public int getWidthExpansionPoints()
+    {
+        //TODO whitespace processing?
+        return getText().split("\\s").length;
+    }
+
+    @Override
+    public void extendWidth(int ofs)
+    {
+        bounds.width += ofs;
+    }
+
     /**
      * Computes the X pixel offset of the given character of the box text. The character position is specified relatively
      * to the box text.

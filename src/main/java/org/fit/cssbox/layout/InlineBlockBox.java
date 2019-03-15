@@ -68,21 +68,25 @@ public class InlineBlockBox extends BlockBox implements InlineElement
         loadInlineStyle();
     }
 	
+    @Override
     public CSSProperty.VerticalAlign getVerticalAlign()
     {
         return valign;
     }
 	
+    @Override
     public void setLineBox(LineBox linebox)
     {
         this.linebox = linebox;
     }
     
+    @Override
     public LineBox getLineBox()
     {
         return linebox;
     }
 
+    @Override
     public int getLineboxOffset()
     {
         return 0;
@@ -90,56 +94,78 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     //========================================================================
     
+    @Override
     public int getMaxLineHeight()
     {
         return getHeight();
     }
 
+    @Override
     public int getBaselineOffset()
     {
         return baseline;
     }
 
+    @Override
     public int getBelowBaseline()
     {
         return getHeight() - baseline;
     }
 
+    @Override
     public int getTotalLineHeight()
     {
         return getHeight();
     }
 
+    @Override
     public int getHalfLead()
     {
         return 0;
     }
     
+    @Override
     public int getFirstLineLength()
     {
         return getMaximalContentWidth();
     }
 
+    @Override
     public int getLastLineLength()
     {
         return getMaximalContentWidth();
     }
 
+    @Override
     public boolean containsLineBreak()
     {
         return false;
     }
 
+    @Override
     public boolean finishedByLineBreak()
     {
         return false;
     }
     
+    @Override
     public boolean collapsedCompletely()
     {
         return false;
     }
     
+    @Override
+    public int getWidthExpansionPoints()
+    {
+        return 0;
+    }
+
+    @Override
+    public void extendWidth(int dif)
+    {
+        //not applicable for block boxes
+    }
+
 	//========================================================================
 	
     @Override

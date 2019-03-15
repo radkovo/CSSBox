@@ -1244,6 +1244,15 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Extends the total width of inline childs boxes by the given offset considering the 'expandability' of every child.
+     * @param ofs the additional width in pixels (positive or negative)
+     */
+    protected void extendChildWidths(int dif)
+    {
+        //TODO
+    }
+    
+    /**
      * Computes efficient top and bottom margins for collapsing.
      */
     abstract public void computeEfficientMargins();

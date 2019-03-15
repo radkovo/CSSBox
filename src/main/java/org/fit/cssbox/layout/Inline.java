@@ -97,4 +97,17 @@ public interface Inline
      */
     public boolean collapsedCompletely();
     
+    /**
+     * Computes the number of expansion points (generally spaces between words) that can be used
+     * for extending the box width
+     * @return the number of expansion points
+     */
+    public int getWidthExpansionPoints();
+    
+    /**
+     * Extends the width of the box by the given offset
+     * @param ofs the additional width in pixels (positive or negative)
+     */
+    public void extendWidth(int ofs);
+    
 }
