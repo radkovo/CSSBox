@@ -58,6 +58,9 @@ public class TextBox extends Box implements Inline
     /** Minimal total width */
     protected int minwidth;
     
+    /** Additional width required for justifying the text */
+    protected int expwidth;
+    
     /** Indicates whether to ignore initial whitespaces */
     protected boolean ignoreinitialws;
     
@@ -823,13 +826,20 @@ public class TextBox extends Box implements Inline
     @Override
     public int getWidthExpansionPoints()
     {
-        //TODO whitespace processing?
-        return getText().split("\\s").length;
+        int cnt = 0;
+        final String text = getText();
+        for (int i = 0; i < text.length(); i++)
+        {
+            if (text.charAt(i) == ' ')
+                cnt++;
+        }
+        return cnt;
     }
 
     @Override
     public void extendWidth(int ofs)
     {
+        expwidth = ofs;
         bounds.width += ofs;
     }
 

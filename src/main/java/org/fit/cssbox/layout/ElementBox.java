@@ -1244,12 +1244,52 @@ abstract public class ElementBox extends Box
     }
     
     /**
+     * Computes the number of expansion points (generally spaces between words) that can be used
+     * for extending the box width
+     * @param start the first child to be processed
+     * @param end the last child (the first one not to be processed)
+     * @return the number of expansion points
+     */
+    protected int countInlineExpansionPoints(int start, int end)
+    {
+        int cnt = 0;
+        for (int i = start; i < end; i++)
+        {
+            final Box subbox = getSubBox(i);
+            if (subbox instanceof Inline)
+                cnt += ((Inline) subbox).getWidthExpansionPoints();
+        }
+        return cnt;
+    }
+    
+    /**
      * Extends the total width of inline childs boxes by the given offset considering the 'expandability' of every child.
      * @param ofs the additional width in pixels (positive or negative)
+     * @param start the first child to be processed
+     * @param end the last child (the first one not to be processed)
      */
-    protected void extendChildWidths(int dif)
+    protected void extendInlineChildWidths(int dif, int start, int end)
     {
-        //TODO
+        //compute total width of child boxes
+        final int total = countInlineExpansionPoints(start, end);
+        //distribute the offset among the children
+        int ofsx = 0;
+        int remain = dif;
+        for (int i = start; i < end; i++)
+        {
+            final Box subbox = getSubBox(i);
+            if (subbox instanceof Inline)
+            {
+                final int childexp = ((Inline) subbox).getWidthExpansionPoints();
+                int toadd = Math.round(dif * childexp / (float) total);
+                if (toadd > remain)
+                    toadd = remain;
+                subbox.moveRight(ofsx);
+                ((Inline) subbox).extendWidth(toadd);
+                ofsx += toadd;
+                remain -= toadd;
+            }
+        }
     }
     
     /**

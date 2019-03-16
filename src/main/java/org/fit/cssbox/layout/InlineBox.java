@@ -250,38 +250,13 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public int getWidthExpansionPoints()
     {
-        //TODO
-        return 0;
+        return countInlineExpansionPoints(startChild, endChild);
     }
 
     @Override
     public void extendWidth(int dif)
     {
-        //compute total width of child boxes
-        int totalw = 0;
-        for (int i = startChild; i < endChild; i++)
-        {
-            final Box subbox = getSubBox(i);
-            if (subbox instanceof Inline)
-                totalw += subbox.getWidth();
-        }
-        //distribute the offset among the children
-        int ofsx = 0;
-        int remain = dif;
-        for (int i = startChild; i < endChild; i++)
-        {
-            final Box subbox = getSubBox(i);
-            if (subbox instanceof Inline)
-            {
-                int toadd = Math.round(dif * subbox.getWidth() / (float) totalw);
-                if (toadd > remain)
-                    toadd = remain;
-                subbox.moveRight(ofsx);
-                ((Inline) subbox).extendWidth(toadd);
-                ofsx += toadd;
-                remain -= toadd;
-            }
-        }
+        extendInlineChildWidths(dif, startChild, endChild);
         bounds.width += dif;
         content.width += dif;
     }
