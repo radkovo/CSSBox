@@ -31,7 +31,9 @@ import java.text.AttributedString;
 import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.LetterSpacing;
 import cz.vutbr.web.css.CSSProperty.TextTransform;
+import cz.vutbr.web.css.CSSProperty.WordSpacing;
 
 /**
  * A box that corresponds to a text node.
@@ -41,58 +43,64 @@ import cz.vutbr.web.css.CSSProperty.TextTransform;
 public class TextBox extends Box implements Inline
 {
     /** Assigned text node */
-    protected Text textNode;
+    private Text textNode;
     
     /** Text string after whitespace processing */
-    protected String text;
+    private String text;
     
     /** The start index of the text substring to be displayed */
-    protected int textStart;
+    private int textStart;
 
     /** The end index of the text substring to be displayed (excl) */
-    protected int textEnd;
+    private int textEnd;
 
     /** Maximal total width */
-    protected int maxwidth;
+    private int maxwidth;
     
     /** Minimal total width */
-    protected int minwidth;
+    private int minwidth;
     
     /** Additional width required for justifying the text */
-    protected int expwidth;
+    private int expwidth;
     
     /** Indicates whether to ignore initial whitespaces */
-    protected boolean ignoreinitialws;
+    private boolean ignoreinitialws;
     
     /** Indicates whether to collapse whitespaces at all */
-    protected boolean collapsews;
+    private boolean collapsews;
     
     /** Indicates whether it is allowed to split on whitespace */
-    protected boolean splitws;
+    private boolean splitws;
     
-    /** Indicatew whether it line feeds should be treated as whitespace */
-    protected boolean linews;
+    /** Indicatew whether line feeds should be treated as whitespace */
+    private boolean linews;
     
     /** When line feeds are preserved, this contains the maximal length of the first line of the text. */
-    protected int firstLineLength;
+    private int firstLineLength;
     
     /** When line feeds are preserved, this contains the maximal length of the last line of the text. */
-    protected int lastLineLength;
+    private int lastLineLength;
     
     /** Contains the maximal length of the longest line of the text. */
-    protected int longestLineLength;
+    private int longestLineLength;
     
     /** Contains a preserved line break? */
-    protected boolean containsLineBreak;
+    private boolean containsLineBreak;
     
     /** Layout finished with a line break? */
-    protected boolean lineBreakStop;
+    private boolean lineBreakStop;
     
     /** Collapsed to an empty box? (e.g. whitespaces only) */
-    protected boolean collapsedCompletely;
+    private boolean collapsedCompletely;
     
     /** Used text transformation */
-    protected CSSProperty.TextTransform transform;
+    private CSSProperty.TextTransform transform;
+    
+    /** Word spacing */
+    private CSSProperty.WordSpacing wordSpacing;
+    
+    /** Letter spacing */
+    private CSSProperty.LetterSpacing letterSpacing;
     
     
     //===================================================================
@@ -108,6 +116,8 @@ public class TextBox extends Box implements Inline
         super(n, g, ctx);
         textNode = n;
         transform = TextTransform.NONE;
+        wordSpacing = WordSpacing.NORMAL;
+        letterSpacing = LetterSpacing.NORMAL;
         setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
         ctx.updateForGraphics(null, g);
@@ -136,6 +146,8 @@ public class TextBox extends Box implements Inline
         longestLineLength = src.longestLineLength;
         containsLineBreak = src.containsLineBreak;
         transform = src.transform;
+        wordSpacing = src.wordSpacing;
+        letterSpacing = src.letterSpacing;
     }
     
     /** 
@@ -169,6 +181,12 @@ public class TextBox extends Box implements Inline
             transform = getParent().getStyle().getProperty("text-transform");
             if (transform == null)
                 transform = TextTransform.NONE;
+            wordSpacing = getParent().getStyle().getProperty("word-spacing");
+            if (wordSpacing == null)
+                wordSpacing = WordSpacing.NORMAL;
+            letterSpacing = getParent().getStyle().getProperty("letter-spacing");
+            if (letterSpacing == null)
+                letterSpacing = LetterSpacing.NORMAL;
             //reset the whitespace processing according to the parent settings
             CSSProperty.WhiteSpace ws = getParent().getWhiteSpace();
             if (ws != ElementBox.WHITESPACE_NORMAL || transform != TextTransform.NONE)
@@ -826,14 +844,19 @@ public class TextBox extends Box implements Inline
     @Override
     public int getWidthExpansionPoints()
     {
-        int cnt = 0;
-        final String text = getText();
-        for (int i = 0; i < text.length(); i++)
+        if (collapsews && splitws && !lineBreakStop)
         {
-            if (text.charAt(i) == ' ')
-                cnt++;
+            int cnt = 0;
+            final String text = getText();
+            for (int i = 0; i < text.length(); i++)
+            {
+                if (text.charAt(i) == ' ')
+                    cnt++;
+            }
+            return cnt;
         }
-        return cnt;
+        else
+            return 0; //spaces preserved or wrapping not allowed - cannot expand
     }
 
     @Override
@@ -925,21 +948,67 @@ public class TextBox extends Box implements Inline
                 g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
             ctx.updateGraphics(g);
             
-            if (!ctx.getTextDecoration().isEmpty()) 
-            {
-                AttributedString as = new AttributedString(t);
-                as.addAttribute(TextAttribute.FONT, ctx.getFont());
-                if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.UNDERLINE))
-                    as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-                if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.LINE_THROUGH))
-                    as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-                g.drawString(as.getIterator(), x, y + getBaselineOffset());
-            } 
+            if (wordSpacing == WordSpacing.NORMAL && expwidth == 0)
+                drawAttributedString(g, x, y, t);
             else
-                g.drawString(t, x, y + getBaselineOffset());
+                drawByWords(g, x, y, t);
             
             g.setClip(oldclip);
         }
+    }
+
+    private void drawByWords(Graphics2D g, int x, int y, String text)
+    {
+        String[] words = text.split(" ");
+        if (words.length > 0)
+        {
+            final FontMetrics fm = g.getFontMetrics();
+            //determine word lengths
+            int[] ww = new int[words.length];
+            int totalw = 0;
+            for (int i = 0; i < words.length; i++)
+            {
+                ww[i] = fm.stringWidth(words[i]);
+                totalw += ww[i];
+            }
+            //spacing
+            int spaces = words.length - 1;
+            if (startsWithWhitespace())
+                spaces++;
+            if (endsWithWhitespace())
+                spaces++;
+            final float spacing = (spaces == 0) ? (bounds.width - totalw) : (bounds.width - totalw) / (float) spaces;
+            //layout
+            float curX = x;
+            if (startsWithWhitespace())
+                curX += spacing;
+            for (int i = 0; i < words.length; i++)
+            {
+                drawAttributedString(g, Math.round(curX), y, words[i]);
+                curX += ww[i] + spacing;            
+            }
+        }
+        else
+            drawAttributedString(g, x, y, text);
+    }
+    
+    /**
+     * Draws a single string with eventual attributes based on the current visual context.
+     */
+    private void drawAttributedString(Graphics2D g, int x, int y, String text)
+    {
+        if (!ctx.getTextDecoration().isEmpty()) 
+        {
+            AttributedString as = new AttributedString(text);
+            as.addAttribute(TextAttribute.FONT, ctx.getFont());
+            if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.UNDERLINE))
+                as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+            if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.LINE_THROUGH))
+                as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+            g.drawString(as.getIterator(), x, y + getBaselineOffset());
+        } 
+        else
+            g.drawString(text, x, y + getBaselineOffset());
     }
     
 	@Override

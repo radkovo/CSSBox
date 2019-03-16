@@ -1272,22 +1272,25 @@ abstract public class ElementBox extends Box
     {
         //compute total width of child boxes
         final int total = countInlineExpansionPoints(start, end);
-        //distribute the offset among the children
-        int ofsx = 0;
-        int remain = dif;
-        for (int i = start; i < end; i++)
+        if (total > 0)
         {
-            final Box subbox = getSubBox(i);
-            if (subbox instanceof Inline)
+            //distribute the offset among the children
+            int ofsx = 0;
+            int remain = dif;
+            for (int i = start; i < end; i++)
             {
-                final int childexp = ((Inline) subbox).getWidthExpansionPoints();
-                int toadd = Math.round(dif * childexp / (float) total);
-                if (toadd > remain)
-                    toadd = remain;
-                subbox.moveRight(ofsx);
-                ((Inline) subbox).extendWidth(toadd);
-                ofsx += toadd;
-                remain -= toadd;
+                final Box subbox = getSubBox(i);
+                if (subbox instanceof Inline)
+                {
+                    final int childexp = ((Inline) subbox).getWidthExpansionPoints();
+                    int toadd = Math.round(dif * childexp / (float) total);
+                    if (toadd > remain)
+                        toadd = remain;
+                    subbox.moveRight(ofsx);
+                    ((Inline) subbox).extendWidth(toadd);
+                    ofsx += toadd;
+                    remain -= toadd;
+                }
             }
         }
     }

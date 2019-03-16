@@ -685,14 +685,15 @@ public class BlockBox extends ElementBox
      * Aligns the subboxes in a line according to the selected alignment settings.
      * @param line The line box to be aligned
      */
-    private void alignLineHorizontally(LineBox line)
+    private void alignLineHorizontally(LineBox line, boolean isLast)
     {
         final int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
         if (dif > 0)
         {
             if (align == ALIGN_JUSTIFY)
             {
-                extendInlineChildWidths(dif, line.getStart(), line.getEnd());
+                if (!isLast)
+                    extendInlineChildWidths(dif, line.getStart(), line.getEnd());
             }
             else if (align != ALIGN_LEFT)
             {
@@ -1052,7 +1053,7 @@ public class BlockBox extends ElementBox
         for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
             LineBox line = it.next();
-            alignLineHorizontally(line);
+            alignLineHorizontally(line, !it.hasNext());
             alignLineVertically(line);
         }
     }
