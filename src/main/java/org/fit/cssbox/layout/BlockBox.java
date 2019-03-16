@@ -693,7 +693,7 @@ public class BlockBox extends ElementBox
             if (align == ALIGN_JUSTIFY)
             {
                 if (!isLast)
-                    extendInlineChildWidths(dif, line.getStart(), line.getEnd());
+                    extendInlineChildWidths(dif, line.getStart(), line.getEnd(), true, true);
             }
             else if (align != ALIGN_LEFT)
             {

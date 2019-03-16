@@ -248,15 +248,15 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getWidthExpansionPoints()
+    public int getWidthExpansionPoints(boolean atLineStart, boolean atLineEnd)
     {
-        return countInlineExpansionPoints(startChild, endChild);
+        return countInlineExpansionPoints(startChild, endChild, atLineStart, atLineEnd);
     }
 
     @Override
-    public void extendWidth(int dif)
+    public void extendWidth(int dif, boolean atLineStart, boolean atLineEnd)
     {
-        extendInlineChildWidths(dif, startChild, endChild);
+        extendInlineChildWidths(dif, startChild, endChild, atLineStart, atLineEnd);
         bounds.width += dif;
         content.width += dif;
     }

@@ -63,6 +63,9 @@ public class TextBox extends Box implements Inline
     /** Additional width required for justifying the text */
     private int expwidth;
     
+    /** Expanding at the line end? */
+    private boolean expAtLineEnd;
+    
     /** Indicates whether to ignore initial whitespaces */
     private boolean ignoreinitialws;
     
@@ -842,7 +845,7 @@ public class TextBox extends Box implements Inline
     }
     
     @Override
-    public int getWidthExpansionPoints()
+    public int getWidthExpansionPoints(boolean atLineStart, boolean atLineEnd)
     {
         if (collapsews && splitws && !lineBreakStop)
         {
@@ -850,9 +853,14 @@ public class TextBox extends Box implements Inline
             final String text = getText();
             for (int i = 0; i < text.length(); i++)
             {
-                if (text.charAt(i) == ' ')
+                if (text.charAt(i) == ' '
+                        && !(i == 0 && atLineStart) //do not consider the initial space if at line beginning 
+                        && !(i == text.length() - 1 && atLineEnd)) //do not consider the trailing space if at line end
                     cnt++;
             }
+            System.out.println(getText() + " : " + cnt + " " + atLineStart + " " + atLineEnd);
+            if (getText().startsWith("middle"))
+                System.out.println("jo!");
             return cnt;
         }
         else
@@ -860,9 +868,10 @@ public class TextBox extends Box implements Inline
     }
 
     @Override
-    public void extendWidth(int ofs)
+    public void extendWidth(int ofs, boolean atLineStart, boolean atLineEnd)
     {
         expwidth = ofs;
+        expAtLineEnd = atLineEnd;
         bounds.width += ofs;
     }
 
@@ -975,7 +984,7 @@ public class TextBox extends Box implements Inline
             int spaces = words.length - 1;
             if (startsWithWhitespace())
                 spaces++;
-            if (endsWithWhitespace())
+            if (endsWithWhitespace() && !expAtLineEnd)
                 spaces++;
             final float spacing = (spaces == 0) ? (bounds.width - totalw) : (bounds.width - totalw) / (float) spaces;
             //layout

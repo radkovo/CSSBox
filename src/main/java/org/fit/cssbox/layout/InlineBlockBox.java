@@ -155,13 +155,13 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
     
     @Override
-    public int getWidthExpansionPoints()
+    public int getWidthExpansionPoints(boolean atLineStart, boolean atLineEnd)
     {
         return 0;
     }
 
     @Override
-    public void extendWidth(int dif)
+    public void extendWidth(int dif, boolean atLineStart, boolean atLineEnd)
     {
         //not applicable for block boxes
     }

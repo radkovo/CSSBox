@@ -100,14 +100,18 @@ public interface Inline
     /**
      * Computes the number of expansion points (generally spaces between words) that can be used
      * for extending the box width
+     * @param atLineStart is the box at the start of a line?
+     * @param atLineEnd is the box at the end of a line line?
      * @return the number of expansion points
      */
-    public int getWidthExpansionPoints();
+    public int getWidthExpansionPoints(boolean atLineStart, boolean atLineEnd);
     
     /**
      * Extends the width of the box by the given offset
      * @param ofs the additional width in pixels (positive or negative)
+     * @param atLineStart is the box at the start of a line?
+     * @param atLineEnd is the box at the end of a line line?
      */
-    public void extendWidth(int ofs);
+    public void extendWidth(int ofs, boolean atLineStart, boolean atLineEnd);
     
 }

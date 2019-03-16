@@ -1248,16 +1248,18 @@ abstract public class ElementBox extends Box
      * for extending the box width
      * @param start the first child to be processed
      * @param end the last child (the first one not to be processed)
+     * @param atLineStart is the start box at the start of a line?
+     * @param atLineEnd is the last box at the end of a line line?
      * @return the number of expansion points
      */
-    protected int countInlineExpansionPoints(int start, int end)
+    protected int countInlineExpansionPoints(int start, int end, boolean atLineStart, boolean atLineEnd)
     {
         int cnt = 0;
         for (int i = start; i < end; i++)
         {
             final Box subbox = getSubBox(i);
             if (subbox instanceof Inline)
-                cnt += ((Inline) subbox).getWidthExpansionPoints();
+                cnt += ((Inline) subbox).getWidthExpansionPoints(atLineStart && (i == start), atLineEnd && (i == end - 1));
         }
         return cnt;
     }
@@ -1267,11 +1269,13 @@ abstract public class ElementBox extends Box
      * @param ofs the additional width in pixels (positive or negative)
      * @param start the first child to be processed
      * @param end the last child (the first one not to be processed)
+     * @param atLineStart is the start box at the start of a line?
+     * @param atLineEnd is the last box at the end of a line line?
      */
-    protected void extendInlineChildWidths(int dif, int start, int end)
+    protected void extendInlineChildWidths(int dif, int start, int end, boolean atLineStart, boolean atLineEnd)
     {
         //compute total width of child boxes
-        final int total = countInlineExpansionPoints(start, end);
+        final int total = countInlineExpansionPoints(start, end, atLineStart, atLineEnd);
         if (total > 0)
         {
             //distribute the offset among the children
@@ -1282,12 +1286,14 @@ abstract public class ElementBox extends Box
                 final Box subbox = getSubBox(i);
                 if (subbox instanceof Inline)
                 {
-                    final int childexp = ((Inline) subbox).getWidthExpansionPoints();
+                    final boolean lstart = atLineStart && (i == start);
+                    final boolean lend = atLineEnd && (i == end - 1);
+                    final int childexp = ((Inline) subbox).getWidthExpansionPoints(lstart, lend);
                     int toadd = Math.round(dif * childexp / (float) total);
                     if (toadd > remain)
                         toadd = remain;
                     subbox.moveRight(ofsx);
-                    ((Inline) subbox).extendWidth(toadd);
+                    ((Inline) subbox).extendWidth(toadd, lstart, lend);
                     ofsx += toadd;
                     remain -= toadd;
                 }
