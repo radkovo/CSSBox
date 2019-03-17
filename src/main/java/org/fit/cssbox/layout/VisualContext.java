@@ -22,12 +22,15 @@ package org.fit.cssbox.layout;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.FontDecoder;
@@ -64,6 +67,7 @@ public class VisualContext
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
     private List<CSSProperty.TextDecoration> textDecoration;
+    private double letterSpacing; //additional letter spacing in pixels
     private double em; //number of pixels in 1em
     private double rem; //number of pixels in 1rem 
     private double ex; //number of pixels in 1ex
@@ -93,6 +97,7 @@ public class VisualContext
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
+        letterSpacing = 0.0f;
         color = Color.BLACK;
     }
     
@@ -112,6 +117,7 @@ public class VisualContext
         ret.fontStyle = fontStyle;
         ret.fontVariant = fontVariant;
         ret.textDecoration = new ArrayList<CSSProperty.TextDecoration>(textDecoration);
+        ret.letterSpacing = letterSpacing;
         ret.color = color;
         return ret;
     }
@@ -202,6 +208,15 @@ public class VisualContext
         return textDecoration;
     }
     
+    /**
+     * Returns the letter spacing used for the box.
+     * @return letter spacing
+     */
+    public double getLetterSpacing()
+    {
+        return letterSpacing;
+    }
+
     /**
      * The text color used for the box.
      * @return color specification
@@ -313,7 +328,7 @@ public class VisualContext
         else
             rem = em; //we don't have a root context?
         
-        font = createFont(family, (int) Math.round(size), fontWeight, fontStyle);
+        font = createFont(family, (int) Math.round(size), fontWeight, fontStyle, letterSpacing);
         em = size;
         
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
@@ -333,6 +348,20 @@ public class VisualContext
             }
             else if (decor != TextDecoration.NONE)
                 textDecoration.add(decor);
+        }
+        
+        //letter spacing
+        CSSProperty.LetterSpacing spacing = style.getProperty("letter-spacing");
+        if (spacing != null)
+        {
+            if (spacing == CSSProperty.LetterSpacing.NORMAL)
+                letterSpacing = 0.0;
+            else
+            {
+                TermLength lenspec = style.getValue(TermLength.class, "letter-spacing");
+                if (lenspec != null)
+                    letterSpacing = pxLength(lenspec);
+            }
         }
         
         //color
@@ -681,6 +710,25 @@ public class VisualContext
             fs = fs | Font.ITALIC;
         
         return new Font(family, fs, size);
+    }
+    
+    public Font createFont(String family, int size, CSSProperty.FontWeight weight,
+            CSSProperty.FontStyle style, double spacing)
+    {
+        Font base = createFont(family, size, weight, style);
+        if (spacing == 0.0f)
+        {
+            return base;
+        }
+        else
+        {
+            // TRACKING value is multiplied by font size in AWT. 
+            // (0.75 has been empiricaly determined by comparing with other browsers) 
+            final double tracking = spacing / fontSize * 0.75;
+            Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
+            attributes.put(TextAttribute.TRACKING, tracking);
+            return base.deriveFont(attributes);
+        }
     }
     
     /** Returns true if the font family is available.

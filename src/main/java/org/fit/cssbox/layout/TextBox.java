@@ -31,7 +31,6 @@ import java.text.AttributedString;
 import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
-import cz.vutbr.web.css.CSSProperty.LetterSpacing;
 import cz.vutbr.web.css.CSSProperty.TextTransform;
 import cz.vutbr.web.css.CSSProperty.WordSpacing;
 
@@ -102,9 +101,6 @@ public class TextBox extends Box implements Inline
     /** Word spacing */
     private CSSProperty.WordSpacing wordSpacing;
     
-    /** Letter spacing */
-    private CSSProperty.LetterSpacing letterSpacing;
-    
     
     //===================================================================
     
@@ -120,7 +116,6 @@ public class TextBox extends Box implements Inline
         textNode = n;
         transform = TextTransform.NONE;
         wordSpacing = WordSpacing.NORMAL;
-        letterSpacing = LetterSpacing.NORMAL;
         setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
         ctx.updateForGraphics(null, g);
@@ -150,7 +145,6 @@ public class TextBox extends Box implements Inline
         containsLineBreak = src.containsLineBreak;
         transform = src.transform;
         wordSpacing = src.wordSpacing;
-        letterSpacing = src.letterSpacing;
     }
     
     /** 
@@ -187,9 +181,6 @@ public class TextBox extends Box implements Inline
             wordSpacing = getParent().getStyle().getProperty("word-spacing");
             if (wordSpacing == null)
                 wordSpacing = WordSpacing.NORMAL;
-            letterSpacing = getParent().getStyle().getProperty("letter-spacing");
-            if (letterSpacing == null)
-                letterSpacing = LetterSpacing.NORMAL;
             //reset the whitespace processing according to the parent settings
             CSSProperty.WhiteSpace ws = getParent().getWhiteSpace();
             if (ws != ElementBox.WHITESPACE_NORMAL || transform != TextTransform.NONE)
@@ -858,9 +849,6 @@ public class TextBox extends Box implements Inline
                         && !(i == text.length() - 1 && atLineEnd)) //do not consider the trailing space if at line end
                     cnt++;
             }
-            System.out.println(getText() + " : " + cnt + " " + atLineStart + " " + atLineEnd);
-            if (getText().startsWith("middle"))
-                System.out.println("jo!");
             return cnt;
         }
         else
