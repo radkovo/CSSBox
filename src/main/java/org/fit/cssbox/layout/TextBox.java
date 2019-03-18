@@ -33,6 +33,7 @@ import org.w3c.dom.Text;
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.TextTransform;
 import cz.vutbr.web.css.CSSProperty.WordSpacing;
+import cz.vutbr.web.css.TermLength;
 
 /**
  * A box that corresponds to a text node.
@@ -99,7 +100,7 @@ public class TextBox extends Box implements Inline
     private CSSProperty.TextTransform transform;
     
     /** Word spacing */
-    private CSSProperty.WordSpacing wordSpacing;
+    private Float wordSpacing;
     
     
     //===================================================================
@@ -115,7 +116,7 @@ public class TextBox extends Box implements Inline
         super(n, g, ctx);
         textNode = n;
         transform = TextTransform.NONE;
-        wordSpacing = WordSpacing.NORMAL;
+        wordSpacing = null;
         setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
         ctx.updateForGraphics(null, g);
@@ -178,9 +179,15 @@ public class TextBox extends Box implements Inline
             transform = getParent().getStyle().getProperty("text-transform");
             if (transform == null)
                 transform = TextTransform.NONE;
-            wordSpacing = getParent().getStyle().getProperty("word-spacing");
-            if (wordSpacing == null)
-                wordSpacing = WordSpacing.NORMAL;
+            CSSProperty.WordSpacing wspacing = getParent().getStyle().getProperty("word-spacing");
+            if (wspacing != null && wspacing != WordSpacing.NORMAL)
+            {
+                TermLength lenspec = getParent().getStyle().getValue(TermLength.class, "word-spacing");
+                if (lenspec != null)
+                    wordSpacing = (float) ctx.pxLength(lenspec);            
+            }
+            else
+                wordSpacing = null;
             //reset the whitespace processing according to the parent settings
             CSSProperty.WhiteSpace ws = getParent().getWhiteSpace();
             if (ws != ElementBox.WHITESPACE_NORMAL || transform != TextTransform.NONE)
@@ -650,7 +657,7 @@ public class TextBox extends Box implements Inline
             //try to place the text
             do
             {
-                w = fm.stringWidth(text.substring(textStart, end));
+                w = stringWidth(fm, text.substring(textStart, end));
                 h = fm.getHeight();
                 if (w > wlimit) //exceeded - try to split if allowed
                 {
@@ -773,7 +780,7 @@ public class TextBox extends Box implements Inline
         if (linews)
         {
             //no preserved line breaks -- returns the lenth of the whole string
-            int len = g.getFontMetrics().stringWidth(getText());
+            int len = stringWidth(g.getFontMetrics(), getText());
             firstLineLength = len;
             lastLineLength = len;
             longestLineLength = len;
@@ -796,7 +803,7 @@ public class TextBox extends Box implements Inline
         do
         {
             if (s2 == -1) s2 = t.length();
-            int w = fm.stringWidth(t.substring(s1, s2));
+            int w = stringWidth(fm, t.substring(s1, s2));
             if (w > ret) ret = w;
             s1 = s2 + 1;
             s2 = t.indexOf(' ', s1);
@@ -888,9 +895,9 @@ public class TextBox extends Box implements Inline
             if (pos <= textStart)
                 return 0;
             else if (pos > textStart && pos < textEnd)
-                return fm.stringWidth(text.substring(textStart, pos));
+                return stringWidth(fm, text.substring(textStart, pos));
             else
-                return fm.stringWidth(text.substring(textStart, textEnd));
+                return stringWidth(fm, text.substring(textStart, textEnd));
         }
         else
             return 0;
@@ -917,7 +924,7 @@ public class TextBox extends Box implements Inline
                 s2 = t.length();
             else
                 containsLineBreak = true;
-            w = fm.stringWidth(t.substring(s1, s2));
+            w = stringWidth(fm, t.substring(s1, s2));
             if (firstLineLength == -1) firstLineLength = w;
             if (w > longestLineLength) longestLineLength = w;
             s1 = s2 + 1;
@@ -926,6 +933,29 @@ public class TextBox extends Box implements Inline
         lastLineLength = w;
     }
 
+    /**
+     * Computes the final width of a string while considering word-spacing
+     * @param fm the font metrics used for calculation
+     * @param text the string to be measured
+     * @return the resulting width in pixels
+     */
+    private int stringWidth(FontMetrics fm, String text)
+    {
+        int w = fm.stringWidth(text);
+        if (wordSpacing != null)
+        {
+            //count spaces and add
+            float add = 0.0f;
+            for (int i = 0; i < text.length(); i++)
+            {
+                if (text.charAt(i) == ' ')
+                    add += wordSpacing;
+            }
+            w = Math.round(w + add);
+        }
+        return w;
+    }
+    
     /** 
      * Draw the text content of this box (no subboxes)
      * @param g the graphics context to draw on
@@ -945,7 +975,7 @@ public class TextBox extends Box implements Inline
                 g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
             ctx.updateGraphics(g);
             
-            if (wordSpacing == WordSpacing.NORMAL && expwidth == 0)
+            if (wordSpacing == null && expwidth == 0)
                 drawAttributedString(g, x, y, t);
             else
                 drawByWords(g, x, y, t);
@@ -965,7 +995,7 @@ public class TextBox extends Box implements Inline
             int totalw = 0;
             for (int i = 0; i < words.length; i++)
             {
-                ww[i] = fm.stringWidth(words[i]);
+                ww[i] = stringWidth(fm, words[i]);
                 totalw += ww[i];
             }
             //spacing
