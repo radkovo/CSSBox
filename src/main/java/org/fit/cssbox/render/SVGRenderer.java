@@ -166,7 +166,11 @@ public class SVGRenderer implements BoxRenderer
     {
         Rectangle b = text.getAbsoluteBounds();
         String style = textStyle(text.getVisualContext());
-        writeText(b.x, b.y + text.getBaselineOffset(), b.width, b.height, style, text.getText());
+        if (text.getWordSpacing() == null && text.getExtraWidth() == 0)
+            writeText(b.x, b.y + text.getBaselineOffset(), b.width, b.height, style, text.getText());
+        else
+            writeTextByWords(b.x, b.y + text.getBaselineOffset(), b.width, b.height, style, text);
+        out.println();
     }
 
     public void renderReplacedContent(ReplacedBox box)
@@ -280,12 +284,27 @@ public class SVGRenderer implements BoxRenderer
     
     private void writeText(int x, int y, String style, String text)
     {
-        out.println("<text x=\"" + x + "\" y=\"" + y + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
+        out.print("<text x=\"" + x + "\" y=\"" + y + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
     }
     
     private void writeText(int x, int y, int width, int height, String style, String text)
     {
-        out.println("<text x=\"" + x + "\" y=\"" + y + "\" width=\"" + width + "\" height=\"" + height + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
+        out.print("<text x=\"" + x + "\" y=\"" + y + "\" width=\"" + width + "\" height=\"" + height + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
+    }
+    
+    private void writeTextByWords(int x, int y, int width, int height, String style, TextBox text)
+    {
+        String[] words = text.getText().split(" ");
+        if (words.length > 0)
+        {
+            out.print("<g>");
+            final int[][] offsets = text.getWordOffsets(words);
+            for (int i = 0; i < words.length; i++)
+                writeText(x + offsets[i][0], y, offsets[i][1], height, style, words[i]);
+            out.print("</g>");
+        }
+        else
+            writeText(x, y, width, height, style, text.getText());
     }
     
     private void writeBullet(ListItemBox lb)
