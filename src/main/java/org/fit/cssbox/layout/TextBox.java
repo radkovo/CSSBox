@@ -869,7 +869,75 @@ public class TextBox extends Box implements Inline
         expAtLineEnd = atLineEnd;
         bounds.width += ofs;
     }
+    
+    /**
+     * The extra box width used for justifying the contents. The rendered width should be extended
+     * by this amount in total.
+     * @return The extra width or 0 when no extra width is required
+     */
+    public int getExtraWidth()
+    {
+        return expwidth;
+    }
 
+    /**
+     * The additional word spacing in pixels.
+     * @return the additional word spacing in pixels or <code>null</code> when normal word spacing is used
+     */
+    public Float getWordSpacing()
+    {
+        return wordSpacing;
+    }
+
+    /**
+     * Computes the X offsets of the individual words
+     * @param words the words
+     * @return the array n elements where n is the number of words. The a[i][0] contains the
+     * offset of the i-th words, a[i][1] contains the length of the word.
+     */
+    public int[][] getWordOffsets(String[] words)
+    {
+        return getWordOffsets(g.getFontMetrics(), words);
+    }
+    
+    private int[][] getWordOffsets(FontMetrics fm, String[] words)
+    {
+        if (words.length > 0)
+        {
+            //determine word lengths
+            int[] ww = new int[words.length];
+            int totalw = 0;
+            for (int i = 0; i < words.length; i++)
+            {
+                ww[i] = stringWidth(fm, words[i]);
+                totalw += ww[i];
+            }
+            //spacing
+            int spaces = words.length - 1;
+            if (startsWithWhitespace())
+                spaces++;
+            if (endsWithWhitespace() && !expAtLineEnd)
+                spaces++;
+            final float spacing = (spaces == 0) ? (bounds.width - totalw) : (bounds.width - totalw) / (float) spaces;
+            //layout
+            int[][] ret = new int[words.length][2];
+            float curX = 0;
+            if (startsWithWhitespace())
+                curX += spacing;
+            for (int i = 0; i < words.length; i++)
+            {
+                ret[i][0] = Math.round(curX);
+                ret[i][1] = ww[i];
+                curX += ww[i] + spacing;            
+            }
+            return ret;
+        }
+        else
+            return new int[0][0];
+    }
+    
+    
+    
     /**
      * Computes the X pixel offset of the given character of the box text. The character position is specified relatively
      * to the box text.
@@ -990,30 +1058,9 @@ public class TextBox extends Box implements Inline
         if (words.length > 0)
         {
             final FontMetrics fm = g.getFontMetrics();
-            //determine word lengths
-            int[] ww = new int[words.length];
-            int totalw = 0;
+            final int[][] offsets = getWordOffsets(fm, words);
             for (int i = 0; i < words.length; i++)
-            {
-                ww[i] = stringWidth(fm, words[i]);
-                totalw += ww[i];
-            }
-            //spacing
-            int spaces = words.length - 1;
-            if (startsWithWhitespace())
-                spaces++;
-            if (endsWithWhitespace() && !expAtLineEnd)
-                spaces++;
-            final float spacing = (spaces == 0) ? (bounds.width - totalw) : (bounds.width - totalw) / (float) spaces;
-            //layout
-            float curX = x;
-            if (startsWithWhitespace())
-                curX += spacing;
-            for (int i = 0; i < words.length; i++)
-            {
-                drawAttributedString(g, Math.round(curX), y, words[i]);
-                curX += ww[i] + spacing;            
-            }
+                drawAttributedString(g, x + offsets[i][0], y, words[i]);
         }
         else
             drawAttributedString(g, x, y, text);
