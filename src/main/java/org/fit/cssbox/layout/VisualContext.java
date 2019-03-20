@@ -97,7 +97,7 @@ public class VisualContext
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
-        letterSpacing = 0.0f;
+        letterSpacing = 0.0;
         color = Color.BLACK;
     }
     
@@ -716,7 +716,7 @@ public class VisualContext
             CSSProperty.FontStyle style, double spacing)
     {
         Font base = createFont(family, size, weight, style);
-        if (spacing == 0.0f)
+        if (spacing < 0.0001)
         {
             return base;
         }
