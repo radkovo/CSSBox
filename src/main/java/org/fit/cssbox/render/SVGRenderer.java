@@ -386,6 +386,8 @@ public class SVGRenderer implements BoxRenderer
                        "stroke:none";
         if (!ctx.getTextDecoration().isEmpty())
             style += ";text-decoration:" + ctx.getTextDecorationString();
+        if (ctx.getLetterSpacing() > 0.0001)
+            style += ";letter-spacing:" + ctx.getLetterSpacing() + "px";
         return style;
     }
 
