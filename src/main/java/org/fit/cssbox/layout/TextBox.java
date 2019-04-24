@@ -25,6 +25,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
 
@@ -493,6 +494,15 @@ public class TextBox extends Box implements Inline
     public int getHalfLead()
     {
         return 0;
+    }
+    
+    /**
+     * Computes the line metrics for the particular text content and graphical context.
+     * @return the line metrics
+     */
+    public LineMetrics getLineMetrics()
+    {
+        return ctx.getFont().getLineMetrics(getText(), g.getFontRenderContext());
     }
     
     @Override
