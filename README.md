@@ -4,7 +4,7 @@ CSSBox
 [![Build Status](https://travis-ci.org/radkovo/CSSBox.png)](https://travis-ci.org/radkovo/CSSBox)
 
 An HTML/CSS rendering engine library
-(c) 2005-2018 Radek Burget (burgetr@fit.vutbr.cz)
+(c) 2005-2019 Radek Burget (burgetr@fit.vutbr.cz)
 
 See the project page for more information and downloads:
 [http://cssbox.sourceforge.net/](http://cssbox.sourceforge.net/)
