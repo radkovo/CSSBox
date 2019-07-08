@@ -1,7 +1,8 @@
 CSSBox
 ======
 
-[![Build Status](https://travis-ci.org/radkovo/CSSBox.png)](https://travis-ci.org/radkovo/CSSBox)
+[![Build Status](https://travis-ci.org/radkovo/CSSBox.svg?branch=master)](https://travis-ci.org/radkovo/CSSBox)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.cssbox/cssbox/badge.png)](https://maven-badges.herokuapp.com/maven-central/net.sf.cssbox/cssbox)
 
 An HTML/CSS rendering engine library
 (c) 2005-2019 Radek Burget (burgetr@fit.vutbr.cz)
