@@ -78,6 +78,7 @@ public class VisualContext
 
     private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
     private PtEvaluator ptEval; //expression evaluator for obtaining points values of expressions
+    private DegEvaluator degEval; //expression evaluator for obtaining degree values of expressions
     private RadEvaluator radEval; //expression evaluator for obtaining radian values of expressions
 
     
@@ -568,6 +569,40 @@ public class VisualContext
     }
     
     /**
+     * Converts an angle from a CSS angle to 'deg'.
+     * @param spec the CSS angle specification
+     * @return the corresponding angle in radians
+     */
+    public double degAngle(TermAngle spec)
+    {
+        float nval = spec.getValue();
+        final TermLength.Unit unit = spec.getUnit();
+        if (spec instanceof TermCalcAngleImpl)
+        {
+            final CalcArgs args = ((TermCalc) spec).getArgs();
+            return args.evaluate(getDegEval());
+        }
+        else
+        {
+            if (unit == null)
+                return 0;
+            switch (unit)
+            {
+                case deg:
+                    return nval; 
+                case grad:
+                    return (nval * 200.0) / Math.PI;
+                case rad:
+                    return (nval * 180.0) / Math.PI;
+                case turn:
+                    return nval * 360.0;
+                default:
+                    return 0;
+            }
+        }
+    }
+    
+    /**
      * Converts an angle from a CSS angle to 'rad'.
      * @param spec the CSS angle specification
      * @return the corresponding angle in radians
@@ -755,6 +790,13 @@ public class VisualContext
         return ptEval;
     }
     
+    private DegEvaluator getDegEval()
+    {
+        if (degEval == null)
+            degEval = new DegEvaluator(this);
+        return degEval;
+    }
+    
     private RadEvaluator getRadEval()
     {
         if (radEval == null)
@@ -832,6 +874,23 @@ public class VisualContext
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.radAngle((TermAngle) val);
+            else
+                return 0.0; //this should not happen
+        }
+    }
+    
+    private class DegEvaluator extends UnitEvaluator
+    {
+        public DegEvaluator(VisualContext ctx)
+        {
+            super(ctx);
+        }
+
+        @Override
+        public double resolveValue(TermFloatValue val)
+        {
+            if (val instanceof TermLengthOrPercent)
+                return ctx.degAngle((TermAngle) val);
             else
                 return 0.0; //this should not happen
         }
