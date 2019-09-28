@@ -1,3 +1,6 @@
+2019-09-28 - Version 4.16
+- minor API extenstion (allow angle evalutaion in degrees)
+
 2019-05-24 - Version 4.15
 - text-align: center support
 - word-spacing and letter-spacing support
