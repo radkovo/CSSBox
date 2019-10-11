@@ -28,10 +28,13 @@ import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.CSSProperty.TextDecoration;
 import cz.vutbr.web.css.CSSProperty.TextTransform;
 import cz.vutbr.web.css.CSSProperty.WordSpacing;
 import cz.vutbr.web.css.TermLength;
@@ -946,8 +949,6 @@ public class TextBox extends Box implements Inline
             return new int[0][0];
     }
     
-    
-    
     /**
      * Computes the X pixel offset of the given character of the box text. The character position is specified relatively
      * to the box text.
@@ -1081,13 +1082,14 @@ public class TextBox extends Box implements Inline
      */
     private void drawAttributedString(Graphics2D g, int x, int y, String text)
     {
-        if (!ctx.getTextDecoration().isEmpty()) 
+        final Set<TextDecoration> decoration = getEfficientTextDecoration();
+        if (!decoration.isEmpty()) 
         {
             AttributedString as = new AttributedString(text);
             as.addAttribute(TextAttribute.FONT, ctx.getFont());
-            if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.UNDERLINE))
+            if (decoration.contains(CSSProperty.TextDecoration.UNDERLINE))
                 as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-            if (ctx.getTextDecoration().contains(CSSProperty.TextDecoration.LINE_THROUGH))
+            if (decoration.contains(CSSProperty.TextDecoration.LINE_THROUGH))
                 as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
             g.drawString(as.getIterator(), x, y + getBaselineOffset());
         } 
@@ -1139,6 +1141,25 @@ public class TextBox extends Box implements Inline
         
     }
 	
+    /**
+     * Computes efficient text decoration for the text box including the decoration
+     * propagated from the parent boxes as defined in the 
+     * <a href="https://www.w3.org/TR/CSS22/text.html#propdef-text-decoration">CSS specification</a>.
+     * @return A set of text decorations for the box.
+     */
+	public Set<CSSProperty.TextDecoration> getEfficientTextDecoration()
+    {
+        final Set<CSSProperty.TextDecoration> ret = new HashSet<>();
+        Box curbox = this;
+        ret.addAll(curbox.getVisualContext().getTextDecoration());
+        while (curbox.getParent() != null && acceptsPropagatedDecorations(curbox))
+        {
+            curbox = curbox.getParent();
+            ret.addAll(curbox.getVisualContext().getTextDecoration());
+        }
+        return ret;
+    }
+    
 	//===============================================================================
 	
 	/**
@@ -1167,5 +1188,15 @@ public class TextBox extends Box implements Inline
             return (ch == '\r' || ch == '\n');
     }
     
+    /**
+     * Checks whether the box accepts the text decorations propagated from the parent boxes.
+     * @param box the box to test
+     * @return {@code true} when the text decorations should be propagated to the given box.
+     */
+    private boolean acceptsPropagatedDecorations(Box box)
+    {
+        return !(box instanceof BlockBox 
+                && (((BlockBox) box).isFloating() || ((BlockBox) box).isPositioned() || box instanceof Inline));
+    }
 
 }

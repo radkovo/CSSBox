@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Collection;
 
 import javax.imageio.ImageIO;
 
@@ -165,7 +166,8 @@ public class SVGRenderer implements BoxRenderer
     public void renderTextContent(TextBox text)
     {
         Rectangle b = text.getAbsoluteBounds();
-        String style = textStyle(text.getVisualContext());
+        String style = textStyle(text.getVisualContext())
+                + ";" + textDecorationStyle(text.getEfficientTextDecoration());
         if (text.getWordSpacing() == null && text.getExtraWidth() == 0)
             writeText(b.x, b.y + text.getBaselineOffset(), b.width, b.height, style, text.getText());
         else
@@ -334,7 +336,6 @@ public class SVGRenderer implements BoxRenderer
                     out.println("<circle style=\"" + style + "\" cx=\"" + (x + r / 2) + "\" cy=\"" + (y + r / 2) + "\" r=\"" + (r / 2) + "\" />");
                     break;
                 default:
-                    
                     int baseline = lb.getFirstInlineBoxBaseline();
                     if (baseline == -1)
                         baseline = ctx.getBaselineOffset(); //use the font baseline
@@ -384,8 +385,6 @@ public class SVGRenderer implements BoxRenderer
                        "font-family:" + ctx.getFont().getFamily() + ";" +
                        "fill:" + colorString(ctx.getColor()) + ";" +
                        "stroke:none";
-        if (!ctx.getTextDecoration().isEmpty())
-            style += ";text-decoration:" + ctx.getTextDecorationString();
         if (ctx.getLetterSpacing() > 0.0001)
             style += ";letter-spacing:" + ctx.getLetterSpacing() + "px";
         return style;
@@ -399,6 +398,25 @@ public class SVGRenderer implements BoxRenderer
     private String htmlEntities(String s)
     {
         return s.replaceAll("&", "&amp;").replaceAll(">", "&gt;").replaceAll("<", "&lt;");
+    }
+    
+    private String textDecorationStyle(Collection<CSSProperty.TextDecoration> textDecoration)
+    {
+        if (textDecoration.isEmpty())
+            return "text-decoration:none";
+        else
+        {
+            boolean first = true;
+            StringBuilder ret = new StringBuilder("text-decoration:");
+            for (CSSProperty.TextDecoration dec : textDecoration)
+            {
+                if (!first)
+                    ret.append(' ');
+                ret.append(dec.toString());
+                first = false;
+            }
+            return ret.toString();
+        }
     }
     
 }
