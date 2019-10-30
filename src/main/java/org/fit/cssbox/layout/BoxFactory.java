@@ -1,6 +1,6 @@
 /*
  * BoxFactory.java
- * Copyright (c) 2005-2010 Radek Burget
+ * Copyright (c) 2005-2019 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -27,6 +27,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.fit.cssbox.css.Counters;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
@@ -98,6 +99,7 @@ public class BoxFactory
 
     protected int next_order;
     protected boolean overflowPropagated;
+    
     
     /**
      * Create a new factory.
@@ -228,7 +230,7 @@ public class BoxFactory
                 //create :before elements
                 if (stat.parent.previousTwin == null)
                 {
-                    Node n = createPseudoElement(stat.parent, PseudoElementType.BEFORE);
+                    Node n = createPseudoElement(stat.parent, PseudoElementType.BEFORE, stat.counters);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
                         stat.curchild = -1;
@@ -251,7 +253,7 @@ public class BoxFactory
                 //create :after elements
                 if (stat.parent.nextTwin == null)
                 {
-                    Node n = createPseudoElement(stat.parent, PseudoElementType.AFTER);
+                    Node n = createPseudoElement(stat.parent, PseudoElementType.AFTER, stat.counters);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
                         stat.curchild = children.getLength();
@@ -294,7 +296,10 @@ public class BoxFactory
             istext = true;
         }
         else
+        {
             newbox = createElementBox((Element) n, stat);
+            stat.counters.applyStyle(((ElementBox) newbox).getStyle());
+        }
         
         //Create the child subtree
         if (!istext) 
@@ -302,6 +307,7 @@ public class BoxFactory
             //Determine the containing boxes of the children
             BoxTreeCreationStatus newstat = new BoxTreeCreationStatus(stat);
             newstat.parent = (ElementBox) newbox;
+            newstat.counters = new Counters(newstat.counters); //new counters scope
             if (((ElementBox) newbox).mayContainBlocks()) //the new box forms a block context
             {
                 BlockBox block = (BlockBox) newbox;
@@ -854,7 +860,7 @@ public class BoxFactory
      * @param pseudo The pseudo element name
      * @return A new box of a subclass of ElementBox based on the value of the 'display' CSS property
      */
-    private Node createPseudoElement(ElementBox box, PseudoElementType pseudo) 
+    private Node createPseudoElement(ElementBox box, PseudoElementType pseudo, Counters counters) 
     {
         Element n = box.getElement();
         //New box style
@@ -883,9 +889,16 @@ public class BoxFactory
                     }
                     else if (c instanceof TermFunction.Attr)
                     {
-                        TermFunction.Attr f = (TermFunction.Attr) c;
+                        final TermFunction.Attr f = (TermFunction.Attr) c;
                         String val = HTMLNorm.getAttribute(n, f.getName());
                         Text txt = n.getOwnerDocument().createTextNode(val);
+                        pelem.appendChild(txt);
+                    }
+                    else if (c instanceof TermFunction.Counter)
+                    {
+                        final TermFunction.Counter f = (TermFunction.Counter) c;
+                        Integer val = counters.getCounter(f.getName());
+                        Text txt = n.getOwnerDocument().createTextNode(String.valueOf(val));
                         pelem.appendChild(txt);
                     }
                 }
@@ -1018,7 +1031,9 @@ class BoxTreeCreationStatus
     public Box lastinflow;
     
     /** The index of the DOM node within its parent node */
-    int curchild;
+    public int curchild;
+    
+    public Counters counters;
     
     /** 
      * Creates a new initial creation status
@@ -1029,6 +1044,7 @@ class BoxTreeCreationStatus
         parent = contbox = absbox = clipbox = viewport;
         lastinflow = null;
         curchild = 0;
+        counters = new Counters();
     }
     
     /** 
@@ -1043,6 +1059,7 @@ class BoxTreeCreationStatus
         this.clipbox = stat.clipbox;
         this.lastinflow = stat.lastinflow;
         this.curchild = stat.curchild;
+        this.counters =stat.counters;
     }
     
 }
