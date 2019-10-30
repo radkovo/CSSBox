@@ -156,18 +156,53 @@ public class ListItemBox extends BlockBox
      */
     public String getMarkerText()
     {
-        String text;
-        if (styleType == CSSProperty.ListStyleType.UPPER_ALPHA)
-            text = "" + ((char) (64 + (itemNumber % 24)));
-        else if (styleType == CSSProperty.ListStyleType.LOWER_ALPHA)
-            text = "" + ((char) (96 + (itemNumber % 24)));
-        else if (styleType == CSSProperty.ListStyleType.UPPER_ROMAN)
-            text = "" + binaryToRoman(itemNumber);
-        else if (styleType == CSSProperty.ListStyleType.LOWER_ROMAN)
-            text = "" + binaryToRoman(itemNumber).toLowerCase();
-        else
-            text = String.valueOf(itemNumber); // default decimal 
+        final String text = formatItemNumber(itemNumber, styleType);
         return text + ". ";
+    }
+
+    /**
+     * Formats the item number depending on the style type
+     * @param itemNumber
+     * @param styleType
+     * @return
+     */
+    public static String formatItemNumber(int itemNumber, ListStyleType styleType)
+    {
+        String text;
+        if (itemNumber > 0)
+        {
+            switch (styleType)
+            {
+                case UPPER_ALPHA:
+                    text = "";
+                    while (itemNumber > 0)
+                    {
+                        text = String.valueOf(((char) (65 + ((itemNumber - 1) % 26)))) + text;
+                        itemNumber = (itemNumber - 1) / 26;
+                    }
+                    break;
+                case LOWER_ALPHA:
+                    text = "";
+                    while (itemNumber > 0)
+                    {
+                        text = String.valueOf(((char) (97 + ((itemNumber - 1) % 26)))) + text;
+                        itemNumber = (itemNumber - 1) / 26;
+                    }
+                    break;
+                case UPPER_ROMAN:
+                    text = binaryToRoman(itemNumber);
+                    break;
+                case LOWER_ROMAN:
+                    text = binaryToRoman(itemNumber).toLowerCase();
+                    break;
+                default:
+                    text = String.valueOf(itemNumber); // default decimal
+                    break;
+            }
+        }
+        else
+            text = String.valueOf(itemNumber); // non-positive numbers only in decimal
+        return text;
     }
 
     /**

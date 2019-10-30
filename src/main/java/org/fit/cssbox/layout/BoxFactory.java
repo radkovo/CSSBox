@@ -905,7 +905,10 @@ public class BoxFactory
                     {
                         final TermFunction.Counter f = (TermFunction.Counter) c;
                         Integer val = counters.getCounter(f.getName());
-                        Text txt = n.getOwnerDocument().createTextNode(String.valueOf(val));
+                        CSSProperty.ListStyleType cstyle = f.getStyle();
+                        if (cstyle == null)
+                            cstyle = CSSProperty.ListStyleType.DECIMAL;
+                        Text txt = n.getOwnerDocument().createTextNode(ListItemBox.formatItemNumber(val, cstyle));
                         pelem.appendChild(txt);
                     }
                 }
