@@ -230,6 +230,7 @@ public class BoxFactory
                 //create :before elements
                 if (stat.parent.previousTwin == null)
                 {
+                    //create the artificial node and update counters
                     Node n = createPseudoElement(stat.parent, PseudoElementType.BEFORE, stat.counters);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
@@ -243,6 +244,13 @@ public class BoxFactory
                 for (int child = stat.parent.firstDOMChild; child < stat.parent.lastDOMChild; child++)
                 {
                     Node n = children.item(child);
+                    //update the counters
+                    if (n.getNodeType() == Node.ELEMENT_NODE)
+                    {
+                        NodeData style = decoder.getElementStyleInherited((Element) n);
+                        stat.counters.applyStyle(style);
+                    }
+                    //create the subtree
                     if (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)
                     {
                         stat.curchild = child;
@@ -253,6 +261,7 @@ public class BoxFactory
                 //create :after elements
                 if (stat.parent.nextTwin == null)
                 {
+                    //create the artificial node and update counters
                     Node n = createPseudoElement(stat.parent, PseudoElementType.AFTER, stat.counters);
                     if (n != null && (n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE))
                     {
@@ -296,10 +305,7 @@ public class BoxFactory
             istext = true;
         }
         else
-        {
             newbox = createElementBox((Element) n, stat);
-            stat.counters.applyStyle(((ElementBox) newbox).getStyle());
-        }
         
         //Create the child subtree
         if (!istext) 
@@ -867,6 +873,7 @@ public class BoxFactory
         NodeData style = decoder.getElementStyleInherited(n, pseudo);
         if (style != null)
         {
+            counters.applyStyle(style);
             TermList cont = style.getValue(TermList.class, "content");
             if (cont != null && cont.size() > 0)
             {
