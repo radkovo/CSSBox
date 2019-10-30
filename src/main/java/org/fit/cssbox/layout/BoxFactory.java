@@ -23,6 +23,7 @@ package org.fit.cssbox.layout;
 import java.awt.Graphics2D;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.Vector;
@@ -909,6 +910,24 @@ public class BoxFactory
                         if (cstyle == null)
                             cstyle = CSSProperty.ListStyleType.DECIMAL;
                         Text txt = n.getOwnerDocument().createTextNode(ListItemBox.formatItemNumber(val, cstyle));
+                        pelem.appendChild(txt);
+                    }
+                    else if (c instanceof TermFunction.Counters)
+                    {
+                        final TermFunction.Counters f = (TermFunction.Counters) c;
+                        CSSProperty.ListStyleType cstyle = f.getStyle();
+                        if (cstyle == null)
+                            cstyle = CSSProperty.ListStyleType.DECIMAL;
+                        final String sep = f.getSeparator();
+                        final List<Integer> items = counters.getCounters(f.getName());
+                        String val = "";
+                        for (int i = 0; i < items.size(); i++)
+                        {
+                            if (i != 0)
+                                val += sep;
+                            val += ListItemBox.formatItemNumber(items.get(i), cstyle);
+                        }
+                        final Text txt = n.getOwnerDocument().createTextNode(val);
                         pelem.appendChild(txt);
                     }
                 }

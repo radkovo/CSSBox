@@ -19,7 +19,9 @@
  */
 package org.fit.cssbox.css;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.NodeData;
@@ -76,7 +78,6 @@ public class Counters extends HashMap<String, Integer>
             else
                 return null;
         }
-        
     }
     
     /**
@@ -88,6 +89,24 @@ public class Counters extends HashMap<String, Integer>
     {
         final Counters scope = getScope(key);
         return (scope == null) ? 0 : scope.get(key);
+    }
+    
+    /**
+     * Finds the counter in all scopes and returns the list of values.
+     * @param key the counter name
+     * @return list of counter values ordered from the root scope to the deepest scope
+     */
+    public List<Integer> getCounters(String key)
+    {
+        Counters scope = this;
+        List<Integer> ret = new ArrayList<>();
+        while (scope != null)
+        {
+            if (scope.containsKey(key))
+                ret.add(0, scope.get(key));
+            scope = scope.parent;
+        }
+        return ret;
     }
     
     /**
