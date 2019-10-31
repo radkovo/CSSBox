@@ -1,0 +1,7 @@
+/*
+ * HTML5 additions to the std style sheet.
+ */
+article, aside, nav, section,
+main, header, footer {
+	display: block;
+}

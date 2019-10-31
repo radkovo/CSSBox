@@ -1,0 +1,36 @@
+/*
+ * A style sheet defining the additional basic style not covered by the CSS recommendation.
+ */
+
+a[href] {
+	color: blue;
+	text-decoration: underline;
+}
+
+script {
+	display: none;
+}
+
+style {
+	display: none;
+}
+
+option {
+	display: none;
+}
+
+br {
+	display: inline;
+	white-space: pre;
+}
+
+hr {
+	display: block;
+	margin-top: 1px solid;
+}
+
+/* Standard <ul> margin according to Mozilla */
+ul {
+	margin-left: 0;
+	padding-left: 40px;
+}
