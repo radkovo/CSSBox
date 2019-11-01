@@ -811,7 +811,7 @@ public class VisualContext
      *
      * @author burgetr
      */
-    private abstract class UnitEvaluator extends CalcArgs.DoubleEvaluator
+    private abstract class UnitEvaluator extends CalcArgs.FloatEvaluator
     {
         protected VisualContext ctx;
         protected float whole; //whole size used for percentages
