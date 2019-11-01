@@ -23,7 +23,6 @@ package org.fit.cssbox.layout;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
@@ -59,13 +58,13 @@ public class TextBox extends Box implements Inline
     private int textEnd;
 
     /** Maximal total width */
-    private int maxwidth;
+    private float maxwidth;
     
     /** Minimal total width */
-    private int minwidth;
+    private float minwidth;
     
     /** Additional width required for justifying the text */
-    private int expwidth;
+    private float expwidth;
     
     /** Expanding at the line end? */
     private boolean expAtLineEnd;
@@ -83,13 +82,13 @@ public class TextBox extends Box implements Inline
     private boolean linews;
     
     /** When line feeds are preserved, this contains the maximal length of the first line of the text. */
-    private int firstLineLength;
+    private float firstLineLength;
     
     /** When line feeds are preserved, this contains the maximal length of the last line of the text. */
-    private int lastLineLength;
+    private float lastLineLength;
     
     /** Contains the maximal length of the longest line of the text. */
-    private int longestLineLength;
+    private float longestLineLength;
     
     /** Contains a preserved line break? */
     private boolean containsLineBreak;
@@ -428,73 +427,73 @@ public class TextBox extends Box implements Inline
     }
 
     @Override
-    public int getContentX() 
+    public float getContentX() 
     {
         return bounds.x;
     }
     
 	@Override
-    public int getAbsoluteContentX() 
+    public float getAbsoluteContentX() 
     {
         return absbounds.x;
     }
     
 	@Override
-    public int getContentY() 
+    public float getContentY() 
     {
         return bounds.y;
     }
 
 	@Override
-    public int getAbsoluteContentY() 
+    public float getAbsoluteContentY() 
     {
         return absbounds.y;
     }
 
 	@Override
-    public int getContentWidth() 
+    public float getContentWidth() 
     {
         return bounds.width;
     }
     
 	@Override
-    public int getContentHeight() 
+    public float getContentHeight() 
     {
         return bounds.height;
     }
 
 	@Override
-    public int getAvailableContentWidth() 
+    public float getAvailableContentWidth() 
     {
         return availwidth;
     }
     
-    public int getLineHeight()
+    public float getLineHeight()
     {
         return parent.getLineHeight();
     }
     
-    public int getMaxLineHeight()
+    public float getMaxLineHeight()
     {
         return parent.getLineHeight();
     }
     
-    public int getTotalLineHeight()
+    public float getTotalLineHeight()
     {
         return ctx.getFontHeight();
     }
 
-    public int getBaselineOffset()
+    public float getBaselineOffset()
     {
         return ctx.getBaselineOffset();
     }
     
-    public int getBelowBaseline()
+    public float getBelowBaseline()
     {
         return ctx.getFontHeight() - ctx.getBaselineOffset();
     }
     
-    public int getHalfLead()
+    public float getHalfLead()
     {
         return 0;
     }
@@ -509,13 +508,13 @@ public class TextBox extends Box implements Inline
     }
     
     @Override
-    public int totalHeight() 
+    public float totalHeight() 
     {
         return bounds.width;
     }
     
 	@Override
-    public int totalWidth() 
+    public float totalWidth() 
     {
         return bounds.height;
     }
@@ -622,7 +621,7 @@ public class TextBox extends Box implements Inline
      * @return <code>true</code> if the box has been succesfully placed
      */
 	@Override
-    public boolean doLayout(int widthlimit, boolean force, boolean linestart)
+    public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         //Skip if not displayed
         if (!displayed)
@@ -640,10 +639,10 @@ public class TextBox extends Box implements Inline
         boolean split = false; //should we split to more boxes?
         boolean allow = false; //allow succesfull result even if nothing has been placed (line break only)
         boolean fail = false; //failed totally (nothing fit)
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         boolean empty = isempty;
         FontMetrics fm = g.getFontMetrics();
-        int w = 0, h = 0;
+        float w = 0, h = 0;
         
         int end = textEnd;
         int lineend = text.indexOf('\r', textStart);
@@ -757,14 +756,14 @@ public class TextBox extends Box implements Inline
     }
     
 	@Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
 		return minwidth;
     }
 	
-    private int computeMinimalWidth()
+    private float computeMinimalWidth()
     {
-        int ret = 0;
+        float ret = 0;
         String t = getText();
         if (t.length() > 0)
         {
@@ -783,17 +782,17 @@ public class TextBox extends Box implements Inline
     }
     
 	@Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
 		return maxwidth;
     }
 	
-    private int computeMaximalWidth()
+    private float computeMaximalWidth()
     {
         if (linews)
         {
             //no preserved line breaks -- returns the lenth of the whole string
-            int len = stringWidth(g.getFontMetrics(), getText());
+            float len = stringWidth(g.getFontMetrics(), getText());
             firstLineLength = len;
             lastLineLength = len;
             longestLineLength = len;
@@ -805,9 +804,9 @@ public class TextBox extends Box implements Inline
         }
     }
     
-    private int getLongestWord()
+    private float getLongestWord()
     {
-        int ret = 0;
+        float ret = 0;
         String t = getText();
         FontMetrics fm = g.getFontMetrics();
         
@@ -816,7 +815,7 @@ public class TextBox extends Box implements Inline
         do
         {
             if (s2 == -1) s2 = t.length();
-            int w = stringWidth(fm, t.substring(s1, s2));
+            float w = stringWidth(fm, t.substring(s1, s2));
             if (w > ret) ret = w;
             s1 = s2 + 1;
             s2 = t.indexOf(' ', s1);
@@ -826,13 +825,13 @@ public class TextBox extends Box implements Inline
     }
 
     @Override
-    public int getFirstLineLength()
+    public float getFirstLineLength()
     {
         return firstLineLength;
     }
 
     @Override
-    public int getLastLineLength()
+    public float getLastLineLength()
     {
         return lastLineLength;
     }
@@ -876,7 +875,7 @@ public class TextBox extends Box implements Inline
     }
 
     @Override
-    public void extendWidth(int ofs, boolean atLineStart, boolean atLineEnd)
+    public void extendWidth(float ofs, boolean atLineStart, boolean atLineEnd)
     {
         expwidth = ofs;
         expAtLineEnd = atLineEnd;
@@ -888,7 +887,7 @@ public class TextBox extends Box implements Inline
      * by this amount in total.
      * @return The extra width or 0 when no extra width is required
      */
-    public int getExtraWidth()
+    public float getExtraWidth()
     {
         return expwidth;
     }
@@ -906,20 +905,20 @@ public class TextBox extends Box implements Inline
      * Computes the X offsets of the individual words
      * @param words the words
      * @return the array n elements where n is the number of words. The a[i][0] contains the
-     * offset of the i-th words, a[i][1] contains the length of the word.
+     * offset of the i-th words, a[i][1] contains the width of the word in pixels.
      */
-    public int[][] getWordOffsets(String[] words)
+    public float[][] getWordOffsets(String[] words)
     {
         return getWordOffsets(g.getFontMetrics(), words);
     }
     
-    private int[][] getWordOffsets(FontMetrics fm, String[] words)
+    private float[][] getWordOffsets(FontMetrics fm, String[] words)
     {
         if (words.length > 0)
         {
             //determine word lengths
-            int[] ww = new int[words.length];
-            int totalw = 0;
+            float[] ww = new float[words.length];
+            float totalw = 0;
             for (int i = 0; i < words.length; i++)
             {
                 ww[i] = stringWidth(fm, words[i]);
@@ -933,20 +932,20 @@ public class TextBox extends Box implements Inline
                 spaces++;
             final float spacing = (spaces == 0) ? (bounds.width - totalw) : (bounds.width - totalw) / (float) spaces;
             //layout
-            int[][] ret = new int[words.length][2];
+            float[][] ret = new float[words.length][2];
             float curX = 0;
             if (startsWithWhitespace())
                 curX += spacing;
             for (int i = 0; i < words.length; i++)
             {
-                ret[i][0] = Math.round(curX);
+                ret[i][0] = curX;
                 ret[i][1] = ww[i];
                 curX += ww[i] + spacing;            
             }
             return ret;
         }
         else
-            return new int[0][0];
+            return new float[0][0];
     }
     
     /**
@@ -955,7 +954,7 @@ public class TextBox extends Box implements Inline
      * @param pos the character position in the string relative to the start of the box (0 is the first character in the box)
      * @return the X offset in pixels
      */
-    public int getCharOffsetX(int pos)
+    public float getCharOffsetX(int pos)
     {
         return getCharOffsetXElem(pos + textStart);
     }
@@ -966,7 +965,7 @@ public class TextBox extends Box implements Inline
      * @param pos the character position in the string absolutely within the source text node (0 is the first character in the node)
      * @return the X offset in pixels or 0 when the position does not fit to this box
      */
-    public int getCharOffsetXElem(int pos)
+    public float getCharOffsetXElem(int pos)
     {
         if (text != null)
         {
@@ -996,7 +995,7 @@ public class TextBox extends Box implements Inline
         
         int s1 = 0;
         int s2 = t.indexOf('\r');
-        int w = 0;
+        float w = 0;
         do
         {
             if (s2 == -1)
@@ -1018,9 +1017,9 @@ public class TextBox extends Box implements Inline
      * @param text the string to be measured
      * @return the resulting width in pixels
      */
-    private int stringWidth(FontMetrics fm, String text)
+    private float stringWidth(FontMetrics fm, String text)
     {
-        int w = fm.stringWidth(text);
+        float w = fm.stringWidth(text);
         if (wordSpacing != null)
         {
             //count spaces and add
@@ -1042,8 +1041,8 @@ public class TextBox extends Box implements Inline
     public void drawContent(Graphics2D g)
     {
         //top left corner
-        int x = absbounds.x;
-        int y = absbounds.y;
+        float x = absbounds.x;
+        float y = absbounds.y;
 
         //Draw the string
         if (textEnd > textStart)
@@ -1063,13 +1062,13 @@ public class TextBox extends Box implements Inline
         }
     }
 
-    private void drawByWords(Graphics2D g, int x, int y, String text)
+    private void drawByWords(Graphics2D g, float x, float y, String text)
     {
         String[] words = text.split(" ");
         if (words.length > 0)
         {
             final FontMetrics fm = g.getFontMetrics();
-            final int[][] offsets = getWordOffsets(fm, words);
+            final float[][] offsets = getWordOffsets(fm, words);
             for (int i = 0; i < words.length; i++)
                 drawAttributedString(g, x + offsets[i][0], y, words[i]);
         }
@@ -1080,7 +1079,7 @@ public class TextBox extends Box implements Inline
     /**
      * Draws a single string with eventual attributes based on the current visual context.
      */
-    private void drawAttributedString(Graphics2D g, int x, int y, String text)
+    private void drawAttributedString(Graphics2D g, float x, float y, String text)
     {
         final Set<TextDecoration> decoration = getEfficientTextDecoration();
         if (!decoration.isEmpty()) 
@@ -1129,8 +1128,8 @@ public class TextBox extends Box implements Inline
         System.out.println();*/
         
         g.setColor(Color.MAGENTA);
-        int y = getAbsoluteContentY();
-        int h = getTotalLineHeight();
+        float y = getAbsoluteContentY();
+        float h = getTotalLineHeight();
             
         g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
         

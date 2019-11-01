@@ -47,19 +47,19 @@ public class TableColumn extends BlockBox
     protected String colwidth;
     
     /** The minimal column width */
-    protected int mincwidth;
+    protected float mincwidth;
     
     /** The maximal column width */
-    protected int maxcwidth;
+    protected float maxcwidth;
     
     /** true if the width is relative [%] */
     protected boolean wrelative;
     
     /** relative width [%] when used */
-    protected int percent;
+    protected float percent;
     
     /** the absolute width when specified */
-    protected int abswidth;
+    protected float abswidth;
     
     //====================================================================================
     
@@ -145,7 +145,7 @@ public class TableColumn extends BlockBox
      * Set the width of the column
      * @param width the new width
      */
-    public void setColumnWidth(int width)
+    public void setColumnWidth(float width)
     {
         content = new Dimension(0, 0);
         content.width = width;
@@ -155,7 +155,7 @@ public class TableColumn extends BlockBox
     /**
      * @return the maximal width of the cell contents
      */
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
         return maxcwidth;
     }
@@ -164,7 +164,7 @@ public class TableColumn extends BlockBox
      * Set the maximal width of the cell contents.
      * @param maxwidth the maxwidth to set
      */
-    public void setMaximalWidth(int maxwidth)
+    public void setMaximalWidth(float maxwidth)
     {
         this.maxcwidth = maxwidth;
     }
@@ -172,7 +172,7 @@ public class TableColumn extends BlockBox
     /**
      * @return the minimal width of the cell contents
      */
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
         return mincwidth;
     }
@@ -180,7 +180,7 @@ public class TableColumn extends BlockBox
     /**
      * @param minwidth the minimal width to set
      */
-    public void setMinimalWidth(int minwidth)
+    public void setMinimalWidth(float minwidth)
     {
         this.mincwidth = minwidth;
     }
@@ -188,7 +188,7 @@ public class TableColumn extends BlockBox
     /**
      * @return the percentage if the box has a relative width, 0 otherwise
      */
-    public int getPercent()
+    public float getPercent()
     {
         return percent;
     }
@@ -196,7 +196,7 @@ public class TableColumn extends BlockBox
     /**
      * @param percent the percentage to set
      */
-    public void setPercent(int percent)
+    public void setPercent(float percent)
     {
         this.percent = percent;
     }
@@ -226,7 +226,7 @@ public class TableColumn extends BlockBox
     }
 
     @Override
-    public boolean doLayout(int widthlimit, boolean force, boolean linestart)
+    public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         return true;
     }
@@ -248,7 +248,7 @@ public class TableColumn extends BlockBox
         
         if (colwidth.equals("")) //no width set - try to get from style
         {
-            int contw = getContainingBlock().width;
+            float contw = getContainingBlock().width;
             CSSDecoder dec = new CSSDecoder(ctx);
             CSSProperty.Width wprop = style.getProperty("width");
             if (wprop != null && wprop != CSSProperty.Width.AUTO)

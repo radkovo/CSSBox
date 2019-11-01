@@ -22,7 +22,6 @@ package org.fit.cssbox.layout;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.net.MalformedURLException;
 import java.net.URL;
 

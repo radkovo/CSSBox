@@ -30,6 +30,7 @@ import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
+import org.fit.cssbox.layout.Dimension;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -80,7 +81,7 @@ public class SimpleBrowser extends javax.swing.JFrame
         documentScroll = new javax.swing.JScrollPane();
         
         //Create the browser canvas
-        browserCanvas = new BrowserCanvas(docroot, decoder, new java.awt.Dimension(1000, 600), baseurl);
+        browserCanvas = new BrowserCanvas(docroot, decoder, new Dimension(1000, 600), baseurl);
 
         //A simple mouse listener that displays the coordinates clicked
         browserCanvas.addMouseListener(new MouseListener() {

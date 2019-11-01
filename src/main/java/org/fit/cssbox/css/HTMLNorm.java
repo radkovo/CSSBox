@@ -321,21 +321,21 @@ public class HTMLNorm
      * @param whole the value used as 100% when value is a percentage
      * @return the computed length
      */
-    public static int computeAttributeLength(String value, int whole) throws NumberFormatException
+    public static float computeAttributeLength(String value, float whole) throws NumberFormatException
     {
         String sval = value.trim().toLowerCase();
         if (sval.endsWith("%"))
         {
-            double val = Double.parseDouble(sval.substring(0, sval.length() - 1));
-            return (int) Math.round(val * whole / 100.0);
+            float val = Float.parseFloat(sval.substring(0, sval.length() - 1));
+            return val * whole / 100.0f;
         }
         else if (sval.endsWith("px"))
         {
-            return (int) Math.rint(Double.parseDouble(sval.substring(0, sval.length() - 2)));
+            return Float.parseFloat(sval.substring(0, sval.length() - 2));
         }
         else
         {
-            return (int) Math.rint(Double.parseDouble(sval));
+            return Float.parseFloat(sval);
         }
     }
     

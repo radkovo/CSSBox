@@ -62,17 +62,17 @@ public class VisualContext
     private Viewport viewport; //the viewport used for obtaining the vw sizes
     private Font font; //current font
     private FontMetrics fm; //current font metrics
-    private double fontSize;
+    private float fontSize;
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
     private List<CSSProperty.TextDecoration> textDecoration;
-    private double letterSpacing; //additional letter spacing in pixels
-    private double em; //number of pixels in 1em
-    private double rem; //number of pixels in 1rem 
-    private double ex; //number of pixels in 1ex
-    private double ch; //number of pixels in 1ch
-    private double dpi; //number of pixels in 1 inch
+    private float letterSpacing; //additional letter spacing in pixels
+    private float em; //number of pixels in 1em
+    private float rem; //number of pixels in 1rem 
+    private float ex; //number of pixels in 1ex
+    private float ch; //number of pixels in 1ch
+    private float dpi; //number of pixels in 1 inch
     
     public Color color; //current text color
 
@@ -89,8 +89,8 @@ public class VisualContext
         rootContext = (parent == null) ? this : parent.rootContext;
         em = CSSUnits.medium_font;
         rem = em;
-        ex = 0.6 * em;
-        ch = 0.8 * ch; //just an initial guess, updated in updateForGraphics()
+        ex = 0.6f * em;
+        ch = 0.8f * ch; //just an initial guess, updated in updateForGraphics()
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
         font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
         fontSize = CSSUnits.points(CSSUnits.medium_font);
@@ -98,7 +98,7 @@ public class VisualContext
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
-        letterSpacing = 0.0;
+        letterSpacing = 0.0f;
         color = Color.BLACK;
     }
     
@@ -165,7 +165,7 @@ public class VisualContext
      * Obtains the specified font size in pt.
      * @return the font size in pt
      */
-    public double getFontSize()
+    public float getFontSize()
     {
         return fontSize;
     }
@@ -213,7 +213,7 @@ public class VisualContext
      * Returns the letter spacing used for the box.
      * @return letter spacing
      */
-    public double getLetterSpacing()
+    public float getLetterSpacing()
     {
         return letterSpacing;
     }
@@ -230,7 +230,7 @@ public class VisualContext
     /**
      * @return the em value of the context
      */
-    public double getEm()
+    public float getEm()
     {
         return em;
     }
@@ -238,7 +238,7 @@ public class VisualContext
     /**
      * @return the rem value of the context
      */
-    public double getRem()
+    public float getRem()
     {
         return rem;
     }
@@ -246,7 +246,7 @@ public class VisualContext
     /**
      * @return the ex value of the context
      */
-    public double getEx()
+    public float getEx()
     {
         return ex;
     }
@@ -254,7 +254,7 @@ public class VisualContext
     /**
      * @return the 'ch' value of the context
      */
-    public double getCh()
+    public float getCh()
     {
         return ch;
     }
@@ -262,7 +262,7 @@ public class VisualContext
     /**
      * @return the dpi value used in the context
      */
-    public double getDpi()
+    public float getDpi()
     {
         return dpi;
     }
@@ -304,8 +304,8 @@ public class VisualContext
                 family = ff.getAWTValue(); //could not translate - use as is
         }
         
-        double size;
-        double psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();
+        float size;
+        float psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();
         CSSProperty.FontSize fsize = style.getProperty("font-size");
         if (fsize == null)
             size = em;
@@ -356,7 +356,7 @@ public class VisualContext
         if (spacing != null)
         {
             if (spacing == CSSProperty.LetterSpacing.NORMAL)
-                letterSpacing = 0.0;
+                letterSpacing = 0.0f;
             else
             {
                 TermLength lenspec = style.getValue(TermLength.class, "letter-spacing");
@@ -399,7 +399,7 @@ public class VisualContext
         
         FontRenderContext frc = new FontRenderContext(null, false, false);
         TextLayout layout = new TextLayout("x", font, frc);
-        ex = layout.getBounds().getHeight();
+        ex = (float) layout.getBounds().getHeight();
         
         ch = fm.charWidth('0');
     }
@@ -411,7 +411,7 @@ public class VisualContext
      * Computes current text line height.
      * @return the height of the normal text line in pixels
      */
-    public int getFontHeight()
+    public float getFontHeight()
     {
         return fm.getHeight();
     }
@@ -421,7 +421,7 @@ public class VisualContext
      * for the current font.
      * @return the baseline <em>y</em> offset.
      */
-    public int getBaselineOffset()
+    public float getBaselineOffset()
     {
         return fm.getAscent();
     }
@@ -432,7 +432,7 @@ public class VisualContext
      * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
      * @return the length in 'pt' 
      */
-    public double ptLength(TermLengthOrPercent spec, double whole)
+    public float ptLength(TermLengthOrPercent spec, float whole)
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
@@ -456,11 +456,11 @@ public class VisualContext
                 case in:
                     return nval * 72;
                 case cm:
-                    return (nval * 72) / 2.54;
+                    return (nval * 72) / 2.54f;
                 case mm:
-                    return (nval * 72) / 25.4;
+                    return (nval * 72) / 25.4f;
                 case q:
-                    return (nval * 72) / (2.54 * 40.0);
+                    return (nval * 72) / (2.54f * 40.0f);
                 case pc:
                     return nval * 12;
                 case px:
@@ -474,13 +474,13 @@ public class VisualContext
                 case ch:
                     return (ch * nval * 72) / dpi;
                 case vw:
-                    return (viewport.getVisibleRect().getWidth() * nval * 72) / (100.0 * dpi);
+                    return (viewport.getVisibleRect().getWidth() * nval * 72f) / (100.0f * dpi);
                 case vh:
-                    return (viewport.getVisibleRect().getHeight() * nval * 72) / (100.0 * dpi);
+                    return (viewport.getVisibleRect().getHeight() * nval * 72f) / (100.0f * dpi);
                 case vmin:
-                    return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
+                    return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72f) / (100.0f * dpi);
                 case vmax:
-                    return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72) / (100.0 * dpi);
+                    return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72f) / (100.0f * dpi);
                 default:
                     return 0;
             }
@@ -492,7 +492,7 @@ public class VisualContext
      * @param spec the CSS length specification
      * @return font size in 'pt' 
      */
-    public double ptLength(TermLengthOrPercent spec)
+    public float ptLength(TermLengthOrPercent spec)
     {
         return ptLength(spec, 0);
     }
@@ -503,12 +503,12 @@ public class VisualContext
      * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
      * @return the length in 'px' 
      */
-    public double pxLength(TermLengthOrPercent spec, double whole)
+    public float pxLength(TermLengthOrPercent spec, float whole)
     {
         float nval = spec.getValue();
         if (spec.isPercentage())
         {
-            return (whole * nval) / 100;
+            return (whole * nval) / 100.0f;
         }
         else if (spec instanceof TermCalc)
         {
@@ -527,11 +527,11 @@ public class VisualContext
                 case in:
                     return nval * dpi;
                 case cm:
-                    return (nval * dpi) / 2.54;
+                    return (nval * dpi) / 2.54f;
                 case mm:
-                    return (nval * dpi) / 25.4;
+                    return (nval * dpi) / 25.4f;
                 case q:
-                    return (nval * dpi) / (2.54 * 40.0);
+                    return (nval * dpi) / (2.54f * 40.0f);
                 case pc:
                     return (nval * 12 * dpi) / 72;
                 case px:
@@ -545,13 +545,13 @@ public class VisualContext
                 case ch:
                     return ch * nval;
                 case vw:
-                    return viewport.getVisibleRect().getWidth() * nval / 100.0;
+                    return viewport.getVisibleRect().getWidth() * nval / 100.0f;
                 case vh:
-                    return viewport.getVisibleRect().getHeight() * nval / 100.0;
+                    return viewport.getVisibleRect().getHeight() * nval / 100.0f;
                 case vmin:
-                    return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                    return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0f;
                 case vmax:
-                    return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                    return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0f;
                 default:
                     return 0;
             }
@@ -563,7 +563,7 @@ public class VisualContext
      * @param spec the CSS length specification
      * @return font size in 'px' 
      */
-    public double pxLength(TermLengthOrPercent spec)
+    public float pxLength(TermLengthOrPercent spec)
     {
         return pxLength(spec, 0);
     }
@@ -573,7 +573,7 @@ public class VisualContext
      * @param spec the CSS angle specification
      * @return the corresponding angle in radians
      */
-    public double degAngle(TermAngle spec)
+    public float degAngle(TermAngle spec)
     {
         float nval = spec.getValue();
         final TermLength.Unit unit = spec.getUnit();
@@ -591,11 +591,11 @@ public class VisualContext
                 case deg:
                     return nval; 
                 case grad:
-                    return (nval * 200.0) / Math.PI;
+                    return (nval * 200.0f) / (float) Math.PI;
                 case rad:
-                    return (nval * 180.0) / Math.PI;
+                    return (nval * 180.0f) / (float) Math.PI;
                 case turn:
-                    return nval * 360.0;
+                    return nval * 360.0f;
                 default:
                     return 0;
             }
@@ -607,7 +607,7 @@ public class VisualContext
      * @param spec the CSS angle specification
      * @return the corresponding angle in radians
      */
-    public double radAngle(TermAngle spec)
+    public float radAngle(TermAngle spec)
     {
         float nval = spec.getValue();
         final TermLength.Unit unit = spec.getUnit();
@@ -623,15 +623,15 @@ public class VisualContext
             switch (unit)
             {
                 case deg:
-                    return (nval * Math.PI) / 180.0; 
+                    return (nval * (float) Math.PI) / 180.0f; 
                 case grad:
-                    return (nval * Math.PI) / 200.0;
+                    return (nval * (float) Math.PI) / 200.0f;
                 case rad:
                     return nval;
                 case turn:
-                    return nval * 2 * Math.PI;
+                    return nval * 2.0f * (float) Math.PI;
                 default:
-                    return 0;
+                    return 0.0f;
             }
         }
     }
@@ -748,7 +748,7 @@ public class VisualContext
     }
     
     public Font createFont(String family, int size, CSSProperty.FontWeight weight,
-            CSSProperty.FontStyle style, double spacing)
+            CSSProperty.FontStyle style, float spacing)
     {
         Font base = createFont(family, size, weight, style);
         if (spacing < 0.0001)
@@ -759,7 +759,7 @@ public class VisualContext
         {
             // TRACKING value is multiplied by font size in AWT. 
             // (0.75 has been empiricaly determined by comparing with other browsers) 
-            final double tracking = spacing / fontSize * 0.75;
+            final float tracking = spacing / fontSize * 0.75f;
             Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
             attributes.put(TextAttribute.TRACKING, tracking);
             return base.deriveFont(attributes);
@@ -814,14 +814,14 @@ public class VisualContext
     private abstract class UnitEvaluator extends CalcArgs.DoubleEvaluator
     {
         protected VisualContext ctx;
-        protected double whole; //whole size used for percentages
+        protected float whole; //whole size used for percentages
         
         public UnitEvaluator(VisualContext ctx)
         {
             this.ctx = ctx;
         }
 
-        public UnitEvaluator setWhole(double whole)
+        public UnitEvaluator setWhole(float whole)
         {
             this.whole = whole;
             return this;
@@ -836,12 +836,12 @@ public class VisualContext
         }
 
         @Override
-        public double resolveValue(TermFloatValue val)
+        public float resolveValue(TermFloatValue val)
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.pxLength((TermLengthOrPercent) val, whole);
             else
-                return 0.0; //this should not happen
+                return 0.0f; //this should not happen
         }
     }
     
@@ -853,12 +853,12 @@ public class VisualContext
         }
 
         @Override
-        public double resolveValue(TermFloatValue val)
+        public float resolveValue(TermFloatValue val)
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.ptLength((TermLengthOrPercent) val, whole);
             else
-                return 0.0; //this should not happen
+                return 0.0f; //this should not happen
         }
     }
     
@@ -870,12 +870,12 @@ public class VisualContext
         }
 
         @Override
-        public double resolveValue(TermFloatValue val)
+        public float resolveValue(TermFloatValue val)
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.radAngle((TermAngle) val);
             else
-                return 0.0; //this should not happen
+                return 0.0f; //this should not happen
         }
     }
     
@@ -887,12 +887,12 @@ public class VisualContext
         }
 
         @Override
-        public double resolveValue(TermFloatValue val)
+        public float resolveValue(TermFloatValue val)
         {
             if (val instanceof TermLengthOrPercent)
                 return ctx.degAngle((TermAngle) val);
             else
-                return 0.0; //this should not happen
+                return 0.0f; //this should not happen
         }
     }
     

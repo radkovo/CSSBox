@@ -37,7 +37,7 @@ public class CSSStroke implements Stroke
 {
     private static Logger log = LoggerFactory.getLogger(CSSStroke.class);
 
-    private int width;
+    private float width;
     private CSSProperty.BorderStyle style;
     private boolean reverse;
     
@@ -47,7 +47,7 @@ public class CSSStroke implements Stroke
      * @param style Border css style
      * @param reverse Should be true for right and bottom border - used for reversing the shape of 'double' style border.
      */
-    public CSSStroke(int width, CSSProperty.BorderStyle style, boolean reverse)
+    public CSSStroke(float width, CSSProperty.BorderStyle style, boolean reverse)
     {
     	this.width = width;
     	this.style = style;
@@ -64,9 +64,9 @@ public class CSSStroke implements Stroke
     		int x2 = (int) l.getX2();
     		int y2 = (int) l.getY2();
     		if (y1 == y2 && x2 > x1)
-    			return sideShape(x1, y1, x2 - x1 + 1 , width, false);
+    			return sideShape(x1, y1, x2 - x1 + 1 , (int) width, false);
     		else if (x1 == x2 && y2 > y1)
-    			return sideShape(x1, y1, y2 - y1 + 1, width, true);
+    			return sideShape(x1, y1, y2 - y1 + 1, (int) width, true);
     		else
     			return basicStrokeShape(s);
     	}

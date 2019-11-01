@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.net.URL;
 
@@ -77,14 +76,14 @@ public class ReplacedText extends ReplacedContent
     }
 
     @Override
-    public int getIntrinsicWidth()
+    public float getIntrinsicWidth()
     {
         checkLayout();
         return viewport.getWidth();
     }
 
     @Override
-    public int getIntrinsicHeight()
+    public float getIntrinsicHeight()
     {
         checkLayout();
         return viewport.getHeight();

@@ -108,18 +108,18 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
+    public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         setAvailableWidth(availw);
-        int x1 = fleft.getWidth(floatY) - floatXl;
-        int x2 = fright.getWidth(floatY) - floatXr;
+        float x1 = fleft.getWidth(floatY) - floatXl;
+        float x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
-        int wlimit = getAvailableContentWidth() - x1 - x2;
-        int tabwidth = 0;
-        int tabheight = 0;
-        int capheight = 0;
-        int capwidth = 0;
+        float wlimit = getAvailableContentWidth() - x1 - x2;
+        float tabwidth = 0;
+        float tabheight = 0;
+        float capheight = 0;
+        float capwidth = 0;
         
         //format the table
         BlockLayoutStatus stat = new BlockLayoutStatus();
@@ -172,7 +172,7 @@ public class BlockTableBox extends BlockBox
     }
     
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
         if (caption == null)
             return table.getMaximalWidth();
@@ -181,7 +181,7 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
         if (caption == null)
             return table.getMinimalWidth();
@@ -190,7 +190,7 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    protected int getMaximalContentWidth()
+    protected float getMaximalContentWidth()
     {
         if (caption == null)
             return table.getMaximalContentWidth();
@@ -199,7 +199,7 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    protected int getMinimalContentWidth()
+    protected float getMinimalContentWidth()
     {
         if (caption == null)
             return table.getMinimalContentWidth();
@@ -208,7 +208,7 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    protected int getMinimalDecorationWidth()
+    protected float getMinimalDecorationWidth()
     {
         if (caption == null)
             return table.getMinimalDecorationWidth();
@@ -224,14 +224,14 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    protected void loadBorders(CSSDecoder dec, int contw)
+    protected void loadBorders(CSSDecoder dec, float contw)
     {
         //anonymous table box has never a border
         border = new LengthSet();
     }
 
     @Override
-    protected void loadPadding(CSSDecoder dec, int contw)
+    protected void loadPadding(CSSDecoder dec, float contw)
     {
         //anonymous table box has never a padding
         padding = new LengthSet();

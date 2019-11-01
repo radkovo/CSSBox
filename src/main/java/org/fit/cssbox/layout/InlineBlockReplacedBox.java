@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
 
 import org.w3c.dom.Element;

@@ -99,12 +99,12 @@ public abstract class ReplacedContent
     /**
      * @return the intrinsic width of the contents
      */
-    abstract public int getIntrinsicWidth();
+    abstract public float getIntrinsicWidth();
 
     /**
      * @return the intrinsic height of the contents
      */
-    abstract public int getIntrinsicHeight();
+    abstract public float getIntrinsicHeight();
 
     /**
      * @return the intrinsic width/height ratio. If the object has no ratio, 0 is returned

@@ -39,7 +39,7 @@ public class TableBodyBox extends BlockBox
     /** array of cells */
     protected TableCellBox[][] cells;
     /** cell spacing */
-    protected int spacing = 2;
+    protected float spacing = 2;
     
     //====================================================================================
     
@@ -102,7 +102,7 @@ public class TableBodyBox extends BlockBox
     /**
      * Sets the cell spacing
      */
-    public void setSpacing(int spacing)
+    public void setSpacing(float spacing)
     {
     	this.spacing = spacing;
     }
@@ -127,18 +127,18 @@ public class TableBodyBox extends BlockBox
     //====================================================================================
     
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
-        int sum = spacing;
+        float sum = spacing;
         for (int i = 0; i < numCols; i++)
             sum += getMaximalColumnWidth(i) + spacing;
         return sum;
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
-        int sum = spacing;
+        float sum = spacing;
         for (int i = 0; i < numCols; i++)
             sum += getMinimalColumnWidth(i) + spacing;
         return sum;
@@ -149,16 +149,16 @@ public class TableBodyBox extends BlockBox
      * @param col the column index
      * @return the minimal width of the column
      */ 
-    public int getMinimalColumnWidth(int col)
+    public float getMinimalColumnWidth(int col)
     {
-        int ret = 0;
+        float ret = 0;
         int r = 0;
         while (r < getRowCount())
         {
             TableCellBox cell = cells[col][r];
             if (cell != null)
             {
-                int min = cell.getMinimalWidth() / cell.getColspan();
+                float min = cell.getMinimalWidth() / cell.getColspan();
                 if (min > ret) ret = min;
                 r += cell.getRowspan();
             }
@@ -173,16 +173,16 @@ public class TableBodyBox extends BlockBox
      * @param col the column index
      * @return the minimal width of the column
      */ 
-    public int getMaximalColumnWidth(int col)
+    public float getMaximalColumnWidth(int col)
     {
-        int ret = 0;
+        float ret = 0;
         int r = 0;
         while (r < getRowCount())
         {
             TableCellBox cell = cells[col][r];
             if (cell != null)
             {
-                int max = cell.getMaximalWidth() / cell.getColspan();
+                float max = cell.getMaximalWidth() / cell.getColspan();
                 if (max > ret) ret = max;
                 r += cell.getRowspan();
             }
@@ -209,11 +209,11 @@ public class TableBodyBox extends BlockBox
             {
             	cell.setOwnerColumn(col);
                 //minimal width
-                int min = cell.getMinimalWidth() / cell.getColspan();
+                float min = cell.getMinimalWidth() / cell.getColspan();
                 if (min > col.getMinimalWidth())
                     col.setMinimalWidth(min);
                 //maximal width
-                int max = cell.getMaximalWidth() / cell.getColspan();
+                float max = cell.getMaximalWidth() / cell.getColspan();
                 if (max > col.getMaximalWidth())
                     col.setMaximalWidth(max);
                 //fixed width and percentages
@@ -252,20 +252,20 @@ public class TableBodyBox extends BlockBox
     }
     
     @Override
-    public boolean doLayout(int widthlimit, boolean force, boolean linestart)
+    public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         return true;
     }
     
-    public boolean doLayout(int widthlimit, Vector<TableColumn> columns)
+    public boolean doLayout(float widthlimit, Vector<TableColumn> columns)
     {
         setAvailableWidth(widthlimit);
 
-        int y = spacing;
-        int x = spacing;
-        int maxw = 0;
-        int maxh = 0;
-        int wlimit = getAvailableContentWidth();
+        float y = spacing;
+        float x = spacing;
+        float maxw = 0;
+        float maxh = 0;
+        float wlimit = getAvailableContentWidth();
         
         /*System.out.println("Table body " + getColumnCount() + "x" + getRowCount());
         for (int r = 0; r < rows.size(); r++)
@@ -275,7 +275,7 @@ public class TableBodyBox extends BlockBox
             System.out.println(" |");
         }*/
 
-        int rowY[] = new int[getRowCount()]; //Y offests of the rows
+        float rowY[] = new float[getRowCount()]; //Y offests of the rows
         
         for (int r = 0; r < getRowCount(); r++)
         {
@@ -292,7 +292,7 @@ public class TableBodyBox extends BlockBox
                     int firstrow = cell.getRow();
                     int lastrow = cell.getRow() + cell.getRowspan() - 1;
                     //compute cell width according to span
-                    int cw = columns.elementAt(c).getWidth();
+                    float cw = columns.elementAt(c).getWidth();
                     for (int i = 1; i < cell.getColspan(); i++)
                         cw += spacing + columns.elementAt(c+i).getWidth();
                     cell.setWidth(cw);
@@ -304,7 +304,7 @@ public class TableBodyBox extends BlockBox
                         //int ch = cell.getHeight() / cell.getRowspan();
                         if (cell.getRowspan() == 1)
                         {
-                        	int ch = cell.getHeight();
+                        	float ch = cell.getHeight();
                         	if (ch > maxh) maxh = ch;
                         }
                     }
@@ -313,7 +313,7 @@ public class TableBodyBox extends BlockBox
                         //int ch = cell.getHeight() / cell.getRowspan();
                         if (cell.getRowspan() == 1)
                         {
-                        	int ch = cell.getHeight();
+                        	float ch = cell.getHeight();
                         	if (ch > maxh) maxh = ch;
                         }
                     }
@@ -321,8 +321,8 @@ public class TableBodyBox extends BlockBox
                     {
                         //use the remaining height of the cell
                         //int rh = y - cell.getContainingBlock().bounds.x;
-                        int startY = rowY[cell.getRow()];
-                        int remain = cell.getHeight() - (y - startY); 
+                        float startY = rowY[cell.getRow()];
+                        float remain = cell.getHeight() - (y - startY); 
                         if (remain > maxh) maxh = remain;
                     }
                     x += cw + spacing;
@@ -333,7 +333,7 @@ public class TableBodyBox extends BlockBox
             }
             
             //compute the row baseline offset
-            int baseline = 0;
+            float baseline = 0;
             c = 0;
             while (c < getColumnCount())
             {
@@ -342,7 +342,7 @@ public class TableBodyBox extends BlockBox
                 {
                     if (cell.getRow() == r) //if starts on this line
                     {
-                        int cbase = cell.getFirstInlineBoxBaseline();
+                        float cbase = cell.getFirstInlineBoxBaseline();
                         if (cbase > baseline)
                             baseline = cbase;
                     }
@@ -361,13 +361,13 @@ public class TableBodyBox extends BlockBox
                 {
                     if (cell.getRow()+cell.getRowspan()-1 == r) //if ends on this line
                     {
-                        int startY;
+                        float startY;
                         if (cell.getRowspan() > 1)
                             startY = rowY[cell.getRow()];
                         else
                             startY = y;
-                        int oldheight = cell.getHeight();
-                        int newheight = y + maxh - startY;
+                        float oldheight = cell.getHeight();
+                        float newheight = y + maxh - startY;
                         cell.setHeight(newheight);
                         cell.applyVerticalAlign(oldheight, newheight, baseline);
                     }
@@ -400,7 +400,7 @@ public class TableBodyBox extends BlockBox
 	}
     
     @Override
-    protected void loadPadding(CSSDecoder dec, int contw)
+    protected void loadPadding(CSSDecoder dec, float contw)
     {
         padding = new LengthSet(); //padding does not apply to table body boxes
     }

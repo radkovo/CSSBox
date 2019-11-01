@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
 
 import org.w3c.dom.Element;
@@ -31,8 +30,8 @@ import org.w3c.dom.Element;
  */
 public class BlockReplacedBox extends BlockBox implements ReplacedBox
 {
-    protected int boxw; //image width attribute
-    protected int boxh; //image height attribute
+    protected float boxw; //image width attribute
+    protected float boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
     
     /** 
@@ -74,14 +73,14 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
 	}
     
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
         return boxw + declMargin.left + padding.left + border.left +
                 declMargin.right + padding.right + border.right;
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
         return boxw + declMargin.left + padding.left + border.left +
                 declMargin.right + padding.right + border.right;
@@ -106,7 +105,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     }
 
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart) 
+    public boolean doLayout(float availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
         if (!displayed)
@@ -117,7 +116,7 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
         }
 
         setAvailableWidth(availw);
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else

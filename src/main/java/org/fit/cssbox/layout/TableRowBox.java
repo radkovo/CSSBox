@@ -19,9 +19,7 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -144,7 +142,7 @@ public class TableRowBox extends BlockBox
     }
 	
 	@Override
-    public boolean doLayout(int widthlimit, boolean force, boolean linestart)
+    public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         //do nothing (table line must be laid out other way, through the table body)
         return true;
@@ -155,8 +153,8 @@ public class TableRowBox extends BlockBox
     {
         updateStackingContexts();
         final Rectangle cblock = getAbsoluteContainingBlock();
-        int x = cblock.x + bounds.x;
-        int y = cblock.y + bounds.y;
+        float x = cblock.x + bounds.x;
+        float y = cblock.y + bounds.y;
 
         if (position == POS_RELATIVE)
         {

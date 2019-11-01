@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
 
 import org.w3c.dom.Element;
@@ -31,8 +30,8 @@ import org.w3c.dom.Element;
  */
 public class InlineReplacedBox extends InlineBox implements ReplacedBox
 {
-    protected int boxw; //image width attribute
-    protected int boxh; //image height attribute
+    protected float boxw; //image width attribute
+    protected float boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
     
     /** 
@@ -64,14 +63,14 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
 	}
 
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
         return boxw + margin.left + padding.left + border.left + 
                 margin.right + padding.right + border.right;
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
         return boxw + margin.left + padding.left + border.left + 
                 margin.right + padding.right + border.right;
@@ -114,37 +113,37 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     }
 
     @Override
-	public int getBaselineOffset()
+	public float getBaselineOffset()
 	{
     	return boxh;
 	}
 
 	@Override
-	public int getBelowBaseline()
+	public float getBelowBaseline()
 	{
 		return 0;
 	}
 
 	@Override
-	public int getTotalLineHeight()
+	public float getTotalLineHeight()
 	{
 		return boxh;
 	}
 	
 	/*@Override
-	public int getLineboxOffset()
+	public float getLineboxOffset()
 	{
 	    return boxh - ctx.getBaselineOffset();
 	}*/
 	
 	@Override
-	public int getMaxLineHeight()
+	public float getMaxLineHeight()
 	{
 	    return boxh;
 	}
 	
 	@Override
-    public boolean doLayout(int availw, boolean force, boolean linestart) 
+    public boolean doLayout(float availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
         if (!displayed)
@@ -155,7 +154,7 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         }
 
         setAvailableWidth(availw);
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else

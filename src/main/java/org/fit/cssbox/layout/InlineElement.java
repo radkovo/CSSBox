@@ -50,6 +50,6 @@ public interface InlineElement extends Inline
      * Obtains the offset of the content edge from the line box top
      * @return the difference between the content edge and the top of the line box in pixels. Positive numbers mean the content box is inside the line box.  
      */
-    public int getLineboxOffset();
+    public float getLineboxOffset();
     
 }

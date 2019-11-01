@@ -270,11 +270,11 @@ public class ListItemBox extends BlockBox
      */
     protected boolean drawImage(Graphics2D g)
     {
-        int ofs = getFirstInlineBoxBaseline();
+        float ofs = getFirstInlineBoxBaseline();
         if (ofs == -1)
             ofs = ctx.getBaselineOffset(); //use the font baseline
-        int x = (int) Math.round(getAbsoluteContentX() - 0.5 * ctx.getEm());
-        int y = getAbsoluteContentY() + ofs;
+        float x = getAbsoluteContentX() - 0.5f * ctx.getEm();
+        float y = getAbsoluteContentY() + ofs;
         Image img = image.getImage();
         if (img != null)
         {
@@ -293,13 +293,13 @@ public class ListItemBox extends BlockBox
     protected void drawText(Graphics2D g, String text)
     {
         // top left corner
-        int x = getAbsoluteContentX();
-        int y = getAbsoluteContentY();
+        float x = getAbsoluteContentX();
+        float y = getAbsoluteContentY();
 
         //Align Y with baseline
         FontMetrics fm = g.getFontMetrics();
         Rectangle2D rect = fm.getStringBounds(text, g);
-        int ofs = getFirstInlineBoxBaseline();
+        float ofs = getFirstInlineBoxBaseline();
         if (ofs == -1)
             ofs = ctx.getBaselineOffset(); //use the font baseline
         

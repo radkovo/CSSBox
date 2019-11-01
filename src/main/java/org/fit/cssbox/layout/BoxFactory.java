@@ -196,7 +196,7 @@ public class BoxFactory
      * @param height preferred viewport height.
      * @return the created viewport box with the corresponding box subtrees.
      */
-    public Viewport createViewportTree(Element root, Graphics2D g, VisualContext ctx, int width, int height)
+    public Viewport createViewportTree(Element root, Graphics2D g, VisualContext ctx, float width, float height)
     {
         Element vp = createAnonymousElement(root.getOwnerDocument(), "Xdiv", "block");
         viewport = new Viewport(vp, g, ctx, this, root, width, height);

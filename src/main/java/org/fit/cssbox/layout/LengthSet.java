@@ -29,16 +29,16 @@ package org.fit.cssbox.layout;
 public class LengthSet 
 {
     /** top length */
-    public int top = 0;
+    public float top = 0;
     
     /** right length */
-    public int right = 0;
+    public float right = 0;
     
     /** bottom length */
-    public int bottom = 0;
+    public float bottom = 0;
     
     /** left length */
-    public int left = 0;
+    public float left = 0;
     
     /**
      * Creates a new length set with all the lengths initialized to zero.
@@ -54,7 +54,7 @@ public class LengthSet
      * @param b bottom length
      * @param l left length
      */
-    public LengthSet(int t, int r, int b, int l)
+    public LengthSet(float t, float r, float b, float l)
     {
         top = t;
         right = r;

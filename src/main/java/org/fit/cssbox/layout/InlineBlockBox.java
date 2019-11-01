@@ -42,10 +42,10 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     private LineBox linebox;
     
     /** The baseline offset of the contents */
-    protected int baseline;
+    protected float baseline;
     
     /* current layout parametres */
-    private int availw;
+    private float availw;
     private boolean force;
     
     
@@ -87,7 +87,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
 
     @Override
-    public int getLineboxOffset()
+    public float getLineboxOffset()
     {
         return 0;
     }
@@ -95,43 +95,43 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     //========================================================================
     
     @Override
-    public int getMaxLineHeight()
+    public float getMaxLineHeight()
     {
         return getHeight();
     }
 
     @Override
-    public int getBaselineOffset()
+    public float getBaselineOffset()
     {
         return baseline;
     }
 
     @Override
-    public int getBelowBaseline()
+    public float getBelowBaseline()
     {
         return getHeight() - baseline;
     }
 
     @Override
-    public int getTotalLineHeight()
+    public float getTotalLineHeight()
     {
         return getHeight();
     }
 
     @Override
-    public int getHalfLead()
+    public float getHalfLead()
     {
         return 0;
     }
     
     @Override
-    public int getFirstLineLength()
+    public float getFirstLineLength()
     {
         return getMaximalContentWidth();
     }
 
     @Override
-    public int getLastLineLength()
+    public float getLastLineLength()
     {
         return getMaximalContentWidth();
     }
@@ -161,7 +161,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
 
     @Override
-    public void extendWidth(int dif, boolean atLineStart, boolean atLineEnd)
+    public void extendWidth(float dif, boolean atLineStart, boolean atLineEnd)
     {
         //not applicable for block boxes
     }
@@ -176,7 +176,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
     
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
+    public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         this.availw = availw;
         this.force = force;
@@ -238,9 +238,9 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
 
     @Override
-    public int getMinimalContentWidthLimit()
+    public float getMinimalContentWidthLimit()
     {
-        int ret;
+        float ret;
         if (wset)
             ret = content.width;
         else if (min_size.width != -1)
@@ -252,7 +252,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
     
     @Override
-    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, float contw, boolean update)
     {
         //The same as for absolutely positioned boxes (shrink-to-fit or explicitely set)
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -366,7 +366,7 @@ public class InlineBlockBox extends BlockBox implements InlineElement
 	 * @param root the element to start search in
 	 * @return The baseline offset in the element content or -1 if there are no in-flow boxes.
 	 */
-    private int getLastInlineBoxBaseline(ElementBox root)
+    private float getLastInlineBoxBaseline(ElementBox root)
 	{
 	    //find last in-flow box
 	    Box box = null;

@@ -152,7 +152,7 @@ public class BrowserCanvas extends JPanel
     public void createLayout(Dimension dim, Rectangle visibleRect)
     {
         if (createImage)
-            img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+            img = new BufferedImage((int) dim.width, (int) dim.height, BufferedImage.TYPE_INT_RGB);
         Graphics2D ig = img.createGraphics();
         
         if (autoMediaUpdate)
@@ -184,8 +184,8 @@ public class BrowserCanvas extends JPanel
         
         if (createImage && (viewport.getWidth() > dim.width || viewport.getHeight() > dim.height))
         {
-            img = new BufferedImage(Math.max(viewport.getWidth(), dim.width),
-                                    Math.max(viewport.getHeight(), dim.height),
+            img = new BufferedImage((int) Math.max(viewport.getWidth(), dim.width),
+                                    (int) Math.max(viewport.getHeight(), dim.height),
                                     BufferedImage.TYPE_INT_RGB);
             ig = img.createGraphics();
         }
@@ -198,7 +198,7 @@ public class BrowserCanvas extends JPanel
         GraphicsRenderer r = new GraphicsRenderer(ig); 
         viewport.draw(r);
         r.close();
-        setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
+        setPreferredSize(new java.awt.Dimension(img.getWidth(), img.getHeight()));
         revalidate();
     }
     

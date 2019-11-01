@@ -20,9 +20,7 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Iterator;
 import java.util.List;
@@ -74,7 +72,7 @@ public class BlockBox extends ElementBox
     
     /** the minimal width of the space between the floating blocks that
      * can be used for placing the in-flow content */
-    protected static final int INFLOW_SPACE_THRESHOLD = 15;
+    protected static final float INFLOW_SPACE_THRESHOLD = 15;
     
     /** Does this box contain blocks? */
     protected boolean contblock;
@@ -93,15 +91,15 @@ public class BlockBox extends ElementBox
 
     /** x coordinate of the content box relative to the content box of the
      * top owner of the FloatList (from left)  */
-    protected int floatXl;
+    protected float floatXl;
     
     /** x coordinate of the content box relative to the content box of the
      * top owner of the FloatList (from right) */
-    protected int floatXr;
+    protected float floatXr;
     
     /** y coordinate of the content box relative to the content box of the 
         top owner of the FloatList */
-    protected int floatY;
+    protected float floatY;
     
     /** Minimal size of the box. Values of -1 mean 'not set'. */
     protected Dimension min_size;
@@ -132,7 +130,7 @@ public class BlockBox extends ElementBox
     /** Width adjustment in pixels. The computed width is adjusted by the given value
      * automatically when updateSizes() is called. This value should be set by setWidthAdjust()
      * and it is reset to zero when loadSizes() is called. */
-    protected int widthAdjust;
+    protected float widthAdjust;
     
     /** True means that the layout inside has been already computed
      * and the width shouldn't be changed anymore */
@@ -178,7 +176,7 @@ public class BlockBox extends ElementBox
     protected CSSProperty.TextAlign align;
 
     /** Text indentation in pixels */
-    protected int indent;
+    protected float indent;
     
     /** Clipping region specified using the clip: property (with absolute coordinates) */
     protected TermRect clipRegion;
@@ -337,7 +335,7 @@ public class BlockBox extends ElementBox
         return contblock;
     }
     
-    public void setFloats(FloatList left, FloatList right, int xl, int xr, int y)
+    public void setFloats(FloatList left, FloatList right, float xl, float xr, float y)
     {
         fleft = left;
         fright = right;
@@ -396,7 +394,7 @@ public class BlockBox extends ElementBox
         return overflowY.toString();
     }
     
-    public int getFloatY()
+    public float getFloatY()
     {
         return floatY;
     }
@@ -579,9 +577,9 @@ public class BlockBox extends ElementBox
      * Sets the width of the content while considering the min- and max- width.
      * @param width the width the set if possible
      */
-    public void setContentWidth(int width)
+    public void setContentWidth(float width)
     {
-        int w = width;
+        float w = width;
         if (max_size.width != -1 && w > max_size.width)
             w = max_size.width;
         if (min_size.width != -1 && w < min_size.width)
@@ -593,9 +591,9 @@ public class BlockBox extends ElementBox
      * Sets the height of the content while considering the min- and max- height.
      * @param height the height the set if possible
      */
-    public void setContentHeight(int height)
+    public void setContentHeight(float height)
     {
-        int h = height;
+        float h = height;
         if (max_size.height != -1 && h > max_size.height)
             h = max_size.height;
         if (min_size.height != -1 && h < min_size.height)
@@ -609,7 +607,7 @@ public class BlockBox extends ElementBox
      * effect when the width is explicitly set (i.e. it is not {@code auto}).
      * @param adjust the value to be added to the width
      */
-    public void setWidthAdjust(int adjust)
+    public void setWidthAdjust(float adjust)
     {
         if (!wset)
             setContentWidth(getContentWidth() - widthAdjust + adjust);
@@ -617,7 +615,7 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public int totalHeight()
+    public float totalHeight()
     {
         if (border.top == 0 && border.bottom == 0 &&
             padding.top == 0 && padding.bottom == 0 &&
@@ -632,7 +630,7 @@ public class BlockBox extends ElementBox
      * Obtains the first line indentation defined by the text-indent property.
      * @return indentation in pixels
      */
-    public int getIndent()
+    public float getIndent()
     {
         return indent;
     }
@@ -664,7 +662,7 @@ public class BlockBox extends ElementBox
     /**
      * Moves down all the floating boxes contained in this box and its children. 
      */
-    protected void moveFloatsDown(int ofs)
+    protected void moveFloatsDown(float ofs)
     {
         floatY += ofs;
         for (int i = startChild; i < endChild; i++)
@@ -687,7 +685,7 @@ public class BlockBox extends ElementBox
      */
     private void alignLineHorizontally(LineBox line, boolean isLast)
     {
-        final int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+        final float dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
         if (dif > 0)
         {
             if (align == ALIGN_JUSTIFY)
@@ -719,7 +717,7 @@ public class BlockBox extends ElementBox
             Box subbox = getSubBox(i);
             if (!subbox.isBlock())
             {
-                int dif = line.alignBox((Inline) subbox);
+                float dif = line.alignBox((Inline) subbox);
                 
                 //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
                 if (subbox instanceof InlineBox)
@@ -730,7 +728,7 @@ public class BlockBox extends ElementBox
                     ((InlineElement) subbox).setLineBox(line);
                 
                 //the Y position is used for the boxes that are not "top" or "bottom" aligned
-                int y = line.getY() + line.getTopOffset() + (line.getLead() / 2) + dif;
+                float y = line.getY() + line.getTopOffset() + (line.getLead() / 2) + dif;
                 subbox.moveDown(y);
             }
         }
@@ -749,7 +747,7 @@ public class BlockBox extends ElementBox
         if (containsBlocks() && containsFlow())
         {
             BlockBox firstseparated = null;
-            int mbottom = 0;
+            float mbottom = 0;
             
             for (int i = 0; i < getSubBoxNumber(); i++)
             {
@@ -769,7 +767,7 @@ public class BlockBox extends ElementBox
                     //update the bottom margin
                     if (boxempty)
                     {
-                        int m = Math.max(subbox.emargin.top, subbox.emargin.bottom); //margins adjoin: we may use both top or bottom
+                        float m = Math.max(subbox.emargin.top, subbox.emargin.bottom); //margins adjoin: we may use both top or bottom
                     	if (m > mbottom)
                     		mbottom = m;
                     }
@@ -802,7 +800,7 @@ public class BlockBox extends ElementBox
      * @return <code>true</code> if the box has been succesfully placed
      */
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
+    public boolean doLayout(float availw, boolean force, boolean linestart)
     {
     	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
     	//	System.out.println("jo!");
@@ -820,13 +818,13 @@ public class BlockBox extends ElementBox
         //shrink-to-fit when the width is not given by containing box or specified explicitly
         if (!hasFixedWidth())
         {
-            //int min = getMinimalContentWidthLimit();
-            int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-            int max = getMaximalContentWidth();
-            int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-            //int pref = Math.min(max, availcont);
+            //float min = getMinimalContentWidthLimit();
+            float min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
+            float max = getMaximalContentWidth();
+            float availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
+            //float pref = Math.min(max, availcont);
             //if (pref < min) pref = min;
-            int pref = Math.min(Math.max(min, availcont), max);
+            float pref = Math.min(Math.max(min, availcont), max);
             setContentWidth(pref);
             updateChildSizes();
         }
@@ -852,17 +850,17 @@ public class BlockBox extends ElementBox
      */
     protected void layoutInline()
     {
-        int x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats 
-        int x2 = fright.getWidth(floatY) - floatXr;
+        float x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats 
+        float x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
-        int wlimit = getAvailableContentWidth();
-        int minx1 = 0 - floatXl;   //maximal available width if there were no floats
-        int minx2 = 0 - floatXr;
+        float wlimit = getAvailableContentWidth();
+        float minx1 = 0 - floatXl;   //maximal available width if there were no floats
+        float minx2 = 0 - floatXr;
         if (minx1 < 0) minx1 = 0;
         if (minx2 < 0) minx2 = 0;
-        int x = x1; //current x
-        int y = 0; //current y
+        float x = x1; //current x
+        float y = 0; //current y
         int lnstr = 0; //the index of the first subbox on current line
         int lastbreak = 0; //last possible position of a line break
 
@@ -895,7 +893,7 @@ public class BlockBox extends ElementBox
                 //clear set - try to find the first possible Y value
                 if (sb.getClearing() != CLEAR_NONE)
                 {
-                    int ny = stat.y;
+                    float ny = stat.y;
                     if (sb.getClearing() == CLEAR_LEFT)
                         ny = fleft.getMaxY() - floatY;
                     else if (sb.getClearing() == CLEAR_RIGHT)
@@ -944,7 +942,7 @@ public class BlockBox extends ElementBox
             do //repeat while the box is being split to sub-boxes
             {
                 split = false;
-                int space = wlimit - x1 - x2; //total space on the line
+                float space = wlimit - x1 - x2; //total space on the line
                 boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
@@ -1035,7 +1033,7 @@ public class BlockBox extends ElementBox
                 if (encloseFloats())
                 {
                     //enclose all floating boxes we own
-                    int mfy = getFloatHeight() - floatY;
+                    float mfy = getFloatHeight() - floatY;
                     if (mfy > y) y = mfy;
                 }
                 //the total height is the last Y coordinate
@@ -1063,14 +1061,14 @@ public class BlockBox extends ElementBox
      */
     protected void layoutBlocks()
     {
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         BlockLayoutStatus stat = new BlockLayoutStatus();
-        int mtop = 0; //current accumulated top margin
-        int mbottom = 0; //current accumulated bottom marin
+        float mtop = 0; //current accumulated top margin
+        float mbottom = 0; //current accumulated bottom marin
 
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
-            int nexty = stat.y; //y coordinate after positioning the subbox 
+            float nexty = stat.y; //y coordinate after positioning the subbox 
             BlockBox subbox = (BlockBox) getSubBox(i);
             
             if (subbox.isDisplayed())
@@ -1080,7 +1078,7 @@ public class BlockBox extends ElementBox
                 //clear set - try to find the first possible Y value
                 if (subbox.getClearing() != CLEAR_NONE)
                 {
-                    int ny = stat.y;
+                    float ny = stat.y;
                     if (subbox.getClearing() == CLEAR_LEFT)
                         ny = fleft.getMaxY() - floatY;
                     else if (subbox.getClearing() == CLEAR_RIGHT)
@@ -1099,7 +1097,7 @@ public class BlockBox extends ElementBox
                     boolean boxempty = subbox.marginsAdjoin(); 
                     
                 	//the border edge of the parent or the last placed box
-                	int borderY = stat.y;
+                	float borderY = stat.y;
                 	if (stat.lastinflow != null)
                 	    borderY -= stat.lastinflow.emargin.bottom; //do not consider the margin applied by the layout
                 	
@@ -1178,7 +1176,7 @@ public class BlockBox extends ElementBox
             {
                 //enclose all floating boxes we own
                 // http://www.w3.org/TR/CSS21/visudet.html#root-height
-                int mfy = getFloatHeight() - floatY;
+                float mfy = getFloatHeight() - floatY;
                 if (mfy > stat.y) stat.y = mfy;
             }
             //the total height is the last Y coordinate
@@ -1189,20 +1187,20 @@ public class BlockBox extends ElementBox
         setSize(totalWidth(), totalHeight());
     }
 
-    protected void layoutBlockInFlow(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    protected void layoutBlockInFlow(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
     {
         //new floating box limits
-        int newfloatXl = floatXl + subbox.margin.left
+        float newfloatXl = floatXl + subbox.margin.left
                             + subbox.border.left + subbox.padding.left;
-        int newfloatXr = floatXr + subbox.margin.right
+        float newfloatXr = floatXr + subbox.margin.right
                             + subbox.border.right + subbox.padding.right;
-        int newfloatY = floatY + subbox.emargin.top
+        float newfloatY = floatY + subbox.emargin.top
                             + subbox.border.top + subbox.padding.top;
         //consider the relative positioning if necessary
         if (subbox.position == POS_RELATIVE)
         {
-            int dx = subbox.leftset ? subbox.coords.left : (-subbox.coords.right);
-            int dy = subbox.topset ? subbox.coords.top : (-subbox.coords.bottom);
+            float dx = subbox.leftset ? subbox.coords.left : (-subbox.coords.right);
+            float dy = subbox.topset ? subbox.coords.top : (-subbox.coords.bottom);
             newfloatXl += dx;
             newfloatXr -= dx;
             newfloatY += dy;
@@ -1219,28 +1217,28 @@ public class BlockBox extends ElementBox
     }
     
     // http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float 
-    protected void layoutBlockInFlowAvoidFloats(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    protected void layoutBlockInFlowAvoidFloats(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
     {
-        final int minw = subbox.getMinimalDecorationWidth(); //minimal subbox width for computing the space -- content is not considered (based on other browser observations) 
-        int yoffset = stat.y + floatY; //starting offset
-        int availw = 0;
+        final float minw = subbox.getMinimalDecorationWidth(); //minimal subbox width for computing the space -- content is not considered (based on other browser observations) 
+        float yoffset = stat.y + floatY; //starting offset
+        float availw = 0;
         do
         {
-            int fy = yoffset;
-            int flx = fleft.getWidth(fy) - floatXl;
+            float fy = yoffset;
+            float flx = fleft.getWidth(fy) - floatXl;
             if (flx < 0) flx = 0;
-            int frx = fright.getWidth(fy) - floatXr;
+            float frx = fright.getWidth(fy) - floatXr;
             if (frx < 0) frx = 0;
-            int avail = wlimit - flx - frx;
+            float avail = wlimit - flx - frx;
             
             //if it does not fit the width, try to move down
             //TODO the available space must be tested for the whole height of the subbox
-            final int startfy = fy;
+            final float startfy = fy;
             //System.out.println("minw=" + minw + " avail=" + avail + " availw=" + availw);
             while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
                    && (minw > avail)) //the subbox doesn't fit in this Y coordinate
             {
-                int nexty = FloatList.getNextY(fleft, fright, fy);
+                float nexty = FloatList.getNextY(fleft, fright, fy);
                 if (nexty == -1)
                     fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
                 else
@@ -1270,7 +1268,7 @@ public class BlockBox extends ElementBox
             //System.out.println("H=" + subbox.getHeight());
             
             //check the colisions after the layout
-            int xlimit[] = computeFloatLimits(fy, fy + subbox.getBounds().height, new int[]{flx, frx});
+            float xlimit[] = computeFloatLimits(fy, fy + subbox.getBounds().height, new float[]{flx, frx});
             availw = wlimit - xlimit[0] - xlimit[1];
             if (minw > availw) //the whole box still does not fit
                 yoffset = FloatList.getNextY(fleft, fright, fy); //new starting Y 
@@ -1288,23 +1286,23 @@ public class BlockBox extends ElementBox
      * @param wlimit the width limit for placing all the boxes
      * @param stat status of the layout that should be updated
      */
-    protected void layoutBlockFloating(BlockBox subbox, int wlimit, BlockLayoutStatus stat)
+    protected void layoutBlockFloating(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
     {
         subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
         subbox.doLayout(wlimit, true, true);
         FloatList f = (subbox.getFloating() == FLOAT_LEFT) ? fleft : fright;    //float list at my side
         FloatList of = (subbox.getFloating() == FLOAT_LEFT) ? fright : fleft;   //float list at the opposite side
-        int floatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXl : floatXr;  //float offset at this side
-        int oFloatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXr : floatXl; //float offset at the opposite side
+        float floatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXl : floatXr;  //float offset at this side
+        float oFloatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXr : floatXl; //float offset at the opposite side
         
-        int fy = stat.y + floatY;  //float Y position
+        float fy = stat.y + floatY;  //float Y position
         if (fy < f.getLastY()) fy = f.getLastY(); //don't place above the last placed box
 
-        int fx = f.getWidth(fy);   //total width of floats at this side
+        float fx = f.getWidth(fy);   //total width of floats at this side
         if (fx < floatX) fx = floatX; //stay in the containing box if it is narrower
         if (fx == 0 && floatX < 0) fx = floatX; //if it is wider (and there are no floating boxes yet)
 
-        int ofx = of.getWidth(fy); //total width of floats at the opposite side
+        float ofx = of.getWidth(fy); //total width of floats at the opposite side
         if (ofx < oFloatX) ofx = oFloatX; //stay in the containing box at the opposite side
         if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
 
@@ -1312,7 +1310,7 @@ public class BlockBox extends ElementBox
         while ((fx > floatX || ofx > oFloatX || stat.inlineWidth > 0) //if the space can be narrower at least at one side
                && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
         {
-            int nexty = FloatList.getNextY(fleft, fright, fy);
+            float nexty = FloatList.getNextY(fleft, fright, fy);
             if (nexty == -1)
                 fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
             else
@@ -1331,7 +1329,7 @@ public class BlockBox extends ElementBox
         subbox.setPosition(fx, fy);
         f.add(subbox);
         //a floating box must enclose all the floats inside
-        int floatw = maxFloatWidth(fy, fy + subbox.getHeight());
+        float floatw = maxFloatWidth(fy, fy + subbox.getHeight());
         //maximal width
         if (floatw > stat.maxw) stat.maxw = floatw;
         if (stat.maxw > wlimit) stat.maxw = wlimit;
@@ -1340,7 +1338,7 @@ public class BlockBox extends ElementBox
     protected void layoutBlockPositioned(BlockBox subbox, BlockLayoutStatus stat)
     {
         //calculate the available width for positioned boxes
-        int wlimit = availwidth;
+        float wlimit = availwidth;
         if (leftset) wlimit -= coords.left;
         if (rightset) wlimit -= coords.right;
         //layout the contents
@@ -1379,8 +1377,8 @@ public class BlockBox extends ElementBox
         {
             //my top left corner
             final Rectangle cblock = getAbsoluteContainingBlock();
-            int x = cblock.x + bounds.x;
-            int y = cblock.y + bounds.y;
+            float x = cblock.x + bounds.x;
+            float y = cblock.y + bounds.y;
 
             if (floating == FLOAT_NONE)
             {
@@ -1513,9 +1511,9 @@ public class BlockBox extends ElementBox
     }
 
     @Override
-    public int getAvailableContentWidth()
+    public float getAvailableContentWidth()
     {
-        int ret = availwidth - margin.left - border.left - padding.left 
+        float ret = availwidth - margin.left - border.left - padding.left 
                   - padding.right - border.right - margin.right;
         if (max_size.width != -1 && ret > max_size.width)
             ret = max_size.width;
@@ -1523,9 +1521,9 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
-        int ret = 0;
+        float ret = 0;
         //if the width is set or known implicitely, return the width
         if (wset && !wrelative)
             ret = content.width;
@@ -1547,11 +1545,11 @@ public class BlockBox extends ElementBox
      * Computes the minimal width of the box content from the contained sub-boxes.
      * @return the minimal content width
      */
-    protected int getMinimalContentWidth()
+    protected float getMinimalContentWidth()
     {
-        int ret = 0;
-        int max = 0; //block children
-        int sum = 0; //inline children
+        float ret = 0;
+        float max = 0; //block children
+        float sum = 0; //inline children
         for (int i = startChild; i < endChild; i++)
         {
             Box box = getSubBox(i);
@@ -1566,7 +1564,7 @@ public class BlockBox extends ElementBox
                 BlockBox block = (BlockBox) box;
                 if (block.position != POS_ABSOLUTE && block.position != POS_FIXED) //absolute or fixed position boxes don't affect the width
                 {
-                    int w = box.getMinimalWidth();
+                    float w = box.getMinimalWidth();
                     if (w > max) max = w;
                     sum = 0;
                 }
@@ -1586,9 +1584,9 @@ public class BlockBox extends ElementBox
      * is used only when it is explicitly specified.
      * @return
      */
-    protected int getMinimalDecorationWidth()
+    protected float getMinimalDecorationWidth()
     {
-        int ret = 0;
+        float ret = 0;
         //if the width is set or known implicitely, return the width
         if (wset)
             ret = content.width;
@@ -1604,9 +1602,9 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
-        int ret;
+        float ret;
         //if the width is set or known implicitely, return the width
         if (wset && !wrelative)
             ret = content.width;
@@ -1627,10 +1625,10 @@ public class BlockBox extends ElementBox
      * Computes the maximal width of the box content from the contained sub-boxes.
      * @return the maximal content width
      */
-    protected int getMaximalContentWidth()
+    protected float getMaximalContentWidth()
     {
-        int sum = 0;
-        int max = 0;
+        float sum = 0;
+        float max = 0;
         //the inline elements inside are summed up on the line
         //the floating boxes are placed side by side
         //the maximum of the remaining block boxes is taken 
@@ -1650,7 +1648,7 @@ public class BlockBox extends ElementBox
                 }
                 else //in-flow blocks
                 {
-                    int sm = subbox.getMaximalWidth();
+                    float sm = subbox.getMaximalWidth();
                     if (sm > max) max = sm;
                     if (sum > max) max = sum;
                     sum = 0; //end of line forced by this block
@@ -1660,7 +1658,7 @@ public class BlockBox extends ElementBox
             {
                 if (preservesLineBreaks())
                 {
-                    int sm = subbox.getMaximalWidth();
+                    float sm = subbox.getMaximalWidth();
                     if (sm > max) max = sm;
                 }
                 else
@@ -1675,10 +1673,10 @@ public class BlockBox extends ElementBox
      * or by the explicit setting of <code>width</code> or <code>min-width</code> properties.
      * @return the minimal width
      */ 
-    public int getMinimalContentWidthLimit()
+    public float getMinimalContentWidthLimit()
     {
-    	int ret;
-    	int dif = declMargin.left + padding.left + border.left +
+    	float ret;
+    	float dif = declMargin.left + padding.left + border.left +
                	  declMargin.right + padding.right + border.right;
     	if (wset)
     		ret = content.width;
@@ -1696,12 +1694,12 @@ public class BlockBox extends ElementBox
      * Recursively finds the baseline of the first in-flow inline box.
      * @return The baseline offset in the element content or -1 if there are no in-flow boxes.
      */
-    public int getFirstInlineBoxBaseline()
+    public float getFirstInlineBoxBaseline()
     {
         return recursiveGetFirstInlineBoxBaseline(this);
     }
     
-    protected int recursiveGetFirstInlineBoxBaseline(ElementBox root)
+    protected float recursiveGetFirstInlineBoxBaseline(ElementBox root)
     {
         //find the first in-flow box
         Box box = null;
@@ -1752,11 +1750,11 @@ public class BlockBox extends ElementBox
      * all its children.
      * @return the total height of the floating boxes
      */
-    public int getFloatHeight()
+    public float getFloatHeight()
     {
         if (fleft != null && fright != null)
         {
-            int mfy = Math.max(fleft.getMaxYForOwner(this, true), fright.getMaxYForOwner(this, true));
+            float mfy = Math.max(fleft.getMaxYForOwner(this, true), fright.getMaxYForOwner(this, true));
             if (this.containsBlocks())
             {
                 for (int i = 0; i < getSubBoxNumber(); i++)
@@ -1764,7 +1762,7 @@ public class BlockBox extends ElementBox
                     Box subbox = getSubBox(i);
                     if (subbox instanceof BlockBox && !((BlockBox) subbox).isPositioned()) //do not consider positioned boxes
                     {
-                        int cmfy = ((BlockBox) subbox).getFloatHeight();
+                        float cmfy = ((BlockBox) subbox).getFloatHeight();
                         if (cmfy > mfy) mfy = cmfy;
                     }
                 }
@@ -1859,10 +1857,10 @@ public class BlockBox extends ElementBox
             List<TermLength> args = clipRegion.getValue();
             CSSDecoder dec = new CSSDecoder(ctx);
             Rectangle brd = getAbsoluteBorderBounds();
-            int x1 = brd.x;
-            int y1 = brd.y;
-            int x2 = brd.x + brd.width - 1;
-            int y2 = brd.y + brd.height - 1;
+            float x1 = brd.x;
+            float y1 = brd.y;
+            float x2 = brd.x + brd.width - 1;
+            float y2 = brd.y + brd.height - 1;
             TermLength top = args.get(0);
             TermLength right = args.get(1);
             TermLength bottom = args.get(2);
@@ -1932,14 +1930,14 @@ public class BlockBox extends ElementBox
     
     /** Compute the total width of a block element according to the min-, max-,
      * width properties */
-    protected int blockWidth()
+    protected float blockWidth()
     {
     	return content.width;
     }
 
     /** Compute the height of a block element according to the min-, max-,
      * height properties */
-    protected int blockHeight()
+    protected float blockHeight()
     {
     	return content.height;
     }
@@ -1951,12 +1949,12 @@ public class BlockBox extends ElementBox
      * @param y2 the end Y value
      * @return the maximal sum of the left and the right float width
      */
-    protected int maxFloatWidth(int y1, int y2)
+    protected float maxFloatWidth(float y1, float y2)
     {
-        int ret = 0;
+        float ret = 0;
         for (int y = y1; y <= y2; y++)
         {
-            int w = fleft.getWidth(y) + fright.getWidth(y);
+            float w = fleft.getWidth(y) + fright.getWidth(y);
             if (w > ret)
                 ret = w;
         }
@@ -1970,12 +1968,12 @@ public class BlockBox extends ElementBox
      * @param fx starting values of [left, right] width (for y1) 
      * @return updated fx[] containging [maxleft, maxright] coordinates.
      */
-    protected int[] computeFloatLimits(int y1, int y2, int[] fx)
+    protected float[] computeFloatLimits(float y1, float y2, float[] fx)
     {
-        int fy = y1;
+        float fy = y1;
         while (fy < y2)
         {
-            int nexty = FloatList.getNextY(fleft, fright, fy);
+            float nexty = FloatList.getNextY(fleft, fright, fy);
             if (nexty != -1)
                 fy = nexty;
             else
@@ -1983,9 +1981,9 @@ public class BlockBox extends ElementBox
             // recompute the limits for the new fy
             if (fy < y2)
             {
-                int flx = fleft.getWidth(fy) - floatXl;
+                float flx = fleft.getWidth(fy) - floatXl;
                 if (flx < 0) flx = 0;
-                int frx = fright.getWidth(fy) - floatXr;
+                float frx = fright.getWidth(fy) - floatXr;
                 if (frx < 0) frx = 0;
                 
                 if (fx[0] < flx)
@@ -2019,8 +2017,8 @@ public class BlockBox extends ElementBox
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes
-        int contw = getContainingBlock().width;
-        int conth = getContainingBlock().height;
+        float contw = getContainingBlock().width;
+        float conth = getContainingBlock().height;
         
         //Borders
         if (!update) //borders needn't be updated
@@ -2064,7 +2062,7 @@ public class BlockBox extends ElementBox
      * @param dec CSS decoder used for decoding the style
      * @param contw containing block width for decoding percentages
      */
-    protected void loadPadding(CSSDecoder dec, int contw)
+    protected void loadPadding(CSSDecoder dec, float contw)
     {
         padding = new LengthSet();
         padding.top = dec.getLength(getLengthValue("padding-top"), false, null, null, contw);
@@ -2079,7 +2077,7 @@ public class BlockBox extends ElementBox
      * @param dec CSS decoder used for decoding the style
      * @param contw containing block width for decoding percentages
      */
-    protected void loadWidthsHeights(CSSDecoder dec, int contw, int conth, boolean update)
+    protected void loadWidthsHeights(CSSDecoder dec, float contw, float conth, boolean update)
     {
         //Minimal width
         TermLengthOrPercent minw = getLengthValue("min-width");
@@ -2175,7 +2173,7 @@ public class BlockBox extends ElementBox
     		computeWidthsInFlow(width, auto, exact, getContainingBlock().width, update); //containing block formed by the content only
     }
     
-    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, float contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -2223,7 +2221,7 @@ public class BlockBox extends ElementBox
             {
                 if (mleftauto && mrightauto)
                 {
-                    int rest = contw - content.width - border.left - padding.left
+                    float rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
                     if (rest >= 0)
                     {
@@ -2259,7 +2257,7 @@ public class BlockBox extends ElementBox
         }
     }
 
-    protected void computeWidthsAbsolute(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeWidthsAbsolute(TermLengthOrPercent width, boolean auto, boolean exact, float contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -2308,7 +2306,7 @@ public class BlockBox extends ElementBox
     	{
     	    if (mleftauto && mrightauto)
     	    {
-    	        int rest = contw - coords.left - coords.right - border.left - border.right - padding.left - padding.right - content.width;
+    	        float rest = contw - coords.left - coords.right - border.left - border.right - padding.left - padding.right - content.width;
                 margin.left = (rest + 1) / 2;
                 margin.right = rest / 2;
     	    }
@@ -2374,7 +2372,7 @@ public class BlockBox extends ElementBox
         declMargin.bottom = margin.bottom;
     }
     
-    protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
+    protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, float contw, float conth, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -2409,7 +2407,7 @@ public class BlockBox extends ElementBox
             margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
     }
     
-    protected void computeHeightsAbsolute(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
+    protected void computeHeightsAbsolute(TermLengthOrPercent height, boolean auto, boolean exact, float contw, float conth, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -2453,7 +2451,7 @@ public class BlockBox extends ElementBox
     	{
     	    if (mtopauto && mbottomauto)
     	    {
-    	        int rest = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - content.height;
+    	        float rest = conth - coords.top - coords.bottom - border.top - border.bottom - padding.top - padding.bottom - content.height;
                 margin.top = (rest + 1) / 2;
                 margin.bottom = rest / 2;
     	    }
@@ -2521,7 +2519,7 @@ public class BlockBox extends ElementBox
      * @param m2 The second margin height
      * @return The collapsed margin height
      */
-    protected int collapsedMarginHeight(int m1, int m2)
+    protected float collapsedMarginHeight(float m1, float m2)
     {
         if (m1 >= 0 && m2 >= 0)
             return Math.max(m1, m2);
@@ -2555,16 +2553,16 @@ public class BlockBox extends ElementBox
 class BlockLayoutStatus
 {
     /** width of inline boxes currently placed on the line */
-    public int inlineWidth;
+    public float inlineWidth;
     
     /** current <em>y</em> coordinate relatively to the content box */
-    public int y;
+    public float y;
     
     /** maximal width of the boxes laid out */
-    public int maxw;
+    public float maxw;
     
     /** maximal height of the boxes laid out on current line */
-    public int maxh;
+    public float maxh;
     
     /** first placed non-empty box for collapsing margins */
     public BlockBox firstseparated;

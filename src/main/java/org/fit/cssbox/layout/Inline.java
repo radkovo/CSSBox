@@ -31,50 +31,50 @@ public interface Inline
      * Returns the declared line height.
      * @return The declared line height in pixels.
      */
-    public int getLineHeight();
+    public float getLineHeight();
     
     
     /**
      * Returns the maximal declared line height of this box and its children.
      * @return Maximal declared line height in pixels.
      */
-    public int getMaxLineHeight();
+    public float getMaxLineHeight();
 
     /**
      * Obtains the distance from the line box top to the baseline of this box.
      * This corresponds to the total required space above the baseline of this box in the parent line box.
      * @return the <em>y</em> offset of the baseline in the parent line box
      */
-    public int getBaselineOffset();
+    public float getBaselineOffset();
     
 	/**
 	 * Obtains the required height of the parent line box below the baseline.
 	 * @return the total required space below the baseline in pixels
 	 */
-	public int getBelowBaseline();
+	public float getBelowBaseline();
 	
 	/**
 	 * Obtains the total line box height obtained for this box and its
 	 * subboxes during the layout. It consists of two parts: baselineOffset + belowBaseline.
 	 * @return the total required height of the line in pixels
 	 */
-	public int getTotalLineHeight();
+	public float getTotalLineHeight();
 	
-	public int getHalfLead();
+	public float getHalfLead();
 	
     /**
      * Obtains the expected maximal length of the first line of this inline box.
      * This is useful when the line breaks are preserved. Otherwise, the length of the whole text is returned.
      * @return the length of the first line of the contents in pixels
      */
-    public int getFirstLineLength();
+    public float getFirstLineLength();
 
     /**
      * Obtains the expected maximal length of the last line of this inline box.
      * This is useful when the line breaks are preserved. Otherwise, the length of the whole text is returned.
      * @return the length of the last line of the contents in pixels
      */
-    public int getLastLineLength();
+    public float getLastLineLength();
     
     /** 
      * Checks whether the inline box contains a line break. This may be only true when the line breaks are preserved
@@ -112,6 +112,6 @@ public interface Inline
      * @param atLineStart is the box at the start of a line?
      * @param atLineEnd is the box at the end of a line line?
      */
-    public void extendWidth(int ofs, boolean atLineStart, boolean atLineEnd);
+    public void extendWidth(float ofs, boolean atLineStart, boolean atLineEnd);
     
 }

@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.demo;
 
-import java.awt.Dimension;
 import java.awt.Font;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +36,7 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.BrowserConfig;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.render.SVGRenderer;
 import org.w3c.dom.Document;
@@ -164,10 +164,10 @@ public class ImageRenderer
     protected void writeSVG(Viewport vp, Writer out) throws IOException
     {
         //obtain the viewport bounds depending on whether we are clipping to viewport size or using the whole page
-        int w = vp.getClippedContentBounds().width;
-        int h = vp.getClippedContentBounds().height;
+        float w = vp.getClippedContentBounds().width;
+        float h = vp.getClippedContentBounds().height;
         
-        SVGRenderer render = new SVGRenderer(w, h, out);
+        SVGRenderer render = new SVGRenderer((int) w, (int) h, out);
         vp.draw(render);
         render.close();
     }

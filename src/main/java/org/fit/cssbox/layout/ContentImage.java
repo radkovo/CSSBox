@@ -22,7 +22,6 @@ package org.fit.cssbox.layout;
 import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -285,7 +284,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
         if (container == null)
             waitForLoad();
         
-        BufferedImage img = new BufferedImage(getIntrinsicWidth(), getIntrinsicHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage img = new BufferedImage((int) getIntrinsicWidth(), (int) getIntrinsicHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.drawImage(image, null, null);
         g.dispose();
@@ -317,7 +316,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     }
 
     @Override
-    public int getIntrinsicHeight()
+    public float getIntrinsicHeight()
     {
         if (height > -1)
         {
@@ -340,7 +339,7 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     }
 
     @Override
-    public int getIntrinsicWidth()
+    public float getIntrinsicWidth()
     {
         if (width > -1)
         {

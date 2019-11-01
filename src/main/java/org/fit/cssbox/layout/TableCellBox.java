@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 
 import cz.vutbr.web.css.*;
@@ -52,10 +51,10 @@ public class TableCellBox extends BlockBox
     protected TableColumn ownerColumn;
     
     /** relative width [%] when used */
-    protected int percent;
+    protected float percent;
     
     /** vertical content offset produced by vertical alignment */
-    protected int coffset;
+    protected float coffset;
     
     //====================================================================================
     
@@ -174,7 +173,7 @@ public class TableCellBox extends BlockBox
      * Set the total width of the cell. The content width is computed automatically.
      * @param width the width to be set
      */
-    public void setWidth(int width)
+    public void setWidth(float width)
     {
         content.width = width - border.left - padding.left - padding.right - border.right;
         bounds.width = width;
@@ -186,7 +185,7 @@ public class TableCellBox extends BlockBox
      * Set the total width of the cell. The content width is computed automatically.
      * @param height the height to be set
      */
-    public void setHeight(int height)
+    public void setHeight(float height)
     {
         content.height = height - border.top - padding.top - padding.bottom - border.bottom;
         bounds.height = height;
@@ -196,7 +195,7 @@ public class TableCellBox extends BlockBox
     /**
      * @return the percentage when the width is specified relatively
      */
-    public int getPercent()
+    public float getPercent()
     {
         return percent;
     }
@@ -217,9 +216,9 @@ public class TableCellBox extends BlockBox
      * @param newHeight the cell height required by the row. It should be greater or equal to origHeight.
      * @param baseline the row's baseline offset
      */
-    public void applyVerticalAlign(int origHeight, int newHeight, int baseline)
+    public void applyVerticalAlign(float origHeight, float newHeight, float baseline)
     {
-        int yofs = 0;
+        float yofs = 0;
         CSSProperty.VerticalAlign valign = style.getProperty("vertical-align");
         if (valign == null) valign = CSSProperty.VerticalAlign.MIDDLE;
         switch (valign)
@@ -239,7 +238,7 @@ public class TableCellBox extends BlockBox
     }
 
     @Override
-    public int getAbsoluteContentY()
+    public float getAbsoluteContentY()
     {
         //apply the possible content offset caused by vertical alignment
         return super.getAbsoluteContentY() + coffset;
@@ -253,9 +252,9 @@ public class TableCellBox extends BlockBox
     }
     
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
-        int ret = getMinimalContentWidth();
+        float ret = getMinimalContentWidth();
         if (!wrelative && hasFixedWidth() && content.width > ret)
             ret = content.width;
         ret += margin.left + padding.left + border.left +
@@ -264,9 +263,9 @@ public class TableCellBox extends BlockBox
     }
 
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
-        int ret = getMaximalContentWidth();
+        float ret = getMaximalContentWidth();
         /*if (!wrelative && hasFixedWidth())
             ret = content.width;*/
         //increase by margin, padding, border
@@ -281,7 +280,7 @@ public class TableCellBox extends BlockBox
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes
-        int contw = getContainingBlock().width;
+        float contw = getContainingBlock().width;
         
         //Borders
         if (!update) //borders needn't be updated

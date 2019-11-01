@@ -32,8 +32,6 @@ public class FloatList
 {
 	private BlockBox owner;
     private List<BlockBox> floats;
-    //private int maxY;
-    //private int lastY; //Y coordinate of the last box. New boxes shouldn't be placed above this limit
     private BlockBox bottomBox = null; //Bottom-most box.
     private BlockBox lastBox = null; //last box inserted. New boxes shouldn't be placed above this box.
     
@@ -92,7 +90,7 @@ public class FloatList
      * of the boxes.
      * @return the maximal Y coordinate
      */
-    public int getMaxY()
+    public float getMaxY()
     {
         if (bottomBox == null)
             return 0;
@@ -104,7 +102,7 @@ public class FloatList
      * Returns the Y coordinate of the last box. New boxes shouldn't be placed above this limit.
      * @return Y coordinate
      */
-    public int getLastY()
+    public float getLastY()
     {
         if (lastBox == null)
             return 0;
@@ -117,16 +115,16 @@ public class FloatList
      * @param y the Y coordinate of the point
      * @return the total width of the floating boxes on that Y coordinate  
      */
-    public int getWidth(int y)
+    public float getWidth(float y)
     {
-        int maxx = 0;
+        float maxx = 0;
         for (int i = 0; i < size(); i++)
         {
             Box box = getBox(i);
             if (box.getBounds().y <= y &&
                 box.getBounds().y + box.getBounds().height > y)
             {
-                int wx = box.getBounds().x + box.getBounds().width;
+                float wx = box.getBounds().x + box.getBounds().width;
                 if (wx > maxx) maxx = wx;
             }
         }
@@ -139,17 +137,17 @@ public class FloatList
      * @return the next Y coordinate where the total width of the floating boxes is narrower
      * than at the starting coordinate. When there is no such Y coordinate, -1 is returned.
      */
-    public int getNextY(int y)
+    public float getNextY(float y)
     {
-        int maxx = 0;
-        int nexty = -1;
+        float maxx = 0;
+        float nexty = -1;
         for (int i = 0; i < size(); i++) //find the bottom of the rightmost box at this Y coordinate
         {
             Box box = getBox(i);
             if (box.getBounds().y <= y &&
                 box.getBounds().y + box.getBounds().height > y)
             {
-                int wx = box.getBounds().x + box.getBounds().width;
+                float wx = box.getBounds().x + box.getBounds().width;
                 if (wx > maxx) 
                 {
                     maxx = wx;
@@ -167,15 +165,15 @@ public class FloatList
      * @param owner the owning block
      * @return the maximal Y coordinate
      */
-    public int getMaxYForOwner(BlockBox owner, boolean requireVisible)
+    public float getMaxYForOwner(BlockBox owner, boolean requireVisible)
     {
-        int maxy = 0;
+        float maxy = 0;
         for (int i = 0; i < size(); i++)
         {
             Box box = getBox(i);
             if ((!requireVisible || box.isDeclaredVisible()) && box.getContainingBlockBox() == owner)
             {
-                int ny = box.bounds.y + box.bounds.height; //TODO: -1 here?
+                float ny = box.bounds.y + box.bounds.height; //TODO: -1 here?
                 if (ny > maxy) maxy = ny;
             }
         }
@@ -189,11 +187,11 @@ public class FloatList
      * @param y starting Y coordinate
      * @return the nearest higher Y coordinate or -1 when no further change exists
      */
-    public static int getNextY(FloatList fleft, FloatList fright, int y)
+    public static float getNextY(FloatList fleft, FloatList fright, float y)
     {
-        int fy = y;
-        int nexty1 = fleft.getNextY(fy);
-        int nexty2 = fright.getNextY(fy);
+        float fy = y;
+        float nexty1 = fleft.getNextY(fy);
+        float nexty2 = fright.getNextY(fy);
         if (nexty1 != -1 && nexty2 != -1)
             fy = Math.min(nexty1, nexty2);
         else if (nexty2 != -1)

@@ -54,14 +54,14 @@ public class TableCaptionBox extends BlockBox
     
     
     //In contrast to a normal block box, a different content block width is used and availwidth is used for determining the free space
-    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, float contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
         if (width == null) auto = true; //no value behaves as 'auto'
         
         //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
-        int fullw = getContainingBlockBox().getContainingBlock().width;
+        float fullw = getContainingBlockBox().getContainingBlock().width;
         
         boolean mleftauto = style.getProperty("margin-left") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mleft = getLengthValue("margin-left");
@@ -107,7 +107,7 @@ public class TableCaptionBox extends BlockBox
             {
                 if (mleftauto && mrightauto)
                 {
-                    int rest = contw - content.width - border.left - padding.left
+                    float rest = contw - content.width - border.left - padding.left
                                      - padding.right - border.right;
                     if (rest < 0) rest = 0;
                     margin.left = (rest + 1) / 2;

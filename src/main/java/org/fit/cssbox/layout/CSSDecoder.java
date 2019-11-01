@@ -20,14 +20,15 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Rectangle;
-
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.TermAngle;
+import cz.vutbr.web.css.TermLengthOrPercent;
+
 
 /**
  * This class implements converting the CSS specifications to Java data types.
@@ -77,13 +78,13 @@ public class CSSDecoder
      * @param autoval The value to be used when "auto" is specified
      * @param whole the length to be returned as 100% (in case of percentage values)
      */
-    public int getLength(TermLengthOrPercent value, boolean auto, TermLengthOrPercent defval, TermLengthOrPercent autoval, int whole)
+    public float getLength(TermLengthOrPercent value, boolean auto, TermLengthOrPercent defval, TermLengthOrPercent autoval, float whole)
     {
         TermLengthOrPercent val = value;
         if (value == null) val = defval;
         if (auto) val = autoval;
         if (val != null)
-            return (int) context.pxLength(val, whole);
+            return context.pxLength(val, whole);
         else
         	return 0;
     }
@@ -96,7 +97,7 @@ public class CSSDecoder
      * @param autoval The value to be used when "auto" is specified
      * @param whole the length to be returned as 100% (in case of percentage values)
      */
-    public int getLength(TermLengthOrPercent value, boolean auto, int defval, int autoval, int whole)
+    public float getLength(TermLengthOrPercent value, boolean auto, float defval, float autoval, float whole)
     {
         if (auto)
             return autoval;
@@ -129,11 +130,11 @@ public class CSSDecoder
      */
     public static Rectangle computeReplacedObjectSize(ReplacedContent obj, ElementBox box)
     {
-        int boxw; //resulting size
-        int boxh;
+        float boxw; //resulting size
+        float boxh;
         
-        int intw; //intrinsic sizes
-        int inth;
+        float intw; //intrinsic sizes
+        float inth;
         float intr;
         if (obj != null)
         {
@@ -159,8 +160,8 @@ public class CSSDecoder
         
         //decode the width/height attributes
         Element el = box.getElement();
-        int atrw = -1;
-        int atrh = -1;
+        float atrw = -1;
+        float atrh = -1;
         try {
             if (!HTMLNorm.getAttribute(el, "width").equals(""))
             {
@@ -184,8 +185,8 @@ public class CSSDecoder
         }
 
         //use standard CSS2.1 computation of the containing block height
-        final int twidth = cb.width;
-        final int theight = cb.height;
+        final float twidth = cb.width;
+        final float theight = cb.height;
         //compute dimensions from styles (styles should override the attributes)
         CSSDecoder dec = new CSSDecoder(box.getVisualContext());
         CSSProperty.Width width = box.getStyle().getProperty("width");
@@ -208,7 +209,7 @@ public class CSSDecoder
         
         if (width == null && height == null && atrw == -1 && atrh == -1)
         {
-            final int[] result = applyCombinedLimits(boxw, boxh, box, dec, twidth, theight);
+            final float[] result = applyCombinedLimits(boxw, boxh, box, dec, twidth, theight);
             boxw = result[0];
             boxh = result[1];
         }
@@ -241,30 +242,30 @@ public class CSSDecoder
         return new Rectangle(boxw, boxh);
     }
 
-    public static int applyWidthLimits(int width, ElementBox box, CSSDecoder dec, int twidth)
+    public static float applyWidthLimits(float width, ElementBox box, CSSDecoder dec, float twidth)
     {
-        int ret = width;
+        float ret = width;
         if (twidth < 0) twidth = 0; //if the containing block's width is negative, the used value is zero.
         CSSProperty.MaxWidth max = box.getStyle().getProperty("max-width");
         if (max != null && max != CSSProperty.MaxWidth.NONE)
         {
-            final int maxval = dec.getLength(box.getLengthValue("max-width"), false, -1, -1, twidth);
+            final float maxval = dec.getLength(box.getLengthValue("max-width"), false, -1, -1, twidth);
             if (ret > maxval)
                 ret = maxval;
         }
         CSSProperty.MinWidth min = box.getStyle().getProperty("min-width");
         if (min != null)
         {
-            final int minval = dec.getLength(box.getLengthValue("min-width"), false, -1, -1, twidth);
+            final float minval = dec.getLength(box.getLengthValue("min-width"), false, -1, -1, twidth);
             if (ret < minval)
                 ret = minval;
         }
         return ret;
     }
     
-    public static int applyHeightLimits(int height, ElementBox box, CSSDecoder dec, int theight)
+    public static float applyHeightLimits(float height, ElementBox box, CSSDecoder dec, float theight)
     {
-        int ret = height;
+        float ret = height;
         ElementBox cbox = box.getContainingBlockBox();
         CSSProperty.MaxHeight max = box.getStyle().getProperty("max-height");
         if (max != null && max != CSSProperty.MaxHeight.NONE)
@@ -272,7 +273,7 @@ public class CSSDecoder
             final TermLengthOrPercent val = box.getLengthValue("max-height");
             if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
             {
-                final int maxval = dec.getLength(val, false, -1, -1, theight);
+                final float maxval = dec.getLength(val, false, -1, -1, theight);
                 if (ret > maxval)
                     ret = maxval;
             }
@@ -283,7 +284,7 @@ public class CSSDecoder
             final TermLengthOrPercent val = box.getLengthValue("min-height");
             if (val != null && !(val.isPercentage() && !cbox.hasFixedHeight()))
             {
-                final int minval = dec.getLength(box.getLengthValue("min-height"), false, -1, -1, theight);
+                final float minval = dec.getLength(box.getLengthValue("min-height"), false, -1, -1, theight);
                 if (ret < minval)
                     ret = minval;
             }
@@ -291,7 +292,7 @@ public class CSSDecoder
         return ret;
     }
     
-    public static int[] applyCombinedLimits(int w, int h, ElementBox box, CSSDecoder dec, int twidth, int theight)
+    public static float[] applyCombinedLimits(float w, float h, ElementBox box, CSSDecoder dec, float twidth, float theight)
     {
         ElementBox cbox = box.getContainingBlockBox();
         //decode min/max values from the style
@@ -300,7 +301,7 @@ public class CSSDecoder
         final CSSProperty.MinHeight pminh = box.getStyle().getProperty("min-height");
         final CSSProperty.MaxHeight pmaxh = box.getStyle().getProperty("max-height");
         
-        final int minw, maxw, minh, maxh;
+        final float minw, maxw, minh, maxh;
         if (pminw != null)
             minw = dec.getLength(box.getLengthValue("min-width"), false, 0, 0, twidth);
         else
@@ -337,7 +338,7 @@ public class CSSDecoder
         //http://www.w3.org/TR/CSS21/visudet.html#min-max-widths
         final float hwr = (float) h / w;
         final float whr = (float) w / h;
-        final int retw, reth;
+        final float retw, reth;
         if (w > maxw && h < minh) 
         { 
             retw = maxw;
@@ -400,7 +401,7 @@ public class CSSDecoder
             reth = h;
         }
         
-        return new int[]{retw, reth};
+        return new float[]{retw, reth};
     }
     
 }

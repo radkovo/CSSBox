@@ -176,7 +176,7 @@ abstract public class ElementBox extends Box
     protected Rectangle minAbsBounds;
     
     /** the computed value of line-height */
-    protected int lineHeight;
+    protected float lineHeight;
     
     /** the z-index flag: true when z-index is different from <code>auto</code> */
     protected boolean zset;
@@ -378,7 +378,7 @@ abstract public class ElementBox extends Box
      * @param property the property name, e.g. "border-top-width"
      * @return the border width in pixels
      */
-    public int getBorderWidth(CSSDecoder dec, String property)
+    public float getBorderWidth(CSSDecoder dec, String property)
     {
         if (style != null)
         {
@@ -647,7 +647,7 @@ abstract public class ElementBox extends Box
     /**
      * @return the width of the content without any margins and borders
      */
-    public int getContentWidth()
+    public float getContentWidth()
     {
     	return content.width;
     }
@@ -655,7 +655,7 @@ abstract public class ElementBox extends Box
     /**
      * @return the height of the content without any margins and borders
      */
-    public int getContentHeight()
+    public float getContentHeight()
     {
     	return content.height;
     }
@@ -664,7 +664,7 @@ abstract public class ElementBox extends Box
      * Obtains the computed value of the declared line height of the element.
      * @return the line height in pixels
      */
-    public int getLineHeight()
+    public float getLineHeight()
     {
         return lineHeight;
     }
@@ -793,7 +793,7 @@ abstract public class ElementBox extends Box
      * (a convenience function for margin + border + padding).
      * @return the distance 
      */
-    public int getContentOffsetX()
+    public float getContentOffsetX()
     {
         return margin.left + border.left + padding.left;
     }
@@ -803,32 +803,32 @@ abstract public class ElementBox extends Box
      * (a convenience function for margin + border + padding).
      * @return the distance
      */
-    public int getContentOffsetY()
+    public float getContentOffsetY()
     {
         return emargin.top + border.top + padding.top;
     }
     
-    public int getContentX()
+    public float getContentX()
     {
         return bounds.x + emargin.left + border.left + padding.left;
     }
     
-    public int getContentY()
+    public float getContentY()
     {
         return bounds.y + emargin.top + border.top + padding.top;
     }
     
-    public int getAbsoluteContentX()
+    public float getAbsoluteContentX()
     {
         return absbounds.x + emargin.left + border.left + padding.left;
     }
     
-    public int getAbsoluteContentY()
+    public float getAbsoluteContentY()
     {
         return absbounds.y + emargin.top + border.top + padding.top;
     }
     
-    public int totalWidth()
+    public float totalWidth()
     {
         return emargin.left + border.left + padding.left + content.width +
             padding.right + border.right + emargin.right;
@@ -836,7 +836,7 @@ abstract public class ElementBox extends Box
     
     //totalHeight() differs for inline and block boxes
     
-    public int getAvailableContentWidth()
+    public float getAvailableContentWidth()
     {
         return availwidth - emargin.left - border.left - padding.left 
                   - padding.right - border.right - emargin.right;
@@ -852,7 +852,7 @@ abstract public class ElementBox extends Box
     
     private Rectangle computeMinimalAbsoluteBounds()
     {
-    	int rx1 = 0, ry1 = 0, rx2 = 0, ry2 = 0;
+    	float rx1 = 0, ry1 = 0, rx2 = 0, ry2 = 0;
     	boolean valid = false;
     	for (int i = startChild; i < endChild; i++)
 		{
@@ -1141,7 +1141,7 @@ abstract public class ElementBox extends Box
         g.setColor(color); //restore original color
     }
     
-    protected void drawBorders(Graphics2D g, int bx1, int by1, int bx2, int by2)
+    protected void drawBorders(Graphics2D g, float bx1, float by1, float bx2, float by2)
     {
         if (border.top > 0 && bx2 > bx1)
             drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
@@ -1153,8 +1153,8 @@ abstract public class ElementBox extends Box
             drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
     }
     
-    private void drawBorder(Graphics2D g, int x1, int y1, int x2, int y2, int width, 
-                            int right, int down, String side, boolean reverse)
+    private void drawBorder(Graphics2D g, float x1, float y1, float x2, float y2, float width, 
+                            float right, float down, String side, boolean reverse)
     {
         TermColor tclr = style.getSpecifiedValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
@@ -1223,8 +1223,8 @@ abstract public class ElementBox extends Box
             {
                 //update the children only when some size has changed
                 BlockBox block = (BlockBox) child;
-                int oldw = block.getContentWidth();
-                int oldh = block.getContentHeight();
+                float oldw = block.getContentWidth();
+                float oldh = block.getContentHeight();
                 block.updateSizes();
                 block.setSize(block.totalWidth(), block.totalHeight());
                 if (block.getContentWidth() != oldw || block.getContentHeight() != oldh)
@@ -1272,15 +1272,15 @@ abstract public class ElementBox extends Box
      * @param atLineStart is the start box at the start of a line?
      * @param atLineEnd is the last box at the end of a line line?
      */
-    protected void extendInlineChildWidths(int dif, int start, int end, boolean atLineStart, boolean atLineEnd)
+    protected void extendInlineChildWidths(float dif, int start, int end, boolean atLineStart, boolean atLineEnd)
     {
         //compute total width of child boxes
         final int total = countInlineExpansionPoints(start, end, atLineStart, atLineEnd);
         if (total > 0)
         {
             //distribute the offset among the children
-            int ofsx = 0;
-            int remain = dif;
+            float ofsx = 0;
+            float remain = dif;
             for (int i = start; i < end; i++)
             {
                 final Box subbox = getSubBox(i);
@@ -1289,7 +1289,7 @@ abstract public class ElementBox extends Box
                     final boolean lstart = atLineStart && (i == start);
                     final boolean lend = atLineEnd && (i == end - 1);
                     final int childexp = ((Inline) subbox).getWidthExpansionPoints(lstart, lend);
-                    int toadd = Math.round(dif * childexp / (float) total);
+                    float toadd = dif * childexp / total;
                     if (toadd > remain)
                         toadd = remain;
                     subbox.moveRight(ofsx);
@@ -1328,7 +1328,7 @@ abstract public class ElementBox extends Box
      * @param dec CSS decoder used for decoding the style
      * @param contw containing block width for decoding percentages
      */
-    protected void loadBorders(CSSDecoder dec, int contw)
+    protected void loadBorders(CSSDecoder dec, float contw)
     {
         border = new LengthSet();
         if (borderVisible("top"))
@@ -1516,8 +1516,8 @@ abstract public class ElementBox extends Box
     {
         CSSDecoder dec = new CSSDecoder(ctx);
 
-        int contw = getContainingBlock().width;
-        int conth = getContainingBlock().height;
+        float contw = getContainingBlock().width;
+        float conth = getContainingBlock().height;
         
         CSSProperty.Top ptop = style.getProperty("top");
         CSSProperty.Right pright = style.getProperty("right");

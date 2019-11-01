@@ -29,23 +29,23 @@ import cz.vutbr.web.css.CSSProperty;
  */
 public class CSSUnits 
 {
-    public static final double dpi = 96; //CSS3 assumes fixed 96 dpi
-    public static final double medium_font = 16; //16px
-    private static final double font_step = 1.2;
-    public static final int THIN_BORDER = 1;
-    public static final int MEDIUM_BORDER = 3;
-    public static final int THICK_BORDER = 5;
+    public static final float dpi = 96; //CSS3 assumes fixed 96 dpi
+    public static final float medium_font = 16; //16px
+    private static final float font_step = 1.2f;
+    public static final float THIN_BORDER = 1.0f;
+    public static final float MEDIUM_BORDER = 3.0f;
+    public static final float THICK_BORDER = 5.0f;
     
     /** Converts points to pixels according to the DPI set */
-    public static double pixels(double pt)
+    public static float pixels(float pt)
     {
-        return pt * dpi / 72.0; 
+        return pt * dpi / 72.0f; 
     }
 
     /** Converts pixels to points according to the DPI set */
-    public static double points(double px)
+    public static float points(float px)
     {
-        return px * 72.0 / dpi;
+        return px * 72.0f / dpi;
     }
     
     /** 
@@ -54,10 +54,10 @@ public class CSSUnits
      * @param value The size specification to be converted
      * @return absolute font size in px
      */
-    public static double convertFontSize(double parent, CSSProperty.FontSize value)
+    public static float convertFontSize(float parent, CSSProperty.FontSize value)
     {
-        double em = parent;
-        double ret = em;
+        float em = parent;
+        float ret = em;
         if (value == CSSProperty.FontSize.MEDIUM)
             ret = medium_font;
         else if (value == CSSProperty.FontSize.SMALL)
@@ -84,7 +84,7 @@ public class CSSUnits
      * @param width the border-width identifier
      * @return absolute length in pixels
      */
-    public static int convertBorderWidth(CSSProperty.BorderWidth width)
+    public static float convertBorderWidth(CSSProperty.BorderWidth width)
     {
     	if (width == CSSProperty.BorderWidth.THIN)
     		return THIN_BORDER;

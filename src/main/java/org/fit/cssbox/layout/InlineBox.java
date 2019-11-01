@@ -48,13 +48,13 @@ public class InlineBox extends ElementBox implements InlineElement
     private LineBox curline;
     
     /** half-lead after layout */
-    private int halflead;
+    private float halflead;
     
     /** minimal relative Y coordinate of the descendants (computed during the layout) */
-    private int minDescendantY;
+    private float minDescendantY;
     
     /** maximal relative Y coordinate of the descendants (computed during the layout) */
-    private int maxDescendantY;
+    private float maxDescendantY;
     
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
@@ -134,7 +134,7 @@ public class InlineBox extends ElementBox implements InlineElement
     //========================================================================
     
     @Override
-    public int getBaselineOffset()
+    public float getBaselineOffset()
     {
     	if (curline == null)
     		return 0;
@@ -143,7 +143,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getBelowBaseline()
+    public float getBelowBaseline()
     {
     	if (curline == null)
     		return 0;
@@ -152,7 +152,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getTotalLineHeight()
+    public float getTotalLineHeight()
     {
     	if (curline == null)
     		return 0;
@@ -161,7 +161,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getMaxLineHeight()
+    public float getMaxLineHeight()
     {
         if (curline == null)
             return lineHeight;
@@ -170,7 +170,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getLineboxOffset()
+    public float getLineboxOffset()
     {
         if (curline == null)
             return 0;
@@ -182,13 +182,13 @@ public class InlineBox extends ElementBox implements InlineElement
      * @return half-lead value in pixels
      */
     @Override
-    public int getHalfLead()
+    public float getHalfLead()
     {
         return halflead;
     }
     
     @Override
-    public int getFirstLineLength()
+    public float getFirstLineLength()
     {
         if (preservesLineBreaks())
         {
@@ -199,7 +199,7 @@ public class InlineBox extends ElementBox implements InlineElement
         }
         else
         {
-            int ret = 0;
+            float ret = 0;
             for (int i = startChild; i < endChild; i++)
                 ret += getSubBox(i).getMaximalWidth();
             return ret;
@@ -207,7 +207,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
 
     @Override
-    public int getLastLineLength()
+    public float getLastLineLength()
     {
         if (preservesLineBreaks())
         {
@@ -218,7 +218,7 @@ public class InlineBox extends ElementBox implements InlineElement
         }
         else
         {
-            int ret = 0;
+            float ret = 0;
             for (int i = startChild; i < endChild; i++)
                 ret += getSubBox(i).getMaximalWidth();
             return ret;
@@ -254,7 +254,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
 
     @Override
-    public void extendWidth(int dif, boolean atLineStart, boolean atLineEnd)
+    public void extendWidth(float dif, boolean atLineStart, boolean atLineEnd)
     {
         extendInlineChildWidths(dif, startChild, endChild, atLineStart, atLineEnd);
         bounds.width += dif;
@@ -265,7 +265,7 @@ public class InlineBox extends ElementBox implements InlineElement
      * After performing the layout, this method obtains the minimal relative Y coordinate of the aligned descendants. 
      * @return The minimal relative Y value.
      */
-    public int getMinDescendantY()
+    public float getMinDescendantY()
     {
         return minDescendantY;
     }
@@ -274,7 +274,7 @@ public class InlineBox extends ElementBox implements InlineElement
      * After performing the layout, this method obtains the maximal relative Y coordinate of the aligned descendants. 
      * @return The minimal relative Y value.
      */
-    public int getMaxDescendantY()
+    public float getMaxDescendantY()
     {
         return minDescendantY;
     }
@@ -306,7 +306,7 @@ public class InlineBox extends ElementBox implements InlineElement
      * @return True if the box has been succesfully placed
      */
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
+    public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
         //  System.out.println("jo!");
@@ -321,8 +321,8 @@ public class InlineBox extends ElementBox implements InlineElement
         setAvailableWidth(availw);
         
         curline = new LineBox(this, startChild, 0);
-        int wlimit = getAvailableContentWidth();
-        int x = 0; //current x
+        float wlimit = getAvailableContentWidth();
+        float x = 0; //current x
         boolean ret = true;
         rest = null;
 
@@ -425,12 +425,12 @@ public class InlineBox extends ElementBox implements InlineElement
             //y coordinate -- depends on the vertical alignment
             if (valign == CSSProperty.VerticalAlign.TOP)
             {
-                final int topOfs = minDescendantY < 0 ? minDescendantY : 0; //negative minDescendantY means we have to make space for higher descendant boxes
+                final float topOfs = minDescendantY < 0 ? minDescendantY : 0; //negative minDescendantY means we have to make space for higher descendant boxes
                 absbounds.y = linebox.getAbsoluteY() - getContentOffsetY() - topOfs;
             }
             else if (valign == CSSProperty.VerticalAlign.BOTTOM)
             {
-                final int bottomOfs = maxDescendantY >= getContentHeight() ? maxDescendantY - getContentHeight() + 1 : 0;
+                final float bottomOfs = maxDescendantY >= getContentHeight() ? maxDescendantY - getContentHeight() + 1 : 0;
                 absbounds.y = linebox.getAbsoluteY() + linebox.getMaxBoxHeight() - getContentHeight() - getContentOffsetY() - bottomOfs;
             }
             else //other positions -- set during the layout. Relative to the parent content edge.
@@ -456,26 +456,26 @@ public class InlineBox extends ElementBox implements InlineElement
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
-        int ret = 0;
+        float ret = 0;
         if (allowsWrapping())
         {
             //return the maximum of the nested minimal widths that are separated
             for (int i = startChild; i < endChild; i++)
             {
-                int w = getSubBox(i).getMinimalWidth();
+                float w = getSubBox(i).getMinimalWidth();
                 if (w > ret) ret = w;
             }
         }
         else if (preservesLineBreaks())
         {
             //return the maximum of the nested minimal widths and try to sum the siblings sharing the same line
-            int total = 0;
+            float total = 0;
             for (int i = startChild; i < endChild; i++)
             {
                 Box cur = getSubBox(i);
-                int w = cur.getMinimalWidth();
+                float w = cur.getMinimalWidth();
                 if (w > ret) ret = w;
                 
                 total += ((Inline) cur).getFirstLineLength();
@@ -498,9 +498,9 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public int getMaximalWidth()
+    public float getMaximalWidth()
     {
-        int ret = 0;
+        float ret = 0;
         if (!preservesLineBreaks())
         {
             //return the sum of all the elements inside
@@ -510,11 +510,11 @@ public class InlineBox extends ElementBox implements InlineElement
         else
         {
             //return the maximum of the nested minimal widths and try to sum the siblings sharing the same line
-            int total = 0;
+            float total = 0;
             for (int i = startChild; i < endChild; i++)
             {
                 Box cur = getSubBox(i);
-                int w = cur.getMaximalWidth();
+                float w = cur.getMaximalWidth();
                 if (w > ret) ret = w;
                 
                 total += ((Inline) cur).getFirstLineLength();
@@ -533,13 +533,13 @@ public class InlineBox extends ElementBox implements InlineElement
     /**
      * Returns the height of the box or the highest subbox.
      */
-    public int getMaximalHeight()
+    public float getMaximalHeight()
     {
-        int ret = getHeight();
+        float ret = getHeight();
         for (int i = startChild; i < endChild; i++)
         {
             Box sub = getSubBox(i);
-            int h = 0;
+            float h = 0;
             if (sub instanceof InlineBox)
                 h = ((InlineBox) sub).getMaximalHeight();
             else
@@ -636,7 +636,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
 
     @Override
-    public int totalHeight()
+    public float totalHeight()
     {
         //for inline boxes, the top and bottom margins don't apply
         return border.top + padding.top + content.height + padding.bottom + border.bottom;
@@ -659,7 +659,7 @@ public class InlineBox extends ElementBox implements InlineElement
         CSSDecoder dec = new CSSDecoder(ctx);
         
         //containing box sizes
-        int contw = getContainingBlock().width;
+        float contw = getContainingBlock().width;
         
         //top and bottom margins take no effect for inline boxes
         // http://www.w3.org/TR/CSS21/box.html#propdef-margin-top
@@ -749,7 +749,7 @@ public class InlineBox extends ElementBox implements InlineElement
             if (!sub.isBlock())
             {
                 //position relative to the line box
-                int dif = curline.alignBox((Inline) sub);
+                float dif = curline.alignBox((Inline) sub);
                 //recompute to the content box
                 dif = dif - getLineboxOffset();
                 //recompute to the bounding box
@@ -759,18 +759,18 @@ public class InlineBox extends ElementBox implements InlineElement
                 if (dif != 0)
                     sub.moveDown(dif);
                 //update minDescendantY and maxDescendantY
-                int y1 = sub.getContentY();
+                float y1 = sub.getContentY();
                 if (sub instanceof InlineBox)
                 {
-                    final int dy = ((InlineBox) sub).getMinDescendantY();
+                    final float dy = ((InlineBox) sub).getMinDescendantY();
                     if (dy < 0)
                         y1 += dy;
                 }
                 minDescendantY = Math.min(minDescendantY, y1);
-                int y2 = sub.getContentY() + sub.getContentHeight() - 1;
+                float y2 = sub.getContentY() + sub.getContentHeight() - 1;
                 if (sub instanceof InlineBox)
                 {
-                    final int dy = ((InlineBox) sub).getMaxDescendantY();
+                    final float dy = ((InlineBox) sub).getMaxDescendantY();
                     if (dy > sub.getContentHeight())
                         y2 += dy;
                 }

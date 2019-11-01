@@ -20,10 +20,10 @@
 
 package org.fit.cssbox.layout;
 
+import java.awt.Graphics2D;
 import java.net.URL;
-import java.awt.*;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
 
 /**
  * A visual formatting box. It can be of two types: an inline box
@@ -84,7 +84,7 @@ abstract public class Box
     protected ElementBox stackingParent;
     
     /** Maximal total width for the layout (obtained from the owner box) */
-    protected int availwidth;
+    protected float availwidth;
     
     /** Graphics context */
     protected Graphics2D g;
@@ -404,7 +404,7 @@ abstract public class Box
      * @param x the x coordinate
      * @param y the y coordinate
      */
-    public void setPosition(int x, int y)
+    public void setPosition(float x, float y)
     {
         bounds.setLocation(x, y);
     }
@@ -413,7 +413,7 @@ abstract public class Box
      * Move the box to the right.
      * @param ofs distance in pixels - positive numbers move to the right, negative to the left
      */
-    public void moveRight(int ofs)
+    public void moveRight(float ofs)
     {
         bounds.x += ofs;
     }
@@ -422,7 +422,7 @@ abstract public class Box
      * Move the box down.
      * @param ofs distance in pixels - positive numbers move down, negative up
      */
-    public void moveDown(int ofs)
+    public void moveDown(float ofs)
     {
         bounds.y += ofs;
     }
@@ -432,7 +432,7 @@ abstract public class Box
      * @param w total box width including margins and borders
      * @param h total height
      */
-    public void setSize(int w, int h)
+    public void setSize(float w, float h)
     {
         bounds.setSize(w, h);
     }
@@ -441,7 +441,7 @@ abstract public class Box
      * Returns the real width of the box computed during the layout.
      * @return total width including margins and borders.
      */ 
-    public int getWidth()
+    public float getWidth()
     {
         return bounds.width;
     }
@@ -450,7 +450,7 @@ abstract public class Box
      * Returns the real height of the box computed during the layout.
      * @return total height including margins and borders
      */ 
-    public int getHeight()
+    public float getHeight()
     {
         return bounds.height;
     }
@@ -502,7 +502,7 @@ abstract public class Box
     /**
      * @return maximal width that was available for the box placement during the layout processing
      */
-    public int getAvailableWidth()
+    public float getAvailableWidth()
     {
         return availwidth;
     }
@@ -511,7 +511,7 @@ abstract public class Box
      * Set the maximal width available to the box
      * @param availw the maximal available width
      */
-    public void setAvailableWidth(int availw)
+    public void setAvailableWidth(float availw)
     {
         availwidth = availw;
     }
@@ -589,47 +589,47 @@ abstract public class Box
     /**
      * @return the expected width of the box according to the CSS property values
      */ 
-    abstract public int totalWidth();
+    abstract public float totalWidth();
     
     /**
      * @return the expected height of the box according to the CSS property values
      */ 
-    abstract public int totalHeight();
+    abstract public float totalHeight();
     
     /**
      * @return maximal available width of the content during the layout
      */
-    abstract public int getAvailableContentWidth();
+    abstract public float getAvailableContentWidth();
     
     /**
      * @return the X coordinate of the content box top left corner
      */
-    abstract public int getContentX();
+    abstract public float getContentX();
     
     /**
      * @return the absolute X coordinate of the content box top left corner
      */
-    abstract public int getAbsoluteContentX();
+    abstract public float getAbsoluteContentX();
     
     /**
      * @return the Y coordinate of the content box top left corner
      */
-    abstract public int getContentY();
+    abstract public float getContentY();
 
     /**
      * @return the Y coordinate of the content box top left corner
      */
-    abstract public int getAbsoluteContentY();
+    abstract public float getAbsoluteContentY();
     
     /**
      * @return the width of the content without any margins and borders
      */
-    abstract public int getContentWidth();
+    abstract public float getContentWidth();
     
     /**
      * @return the height of the content without any margins and borders
      */
-    abstract public int getContentHeight();
+    abstract public float getContentHeight();
     
     /**
      * @return the bounds of the content box
@@ -651,14 +651,14 @@ abstract public class Box
      * Determines the minimal width in which the element can fit.
      * @return the minimal width
      */
-    abstract public int getMinimalWidth();
+    abstract public float getMinimalWidth();
     
     /**
      * 
      * Determines the maximal width of the element according to its contents.
      * @return the maximal width
      */
-    abstract public int getMaximalWidth();
+    abstract public float getMaximalWidth();
     
     /**
      * Determines the minimal bounds of the really displayed content.
@@ -794,7 +794,7 @@ abstract public class Box
      * @param linestart Indicates whether the element is placed at the line start
      * @return True if the box has been succesfully placed
      */
-    abstract public boolean doLayout(int availw, boolean force, boolean linestart);
+    abstract public boolean doLayout(float availw, boolean force, boolean linestart);
     
 
     /** 

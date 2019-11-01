@@ -19,9 +19,7 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.util.Vector;
 
 import org.fit.cssbox.render.BoxRenderer;
@@ -46,9 +44,9 @@ public class Viewport extends BlockBox
     private static Logger log = LoggerFactory.getLogger(Viewport.class);
     
     /** Total canvas width */
-	private int width;
+	private float width;
 	/** Total canvas height */
-	private int height;
+	private float height;
 	/** Visible rectagle -- the position and size of the CSS viewport */
     private Rectangle visibleRect;
 	
@@ -59,8 +57,8 @@ public class Viewport extends BlockBox
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
 	private ElementBox bgSrc; //source element for the background
     private boolean rootOverflowVisible = true; //has the root box originally had overflow:visible?
-    private int maxx; //maximal X position of all the content
-    private int maxy; //maximal Y position of all the content
+    private float maxx; //maximal X position of all the content
+    private float maxy; //maximal Y position of all the content
     private boolean recomputeAbs; //indicates that the absolute positions need to be recomputed
     
     /**
@@ -74,7 +72,7 @@ public class Viewport extends BlockBox
      * @param width Preferred (minimal) width.
      * @param height Preferred (minimal) height.
      */
-    public Viewport(Element e, Graphics2D g, VisualContext ctx, BoxFactory factory, Element root, int width, int height)
+    public Viewport(Element e, Graphics2D g, VisualContext ctx, BoxFactory factory, Element root, float width, float height)
 	{
 		super(e, g, ctx);
 		ctx.setViewport(this);
@@ -159,7 +157,7 @@ public class Viewport extends BlockBox
         return factory;
     }
 
-    public int getMinimalWidthLimit()
+    public float getMinimalWidthLimit()
     {
     	return width;
     }
@@ -254,7 +252,7 @@ public class Viewport extends BlockBox
     }
 
 	@Override
-	public void setSize(int width, int height)
+	public void setSize(float width, float height)
     {
         this.width = width;
         this.height = height;
@@ -298,7 +296,7 @@ public class Viewport extends BlockBox
 	}
 
 	@Override
-    public void setContentWidth(int width)
+    public void setContentWidth(float width)
     {
 	    //do not descrease the viewport width under the initial value
         if (width > this.width)
@@ -306,7 +304,7 @@ public class Viewport extends BlockBox
     }
 
     @Override
-    public void setContentHeight(int height)
+    public void setContentHeight(float height)
     {
         //do not descrease the viewport height under the initial value
         if (height > this.height)
@@ -381,14 +379,14 @@ public class Viewport extends BlockBox
 	}
 
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
+    public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         //remove previously splitted children from possible previous layout
         clearSplitted();
 
         //viewport has a siplified width computation algorithm
-        int min = getMinimalContentWidth();
-        int pref = Math.max(min, width);
+        float min = getMinimalContentWidth();
+        float pref = Math.max(min, width);
         setContentWidth(pref);
         updateChildSizes();
         
@@ -473,9 +471,9 @@ public class Viewport extends BlockBox
 	 */
 	public void updateBoundsFor(Rectangle bounds)
 	{
-		int x = bounds.x + bounds.width - 1;
+		float x = bounds.x + bounds.width - 1;
 		if (maxx < x) maxx = x;
-		int y = bounds.y + bounds.height - 1;
+		float y = bounds.y + bounds.height - 1;
 		if (maxy < y) maxy = y;
 	}
 	
@@ -565,25 +563,25 @@ public class Viewport extends BlockBox
     //===================================================================================
 	
     @Override
-    public int getContentX()
+    public float getContentX()
     {
         return visibleRect.x;
     }
 
     @Override
-    public int getContentY()
+    public float getContentY()
     {
         return visibleRect.y;
     }
 
     @Override
-    public int getContentWidth()
+    public float getContentWidth()
     {
         return visibleRect.width;
     }
 
     @Override
-    public int getContentHeight()
+    public float getContentHeight()
     {
         return visibleRect.height;
     }
@@ -626,7 +624,7 @@ public class Viewport extends BlockBox
         {
             Color color = g.getColor();
             g.setColor(bgcolor);
-            g.fillRect(0, 0, width, height);
+            g.fillRect(0, 0, (int) width, (int) height);
             g.setColor(color);
         }
         super.drawBackground(g);

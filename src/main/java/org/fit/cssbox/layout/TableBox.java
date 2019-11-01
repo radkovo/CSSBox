@@ -42,7 +42,7 @@ public class TableBox extends BlockBox
 {
     //private static Logger log = LoggerFactory.getLogger(TableBox.class);
     
-	private final int DEFAULT_SPACING = 0;
+	private final float DEFAULT_SPACING = 0;
 	
     protected TableBodyBox header;
     protected TableBodyBox footer;
@@ -53,7 +53,7 @@ public class TableBox extends BlockBox
     protected int columnCount;
 
     /** cell spacing */
-    protected int spacing = 0;
+    protected float spacing = 0;
     
     /** an anonymous table body (for lines that are not in any other body) */
     private TableBodyBox anonbody;
@@ -117,12 +117,12 @@ public class TableBox extends BlockBox
     }
 	
     @Override
-    public boolean doLayout(int widthlimit, boolean force, boolean linestart)
+    public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         setAvailableWidth(widthlimit);
-        int wlimit = getAvailableContentWidth();
-        int maxw = 0;
-        int y = 0;
+        float wlimit = getAvailableContentWidth();
+        float maxw = 0;
+        float y = 0;
 
         //calculate the column widths
         calculateColumns();
@@ -208,7 +208,7 @@ public class TableBox extends BlockBox
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     @Override
-    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, int contw, boolean update)
+    protected void computeWidthsInFlow(TermLengthOrPercent width, boolean auto, boolean exact, float contw, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
 
@@ -231,14 +231,14 @@ public class TableBox extends BlockBox
         {
             //load the content width
             //According to CSS spec. 17.4, percentage widths should use the size of the original containing box, not the anonymous box
-            int fullw = getContainingBlockBox().getContainingBlock().width;
+            float fullw = getContainingBlockBox().getContainingBlock().width;
             if (!update)
                 content.width = dec.getLength(width, auto, 0, 0, fullw);
         }
     }
     
     @Override
-    protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, int contw, int conth, boolean update)
+    protected void computeHeightsInFlow(TermLengthOrPercent height, boolean auto, boolean exact, float contw, float conth, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
         
@@ -265,51 +265,51 @@ public class TableBox extends BlockBox
     }
     
     @Override
-    protected int getMaximalContentWidth()
+    protected float getMaximalContentWidth()
     {
-        int ret = 0;
+        float ret = 0;
         if (header != null)
         {
-            int m = header.getMaximalWidth();
+            float m = header.getMaximalWidth();
             if (m > ret) ret = m;
         }
         if (footer != null)
         {
-            int m = footer.getMaximalWidth();
+            float m = footer.getMaximalWidth();
             if (m > ret) ret = m;
         }
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
         {
-            int m = it.next().getMaximalWidth();
+            float m = it.next().getMaximalWidth();
             if (m > ret) ret = m;
         }
         return ret;
     }
 
     @Override
-    protected int getMinimalContentWidth()
+    protected float getMinimalContentWidth()
     {
-        int ret = 0;
+        float ret = 0;
         if (header != null)
         {
-            int m = header.getMinimalWidth();
+            float m = header.getMinimalWidth();
             if (m > ret) ret = m;
         }
         if (footer != null)
         {
-            int m = footer.getMinimalWidth();
+            float m = footer.getMinimalWidth();
             if (m > ret) ret = m;
         }
         for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
         {
-            int m = it.next().getMinimalWidth();
+            float m = it.next().getMinimalWidth();
             if (m > ret) ret = m;
         }
         return ret;
     }
     
     @Override
-    protected int getMinimalDecorationWidth()
+    protected float getMinimalDecorationWidth()
     {
         if (wset)
             return super.getMinimalDecorationWidth();
@@ -370,7 +370,7 @@ public class TableBox extends BlockBox
      */
     private void calculateColumns()
     {
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         //System.out.println("wset="+wset);
         //System.out.println("wlimit="+wlimit);
         
@@ -396,20 +396,20 @@ public class TableBox extends BlockBox
         
         //now, the columns are at minimal widths
         //gather column statistics
-        int sumabs = 0; //total length of absolute columns
-        int sumperc = 0; //total percentage
-        int mintotalw = 0;  //total minimal length of all the columns
-        int sumnonemin = 0; //total minimal length of the columns with no width specified
-        int sumnonemax = 0; //total maximal length of the columns with no width specified
-        int totalwperc = 0; //total table width computed from percentage columns
+        float sumabs = 0; //total length of absolute columns
+        float sumperc = 0; //total percentage
+        float mintotalw = 0;  //total minimal length of all the columns
+        float sumnonemin = 0; //total minimal length of the columns with no width specified
+        float sumnonemax = 0; //total maximal length of the columns with no width specified
+        float totalwperc = 0; //total table width computed from percentage columns
         for (TableColumn col : columns) //compute the sums
         {
             mintotalw += col.getMinimalWidth();
             if (col.wrelative)
             {
             	sumperc += col.percent;
-            	int maxw = col.getMaximalWidth();
-            	int newtotal = maxw * 100 / col.percent;
+            	float maxw = col.getMaximalWidth();
+            	float newtotal = maxw * 100 / col.percent;
             	if (newtotal > totalwperc) totalwperc = newtotal;
             }
             else
@@ -426,13 +426,13 @@ public class TableBox extends BlockBox
         
         //guess the total width available for columns (not including spacing now)
         if (totalwperc > wlimit) totalwperc = wlimit;
-        int totalwabs = 0; //from absolute fields
+        float totalwabs = 0; //from absolute fields
         if (sumabs + sumnonemax > 0)
         {
-            int abspart = 100 - sumperc; //the absolute part is how many percent
+            float abspart = 100 - sumperc; //the absolute part is how many percent
             totalwabs = (abspart == 0) ? wlimit : (sumabs + sumnonemax) * 100 / abspart; //what is 100%
         }
-        int totalw = Math.max(totalwperc, totalwabs); //desired width taken from the columns
+        float totalw = Math.max(totalwperc, totalwabs); //desired width taken from the columns
         
         //apply the table limits
         if (wset)
@@ -447,7 +447,7 @@ public class TableBox extends BlockBox
         if (totalw < mintotalw) totalw = mintotalw; //we cannot be below the minimal width
         
         //available for further allocation
-        int remain = totalw - mintotalw;
+        float remain = totalw - mintotalw;
         
         /*System.out.println("Percent: " + totalwperc);
         System.out.println("Abs+%: " + totalwabs);
@@ -463,8 +463,8 @@ public class TableBox extends BlockBox
             {
                 if (col.wrelative)
                 {
-                    int mincw = col.getMinimalWidth();
-                    int neww = col.percent * totalw / 100;
+                    float mincw = col.getMinimalWidth();
+                    float neww = col.percent * totalw / 100;
                     if (neww < mincw) neww = mincw;
                     col.setColumnWidth(neww);
                     remain -= (neww - mincw);
@@ -481,8 +481,8 @@ public class TableBox extends BlockBox
             {
                 if (col.wset && !col.wrelative)
                 {
-                    int mincw = col.getMinimalWidth();
-                    int neww = col.abswidth;
+                    float mincw = col.getMinimalWidth();
+                    float neww = col.abswidth;
                     if (neww < mincw) neww = mincw;
                     col.setColumnWidth(neww);
                     remain -= (neww - mincw);
@@ -494,14 +494,14 @@ public class TableBox extends BlockBox
         //set the remaining columns
         if (remain > 0 && sumnonemin > 0 && sumnonemax > 0)
         {
-            int remainmax = sumnonemax;
+            float remainmax = sumnonemax;
             remain += sumnonemin; 
             for (TableColumn col : columns) //set the column sizes
             {
                 if (!col.wset)
                 {
-                    int mincw = col.getMinimalWidth();
-                    int neww = remain * col.getMaximalWidth() / remainmax;   
+                    float mincw = col.getMinimalWidth();
+                    float neww = remain * col.getMaximalWidth() / remainmax;   
                     if (neww < mincw) neww = mincw;
                     col.setColumnWidth(neww);
                     remain -= neww;
@@ -516,12 +516,12 @@ public class TableBox extends BlockBox
         //if something still remains, use it for fixed columns
         if (remain > 0 && sumabs > 0)
         {
-            int remainabs = sumabs;
+            float remainabs = sumabs;
             for (TableColumn col : columns)
             {
                 if (col.wset && !col.wrelative)
                 {
-                    int addw = remain * col.getMaximalWidth() / remainabs;
+                    float addw = remain * col.getMaximalWidth() / remainabs;
                     col.setColumnWidth(col.getWidth() + addw);
                     remain -= addw;
                     remainabs -= col.getMaximalWidth();
@@ -532,12 +532,12 @@ public class TableBox extends BlockBox
         //if something still remains, use it for percentage columns
         if (remain > 0 && sumperc > 0 && sumperc < 100)
         {
-            int remainperc = sumperc;
+            float remainperc = sumperc;
             for (TableColumn col : columns)
             {
                 if (col.wrelative)
                 {
-                    int addw = remain * col.percent / remainperc;
+                    float addw = remain * col.percent / remainperc;
                     col.setColumnWidth(col.getWidth() + addw);
                     remain -= addw;
                     remainperc -= col.getMaximalWidth();
@@ -550,11 +550,11 @@ public class TableBox extends BlockBox
         //if something still remains, use it for all columns
         if (remain > 0)
         {
-            int remaincols = columns.size();
+            float remaincols = columns.size();
             for (int i = columns.size() - 1; i >= 0; i--)
             {
                 TableColumn col = columns.elementAt(i); 
-                int addw = remain / remaincols;
+                float addw = remain / remaincols;
                 col.setColumnWidth(col.getWidth() + addw);
                 remain -= addw;
                 remaincols--;
@@ -567,7 +567,7 @@ public class TableBox extends BlockBox
             //non-fixed columns
             if (remain < 0 && sumnonemin > 0)
             {
-                int totaldif = 0;
+                float totaldif = 0;
                 for (TableColumn col : columns)
                     if (!col.wset)
                         totaldif += col.getWidth() - col.getMinimalWidth();
@@ -577,8 +577,8 @@ public class TableBox extends BlockBox
                     TableColumn col = columns.elementAt(i);
                     if (!col.wset)
                     {
-                        int dif = col.getWidth() - col.getMinimalWidth();
-                        int addw = remain * dif / totaldif; 
+                        float dif = col.getWidth() - col.getMinimalWidth();
+                        float addw = remain * dif / totaldif; 
                         col.setColumnWidth(col.getWidth() + addw);
                         remain -= addw;
                         totaldif -= dif;
@@ -590,7 +590,7 @@ public class TableBox extends BlockBox
             //fixed columns
             if (remain < 0 && sumabs > 0)
             {
-                int totaldif = 0;
+                float totaldif = 0;
                 for (TableColumn col : columns)
                     if (col.wset && !col.wrelative)
                         totaldif += col.getWidth() - col.getMinimalWidth();
@@ -600,8 +600,8 @@ public class TableBox extends BlockBox
                     TableColumn col = columns.elementAt(i);
                     if (col.wset && !col.wrelative)
                     {
-                        int dif = col.getWidth() - col.getMinimalWidth();
-                        int addw = remain * dif / totaldif; 
+                        float dif = col.getWidth() - col.getMinimalWidth();
+                        float addw = remain * dif / totaldif; 
                         col.setColumnWidth(col.getWidth() + addw);
                         remain -= addw;
                         totaldif -= dif;
@@ -613,7 +613,7 @@ public class TableBox extends BlockBox
             //percentage columns
             if (remain < 0 && sumperc > 0)
             {
-                int totaldif = 0;
+                float totaldif = 0;
                 for (TableColumn col : columns)
                     if (col.wrelative)
                         totaldif += col.getWidth() - col.getMinimalWidth();
@@ -623,8 +623,8 @@ public class TableBox extends BlockBox
                     TableColumn col = columns.elementAt(i);
                     if (col.wrelative)
                     {
-                        int dif = col.getWidth() - col.getMinimalWidth();
-                        int addw = remain * dif / totaldif; 
+                        float dif = col.getWidth() - col.getMinimalWidth();
+                        float addw = remain * dif / totaldif; 
                         col.setColumnWidth(col.getWidth() + addw);
                         remain -= addw;
                         totaldif -= dif;
@@ -746,7 +746,7 @@ public class TableBox extends BlockBox
         }
     }
 
-    private void propagateCellSpacing(int spacing)
+    private void propagateCellSpacing(float spacing)
     {
         if (header != null)
             header.setSpacing(spacing);

@@ -27,6 +27,7 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.BrowserCanvas;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.TextBox;
 import org.w3c.dom.Document;
@@ -94,7 +95,7 @@ public class TextBoxes
             browser.getConfig().setLoadBackgroundImages(false);
             
             //Create the layout for 1000x600 pixels
-            browser.createLayout(new java.awt.Dimension(1000, 600));
+            browser.createLayout(new Dimension(1000, 600));
             
             //Display the result
             printTextBoxes(browser.getViewport());
