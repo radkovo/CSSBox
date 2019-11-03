@@ -20,26 +20,37 @@
 
 package org.fit.cssbox.layout;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
-import java.awt.*;
-import java.awt.geom.Line2D;
-import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.Vector;
 
-import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 import cz.vutbr.web.css.CSSProperty.BackgroundSize;
 import cz.vutbr.web.css.CSSProperty.ZIndex;
+import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.Selector;
+import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermColor;
+import cz.vutbr.web.css.TermInteger;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermList;
+import cz.vutbr.web.css.TermNumber;
+import cz.vutbr.web.css.TermPercent;
+import cz.vutbr.web.css.TermURI;
 
 import org.fit.cssbox.css.CSSUnits;
-import org.fit.cssbox.misc.CSSStroke;
 import org.fit.net.DataURLHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 /**
  * An abstract class representing a box formed by a DOM element. There are two
@@ -303,6 +314,17 @@ abstract public class ElementBox extends Box
     public Element getElement()
     {
         return el;
+    }
+    
+    /**
+     * Indicates whether the backgound and borders should be rendered for this element.
+     * This is true for normal elements but it is false e.g. for table row and body
+     * elements
+     * @return {@code true} when the background should be rendered
+     */
+    public boolean rendersBackground()
+    {
+        return true;
     }
     
     /**
@@ -1031,7 +1053,7 @@ abstract public class ElementBox extends Box
             Integer[] clevels = formsStackingContext() ? getStackingContext().getZIndices() : new Integer[0]; 
             
             //1.the background and borders of the element forming the stacking context.
-            if (this.formsStackingContext())
+            if (this.formsStackingContext() && this.rendersBackground())
                 getViewport().getRenderer().renderElementBackground(this);
             
             getViewport().getRenderer().startElementContents(this);
@@ -1097,100 +1119,6 @@ abstract public class ElementBox extends Box
                 elem.drawStackingContext(!elem.hasZIndex());
             }
         }
-    }
-    
-    /** 
-     * Draw the background and border of this box (no subboxes).
-     * This method is normally called automatically from {@link Box#draw(DrawStage)}.
-     * @param g the graphics context used for drawing 
-     */
-    public void drawBackground(Graphics2D g)
-    {
-        Color color = g.getColor(); //original color
-        Shape oldclip = g.getClip(); //original clip region
-        if (clipblock != null)
-            g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
-        ctx.updateGraphics(g);
-        
-        //border bounds
-        Rectangle brd = getAbsoluteBorderBounds();
-        
-        //draw the background - it should be visible below the border too
-        if (getBgcolor() != null)
-        {
-            g.setColor(getBgcolor());
-            g.fillRect(brd.x, brd.y, brd.width, brd.height);
-        }
-        
-        //draw the background images
-        if (bgimages != null)
-        {
-            Rectangle bg = getAbsoluteBackgroundBounds();
-            for (BackgroundImage img : bgimages)
-            {
-                BufferedImage bimg = img.getBufferedImage();
-                if (bimg != null)
-                    g.drawImage(bimg, bg.x, bg.y, null);
-            }
-        }
-        
-        //draw the border
-        drawBorders(g, brd.x, brd.y, brd.x + brd.width - 1, brd.y + brd.height - 1);
-        
-        g.setClip(oldclip); //restore the clipping
-        g.setColor(color); //restore original color
-    }
-    
-    protected void drawBorders(Graphics2D g, float bx1, float by1, float bx2, float by2)
-    {
-        if (border.top > 0 && bx2 > bx1)
-            drawBorder(g, bx1, by1, bx2, by1, border.top, 0, 0, "top", false);
-        if (border.right > 0 && by2 > by1)
-            drawBorder(g, bx2, by1, bx2, by2, border.right, -border.right + 1, 0, "right", true); 
-        if (border.bottom > 0 && bx2 > bx1)
-            drawBorder(g, bx1, by2, bx2, by2, border.bottom, 0, -border.bottom + 1, "bottom", true); 
-        if (border.left > 0 && by2 > by1)
-            drawBorder(g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
-    }
-    
-    private void drawBorder(Graphics2D g, float x1, float y1, float x2, float y2, float width, 
-                            float right, float down, String side, boolean reverse)
-    {
-        TermColor tclr = style.getSpecifiedValue(TermColor.class, "border-"+side+"-color");
-        CSSProperty.BorderStyle bst = style.getProperty("border-"+side+"-style");
-        if (bst != CSSProperty.BorderStyle.HIDDEN && (tclr == null || !tclr.isTransparent()))
-        {
-            //System.out.println("Elem: " + this + "side: " + side + "color: " + tclr);
-            Color clr = null;
-            if (tclr != null)
-                clr = CSSUnits.convertColor(tclr.getValue());
-            if (clr == null)
-            {
-                clr = ctx.getColor();
-                if (clr == null)
-                    clr = Color.BLACK;
-            }
-            g.setColor(clr);
-            g.setStroke(new CSSStroke(width, bst, reverse));
-            g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
-        }
-    }
-
-    @Override
-    public void drawExtent(Graphics2D g)
-    {
-    	//draw the full box
-        g.setColor(Color.RED);
-        g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
-    	
-    	//draw the content box
-        g.setColor(Color.ORANGE);
-        g.drawRect(getAbsoluteContentX(), getAbsoluteContentY(), getContentWidth(), getContentHeight());
-        
-        //draw the real content box
-        /*g.setColor(Color.GREEN);
-        Rectangle r = getMinimalBounds();
-        g.drawRect(r.x, r.y, r.width, r.height);*/
     }
     
     //=======================================================================

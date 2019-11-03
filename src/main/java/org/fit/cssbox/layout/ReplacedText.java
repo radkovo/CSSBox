@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.net.URL;
 
 import org.fit.cssbox.css.CSSNorm;
@@ -69,12 +68,6 @@ public class ReplacedText extends ReplacedContent
         return viewport;
     }
     
-    @Override
-    public void draw(Graphics2D g, int width, int height)
-    {
-        viewport.draw(owner.getViewport().getRenderer());
-    }
-
     @Override
     public float getIntrinsicWidth()
     {

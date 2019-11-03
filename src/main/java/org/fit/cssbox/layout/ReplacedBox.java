@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 /**
  * Common interface for both the inline and block replaced boxes
  * 
@@ -40,9 +38,15 @@ public interface ReplacedBox
     public void setContentObj(ReplacedContent obj);
     
     /**
-     * Draws the box replaced content.
-     * @param g
+     * Gets the width of the contents
+     * @return the width in pixels
      */
-    public void drawContent(Graphics2D g);
-
+    public float getContentObjWidth();
+    
+    /**
+     * Gets the height of the contents
+     * @return the height in pixels
+     */
+    public float getContentObjHeight();
+    
 }

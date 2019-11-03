@@ -619,23 +619,6 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     @Override
-    public void drawExtent(Graphics2D g)
-    {
-        super.drawExtent(g);
-        
-        /*g.setColor(Color.MAGENTA);
-        int y = getAbsoluteContentY() - getLineboxOffset();
-        int h = 0;
-        if (curline != null)
-            h = curline.getTotalLineHeight();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
-        
-        g.setColor(Color.BLUE);
-        y = y + getBaselineOffset();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);*/
-    }
-
-    @Override
     public float totalHeight()
     {
         //for inline boxes, the top and bottom margins don't apply

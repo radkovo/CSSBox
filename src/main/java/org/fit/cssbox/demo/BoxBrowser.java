@@ -18,8 +18,6 @@
  */
 package org.fit.cssbox.demo;
 
-import javax.swing.*;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +38,8 @@ import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Inline;
 import org.fit.cssbox.layout.InlineElement;
+import org.fit.cssbox.layout.Rectangle;
+import org.fit.cssbox.layout.TextBox;
 import org.fit.cssbox.layout.Viewport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,8 +56,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -65,13 +63,27 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 
 import cz.vutbr.web.css.Declaration;
 import cz.vutbr.web.css.MediaSpec;
 import cz.vutbr.web.css.NodeData;
 
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 
 /**
@@ -206,8 +218,8 @@ public class BoxBrowser
 	 */
 	protected void updateCurrentMedia(MediaSpec media)
 	{
-        Dimension size = getContentScroll().getViewport().getSize();
-        Dimension deviceSize = Toolkit.getDefaultToolkit().getScreenSize();
+        java.awt.Dimension size = getContentScroll().getViewport().getSize();
+        java.awt.Dimension deviceSize = Toolkit.getDefaultToolkit().getScreenSize();
         ColorModel colors = Toolkit.getDefaultToolkit().getColorModel();
         
         media.setDimensions(size.width, size.height);
@@ -485,6 +497,61 @@ public class BoxBrowser
                    + rect.width + ", "
                    + rect.height + "]";
     }
+
+    public void drawExtent(Box box, Graphics2D g)
+    {
+        if (box instanceof ElementBox)
+        {
+            final ElementBox eb = (ElementBox) box;
+            //draw the full box
+            g.setColor(Color.RED);
+            g.drawRect(Math.round(eb.getAbsoluteBounds().x), Math.round(eb.getAbsoluteBounds().y),
+                    Math.round(eb.getBounds().width), Math.round(eb.getBounds().height));
+            
+            //draw the content box
+            g.setColor(Color.ORANGE);
+            g.drawRect(Math.round(eb.getAbsoluteContentX()), Math.round(eb.getAbsoluteContentY()),
+                    Math.round(eb.getContentWidth()), Math.round(eb.getContentHeight()));
+            
+            //draw the real content box
+            /*g.setColor(Color.GREEN);
+            Rectangle r = getMinimalBounds();
+            g.drawRect(r.x, r.y, r.width, r.height);*/
+        }
+        else if (box instanceof TextBox)
+        {
+            final TextBox tb = (TextBox) box;
+            final Rectangle absbounds = tb.getAbsoluteBounds();
+            //draw the full box
+            g.setColor(Color.ORANGE);
+            g.drawRect(Math.round(absbounds.x), Math.round(absbounds.y),
+                    Math.round(absbounds.width), Math.round(absbounds.height));
+            /*for (int i = 0; i < getText().length(); i++)
+            {
+                if (i != 0) System.out.print(" : ");
+                char ch = getText().charAt(i);
+                System.out.print(ch);
+                System.out.print((int) ch);
+                if (Character.isWhitespace(ch))
+                    System.out.print("!");
+                if (Character.isSpaceChar(ch))
+                    System.out.print("*");
+            }
+            System.out.println();*/
+            
+            g.setColor(Color.MAGENTA);
+            float y = tb.getAbsoluteContentY();
+            float h = tb.getTotalLineHeight();
+                
+            g.drawRect(Math.round(tb.getAbsoluteContentX()), Math.round(y),
+                    Math.round(tb.getContentWidth()), Math.round(h));
+            
+            g.setColor(Color.BLUE);
+            y = tb.getAbsoluteContentY() + tb.getBaselineOffset();
+            g.drawRect(Math.round(tb.getAbsoluteContentX()), Math.round(y),
+                    Math.round(tb.getContentWidth()), 1);
+        }
+    }
     
     public BrowserCanvas getBrowserCanvas()
     {
@@ -505,7 +572,7 @@ public class BoxBrowser
             mainWindow = new JFrame();
             mainWindow.setTitle("Box Browser");
             mainWindow.setVisible(true);
-            mainWindow.setBounds(new Rectangle(0, 0, 583, 251));
+            mainWindow.setBounds(new java.awt.Rectangle(0, 0, 583, 251));
             mainWindow.setContentPane(getMainPanel());
             mainWindow.addWindowListener(new java.awt.event.WindowAdapter()
             {
@@ -628,7 +695,7 @@ public class BoxBrowser
             GridLayout gridLayout = new GridLayout();
             gridLayout.setRows(1);
             structurePanel = new JPanel();
-            structurePanel.setPreferredSize(new Dimension(200, 408));
+            structurePanel.setPreferredSize(new java.awt.Dimension(200, 408));
             structurePanel.setLayout(gridLayout);
             structurePanel.add(getBoxScroll(), null);
         }
@@ -880,7 +947,7 @@ public class BoxBrowser
                         Box box = (Box) node.getUserObject();
                         if (box != null)
                         {
-                            box.drawExtent(((BrowserCanvas) contentCanvas).getImageGraphics());
+                            drawExtent(box, ((BrowserCanvas) contentCanvas).getImageGraphics());
                             contentCanvas.repaint();
                             displayBoxInfo(box);
                             

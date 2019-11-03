@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 import org.w3c.dom.Element;
 
@@ -30,8 +29,8 @@ import org.w3c.dom.Element;
  */
 public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBox
 {
-    protected int boxw; //image width attribute
-    protected int boxh; //image height attribute
+    protected float boxw; //image width attribute
+    protected float boxh; //image height attribute
     protected ReplacedContent obj; //the contained object
     
     /** 
@@ -73,14 +72,26 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     }
     
     @Override
-    public int getMaximalWidth()
+    public float getContentObjWidth()
+    {
+        return boxw;
+    }
+
+    @Override
+    public float getContentObjHeight()
+    {
+        return boxh;
+    }
+
+    @Override
+    public float getMaximalWidth()
     {
         return boxw + declMargin.left + padding.left + border.left +
                 declMargin.right + padding.right + border.right;
     }
 
     @Override
-    public int getMinimalWidth()
+    public float getMinimalWidth()
     {
         return boxw + declMargin.left + padding.left + border.left +
                 declMargin.right + padding.right + border.right;
@@ -123,31 +134,31 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     }
 
     @Override
-    public int getBaselineOffset()
+    public float getBaselineOffset()
     {
         return boxh;
     }
 
     @Override
-    public int getBelowBaseline()
+    public float getBelowBaseline()
     {
         return 0;
     }
 
     @Override
-    public int getTotalLineHeight()
+    public float getTotalLineHeight()
     {
         return boxh;
     }
     
     @Override
-    public int getMaxLineHeight()
+    public float getMaxLineHeight()
     {
         return boxh;
     }
     
     @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart) 
+    public boolean doLayout(float availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
         if (!displayed)
@@ -161,7 +172,7 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
             obj.doLayout();
         
         setAvailableWidth(availw);
-        int wlimit = getAvailableContentWidth();
+        float wlimit = getAvailableContentWidth();
         if (getWidth() <= wlimit)
             return true;
         else
@@ -212,17 +223,6 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
         return true;
     }
 
-    public void drawContent(Graphics2D g)
-    {
-        if (obj != null)
-        {
-            Shape oldclip = g.getClip();
-            g.setClip(applyClip(oldclip, getClippedContentBounds()));
-            obj.draw(g, boxw, boxh);
-            g.setClip(oldclip);
-        }
-    }
-    
     @Override
     public void draw(DrawStage turn)
     {

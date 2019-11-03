@@ -20,16 +20,15 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
-
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.render.GraphicsRenderer;
 
@@ -45,7 +44,7 @@ public class BrowserCanvas extends JPanel
 	private static final long serialVersionUID = -8715215920271505397L;
     private static Logger log = LoggerFactory.getLogger(BrowserCanvas.class);
 
-	protected Element root;
+	protected org.w3c.dom.Element root;
     protected DOMAnalyzer decoder;
     protected URL baseurl;
     protected Viewport viewport;
@@ -85,7 +84,7 @@ public class BrowserCanvas extends JPanel
      */
     public BrowserCanvas(org.w3c.dom.Element root,
                          DOMAnalyzer decoder,
-                         Dimension dim, URL baseurl)
+                         java.awt.Dimension dim, URL baseurl)
     {
         this(root, decoder, baseurl);
         createLayout(dim);
@@ -137,9 +136,9 @@ public class BrowserCanvas extends JPanel
      * size is updated automatically.
      * @param dim the viewport size
      */
-    public void createLayout(Dimension dim)
+    public void createLayout(java.awt.Dimension dim)
     {
-        createLayout(dim, new Rectangle(dim));
+        createLayout(dim, new java.awt.Rectangle(dim));
     }
     
     /**
@@ -149,7 +148,7 @@ public class BrowserCanvas extends JPanel
      * @param dim the total canvas size 
      * @param visibleRect the viewport (the visible area) size and position
      */
-    public void createLayout(Dimension dim, Rectangle visibleRect)
+    public void createLayout(java.awt.Dimension dim, java.awt.Rectangle visibleRect)
     {
         if (createImage)
             img = new BufferedImage((int) dim.width, (int) dim.height, BufferedImage.TYPE_INT_RGB);
@@ -168,7 +167,7 @@ public class BrowserCanvas extends JPanel
         VisualContext ctx = new VisualContext(null, factory);
         viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
-        viewport.setVisibleRect(visibleRect);
+        viewport.setVisibleRect(new Rectangle(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height));
         viewport.initSubtree();
         
         log.trace("Layout for "+dim.width+"px");
@@ -178,7 +177,7 @@ public class BrowserCanvas extends JPanel
         if (autoSizeUpdate)
         {
             log.trace("Updating viewport size");
-            viewport.updateBounds(dim);
+            viewport.updateBounds(new Dimension(dim.width, dim.height));
             log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");
         }
         
@@ -194,8 +193,8 @@ public class BrowserCanvas extends JPanel
         viewport.absolutePositions();
         
         log.trace("Drawing");
-        clearCanvas();
         GraphicsRenderer r = new GraphicsRenderer(ig); 
+        r.clearCanvas(viewport);
         viewport.draw(r);
         r.close();
         setPreferredSize(new java.awt.Dimension(img.getWidth(), img.getHeight()));
@@ -206,8 +205,8 @@ public class BrowserCanvas extends JPanel
     {
         viewport.setVisibleRect(visibleRect);
         viewport.absolutePositions();
-        clearCanvas();
         GraphicsRenderer r = new GraphicsRenderer(getImageGraphics()); 
+        r.clearCanvas(viewport);
         viewport.draw(r);
         r.close();
         revalidate();
@@ -220,22 +219,14 @@ public class BrowserCanvas extends JPanel
     }    
 
     /**
-     * Fills the whole canvas with the white background.
-     */
-    public void clearCanvas()
-    {
-        Graphics2D ig = img.createGraphics();
-        viewport.drawBackground(ig);
-    }
-    
-    /**
      * Redraws all the rendered boxes.
      */
     public void redrawBoxes()
     {
         Graphics2D ig = img.createGraphics();
-        clearCanvas();
-        viewport.draw(new GraphicsRenderer(ig));
+        GraphicsRenderer r = new GraphicsRenderer(ig);
+        r.clearCanvas(viewport);
+        viewport.draw(r);
         revalidate();
     }
     

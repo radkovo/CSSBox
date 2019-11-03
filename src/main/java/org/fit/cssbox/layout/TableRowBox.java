@@ -57,6 +57,14 @@ public class TableRowBox extends BlockBox
         isblock = true;
     }
     
+    @Override
+    public boolean rendersBackground()
+    {
+        //table rows cannot have borders
+        //the background is drawn in the individual cells
+        return false;
+    }
+    
     /**
      * Add a new cell to the table row.
      * @param cell the new cell
@@ -228,13 +236,6 @@ public class TableRowBox extends BlockBox
         return true;
     }
 
-    @Override
-	public void drawBackground(Graphics2D g)
-	{
-    	//table body cannot have borders
-    	//the background is drawn in the individual cells
-	}
-    
     //=====================================================================================
     
     /**

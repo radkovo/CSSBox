@@ -20,20 +20,15 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.font.LineMetrics;
-import java.awt.font.TextAttribute;
-import java.text.AttributedString;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.w3c.dom.Text;
 
 import cz.vutbr.web.css.CSSProperty;
-import cz.vutbr.web.css.CSSProperty.TextDecoration;
 import cz.vutbr.web.css.CSSProperty.TextTransform;
 import cz.vutbr.web.css.CSSProperty.WordSpacing;
 import cz.vutbr.web.css.TermLength;
@@ -912,7 +907,7 @@ public class TextBox extends Box implements Inline
         return getWordOffsets(g.getFontMetrics(), words);
     }
     
-    private float[][] getWordOffsets(FontMetrics fm, String[] words)
+    public float[][] getWordOffsets(FontMetrics fm, String[] words)
     {
         if (words.length > 0)
         {
@@ -1034,68 +1029,6 @@ public class TextBox extends Box implements Inline
         return w;
     }
     
-    /** 
-     * Draw the text content of this box (no subboxes)
-     * @param g the graphics context to draw on
-     */
-    public void drawContent(Graphics2D g)
-    {
-        //top left corner
-        float x = absbounds.x;
-        float y = absbounds.y;
-
-        //Draw the string
-        if (textEnd > textStart)
-        {
-            String t = text.substring(textStart, textEnd);
-            Shape oldclip = g.getClip();
-            if (clipblock != null)
-                g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
-            ctx.updateGraphics(g);
-            
-            if (wordSpacing == null && expwidth == 0)
-                drawAttributedString(g, x, y, t);
-            else
-                drawByWords(g, x, y, t);
-            
-            g.setClip(oldclip);
-        }
-    }
-
-    private void drawByWords(Graphics2D g, float x, float y, String text)
-    {
-        String[] words = text.split(" ");
-        if (words.length > 0)
-        {
-            final FontMetrics fm = g.getFontMetrics();
-            final float[][] offsets = getWordOffsets(fm, words);
-            for (int i = 0; i < words.length; i++)
-                drawAttributedString(g, x + offsets[i][0], y, words[i]);
-        }
-        else
-            drawAttributedString(g, x, y, text);
-    }
-    
-    /**
-     * Draws a single string with eventual attributes based on the current visual context.
-     */
-    private void drawAttributedString(Graphics2D g, float x, float y, String text)
-    {
-        final Set<TextDecoration> decoration = getEfficientTextDecoration();
-        if (!decoration.isEmpty()) 
-        {
-            AttributedString as = new AttributedString(text);
-            as.addAttribute(TextAttribute.FONT, ctx.getFont());
-            if (decoration.contains(CSSProperty.TextDecoration.UNDERLINE))
-                as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-            if (decoration.contains(CSSProperty.TextDecoration.LINE_THROUGH))
-                as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-            g.drawString(as.getIterator(), x, y + getBaselineOffset());
-        } 
-        else
-            g.drawString(text, x, y + getBaselineOffset());
-    }
-    
 	@Override
     public void draw(DrawStage turn)
     {
@@ -1106,38 +1039,6 @@ public class TextBox extends Box implements Inline
                 getViewport().getRenderer().renderTextContent(this);
             }
         }
-    }
-    
-	@Override
-    public void drawExtent(Graphics2D g)
-    {
-        //draw the full box
-        g.setColor(Color.ORANGE);
-        g.drawRect(absbounds.x, absbounds.y, bounds.width, bounds.height);
-        /*for (int i = 0; i < getText().length(); i++)
-        {
-            if (i != 0) System.out.print(" : ");
-            char ch = getText().charAt(i);
-            System.out.print(ch);
-            System.out.print((int) ch);
-            if (Character.isWhitespace(ch))
-                System.out.print("!");
-            if (Character.isSpaceChar(ch))
-                System.out.print("*");
-        }
-        System.out.println();*/
-        
-        g.setColor(Color.MAGENTA);
-        float y = getAbsoluteContentY();
-        float h = getTotalLineHeight();
-            
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), h);
-        
-        g.setColor(Color.BLUE);
-        y = getAbsoluteContentY() + getBaselineOffset();
-        g.drawRect(getAbsoluteContentX(), y, getContentWidth(), 1);
-        
-        
     }
 	
     /**

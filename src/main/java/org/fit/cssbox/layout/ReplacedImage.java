@@ -20,8 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.BasicStroke;
-import java.awt.Graphics2D;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -88,42 +86,11 @@ public class ReplacedImage extends ContentImage
 
     }
 
-    @Override
-    public void draw(Graphics2D g, int width, int height)
+    public VisualContext getVisualContext()
     {
-        Rectangle bounds = getOwner().getAbsoluteContentBounds();
-
-        if (image != null)
-        {
-            // *_SOME_ transparent animated gifs*,
-            // may not erase previous frame of animation
-            // well, repainting with a parent's graphics is not working...
-            // seems to be java-related, repaint-animated-gif problem.
-
-            // workaround:
-            // owner has already set clipping, so we can render parent's
-            // background
-            // owner.getVisualContext().getParentContext().updateGraphics(g);
-            // owner.getParent().drawBackground(g);
-
-            // now update our configuration
-            ctx.updateGraphics(g);
-
-            // no container that would repaint -- wait for the complete image
-            if (container == null)
-                waitForLoad();
-            // draw image
-            g.drawImage(image, bounds.x, bounds.y, width, height, observer);
-        }
-        else
-        {
-            ctx.updateGraphics(g);
-            g.setStroke(new BasicStroke(1));
-            g.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
-        }
-
+        return ctx;
     }
-
+    
     @Override
     public String toString()
     {

@@ -20,7 +20,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 import org.w3c.dom.Element;
 
@@ -61,6 +60,18 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
 		if (!isempty)
 		    obj.setOwner(this);
 	}
+
+    @Override
+    public float getContentObjWidth()
+    {
+        return boxw;
+    }
+
+    @Override
+    public float getContentObjHeight()
+    {
+        return boxh;
+    }
 
     @Override
     public float getMaximalWidth()
@@ -182,17 +193,6 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
         bounds.setSize(totalWidth(), totalHeight());
     }
 
-    public void drawContent(Graphics2D g)
-    {
-        if (obj != null)
-        {
-            Shape oldclip = g.getClip();
-            g.setClip(applyClip(oldclip, getClippedContentBounds()));
-            obj.draw(g, boxw, boxh);
-            g.setClip(oldclip);
-        }
-    }
-    
     @Override
 	public void draw(DrawStage turn)
     {

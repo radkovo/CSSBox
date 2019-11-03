@@ -129,6 +129,14 @@ public class Rectangle
         return new Dimension(width, height);
     }
     
+    public boolean contains(float x, float y)
+    {
+        if (width <= 0 || height <= 0)
+            return false;
+        return (x >= this.x && x < this.x + this.width &&
+                y >= this.y && y < this.y + this.height);
+    }
+    
     public boolean intersects(Rectangle r)
     {
         float tw = this.width;

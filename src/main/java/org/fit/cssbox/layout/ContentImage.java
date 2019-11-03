@@ -121,8 +121,9 @@ public abstract class ContentImage extends ReplacedContent implements ImageObser
     {
         if (container != null)
         {
-            Rectangle bounds = owner.getAbsoluteBounds();
-            container.repaint(t, bounds.x, bounds.y, bounds.width, bounds.height);
+            final Rectangle bounds = owner.getAbsoluteBounds();
+            container.repaint(t, Math.round(bounds.x), Math.round(bounds.y),
+                    Math.round(bounds.width), Math.round(bounds.height));
         }
     }
 

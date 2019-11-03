@@ -19,16 +19,14 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
 
 import org.w3c.dom.Element;
 
-import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.ListStyleType;
+import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.TermURI;
 
 /**
  * This class represents a list-item box. This box behaves the same way
@@ -121,6 +119,11 @@ public class ListItemBox extends BlockBox
         return styleType != CSSProperty.ListStyleType.NONE;
     }
     
+    public CSSProperty.ListStyleType getStyleType()
+    {
+        return styleType;
+    }
+
     /**
      * Returns the list-style-type property value.
      * @return the list-style-type property value as a string
@@ -222,91 +225,6 @@ public class ListItemBox extends BlockBox
                 return cnt;
         }
         return 1;
-    }
-    
-    /**
-     * Draw the list item symbol, number or image depending on list-style-type
-     */
-    public void drawMarker(Graphics2D g)
-    {
-        Shape oldclip = g.getClip();
-        if (clipblock != null)
-            g.setClip(applyClip(oldclip, clipblock.getClippedContentBounds()));
-        
-        if (image != null)
-        {
-            if (!drawImage(g))
-                drawBullet(g);
-        }
-        else
-            drawBullet(g);
-        
-        g.setClip(oldclip);
-    }
-    
-    /**
-     * Draws a bullet or text marker
-     */
-    protected void drawBullet(Graphics2D g)
-    {
-        ctx.updateGraphics(g);
-    	int x = (int) Math.round(getAbsoluteContentX() - 1.2 * ctx.getEm());
-    	int y = (int) Math.round(getAbsoluteContentY() + 0.5 * ctx.getEm());
-    	int r = (int) Math.round(0.4 * ctx.getEm());
-    	if (styleType == CSSProperty.ListStyleType.CIRCLE) 
-    		g.drawOval(x, y, r, r);
-    	else if (styleType == CSSProperty.ListStyleType.SQUARE) 
-    		g.fillRect(x, y, r, r);
-    	//else if (type == CSSProperty.ListStyleType.BOX) //not documented, recognized by Konqueror 
-    	//	g.drawRect(x, y, r, r);
-    	else if (styleType == CSSProperty.ListStyleType.DISC)
-    		g.fillOval(x, y, r, r);
-    	else if (styleType != CSSProperty.ListStyleType.NONE)
-    	    drawText(g, getMarkerText());
-    }
-    
-    /**
-     * Draws an image marker 
-     */
-    protected boolean drawImage(Graphics2D g)
-    {
-        float ofs = getFirstInlineBoxBaseline();
-        if (ofs == -1)
-            ofs = ctx.getBaselineOffset(); //use the font baseline
-        float x = getAbsoluteContentX() - 0.5f * ctx.getEm();
-        float y = getAbsoluteContentY() + ofs;
-        Image img = image.getImage();
-        if (img != null)
-        {
-            int w = img.getWidth(image);
-            int h = img.getHeight(image);
-            g.drawImage(img, x - w, y - h, image);
-            return true;
-        }
-        else
-            return false; //could not decode the image
-    }
-
-    /**
-     * Draws a text marker
-     */
-    protected void drawText(Graphics2D g, String text)
-    {
-        // top left corner
-        float x = getAbsoluteContentX();
-        float y = getAbsoluteContentY();
-
-        //Align Y with baseline
-        FontMetrics fm = g.getFontMetrics();
-        Rectangle2D rect = fm.getStringBounds(text, g);
-        float ofs = getFirstInlineBoxBaseline();
-        if (ofs == -1)
-            ofs = ctx.getBaselineOffset(); //use the font baseline
-        
-        // Draw the string
-        g.drawString(text,
-                     x + ((int) rect.getX()) - ((int) Math.round(rect.getWidth())),
-                     y + ofs);
     }
     
     /**

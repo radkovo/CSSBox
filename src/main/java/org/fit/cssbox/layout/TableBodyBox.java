@@ -63,6 +63,14 @@ public class TableBodyBox extends BlockBox
         rows = new Vector<TableRowBox>();
     }
     
+    @Override
+    public boolean rendersBackground()
+    {
+        //table body cannot have borders
+        //the background is drawn in the individual cells
+        return false;
+    }
+    
     /**
      * Add a new row to the table body.
      * @param row the new row
@@ -391,13 +399,6 @@ public class TableBodyBox extends BlockBox
         setSize(totalWidth(), totalHeight());
         return true;
     }
-    
-    @Override
-	public void drawBackground(Graphics2D g)
-	{
-    	//table body cannot have borders
-    	//the background is drawn in the individual cells
-	}
     
     @Override
     protected void loadPadding(CSSDecoder dec, float contw)

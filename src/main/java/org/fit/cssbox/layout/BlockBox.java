@@ -1815,16 +1815,6 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    protected Rectangle applyClip(Shape current, Rectangle newclip)
-    {
-        Rectangle cr = getClippingRectangle();
-        if (cr != null)
-            return super.applyClip(current, newclip.intersection(cr));
-        else
-            return super.applyClip(current, newclip);
-    }
-
-    @Override
     public Rectangle getClippedBounds()
     {
         //absolutely positioned blocks may have clipping specified
@@ -1850,7 +1840,7 @@ public class BlockBox extends ElementBox
      * Computes the absolute coordinates of the clipping rectangle specified using the <code>clip:</code> property.
      * @return The absolute coordinates of the clipping rectangle or <code>null</code> when no clipping is applied.
      */
-    protected Rectangle getClippingRectangle()
+    public Rectangle getClippingRectangle()
     {
         if (clipRegion != null)
         {

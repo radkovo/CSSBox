@@ -18,7 +18,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Vector;
 
@@ -110,12 +109,21 @@ public class Viewport extends BlockBox
     }
 
     /**
-     * Obtains the size of the whole canvas that represents the whole rendered page.
+     * Obtains the width of the whole canvas that represents the whole rendered page.
      * @return The canvas size.
      */
-    public Dimension getCanvasSize()
+    public float getCanvasWidth()
     {
-        return new Dimension(width, height);
+        return width;
+    }
+    
+    /**
+     * Obtains the height of the whole canvas that represents the whole rendered page.
+     * @return The canvas size.
+     */
+    public float getCanvasHeight()
+    {
+        return width;
     }
     
     /**
@@ -616,20 +624,6 @@ public class Viewport extends BlockBox
             return new Rectangle(0, 0, width, height);
     }
 	
-    @Override
-    public void drawBackground(Graphics2D g)
-    {
-        //fill the complete packground with the background color first
-        if (bgcolor != null)
-        {
-            Color color = g.getColor();
-            g.setColor(bgcolor);
-            g.fillRect(0, 0, (int) width, (int) height);
-            g.setColor(color);
-        }
-        super.drawBackground(g);
-    }
-
     //===================================================================================
     
     private ElementBox recursiveFindElementBoxByName(ElementBox ebox, String name, boolean case_sensitive)
