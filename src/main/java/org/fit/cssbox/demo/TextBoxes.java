@@ -19,6 +19,8 @@
  */
 package org.fit.cssbox.demo;
 
+import java.awt.Dimension;
+
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.io.DOMSource;
@@ -27,7 +29,6 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.BrowserCanvas;
-import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.TextBox;
 import org.w3c.dom.Document;

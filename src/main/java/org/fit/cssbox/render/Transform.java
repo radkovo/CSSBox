@@ -19,11 +19,11 @@
  */
 package org.fit.cssbox.render;
 
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 import org.fit.cssbox.layout.CSSDecoder;
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.Rectangle;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.Term;
@@ -53,7 +53,7 @@ public class Transform
             CSSDecoder dec = new CSSDecoder(elem.getVisualContext());
             Rectangle bounds = elem.getAbsoluteBorderBounds();
             //decode the origin
-            int ox, oy;
+            float ox, oy;
             CSSProperty.TransformOrigin origin = elem.getStyle().getProperty("transform-origin");
             if (origin == CSSProperty.TransformOrigin.list_values)
             {
@@ -85,18 +85,18 @@ public class Transform
                     }
                     else if (term instanceof TermFunction.Translate)
                     {
-                        int tx = dec.getLength(((TermFunction.Translate) term).getTranslateX(), false, 0, 0, bounds.width);
-                        int ty = dec.getLength(((TermFunction.Translate) term).getTranslateY(), false, 0, 0, bounds.height);
+                        float tx = dec.getLength(((TermFunction.Translate) term).getTranslateX(), false, 0, 0, bounds.width);
+                        float ty = dec.getLength(((TermFunction.Translate) term).getTranslateY(), false, 0, 0, bounds.height);
                         ret.translate(tx, ty);
                     }
                     else if (term instanceof TermFunction.TranslateX)
                     {
-                        int tx = dec.getLength(((TermFunction.TranslateX) term).getTranslate(), false, 0, 0, bounds.width);
+                        float tx = dec.getLength(((TermFunction.TranslateX) term).getTranslate(), false, 0, 0, bounds.width);
                         ret.translate(tx, 0.0);
                     }
                     else if (term instanceof TermFunction.TranslateY)
                     {
-                        int ty = dec.getLength(((TermFunction.TranslateY) term).getTranslate(), false, 0, 0, bounds.height);
+                        float ty = dec.getLength(((TermFunction.TranslateY) term).getTranslate(), false, 0, 0, bounds.height);
                         ret.translate(0.0, ty);
                     }
                     else if (term instanceof TermFunction.Scale)

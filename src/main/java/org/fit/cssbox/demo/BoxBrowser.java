@@ -64,6 +64,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 
@@ -218,8 +219,8 @@ public class BoxBrowser
 	 */
 	protected void updateCurrentMedia(MediaSpec media)
 	{
-        java.awt.Dimension size = getContentScroll().getViewport().getSize();
-        java.awt.Dimension deviceSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension size = getContentScroll().getViewport().getSize();
+        Dimension deviceSize = Toolkit.getDefaultToolkit().getScreenSize();
         ColorModel colors = Toolkit.getDefaultToolkit().getColorModel();
         
         media.setDimensions(size.width, size.height);

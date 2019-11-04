@@ -19,6 +19,7 @@
 
 package org.fit.cssbox.demo;
 
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
@@ -30,7 +31,6 @@ import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
-import org.fit.cssbox.layout.Dimension;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

@@ -20,7 +20,6 @@
 package org.fit.cssbox.render;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,6 +39,7 @@ import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.LengthSet;
 import org.fit.cssbox.layout.ListItemBox;
+import org.fit.cssbox.layout.Rectangle;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.ReplacedContent;
 import org.fit.cssbox.layout.ReplacedImage;
@@ -129,10 +129,10 @@ public class SVGRenderer implements BoxRenderer
                     }
                     char[] data = Base64Coder.encode(os.toByteArray());
                     String imgdata = "data:image/png;base64," + new String(data);
-                    int ix = bb.x + eb.getBorder().left;
-                    int iy = bb.y + eb.getBorder().top;
-                    int iw = bb.width - eb.getBorder().right - eb.getBorder().left;
-                    int ih = bb.height - eb.getBorder().bottom - eb.getBorder().top;
+                    float ix = bb.x + eb.getBorder().left;
+                    float iy = bb.y + eb.getBorder().top;
+                    float iw = bb.width - eb.getBorder().right - eb.getBorder().left;
+                    float ih = bb.height - eb.getBorder().bottom - eb.getBorder().top;
                     out.println("<image x=\"" + ix + "\" y=\"" + iy + "\" width=\"" + iw + "\" height=\"" + ih + "\" xlink:href=\"" + imgdata + "\" />");
                 }
             }
@@ -239,7 +239,7 @@ public class SVGRenderer implements BoxRenderer
         out.println("</svg>");
     }
 
-    private void writeBorderSVG(ElementBox eb, int x1, int y1, int x2, int y2, String side, int width, int right, int down)
+    private void writeBorderSVG(ElementBox eb, float x1, float y1, float x2, float y2, String side, float width, float right, float down)
     {
         TermColor tclr = eb.getStyle().getValue(TermColor.class, "border-"+side+"-color");
         CSSProperty.BorderStyle bst = eb.getStyle().getProperty("border-"+side+"-style");
@@ -284,23 +284,23 @@ public class SVGRenderer implements BoxRenderer
         }
     }
     
-    private void writeText(int x, int y, String style, String text)
+    private void writeText(float x, float y, String style, String text)
     {
         out.print("<text x=\"" + x + "\" y=\"" + y + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
     }
     
-    private void writeText(int x, int y, int width, int height, String style, String text)
+    private void writeText(float x, float y, float width, float height, String style, String text)
     {
         out.print("<text x=\"" + x + "\" y=\"" + y + "\" width=\"" + width + "\" height=\"" + height + "\" style=\"" + style + "\">" + htmlEntities(text) + "</text>");
     }
     
-    private void writeTextByWords(int x, int y, int width, int height, String style, TextBox text)
+    private void writeTextByWords(float x, float y, float width, float height, String style, TextBox text)
     {
         String[] words = text.getText().split(" ");
         if (words.length > 0)
         {
             out.print("<g>");
-            final int[][] offsets = text.getWordOffsets(words);
+            final float[][] offsets = text.getWordOffsets(words);
             for (int i = 0; i < words.length; i++)
                 writeText(x + offsets[i][0], y, offsets[i][1], height, style, words[i]);
             out.print("</g>");
@@ -314,9 +314,9 @@ public class SVGRenderer implements BoxRenderer
         if (lb.hasVisibleBullet())
         {
             VisualContext ctx = lb.getVisualContext();
-            int x = (int) Math.round(lb.getAbsoluteContentX() - 1.2 * ctx.getEm());
-            int y = (int) Math.round(lb.getAbsoluteContentY() + 0.5 * ctx.getEm());
-            int r = (int) Math.round(0.4 * ctx.getEm());
+            float x = lb.getAbsoluteContentX() - 1.2f * ctx.getEm();
+            float y = lb.getAbsoluteContentY() + 0.5f * ctx.getEm();
+            float r = 0.4f * ctx.getEm();
             
             String tclr = colorString(ctx.getColor());
             String style = "";
@@ -336,11 +336,11 @@ public class SVGRenderer implements BoxRenderer
                     out.println("<circle style=\"" + style + "\" cx=\"" + (x + r / 2) + "\" cy=\"" + (y + r / 2) + "\" r=\"" + (r / 2) + "\" />");
                     break;
                 default:
-                    int baseline = lb.getFirstInlineBoxBaseline();
+                    float baseline = lb.getFirstInlineBoxBaseline();
                     if (baseline == -1)
                         baseline = ctx.getBaselineOffset(); //use the font baseline
                     style = textStyle(ctx) + ";text-align:end;text-anchor:end";
-                    writeText((int) Math.round(lb.getAbsoluteContentX() - 0.5 * ctx.getEm()), lb.getAbsoluteContentY() + baseline, style, lb.getMarkerText());
+                    writeText(lb.getAbsoluteContentX() - 0.5f * ctx.getEm(), lb.getAbsoluteContentY() + baseline, style, lb.getMarkerText());
                     break;
             }
         }
@@ -349,11 +349,11 @@ public class SVGRenderer implements BoxRenderer
     private boolean writeMarkerImage(ListItemBox lb)
     {
         VisualContext ctx = lb.getVisualContext();
-        int ofs = lb.getFirstInlineBoxBaseline();
+        float ofs = lb.getFirstInlineBoxBaseline();
         if (ofs == -1)
             ofs = ctx.getBaselineOffset(); //use the font baseline
-        int x = (int) Math.round(lb.getAbsoluteContentX() - 0.5 * ctx.getEm());
-        int y = lb.getAbsoluteContentY() + ofs;
+        float x = lb.getAbsoluteContentX() - 0.5f * ctx.getEm();
+        float y = lb.getAbsoluteContentY() + ofs;
         BufferedImage img = lb.getMarkerImage().getBufferedImage();
         if (img != null)
         {
@@ -366,10 +366,10 @@ public class SVGRenderer implements BoxRenderer
             }
             char[] data = Base64Coder.encode(os.toByteArray());
             String imgdata = "data:image/png;base64," + new String(data);
-            int iw = img.getWidth();
-            int ih = img.getHeight();
-            int ix = x - iw;
-            int iy = y - ih;
+            float iw = img.getWidth();
+            float ih = img.getHeight();
+            float ix = x - iw;
+            float iy = y - ih;
             out.println("<image x=\"" + ix + "\" y=\"" + iy + "\" width=\"" + iw + "\" height=\"" + ih + "\" xlink:href=\"" + imgdata + "\" />");
             return true;
         }

@@ -19,6 +19,7 @@
  */
 package org.fit.cssbox.demo;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,7 +37,6 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.BrowserConfig;
-import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.render.SVGRenderer;
 import org.w3c.dom.Document;

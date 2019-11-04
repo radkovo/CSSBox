@@ -55,10 +55,10 @@ public class BackgroundImage extends ContentImage
     private boolean viewportOwner; //the owner is viewport? (special coordinate system)
 
     //the coordinates of the image within the element
-    private int imgx;
-    private int imgy;
-    private int imgw;
-    private int imgh;
+    private float imgx;
+    private float imgy;
+    private float imgw;
+    private float imgh;
     private boolean repeatx;
     private boolean repeaty;
     
@@ -113,14 +113,6 @@ public class BackgroundImage extends ContentImage
     //===========================================================================
     
     @Override
-    public void draw(Graphics2D g, int width, int height)
-    {
-        Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
-        computeCoordinates(bounds);
-        drawScaledImage(g, image, bounds.x + imgx, bounds.y + imgy, observer);
-    }
-    
-    @Override
     public BufferedImage getBufferedImage()
     {
         if (image == null || abort)
@@ -140,7 +132,7 @@ public class BackgroundImage extends ContentImage
         if (bounds.width > 0 && bounds.height > 0)
         {
             computeCoordinates(bounds);
-            BufferedImage img = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage img = new BufferedImage(Math.round(bounds.width), Math.round(bounds.height), BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = img.createGraphics();
             
             if (repeatx && repeaty)
@@ -160,20 +152,20 @@ public class BackgroundImage extends ContentImage
             return null;
     }
     
-    private void drawRepeatX(Graphics2D g, int sx, int sy, int limit, Rectangle clip)
+    private void drawRepeatX(Graphics2D g, float sx, float sy, float limit, Rectangle clip)
     {
-        int width = imgw;
-        int height = imgh;
+        float width = imgw;
+        float height = imgh;
         Rectangle r = new Rectangle(0, 0, width, height);
         if (width > 0)
         {
-            for (int x = sx; x < limit; x += width)
+            for (float x = sx; x < limit; x += width)
             {
                 r.setLocation(x, sy);
                 if (r.intersects(clip))
                     drawScaledImage(g, image, x, sy, observer);
             }
-            for (int x = sx - width; x + width - 1 >= 0; x -= width)
+            for (float x = sx - width; x + width - 1 >= 0; x -= width)
             {
                 r.setLocation(x, sy);
                 if (r.intersects(clip))
@@ -183,20 +175,20 @@ public class BackgroundImage extends ContentImage
         
     }
     
-    private void drawRepeatY(Graphics2D g, int sx, int sy, int limit, Rectangle clip)
+    private void drawRepeatY(Graphics2D g, float sx, float sy, float limit, Rectangle clip)
     {
-        int width = imgw;
-        int height = imgh;
+        float width = imgw;
+        float height = imgh;
         Rectangle r = new Rectangle(0, 0, width, height);
         if (height > 0)
         {
-            for (int y = sy; y < limit; y += height)
+            for (float y = sy; y < limit; y += height)
             {
                 r.setLocation(sx, y);
                 if (r.intersects(clip))
                     drawScaledImage(g, image, sx, y, observer);
             }
-            for (int y = sy - height; y + height - 1 >= 0; y -= height)
+            for (float y = sy - height; y + height - 1 >= 0; y -= height)
             {
                 r.setLocation(sx, y);
                 if (r.intersects(clip))
@@ -206,20 +198,20 @@ public class BackgroundImage extends ContentImage
         
     }
     
-    private void drawRepeatBoth(Graphics2D g, int sx, int sy, int limitx, int limity, Rectangle clip)
+    private void drawRepeatBoth(Graphics2D g, float sx, float sy, float limitx, float limity, Rectangle clip)
     {
-        int width = imgw;
-        int height = imgh;
+        float width = imgw;
+        float height = imgh;
         Rectangle r = new Rectangle(0, 0, width, height);
         if (height > 0)
         {
-            for (int y = sy; y < limity; y += height)
+            for (float y = sy; y < limity; y += height)
             {
                 r.setLocation(sx, y);
                 if (r.intersects(clip))
                     drawRepeatX(g, sx, y, limitx, clip);
             }
-            for (int y = sy - height; y + height - 1 >= 0; y -= height)
+            for (float y = sy - height; y + height - 1 >= 0; y -= height)
             {
                 r.setLocation(sx, y);
                 if (r.intersects(clip))
@@ -228,11 +220,11 @@ public class BackgroundImage extends ContentImage
         }
     }
     
-    private void drawScaledImage(Graphics2D g, Image image, int x, int y, ImageObserver observer)
+    private void drawScaledImage(Graphics2D g, Image image, float x, float y, ImageObserver observer)
     {
         g.drawImage(image,
-                    x, y, x + imgw, y + imgh,
-                    0, 0, getIntrinsicWidth(), getIntrinsicHeight(),
+                    Math.round(x), Math.round(y), Math.round(x + imgw), Math.round(y + imgh),
+                    0, 0, Math.round(getIntrinsicWidth()), Math.round(getIntrinsicHeight()),
                     observer);
     }
     
@@ -257,7 +249,7 @@ public class BackgroundImage extends ContentImage
     /**
      * @return the imgx
      */
-    public int getImgX()
+    public float getImgX()
     {
         return imgx;
     }
@@ -265,17 +257,17 @@ public class BackgroundImage extends ContentImage
     /**
      * @return the imgy
      */
-    public int getImgY()
+    public float getImgY()
     {
         return imgy;
     }
     
-    public int getImgWidth()
+    public float getImgWidth()
     {
         return imgw;
     }
 
-    public int getImgHeight()
+    public float getImgHeight()
     {
         return imgh;
     }
@@ -351,10 +343,10 @@ public class BackgroundImage extends ContentImage
         
         if (size == BackgroundSize.COVER)
         {
-            int w1 = bounds.width;
-            int h1 = Math.round(w1 / ir);
-            int h2 = bounds.height;
-            int w2 = Math.round(h2 * ir);
+            float w1 = bounds.width;
+            float h1 = Math.round(w1 / ir);
+            float h2 = bounds.height;
+            float w2 = Math.round(h2 * ir);
             if (h1 - bounds.height > w2 - bounds.width)
             {
                 imgw = w1; imgh = h1;
@@ -366,10 +358,10 @@ public class BackgroundImage extends ContentImage
         }
         else if (size == BackgroundSize.CONTAIN)
         {
-            int w1 = bounds.width;
-            int h1 = Math.round(w1 / ir);
-            int h2 = bounds.height;
-            int w2 = Math.round(h2 * ir);
+            float w1 = bounds.width;
+            float h1 = Math.round(w1 / ir);
+            float h2 = bounds.height;
+            float w2 = Math.round(h2 * ir);
             if (h1 - bounds.height < w2 - bounds.width)
             {
                 imgw = w1; imgh = h1;
