@@ -21,7 +21,6 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -1942,11 +1941,18 @@ public class BlockBox extends ElementBox
     protected float maxFloatWidth(float y1, float y2)
     {
         float ret = 0;
-        for (int y = y1; y <= y2; y++)
+        float fy = y1;
+        while (fy < y2)
         {
-            float w = fleft.getWidth(y) + fright.getWidth(y);
+            float w = fleft.getWidth(fy) + fright.getWidth(fy);
             if (w > ret)
                 ret = w;
+            
+            float nexty = FloatList.getNextY(fleft, fright, fy);
+            if (nexty != -1)
+                fy = nexty;
+            else
+                break;
         }
         return ret;
     }
