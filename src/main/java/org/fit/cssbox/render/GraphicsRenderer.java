@@ -516,6 +516,8 @@ public class GraphicsRenderer implements BoxRenderer
     
     protected java.awt.Rectangle awtRect(Rectangle rect)
     {
+        if (rect == null)
+            return null;
         return new java.awt.Rectangle(Math.round(rect.x), Math.round(rect.y),
                 Math.round(rect.width), Math.round(rect.height));
     }

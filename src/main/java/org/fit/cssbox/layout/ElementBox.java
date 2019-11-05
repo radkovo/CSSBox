@@ -412,11 +412,11 @@ abstract public class ElementBox extends Box
                     return CSSUnits.MEDIUM_BORDER;
                 else
                 {
-                    double pxw = dec.getContext().pxLength(w);
+                    float pxw = dec.getContext().pxLength(w);
                     if (pxw > 0 && pxw < 1)
-                        return 1; //thinner borders should be drawn with 1px line
+                        return 1.0f; //thinner borders should be drawn with 1px line
                     else
-                        return (int) pxw;
+                        return pxw;
                 }
             }
             else
@@ -1331,16 +1331,16 @@ abstract public class ElementBox extends Box
         //line height
         CSSProperty.LineHeight lh = style.getProperty("line-height");
         if (lh == null || lh == CSSProperty.LineHeight.NORMAL)
-            lineHeight = Math.round(DEFAULT_LINE_HEIGHT * ctx.getFontHeight());
+            lineHeight = DEFAULT_LINE_HEIGHT * ctx.getFontHeight();
         else if (lh == CSSProperty.LineHeight.length)
         {
             TermLength len = style.getValue(TermLength.class, "line-height");
-            lineHeight = (int) ctx.pxLength(len);
+            lineHeight = ctx.pxLength(len);
         }
         else if (lh == CSSProperty.LineHeight.percentage)
         {
             TermPercent len = style.getValue(TermPercent.class, "line-height");
-            lineHeight = (int) ctx.pxLength(len, ctx.getFontHeight()); 
+            lineHeight = ctx.pxLength(len, ctx.getFontHeight()); 
         }
         else //must be INTEGER or NUMBER
         {

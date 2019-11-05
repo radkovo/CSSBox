@@ -319,9 +319,9 @@ public class LineBox
             dif = midbox - halfex;
         }
         else if (va == CSSProperty.VerticalAlign.SUB)
-            dif = (int) Math.round(0.3 * parent.getLineHeight());
+            dif = 0.3f * parent.getLineHeight();
         else if (va == CSSProperty.VerticalAlign.SUPER)
-            dif = - (int) Math.round(0.3 * parent.getLineHeight());  
+            dif = -0.3f * parent.getLineHeight();  
         else if (va == CSSProperty.VerticalAlign.TEXT_TOP)
         {
             float na = parent.getVisualContext().getBaselineOffset();

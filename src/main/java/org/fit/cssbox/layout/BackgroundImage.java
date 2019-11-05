@@ -344,9 +344,9 @@ public class BackgroundImage extends ContentImage
         if (size == BackgroundSize.COVER)
         {
             float w1 = bounds.width;
-            float h1 = Math.round(w1 / ir);
+            float h1 = w1 / ir;
             float h2 = bounds.height;
-            float w2 = Math.round(h2 * ir);
+            float w2 = h2 * ir;
             if (h1 - bounds.height > w2 - bounds.width)
             {
                 imgw = w1; imgh = h1;
@@ -359,9 +359,9 @@ public class BackgroundImage extends ContentImage
         else if (size == BackgroundSize.CONTAIN)
         {
             float w1 = bounds.width;
-            float h1 = Math.round(w1 / ir);
+            float h1 = w1 / ir;
             float h2 = bounds.height;
-            float w2 = Math.round(h2 * ir);
+            float w2 = h2 * ir;
             if (h1 - bounds.height < w2 - bounds.width)
             {
                 imgw = w1; imgh = h1;

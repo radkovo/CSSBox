@@ -328,7 +328,7 @@ public class TableCellBox extends BlockBox
             if (width.isPercentage())
             {
             	wrelative = true;
-            	percent = Math.round(width.getValue());
+            	percent = width.getValue();
                 if (percent == 0)
                     wrelative = false; //consider 0% as absolute 0
             }

@@ -1024,7 +1024,7 @@ public class TextBox extends Box implements Inline
                 if (text.charAt(i) == ' ')
                     add += wordSpacing;
             }
-            w = Math.round(w + add);
+            w += add;
         }
         return w;
     }

@@ -104,7 +104,7 @@ public class CSSDecoder
         else if (value == null)
             return defval;
         else
-            return (int) context.pxLength(value, whole);
+            return context.pxLength(value, whole);
     }
     
     /**
@@ -219,7 +219,7 @@ public class CSSDecoder
             boxh = dec.getLength(vHeight, false, atrh, 0, theight);
             boxh = applyHeightLimits(boxh, box, dec, theight);
             //boxw intrinsic value
-            boxw = Math.round(intr * boxh);
+            boxw = intr * boxh;
             boxw = applyWidthLimits(boxw, box, dec, twidth);
         }
         else if ((width != null || atrw != -1) && height == null && atrh == -1)
@@ -228,7 +228,7 @@ public class CSSDecoder
             boxw = dec.getLength(vWidth, false, atrw, 0, twidth);
             boxw = applyWidthLimits(boxw, box, dec, twidth);
             //boxh intrinsic value
-            boxh = Math.round(boxw / intr);
+            boxh = boxw / intr;
             boxh = applyHeightLimits(boxh, box, dec, theight);
         }
         else
@@ -351,49 +351,49 @@ public class CSSDecoder
         }
         else if (w < minw && h < minh)
         {
-            if ((float) minw / w > (float) minh / h)
+            if (minw / w > minh / h)
             {
                 retw = minw;
-                reth = Math.min(maxh, Math.round(minw * hwr));
+                reth = Math.min(maxh, minw * hwr);
             }
             else
             {
-                retw = Math.min(maxw, Math.round(minh * whr));
+                retw = Math.min(maxw, minh * whr);
                 reth = minh;
             }
         }
         else if (w > maxw && h > maxh)
         {
-            if ((float) maxw / w > (float) maxh / h)
+            if (maxw / w > maxh / h)
             {
-                retw = Math.max(minw, Math.round(maxh * whr));
+                retw = Math.max(minw, maxh * whr);
                 reth = maxh;
             }
             else
             {
                 retw = maxw;
-                reth = Math.max(minh, Math.round(maxw * hwr));
+                reth = Math.max(minh, maxw * hwr);
             }
         }
         else if (h < minh)
         {
-            retw = Math.min(Math.round(minh * whr), maxw);
+            retw = Math.min(minh * whr, maxw);
             reth = minh;
         }
         else if (h > maxh)
         {
-            retw = Math.max(Math.round(maxh * whr), minw);
+            retw = Math.max(maxh * whr, minw);
             reth = maxh;
         }
         else if (w < minw)
         {
             retw = minw;
-            reth = Math.min(Math.round(minw * hwr), maxh);
+            reth = Math.min(minw * hwr, maxh);
         }
         else if (w > maxw)
         {
             retw = maxw;
-            reth = Math.max(Math.round(maxw * hwr), minh);
+            reth = Math.max(maxw * hwr, minh);
         }
         else
         {

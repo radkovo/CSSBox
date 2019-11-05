@@ -329,7 +329,7 @@ public class VisualContext
         else
             rem = em; //we don't have a root context?
         
-        font = createFont(family, (int) Math.round(size), fontWeight, fontStyle, letterSpacing);
+        font = createFont(family, Math.round(size), fontWeight, fontStyle, letterSpacing);
         em = size;
         
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
