@@ -25,6 +25,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -246,8 +247,10 @@ public class GraphicsRenderer implements BoxRenderer
                     clr = Color.BLACK;
             }
             g.setColor(clr);
+            Stroke oldstroke = g.getStroke();
             g.setStroke(new CSSStroke(width, bst, reverse));
             g.draw(new Line2D.Float(x1 + right, y1 + down, x2 + right, y2 + down));
+            g.setStroke(oldstroke);
         }
     }
 
@@ -451,9 +454,11 @@ public class GraphicsRenderer implements BoxRenderer
         else
         {
             img.getVisualContext().updateGraphics(g);
+            Stroke oldstroke = g.getStroke();
             g.setStroke(new BasicStroke(1));
             g.drawRect(Math.round(bounds.x), Math.round(bounds.y),
                     Math.round(bounds.width - 1), Math.round(bounds.height - 1));
+            g.setStroke(oldstroke);
         }
 
     }
