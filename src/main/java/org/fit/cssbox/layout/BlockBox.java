@@ -1205,6 +1205,9 @@ public class BlockBox extends ElementBox
             newfloatY += dy;
         }
         
+        //floats should not exceed their parent box
+        if (newfloatXl < 0) newfloatXl = 0;
+        if (newfloatXr < 0) newfloatXr = 0;
         //position the box
         subbox.setFloats(fleft, fright, newfloatXl, newfloatXr, stat.y + newfloatY);
         subbox.setPosition(0,  stat.y);
