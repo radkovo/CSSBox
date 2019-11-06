@@ -22,6 +22,7 @@ package org.fit.cssbox.misc;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,92 +57,92 @@ public class CSSStroke implements Stroke
     
     public Shape createStrokedShape(Shape s)
     {
-    	if (s instanceof Line2D)
+    	if (s instanceof Line2D.Float)
     	{
-    		Line2D l = (Line2D) s;
-    		int x1 = (int) l.getX1();
-    		int y1 = (int) l.getY1();
-    		int x2 = (int) l.getX2();
-    		int y2 = (int) l.getY2();
-    		if (y1 == y2 && x2 > x1)
-    			return sideShape(x1, y1, x2 - x1 + 1 , (int) width, false);
-    		else if (x1 == x2 && y2 > y1)
-    			return sideShape(x1, y1, y2 - y1 + 1, (int) width, true);
+    		Line2D.Float l = (Line2D.Float) s;
+    		float x1 = l.x1;
+    		float y1 = l.y1;
+    		float x2 = l.x2;
+    		float y2 = l.y2;
+    		if (Coords.eq(y1, y2) && x2 > x1)
+    			return sideShape(x1, y1, x2 - x1 + 1 , width, false);
+    		else if (Coords.eq(x1, x2) && y2 > y1)
+    			return sideShape(x1, y1, y2 - y1 + 1, width, true);
     		else
-    			return basicStrokeShape(s);
+    			return basicStrokeShape(s, "not orthogonal");
     	}
     	else
-    		return basicStrokeShape(s);
+    		return basicStrokeShape(s, "not a line");
     }
 
-    private GeneralPath sideShape(int x, int y, int len, int width, boolean vert)
+    private GeneralPath sideShape(float x, float y, float len, float width, boolean vert)
     {
     	GeneralPath ret;
     	if (!vert)
     	{
     		if (style == CSSProperty.BorderStyle.DASHED || style == CSSProperty.BorderStyle.DOTTED)
     		{
-    			int r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
+    			float r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
     			ret = null;
-    			int i = 0;
+    			float i = 0;
     			while (i < len)
     			{
-    				int l = width * r;
+    				float l = width * r;
     				if (i + l >= len) l = len - i;
-    				ret = append(ret, new Rectangle(x + i, y, l, width));
+    				ret = append(ret, new Rectangle2D.Float(x + i, y, l, width));
     				i += width * (r + 1);
     			}
     		}
     		else if (style == CSSProperty.BorderStyle.DOUBLE && width >= 3)
     		{
-    			int w = (width + 2) / 3;
-    			int space = width - 2 * w;
+    			float w = (width + 2) / 3;
+    			float space = width - 2 * w;
     			if (!reverse)
     			{
-	    			ret = new GeneralPath(new Rectangle(x, y, len, w));
-	    			ret.append(new Rectangle(x + w + space, y + w + space, len - 2 * (w + space), w), false);
+	    			ret = new GeneralPath(new Rectangle2D.Float(x, y, len, w));
+	    			ret.append(new Rectangle2D.Float(x + w + space, y + w + space, len - 2 * (w + space), w), false);
     			}
     			else
     			{
-	    			ret = new GeneralPath(new Rectangle(x + w + space, y, len - 2 * (w + space), w));
-	    			ret.append(new Rectangle(x, y + w + space, len, w), false);
+	    			ret = new GeneralPath(new Rectangle2D.Float(x + w + space, y, len - 2 * (w + space), w));
+	    			ret.append(new Rectangle2D.Float(x, y + w + space, len, w), false);
     			}
     		}
     		else
-    			ret = new GeneralPath(new Rectangle(x, y, len, width));
+    			ret = new GeneralPath(new Rectangle2D.Float(x, y, len, width));
     	}
     	else
     	{
     		if (style == CSSProperty.BorderStyle.DASHED || style == CSSProperty.BorderStyle.DOTTED)
     		{
-    			int r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
+    			float r = (style == CSSProperty.BorderStyle.DASHED) ? 3 : 1;
     			ret = null;
-    			int i = 0;
+    			float i = 0;
     			while (i < len)
     			{
-    				int l = width * r;
+    				float l = width * r;
     				if (i + l >= len) l = len - i;
-    				ret = append(ret, new Rectangle(x, y + i, width, l));
+    				ret = append(ret, new Rectangle2D.Float(x, y + i, width, l));
     				i += width * (r + 1);
     			}
     		}
     		else if (style == CSSProperty.BorderStyle.DOUBLE && width >= 3)
     		{
-    			int w = (width + 2) / 3;
-    			int space = width - 2 * w;
+    			float w = (width + 2) / 3;
+    			float space = width - 2 * w;
     			if (!reverse)
     			{
-	    			ret = new GeneralPath(new Rectangle(x, y, w, len));
-	    			ret.append(new Rectangle(x + w + space, y + w + space, w, len - 2 * (w + space)), false);
+	    			ret = new GeneralPath(new Rectangle2D.Float(x, y, w, len));
+	    			ret.append(new Rectangle2D.Float(x + w + space, y + w + space, w, len - 2 * (w + space)), false);
     			}
     			else
     			{
-	    			ret = new GeneralPath(new Rectangle(x, y + w + space, w, len - 2 * (w + space)));
-	    			ret.append(new Rectangle(x + w + space, y, w, len), false);
+	    			ret = new GeneralPath(new Rectangle2D.Float(x, y + w + space, w, len - 2 * (w + space)));
+	    			ret.append(new Rectangle2D.Float(x + w + space, y, w, len), false);
     			}
     		}
     		else
-    			ret = new GeneralPath(new Rectangle(x, y, width, len));
+    			ret = new GeneralPath(new Rectangle2D.Float(x, y, width, len));
     	}
     	
 		return ret;
@@ -158,9 +159,9 @@ public class CSSStroke implements Stroke
     	}
     }
     
-    private Shape basicStrokeShape(Shape s)
+    private Shape basicStrokeShape(Shape s, String reason)
     {
-    	log.debug("Warning: CSSStroke: fallback to BasicStroke");
+    	log.debug("Warning: CSSStroke: fallback to BasicStroke ({})", reason);
 		BasicStroke bas = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, width);
 		return bas.createStrokedShape(s);
     }

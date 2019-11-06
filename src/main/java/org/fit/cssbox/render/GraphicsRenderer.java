@@ -27,6 +27,7 @@ import java.awt.Image;
 import java.awt.Shape;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -52,6 +53,7 @@ import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.layout.Box.DrawStage;
 import org.fit.cssbox.misc.CSSStroke;
+import org.fit.cssbox.misc.Coords;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;
@@ -190,8 +192,8 @@ public class GraphicsRenderer implements BoxRenderer
         if (elem.getBgcolor() != null)
         {
             g.setColor(elem.getBgcolor());
-            final java.awt.Rectangle abrd = awtRect(brd);
-            g.fillRect(abrd.x, abrd.y, abrd.width, abrd.height);
+            final Rectangle2D abrd = awtRect2D(brd);
+            g.fill(abrd);
         }
         
         //draw the background images
@@ -245,7 +247,7 @@ public class GraphicsRenderer implements BoxRenderer
             }
             g.setColor(clr);
             g.setStroke(new CSSStroke(width, bst, reverse));
-            g.draw(new Line2D.Double(x1 + right, y1 + down, x2 + right, y2 + down));
+            g.draw(new Line2D.Float(x1 + right, y1 + down, x2 + right, y2 + down));
         }
     }
 
@@ -277,17 +279,15 @@ public class GraphicsRenderer implements BoxRenderer
     {
         final VisualContext ctx = elem.getVisualContext();
         ctx.updateGraphics(g);
-        int x = (int) Math.round(elem.getAbsoluteContentX() - 1.2 * ctx.getEm());
-        int y = (int) Math.round(elem.getAbsoluteContentY() + 0.5 * ctx.getEm());
-        int r = (int) Math.round(0.4 * ctx.getEm());
+        float x = elem.getAbsoluteContentX() - 1.2f * ctx.getEm();
+        float y = elem.getAbsoluteContentY() + 0.5f * ctx.getEm();
+        float r = 0.4f * ctx.getEm();
         if (elem.getStyleType() == CSSProperty.ListStyleType.CIRCLE) 
-            g.drawOval(x, y, r, r);
+            g.draw(new Ellipse2D.Float(x, y, r, r));
         else if (elem.getStyleType() == CSSProperty.ListStyleType.SQUARE) 
-            g.fillRect(x, y, r, r);
-        //else if (type == CSSProperty.ListStyleType.BOX) //not documented, recognized by Konqueror 
-        //  g.drawRect(x, y, r, r);
+            g.fill(new Rectangle2D.Float(x, y, r, r));
         else if (elem.getStyleType() == CSSProperty.ListStyleType.DISC)
-            g.fillOval(x, y, r, r);
+            g.fill(new Ellipse2D.Float(x, y, r, r));
         else if (elem.getStyleType() != CSSProperty.ListStyleType.NONE)
             drawText(elem, g, elem.getMarkerText());
     }
@@ -298,7 +298,7 @@ public class GraphicsRenderer implements BoxRenderer
     protected boolean drawImage(ListItemBox elem, Graphics2D g)
     {
         float ofs = elem.getFirstInlineBoxBaseline();
-        if (ofs == -1)
+        if (ofs < 0)
             ofs = elem.getVisualContext().getBaselineOffset(); //use the font baseline
         float x = elem.getAbsoluteContentX() - 0.5f * elem.getVisualContext().getEm();
         float y = elem.getAbsoluteContentY() + ofs;
@@ -327,12 +327,12 @@ public class GraphicsRenderer implements BoxRenderer
         FontMetrics fm = g.getFontMetrics();
         Rectangle2D rect = fm.getStringBounds(text, g);
         float ofs = elem.getFirstInlineBoxBaseline();
-        if (ofs == -1)
+        if (ofs < 0)
             ofs = elem.getVisualContext().getBaselineOffset(); //use the font baseline
         
         // Draw the string
         g.drawString(text,
-                     x + ((int) rect.getX()) - ((int) Math.round(rect.getWidth())),
+                     x + (float) rect.getX() - (float) rect.getWidth(),
                      y + ofs);
     }
     
@@ -358,7 +358,7 @@ public class GraphicsRenderer implements BoxRenderer
             Shape oldclip = setupBoxClip(g, tb);
             tb.getVisualContext().updateGraphics(g);
             
-            if (tb.getWordSpacing() == null && tb.getExtraWidth() == 0)
+            if (tb.getWordSpacing() == null && Coords.eq(tb.getExtraWidth(), 0))
                 drawAttributedString(tb, g, x, y, t);
             else
                 drawByWords(tb, g, x, y, t);
@@ -410,10 +410,10 @@ public class GraphicsRenderer implements BoxRenderer
         if (obj != null)
         {
             Shape oldclip = g.getClip();
-            java.awt.Rectangle extclip = null;
+            Rectangle2D extclip = null;
             if (box instanceof BlockBox)
-                extclip = awtRect(((BlockBox) box).getClippingRectangle());
-            g.setClip(applyClip(oldclip, awtRect(((ElementBox) box).getClippedContentBounds()), extclip));
+                extclip = awtRect2D(((BlockBox) box).getClippingRectangle());
+            g.setClip(applyClip(oldclip, awtRect2D(((ElementBox) box).getClippedContentBounds()), extclip));
             
             if (obj instanceof ReplacedImage)
             {
@@ -466,16 +466,16 @@ public class GraphicsRenderer implements BoxRenderer
      * @param newclip new clipping box to be used
      * @return the new clipping rectangle
      */
-    protected java.awt.Rectangle applyClip(java.awt.Shape current, java.awt.Rectangle newclip)
+    protected Rectangle2D applyClip(java.awt.Shape current, Rectangle2D newclip)
     {
         if (current == null)
             return newclip;
         else
         {
             if (current instanceof java.awt.Rectangle)
-                return ((java.awt.Rectangle) current).intersection(newclip);
+                return ((java.awt.Rectangle) current).createIntersection(newclip);
             else
-                return current.getBounds().intersection(newclip);
+                return current.getBounds().createIntersection(newclip);
         }
     }
 
@@ -486,10 +486,10 @@ public class GraphicsRenderer implements BoxRenderer
      * @param extclip an external clipping rectangle specified e.g. using the {@code clip} CSS property
      * @return the new clipping rectangle
      */
-    protected java.awt.Rectangle applyClip(java.awt.Shape current, java.awt.Rectangle newclip, java.awt.Rectangle extclip)
+    protected Rectangle2D applyClip(java.awt.Shape current, Rectangle2D newclip, Rectangle2D extclip)
     {
         if (extclip != null)
-            return applyClip(current, newclip.intersection(extclip));
+            return applyClip(current, newclip.createIntersection(extclip));
         else
             return applyClip(current, newclip);
     }
@@ -506,20 +506,19 @@ public class GraphicsRenderer implements BoxRenderer
         Shape oldclip = g.getClip();
         if (box.getClipBlock() != null)
         {
-            java.awt.Rectangle extclip = null;
+            Rectangle2D extclip = null;
             if (box instanceof BlockBox)
-                extclip = awtRect(((BlockBox) box).getClippingRectangle());
-            g.setClip(applyClip(oldclip, awtRect(box.getClipBlock().getClippedContentBounds()), extclip));
+                extclip = awtRect2D(((BlockBox) box).getClippingRectangle());
+            g.setClip(applyClip(oldclip, awtRect2D(box.getClipBlock().getClippedContentBounds()), extclip));
         }
         return oldclip;
     }
     
-    protected java.awt.Rectangle awtRect(Rectangle rect)
+    protected Rectangle2D awtRect2D(Rectangle rect)
     {
         if (rect == null)
             return null;
-        return new java.awt.Rectangle(Math.round(rect.x), Math.round(rect.y),
-                Math.round(rect.width), Math.round(rect.height));
+        return new Rectangle2D.Float(rect.x, rect.y, rect.width, rect.height);
     }
     
     
