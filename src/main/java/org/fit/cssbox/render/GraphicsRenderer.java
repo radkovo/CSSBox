@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.TextAttribute;
@@ -81,6 +82,28 @@ public class GraphicsRenderer implements BoxRenderer
     {
         this.g = g;
         savedTransforms = new HashMap<ElementBox, AffineTransform>();
+    }
+    
+    /**
+     * Sets the default Graphics2D parametres.
+     * @param g The graphics to be configured.
+     */
+    protected void setupGraphics(Graphics2D g)
+    {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+    }
+    
+    /**
+     * Sets the default Graphics2D parametres and configures according to a given visual context.
+     * @param g The graphics to be configured.
+     * @param ctx The visual context.
+     */
+    protected void setupGraphics(Graphics2D g, VisualContext ctx)
+    {
+        setupGraphics(g);
+        ctx.updateGraphics(g);
     }
     
     //====================================================================================================
@@ -184,7 +207,7 @@ public class GraphicsRenderer implements BoxRenderer
     {
         Color color = g.getColor(); //original color
         Shape oldclip = setupBoxClip(g, elem); //original clip region
-        elem.getVisualContext().updateGraphics(g);
+        setupGraphics(g, elem.getVisualContext());
         
         //border bounds
         Rectangle brd = elem.getAbsoluteBorderBounds();
@@ -281,7 +304,7 @@ public class GraphicsRenderer implements BoxRenderer
     protected void drawBullet(ListItemBox elem, Graphics2D g)
     {
         final VisualContext ctx = elem.getVisualContext();
-        ctx.updateGraphics(g);
+        setupGraphics(g, ctx);
         float x = elem.getAbsoluteContentX() - 1.2f * ctx.getEm();
         float y = elem.getAbsoluteContentY() + 0.5f * ctx.getEm();
         float r = 0.4f * ctx.getEm();
@@ -359,7 +382,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (!t.isEmpty())
         {
             Shape oldclip = setupBoxClip(g, tb);
-            tb.getVisualContext().updateGraphics(g);
+            setupGraphics(g, tb.getVisualContext());
             
             if (tb.getWordSpacing() == null && Coords.eq(tb.getExtraWidth(), 0))
                 drawAttributedString(tb, g, x, y, t);
@@ -440,7 +463,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (img.getImage() != null)
         {
             // update our configuration
-            img.getVisualContext().updateGraphics(g);
+            setupGraphics(g, img.getVisualContext());
 
             // no container that would repaint -- wait for the complete image
             if (img.getContainer() == null)
@@ -453,7 +476,7 @@ public class GraphicsRenderer implements BoxRenderer
         }
         else
         {
-            img.getVisualContext().updateGraphics(g);
+            setupGraphics(g, img.getVisualContext());
             Stroke oldstroke = g.getStroke();
             g.setStroke(new BasicStroke(1));
             g.drawRect(Math.round(bounds.x), Math.round(bounds.y),
