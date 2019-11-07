@@ -179,4 +179,11 @@ public class Rectangle
         ty2 -= ty1;
         return new Rectangle(tx1, ty1, tx2, ty2);
     }
+
+    @Override
+    public String toString()
+    {
+        return "Rectangle[x=" + x + ", y=" + y + ", width=" + width
+                + ", height=" + height + "]";
+    }
 }
