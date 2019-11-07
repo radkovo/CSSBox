@@ -61,6 +61,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.Color;
@@ -506,13 +507,11 @@ public class BoxBrowser
             final ElementBox eb = (ElementBox) box;
             //draw the full box
             g.setColor(Color.RED);
-            g.drawRect(Math.round(eb.getAbsoluteBounds().x), Math.round(eb.getAbsoluteBounds().y),
-                    Math.round(eb.getBounds().width), Math.round(eb.getBounds().height));
+            g.draw(awtRect2D(eb.getAbsoluteBounds()));
             
             //draw the content box
             g.setColor(Color.ORANGE);
-            g.drawRect(Math.round(eb.getAbsoluteContentX()), Math.round(eb.getAbsoluteContentY()),
-                    Math.round(eb.getContentWidth()), Math.round(eb.getContentHeight()));
+            g.draw(awtRect2D(eb.getAbsoluteContentBounds()));
             
             //draw the real content box
             /*g.setColor(Color.GREEN);
@@ -522,11 +521,9 @@ public class BoxBrowser
         else if (box instanceof TextBox)
         {
             final TextBox tb = (TextBox) box;
-            final Rectangle absbounds = tb.getAbsoluteBounds();
             //draw the full box
             g.setColor(Color.ORANGE);
-            g.drawRect(Math.round(absbounds.x), Math.round(absbounds.y),
-                    Math.round(absbounds.width), Math.round(absbounds.height));
+            g.draw(awtRect2D(tb.getAbsoluteBounds()));
             /*for (int i = 0; i < getText().length(); i++)
             {
                 if (i != 0) System.out.print(" : ");
@@ -543,15 +540,19 @@ public class BoxBrowser
             g.setColor(Color.MAGENTA);
             float y = tb.getAbsoluteContentY();
             float h = tb.getTotalLineHeight();
-                
-            g.drawRect(Math.round(tb.getAbsoluteContentX()), Math.round(y),
-                    Math.round(tb.getContentWidth()), Math.round(h));
+            g.draw(new Rectangle2D.Float(tb.getAbsoluteContentX(), y, tb.getContentWidth(), h));
             
             g.setColor(Color.BLUE);
             y = tb.getAbsoluteContentY() + tb.getBaselineOffset();
-            g.drawRect(Math.round(tb.getAbsoluteContentX()), Math.round(y),
-                    Math.round(tb.getContentWidth()), 1);
+            g.draw(new Rectangle2D.Float(tb.getAbsoluteContentX(), y, tb.getContentWidth(), 1));
         }
+    }
+    
+    private Rectangle2D awtRect2D(Rectangle rect)
+    {
+        if (rect == null)
+            return null;
+        return new Rectangle2D.Float(rect.x, rect.y, rect.width, rect.height);
     }
     
     public BrowserCanvas getBrowserCanvas()
