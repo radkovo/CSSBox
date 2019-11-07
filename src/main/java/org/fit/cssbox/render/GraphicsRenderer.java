@@ -445,11 +445,11 @@ public class GraphicsRenderer implements BoxRenderer
             // no container that would repaint -- wait for the complete image
             if (img.getContainer() == null)
                 img.waitForLoad();
-            // draw image
-            g.drawImage(img.getImage(),
-                    Math.round(bounds.x), Math.round(bounds.y),
-                    Math.round(width), Math.round(height),
-                    img);
+            // draw image of the given size and position
+            final AffineTransform tr = new AffineTransform();
+            tr.translate(bounds.x, bounds.y);
+            tr.scale(bounds.width / img.getIntrinsicWidth(), bounds.height / img.getIntrinsicHeight());
+            g.drawImage(img.getImage(), tr, img);
         }
         else
         {
