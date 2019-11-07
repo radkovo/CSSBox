@@ -291,6 +291,8 @@ public class TestBatch
             
             results.put(tname, tvalue);
         }
+        //all results should be stored, shutdown the threads
+        exec.shutdown();
     }
     
     /**
