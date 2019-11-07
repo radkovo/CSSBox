@@ -245,7 +245,7 @@ public class BlockTableBox extends BlockBox
         if (!widthComputed)
             super.computeWidths(null, true, exact, update);
         else
-            super.computeWidths(CSSFactory.getTermFactory().createLength((float) content.width, TermLength.Unit.px), false, exact, update);
+            super.computeWidths(CSSFactory.getTermFactory().createLength(content.width, TermLength.Unit.px), false, exact, update);
     }
     
     

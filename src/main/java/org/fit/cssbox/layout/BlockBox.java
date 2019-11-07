@@ -2224,8 +2224,7 @@ public class BlockBox extends ElementBox
                                      - padding.right - border.right;
                     if (rest >= 0)
                     {
-                        margin.left = (rest + 1) / 2;
-                        margin.right = rest / 2;
+                        margin.left = margin.right = rest / 2.0f;
                     }
                     else //negative margin - use it just for the right margin
                     {
