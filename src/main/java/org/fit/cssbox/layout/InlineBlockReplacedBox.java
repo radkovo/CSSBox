@@ -158,6 +158,15 @@ public class InlineBlockReplacedBox extends InlineBlockBox implements ReplacedBo
     }
     
     @Override
+    public boolean marginsAdjoin()
+    {
+        if (getContentObjHeight() > 0)
+            return false; //margins separated by the content
+        else
+            return super.marginsAdjoin();
+    }
+
+    @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed

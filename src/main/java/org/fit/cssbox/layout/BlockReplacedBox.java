@@ -116,6 +116,15 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     }
 
     @Override
+    public boolean marginsAdjoin()
+    {
+        if (getContentObjHeight() > 0)
+            return false; //margins separated by the content
+        else
+            return super.marginsAdjoin();
+    }
+
+    @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) 
     {
         //Skip if not displayed
