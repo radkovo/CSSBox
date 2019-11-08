@@ -74,26 +74,30 @@ h1 {
 
 h2 {
 	font-size: 1.5em;
-	margin: .75em 0
+	margin: .83em 0
 }
 
 h3 {
 	font-size: 1.17em;
-	margin: .83em 0
+	margin: 1em 0
 }
 
-h4, p, menu /*, blockquote, ul, fieldset, form, ol, dl, dir */ {
-	margin: 1.12em 0
+h4 {
+	margin: 1.33em 0
 }
 
 h5 {
 	font-size: .83em;
-	margin: 1.5em 0
+	margin: 1.67em 0
 }
 
 h6 {
-	font-size: .75em;
-	margin: 1.67em 0
+	font-size: .67em;
+	margin: 2.33em 0
+}
+
+p, dl, multicol {
+	margin: 1em 0;
 }
 
 h1, h2, h3, h4, h5, h6, b, strong {
