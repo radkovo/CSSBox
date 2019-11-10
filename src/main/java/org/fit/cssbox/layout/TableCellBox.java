@@ -19,10 +19,9 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-
-import cz.vutbr.web.css.*;
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.csskit.Color;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
@@ -61,9 +60,9 @@ public class TableCellBox extends BlockBox
     /**
      * Create a new table cell
      */
-    public TableCellBox(Element n, Graphics2D g, VisualContext ctx)
+    public TableCellBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
         loadAttributes();
         fleft = new FloatList(this);

@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermLengthOrPercent;
 
@@ -37,9 +35,9 @@ public class TableCaptionBox extends BlockBox
     /**
      * Create a new table caption
      */
-    public TableCaptionBox(Element n, Graphics2D g, VisualContext ctx)
+    public TableCaptionBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
     }
 

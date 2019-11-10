@@ -20,9 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.font.LineMetrics;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -109,16 +106,14 @@ public class TextBox extends Box implements Inline
      * @param g the graphics context used for rendering
      * @param ctx current visual context
      */
-    public TextBox(Text n, Graphics2D g, VisualContext ctx)
+    public TextBox(Text n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         textNode = n;
         transform = TextTransform.NONE;
         wordSpacing = null;
         setWhiteSpace(ElementBox.WHITESPACE_NORMAL); //resets the text content and indices
         
-        ctx.updateForGraphics(null, g);
-
         ignoreinitialws = false;
         collapsews = true;
         containsLineBreak = false;
@@ -152,7 +147,7 @@ public class TextBox extends Box implements Inline
      */
     public TextBox copyTextBox()
     {
-        TextBox ret = new TextBox(textNode, g, ctx);
+        TextBox ret = new TextBox(textNode, ctx);
         ret.copyValues(this);
         return ret;
     }
@@ -173,6 +168,8 @@ public class TextBox extends Box implements Inline
         super.setParent(parent);
         if (getParent() != null)
         {
+            //update the visual context
+            ctx.update(getParent().getStyle());
             //load the relevant style values
             transform = getParent().getStyle().getProperty("text-transform");
             if (transform == null)
@@ -493,15 +490,6 @@ public class TextBox extends Box implements Inline
         return 0;
     }
     
-    /**
-     * Computes the line metrics for the particular text content and graphical context.
-     * @return the line metrics
-     */
-    public LineMetrics getLineMetrics()
-    {
-        return ctx.getFont().getLineMetrics(getText(), g.getFontRenderContext());
-    }
-    
     @Override
     public float totalHeight() 
     {
@@ -636,7 +624,6 @@ public class TextBox extends Box implements Inline
         boolean fail = false; //failed totally (nothing fit)
         float wlimit = getAvailableContentWidth();
         boolean empty = isempty;
-        FontMetrics fm = g.getFontMetrics();
         float w = 0, h = 0;
         
         int end = textEnd;
@@ -664,8 +651,8 @@ public class TextBox extends Box implements Inline
             //try to place the text
             do
             {
-                w = stringWidth(fm, text.substring(textStart, end));
-                h = fm.getHeight();
+                w = stringWidth(text.substring(textStart, end));
+                h = ctx.getFontHeight();
                 if (w > wlimit) //exceeded - try to split if allowed
                 {
                     if (empty) //empty or just spaces - don't place at all
@@ -787,7 +774,7 @@ public class TextBox extends Box implements Inline
         if (linews)
         {
             //no preserved line breaks -- returns the lenth of the whole string
-            float len = stringWidth(g.getFontMetrics(), getText());
+            float len = stringWidth(getText());
             firstLineLength = len;
             lastLineLength = len;
             longestLineLength = len;
@@ -803,14 +790,13 @@ public class TextBox extends Box implements Inline
     {
         float ret = 0;
         String t = getText();
-        FontMetrics fm = g.getFontMetrics();
         
         int s1 = 0;
         int s2 = t.indexOf(' ');
         do
         {
             if (s2 == -1) s2 = t.length();
-            float w = stringWidth(fm, t.substring(s1, s2));
+            float w = stringWidth(t.substring(s1, s2));
             if (w > ret) ret = w;
             s1 = s2 + 1;
             s2 = t.indexOf(' ', s1);
@@ -904,11 +890,6 @@ public class TextBox extends Box implements Inline
      */
     public float[][] getWordOffsets(String[] words)
     {
-        return getWordOffsets(g.getFontMetrics(), words);
-    }
-    
-    public float[][] getWordOffsets(FontMetrics fm, String[] words)
-    {
         if (words.length > 0)
         {
             //determine word lengths
@@ -916,7 +897,7 @@ public class TextBox extends Box implements Inline
             float totalw = 0;
             for (int i = 0; i < words.length; i++)
             {
-                ww[i] = stringWidth(fm, words[i]);
+                ww[i] = stringWidth(words[i]);
                 totalw += ww[i];
             }
             //spacing
@@ -964,13 +945,12 @@ public class TextBox extends Box implements Inline
     {
         if (text != null)
         {
-            FontMetrics fm = g.getFontMetrics();
             if (pos <= textStart)
                 return 0;
             else if (pos > textStart && pos < textEnd)
-                return stringWidth(fm, text.substring(textStart, pos));
+                return stringWidth(text.substring(textStart, pos));
             else
-                return stringWidth(fm, text.substring(textStart, textEnd));
+                return stringWidth(text.substring(textStart, textEnd));
         }
         else
             return 0;
@@ -986,7 +966,6 @@ public class TextBox extends Box implements Inline
         longestLineLength = 0;
         
         String t = getText();
-        FontMetrics fm = g.getFontMetrics();
         
         int s1 = 0;
         int s2 = t.indexOf('\r');
@@ -997,7 +976,7 @@ public class TextBox extends Box implements Inline
                 s2 = t.length();
             else
                 containsLineBreak = true;
-            w = stringWidth(fm, t.substring(s1, s2));
+            w = stringWidth(t.substring(s1, s2));
             if (firstLineLength == -1) firstLineLength = w;
             if (w > longestLineLength) longestLineLength = w;
             s1 = s2 + 1;
@@ -1012,9 +991,9 @@ public class TextBox extends Box implements Inline
      * @param text the string to be measured
      * @return the resulting width in pixels
      */
-    private float stringWidth(FontMetrics fm, String text)
+    private float stringWidth(String text)
     {
-        float w = fm.stringWidth(text);
+        float w = ctx.stringWidth(text);
         if (wordSpacing != null)
         {
             //count spaces and add

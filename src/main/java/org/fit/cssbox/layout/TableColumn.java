@@ -19,15 +19,14 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-
-import cz.vutbr.web.css.*;
-
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.TermLengthOrPercent;
 
 /**
  * This class represents a table column. It is not visible and its only purpose is to
@@ -66,9 +65,9 @@ public class TableColumn extends BlockBox
     /**
      * Creates a new table column
      */
-    public TableColumn(Element n, Graphics2D g, VisualContext ctx)
+    public TableColumn(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
         loadAttributes();
     }
@@ -100,7 +99,7 @@ public class TableColumn extends BlockBox
      */
     public TableColumn copyBox()
     {
-        TableColumn ret = new TableColumn(el, g, ctx);
+        TableColumn ret = new TableColumn(el, ctx);
         ret.copyValues(this);
         return ret;
     }

@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -116,7 +115,7 @@ public class HTMLBoxFactory
     {
         if (factory.getConfig().getReplaceImagesWithAlt())
         {
-            ElementBox rbox = new InlineBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            ElementBox rbox = new InlineBox(e, parent.getVisualContext().create());
             rbox.setViewport(viewport);
             rbox.setStyle(style);
             if (rbox.isBlock())
@@ -124,7 +123,7 @@ public class HTMLBoxFactory
             
             String stext = HTMLNorm.getAttribute(e, "alt");
             Text t = e.getOwnerDocument().createTextNode(stext);
-            TextBox tbox = new TextBox(t, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            TextBox tbox = new TextBox(t, parent.getVisualContext().create());
             tbox.setOrder(factory.next_order++);
             tbox.setContainingBlockBox(parent.getContainingBlockBox());
             tbox.setClipBlock(parent.getClipBlock());
@@ -137,7 +136,7 @@ public class HTMLBoxFactory
         }
         else
         {
-            InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+            InlineReplacedBox rbox = new InlineReplacedBox(e, parent.getVisualContext().create());
             rbox.setViewport(viewport);
             rbox.setStyle(style);
     
@@ -154,7 +153,7 @@ public class HTMLBoxFactory
     protected ElementBox createSubtreeObject(ElementBox parent, Element e, Viewport viewport, NodeData style)
     {
         //create the replaced box
-        InlineReplacedBox rbox = new InlineReplacedBox(e, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        InlineReplacedBox rbox = new InlineReplacedBox(e, parent.getVisualContext().create());
         rbox.setViewport(viewport);
         rbox.setStyle(style);
         

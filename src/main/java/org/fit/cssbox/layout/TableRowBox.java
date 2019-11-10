@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,9 +41,9 @@ public class TableRowBox extends BlockBox
     /**
      * Create a new table row
      */
-    public TableRowBox(Element n, Graphics2D g, VisualContext ctx)
+    public TableRowBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
     }
 
@@ -268,7 +267,7 @@ public class TableRowBox extends BlockBox
                 if (anoncell == null)
                 {
                     Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getParent().getParent().getElement().getOwnerDocument(), "td", "table-cell");
-                    anoncell = new TableCellBox(anonelem, g, ctx);
+                    anoncell = new TableCellBox(anonelem, ctx);
                     anoncell.adoptParent(this);
                     anoncell.setStyle(viewport.getFactory().createAnonymousStyle("table-cell"));
                     addCell(anoncell);

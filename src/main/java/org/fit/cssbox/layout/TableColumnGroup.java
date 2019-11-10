@@ -19,8 +19,7 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-import java.util.*;
+import java.util.Vector;
 
 import org.w3c.dom.Element;
 
@@ -38,9 +37,9 @@ public class TableColumnGroup extends TableColumn
     /**
      * Create a new table column
      */
-    public TableColumnGroup(Element n, Graphics2D g, VisualContext ctx)
+    public TableColumnGroup(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
     }
     
     /**
@@ -88,7 +87,7 @@ public class TableColumnGroup extends TableColumn
         //when there are no <col> elements, use the span attribute
         if (columns.isEmpty())
         {
-            TableColumn col = new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx);
+            TableColumn col = new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), ctx);
             col.setSpecifiedWidth(colwidth);
             for (int i = 0; i < span; i++)
                 columns.add(col.copyBox());

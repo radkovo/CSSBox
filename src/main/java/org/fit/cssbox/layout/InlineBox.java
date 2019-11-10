@@ -20,8 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,9 +63,9 @@ public class InlineBox extends ElementBox implements InlineElement
     //========================================================================
     
     /** Creates a new instance of InlineBox */
-    public InlineBox(Element n, Graphics2D g, VisualContext ctx) 
+    public InlineBox(Element n, VisualContext ctx) 
     {
-        super(n, g, ctx);
+        super(n, ctx);
         halflead = 0;
         lineBreakStop = false;
         collapsedCompletely = false;
@@ -82,7 +80,7 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public InlineBox copyBox()
     {
-        InlineBox ret = new InlineBox(el, g, ctx);
+        InlineBox ret = new InlineBox(el, ctx);
         ret.copyValues(this);
         return ret;
     }
@@ -593,7 +591,6 @@ public class InlineBox extends ElementBox implements InlineElement
     @Override
     public void draw(DrawStage turn)
     {
-        ctx.updateGraphics(g);
         if (displayed)
         {
             if (!this.formsStackingContext())

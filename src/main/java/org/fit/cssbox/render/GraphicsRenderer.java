@@ -38,11 +38,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.GraphicsVisualContext;
 import org.fit.cssbox.layout.LengthSet;
 import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.Rectangle;
@@ -100,7 +100,7 @@ public class GraphicsRenderer implements BoxRenderer
      * @param g The graphics to be configured.
      * @param ctx The visual context.
      */
-    protected void setupGraphics(Graphics2D g, VisualContext ctx)
+    protected void setupGraphics(Graphics2D g, GraphicsVisualContext ctx)
     {
         setupGraphics(g);
         ctx.updateGraphics(g);
@@ -196,7 +196,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (vp.getBgcolor() != null)
         {
             Color color = g.getColor();
-            g.setColor(vp.getBgcolor());
+            g.setColor(convertColor(vp.getBgcolor()));
             g.fillRect(0, 0, Math.round(vp.getCanvasWidth()), Math.round(vp.getCanvasHeight()));
             g.setColor(color);
         }
@@ -211,7 +211,7 @@ public class GraphicsRenderer implements BoxRenderer
     {
         Color color = g.getColor(); //original color
         Shape oldclip = setupBoxClip(g, elem); //original clip region
-        setupGraphics(g, elem.getVisualContext());
+        setupGraphics(g, (GraphicsVisualContext) elem.getVisualContext());
         
         //border bounds
         Rectangle brd = elem.getAbsoluteBorderBounds();
@@ -219,7 +219,7 @@ public class GraphicsRenderer implements BoxRenderer
         //draw the background - it should be visible below the border too
         if (elem.getBgcolor() != null)
         {
-            g.setColor(elem.getBgcolor());
+            g.setColor(convertColor(elem.getBgcolor()));
             final Rectangle2D abrd = awtRect2D(brd);
             g.fill(abrd);
         }
@@ -266,10 +266,10 @@ public class GraphicsRenderer implements BoxRenderer
             //System.out.println("Elem: " + this + "side: " + side + "color: " + tclr);
             Color clr = null;
             if (tclr != null)
-                clr = CSSUnits.convertColor(tclr.getValue());
+                clr = convertColor(tclr.getValue());
             if (clr == null)
             {
-                clr = elem.getVisualContext().getColor();
+                clr = convertColor(elem.getVisualContext().getColor());
                 if (clr == null)
                     clr = Color.BLACK;
             }
@@ -308,7 +308,7 @@ public class GraphicsRenderer implements BoxRenderer
     protected void drawListBullet(ListItemBox elem, Graphics2D g)
     {
         final VisualContext ctx = elem.getVisualContext();
-        setupGraphics(g, ctx);
+        setupGraphics(g, (GraphicsVisualContext) ctx);
         float x = elem.getAbsoluteContentX() - 1.2f * ctx.getEm();
         float y = elem.getAbsoluteContentY() + 0.5f * ctx.getEm();
         float r = 0.4f * ctx.getEm();
@@ -386,7 +386,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (!t.isEmpty())
         {
             Shape oldclip = setupBoxClip(g, tb);
-            setupGraphics(g, tb.getVisualContext());
+            setupGraphics(g, (GraphicsVisualContext) tb.getVisualContext());
             
             if (tb.getWordSpacing() == null && Coords.eq(tb.getExtraWidth(), 0))
                 drawAttributedString(tb, g, x, y, t);
@@ -402,8 +402,7 @@ public class GraphicsRenderer implements BoxRenderer
         String[] words = text.split(" ");
         if (words.length > 0)
         {
-            final FontMetrics fm = g.getFontMetrics();
-            final float[][] offsets = tb.getWordOffsets(fm, words);
+            final float[][] offsets = tb.getWordOffsets(words);
             for (int i = 0; i < words.length; i++)
                 drawAttributedString(tb, g, x + offsets[i][0], y, words[i]);
         }
@@ -420,7 +419,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (!decoration.isEmpty()) 
         {
             AttributedString as = new AttributedString(text);
-            as.addAttribute(TextAttribute.FONT, tb.getVisualContext().getFont());
+            as.addAttribute(TextAttribute.FONT, ((GraphicsVisualContext) tb.getVisualContext()).getFont());
             if (decoration.contains(CSSProperty.TextDecoration.UNDERLINE))
                 as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
             if (decoration.contains(CSSProperty.TextDecoration.LINE_THROUGH))
@@ -467,7 +466,7 @@ public class GraphicsRenderer implements BoxRenderer
         if (img.getImage() != null)
         {
             // update our configuration
-            setupGraphics(g, img.getVisualContext());
+            setupGraphics(g, (GraphicsVisualContext) img.getVisualContext());
 
             // no container that would repaint -- wait for the complete image
             if (img.getContainer() == null)
@@ -480,7 +479,7 @@ public class GraphicsRenderer implements BoxRenderer
         }
         else
         {
-            setupGraphics(g, img.getVisualContext());
+            setupGraphics(g, (GraphicsVisualContext) img.getVisualContext());
             Stroke oldstroke = g.getStroke();
             g.setStroke(new BasicStroke(1));
             g.drawRect(Math.round(bounds.x), Math.round(bounds.y),
@@ -558,4 +557,16 @@ public class GraphicsRenderer implements BoxRenderer
         return new Rectangle2D.Float(rect.x, rect.y, rect.width, rect.height);
     }
     
+    /**
+     * Convetrs the CSS parser color representation to the AWT color used by CSSBox.
+     * @param src Source CSS parser color representation
+     * @return the resulting AWT color
+     */
+    public static java.awt.Color convertColor(cz.vutbr.web.csskit.Color src)
+    {
+        if (src == null)
+            return null;
+        return new java.awt.Color(src.getRGB(), true);
+    }
+
 }

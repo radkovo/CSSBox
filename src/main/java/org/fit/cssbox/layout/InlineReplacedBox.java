@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 import org.w3c.dom.Element;
 
 /**
@@ -36,9 +34,9 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     /** 
      * Creates a new instance of ImgBox 
      */
-    public InlineReplacedBox(Element el, Graphics2D g, VisualContext ctx)
+    public InlineReplacedBox(Element el, VisualContext ctx)
     {
-        super(el, g, ctx);
+        super(el, ctx);
         lineHeight = boxh;
     }
     
@@ -205,7 +203,6 @@ public class InlineReplacedBox extends InlineBox implements ReplacedBox
     @Override
 	public void draw(DrawStage turn)
     {
-        ctx.updateGraphics(g);
         if (displayed && isVisible())
         {
             if (!this.formsStackingContext())

@@ -164,8 +164,8 @@ public class BrowserCanvas extends JPanel
         BoxFactory factory = new BoxFactory(decoder, baseurl);
         factory.setConfig(config);
         factory.reset();
-        VisualContext ctx = new VisualContext(null, factory);
-        viewport = factory.createViewportTree(root, ig, ctx, dim.width, dim.height);
+        VisualContext ctx = new GraphicsVisualContext(ig, null, factory);
+        viewport = factory.createViewportTree(root, ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
         viewport.setVisibleRect(new Rectangle(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height));
         viewport.initSubtree();

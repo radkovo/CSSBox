@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -34,6 +33,8 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cz.vutbr.web.csskit.Color;
 
 /**
  * A rendering engine configuration.
@@ -87,7 +88,7 @@ public class BrowserConfig
      */
     public BrowserConfig()
     {
-        viewportBackgroundColor = Color.WHITE;
+        viewportBackgroundColor = new Color(255, 255, 255);
         loadImages = true;
         loadBackgroundImages = true;
         loadFonts = true;

@@ -94,14 +94,4 @@ public class CSSUnits
     		return THICK_BORDER;
     }
     
-    /**
-     * Convetrs the CSS parser color representation to the AWT color used by CSSBox.
-     * @param src Source CSS parser color representation
-     * @return the resulting AWT color
-     */
-    public static java.awt.Color convertColor(cz.vutbr.web.csskit.Color src)
-    {
-        return new java.awt.Color(src.getRGB(), true);
-    }
-    
 }

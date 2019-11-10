@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.render;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,8 +30,8 @@ import javax.imageio.ImageIO;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;
+import cz.vutbr.web.csskit.Color;
 
-import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
@@ -247,12 +246,12 @@ public class SVGRenderer implements BoxRenderer
         {
             Color clr = null;
             if (tclr != null)
-                clr = CSSUnits.convertColor(tclr.getValue());
+                clr = tclr.getValue();
             if (clr == null)
             {
                 clr = eb.getVisualContext().getColor();
                 if (clr == null)
-                    clr = Color.BLACK;
+                    clr = new Color(0, 0, 0);
             }
 
             String stroke = "";
@@ -380,9 +379,9 @@ public class SVGRenderer implements BoxRenderer
     private String textStyle(VisualContext ctx)
     {
         String style = "font-size:" + ctx.getFontSize() + "pt;" + 
-                       "font-weight:" + (ctx.getFont().isBold()?"bold":"normal") + ";" + 
-                       "font-style:" + (ctx.getFont().isItalic()?"italic":"normal") + ";" +
-                       "font-family:" + ctx.getFont().getFamily() + ";" +
+                       "font-weight:" + (ctx.getFontInfo().isBold()?"bold":"normal") + ";" + 
+                       "font-style:" + (ctx.getFontInfo().isItalic()?"italic":"normal") + ";" +
+                       "font-family:" + ctx.getFontInfo().getFamily() + ";" +
                        "fill:" + colorString(ctx.getColor()) + ";" +
                        "stroke:none";
         if (ctx.getLetterSpacing() > 0.0001)

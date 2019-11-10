@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.Overflow;
 import cz.vutbr.web.css.NodeData;
@@ -49,9 +47,9 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     private boolean force;
     
     
-	public InlineBlockBox(Element n, Graphics2D g, VisualContext ctx)
+	public InlineBlockBox(Element n, VisualContext ctx)
 	{
-		super(n, g, ctx);
+		super(n, ctx);
 		isblock = false;
 	}
 

@@ -20,7 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.net.URL;
 
 import org.w3c.dom.Node;
@@ -86,9 +85,6 @@ abstract public class Box
     /** Maximal total width for the layout (obtained from the owner box) */
     protected float availwidth;
     
-    /** Graphics context */
-    protected Graphics2D g;
-    
     /** Rendering context (em size etc.) */
     protected VisualContext ctx;
     
@@ -112,9 +108,8 @@ abstract public class Box
      * @param g current graphics context
      * @param ctx current visual context
      */
-    public Box(Node n, Graphics2D g, VisualContext ctx)
+    public Box(Node n, VisualContext ctx)
     {
-        this.g = g;
         this.ctx = ctx;
         node = n;
         rootelem = false;
@@ -228,15 +223,6 @@ abstract public class Box
 	    return splitid;
 	}
 	
-    /**
-     * Returns the graphics context that is used for rendering.
-     * @return the graphics context
-     */
-    public Graphics2D getGraphics()
-    {
-        return g;
-    }
-
     /**
      * @return the visual context of this box
      */

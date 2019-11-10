@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.util.Iterator;
 
 import cz.vutbr.web.css.CSSFactory;
@@ -39,9 +38,9 @@ public class BlockTableBox extends BlockBox
     private TableCaptionBox caption;
     private boolean captionbottom; //set to true, when caption should be in the bottom. Otherwise, caption is at the top.
 
-    public BlockTableBox(Element n, Graphics2D g, VisualContext ctx)
+    public BlockTableBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
     }
 
@@ -268,7 +267,7 @@ public class BlockTableBox extends BlockBox
      */
     private void organizeContent()
     {
-        table = new TableBox(el, g, ctx);
+        table = new TableBox(el, ctx);
         table.adoptParent(this);
         table.setStyle(style);
         

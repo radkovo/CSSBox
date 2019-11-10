@@ -20,23 +20,10 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextAttribute;
-import java.awt.font.TextLayout;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.fit.cssbox.css.CSSUnits;
-import org.fit.cssbox.css.FontDecoder;
-import org.fit.cssbox.css.FontSpec;
-import org.fit.cssbox.io.DocumentSource;
-import org.fit.net.DataURLHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +31,7 @@ import cz.vutbr.web.css.*;
 import cz.vutbr.web.css.CSSProperty.FontFamily;
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
 import cz.vutbr.web.csskit.CalcArgs;
+import cz.vutbr.web.csskit.Color;
 import cz.vutbr.web.csskit.TermCalcAngleImpl;
 
 /**
@@ -52,7 +40,7 @@ import cz.vutbr.web.csskit.TermCalcAngleImpl;
  *
  * @author  burgetr
  */
-public class VisualContext 
+public abstract class VisualContext 
 {
     protected static final Logger log = LoggerFactory.getLogger(VisualContext.class);
 
@@ -60,8 +48,6 @@ public class VisualContext
     private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
     private Viewport viewport; //the viewport used for obtaining the vw sizes
-    private Font font; //current font
-    private FontMetrics fm; //current font metrics
     private float fontSize;
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
@@ -92,37 +78,35 @@ public class VisualContext
         ex = 0.6f * em;
         ch = 0.8f * ch; //just an initial guess, updated in updateForGraphics()
         dpi = org.fit.cssbox.css.CSSUnits.dpi;
-        font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
         fontSize = CSSUnits.points(CSSUnits.medium_font);
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
         letterSpacing = 0.0f;
-        color = Color.BLACK;
+        color = new Color(0, 0, 0);
     }
     
-    public VisualContext create()
+    public void copyVisualContext(VisualContext src)
     {
-        VisualContext ret = new VisualContext(this, this.factory);
-        ret.viewport = viewport;
-        ret.rootContext = rootContext;
-        ret.em = em;
-        ret.rem = rem;
-        ret.ex = ex;
-        ret.ch = ch;
-        ret.dpi = dpi;
-        ret.font = font;
-        ret.fontSize = fontSize;
-        ret.fontWeight = fontWeight;
-        ret.fontStyle = fontStyle;
-        ret.fontVariant = fontVariant;
-        ret.textDecoration = new ArrayList<CSSProperty.TextDecoration>(textDecoration);
-        ret.letterSpacing = letterSpacing;
-        ret.color = color;
-        return ret;
+        viewport = src.viewport;
+        rootContext = src.rootContext;
+        em = src.em;
+        rem = src.rem;
+        ex = src.ex;
+        ch = src.ch;
+        dpi = src.dpi;
+        fontSize = src.fontSize;
+        fontWeight = src.fontWeight;
+        fontStyle = src.fontStyle;
+        fontVariant = src.fontVariant;
+        textDecoration = new ArrayList<CSSProperty.TextDecoration>(src.textDecoration);
+        letterSpacing = src.letterSpacing;
+        color = src.color;
     }
    
+    abstract public VisualContext create();
+    
     //=========================================================================
     
     public VisualContext getParentContext()
@@ -130,6 +114,16 @@ public class VisualContext
         return parent;
     }
     
+    public void setParentContext(VisualContext parent)
+    {
+        this.parent = parent;
+    }
+    
+    public BoxFactory getFactory()
+    {
+        return factory;
+    }
+
     public Viewport getViewport()
     {
         return viewport;
@@ -153,14 +147,11 @@ public class VisualContext
     }
 
     /**
-     * The AWT font used for the box.
-     * @return current font
+     * Gets the information about the current font.
+     * @return current font information
      */
-    public Font getFont()
-    {
-        return font;
-    }
-
+    abstract public FontInfo getFontInfo();
+    
     /**
      * Obtains the specified font size in pt.
      * @return the font size in pt
@@ -259,6 +250,26 @@ public class VisualContext
         return ch;
     }
     
+    protected void setEm(float em)
+    {
+        this.em = em;
+    }
+
+    protected void setRem(float rem)
+    {
+        this.rem = rem;
+    }
+
+    protected void setEx(float ex)
+    {
+        this.ex = ex;
+    }
+
+    protected void setCh(float ch)
+    {
+        this.ch = ch;
+    }
+
     /**
      * @return the dpi value used in the context
      */
@@ -267,6 +278,19 @@ public class VisualContext
         return dpi;
     }
 
+    /**
+     * Gets the current font family.
+     * @return The font family name
+     */
+    abstract public String getFontFamily();
+    
+    /**
+     * Computes the pixel width of the given string in the visual context.
+     * @param text The text sting
+     * @return the resulting widtg in pixels
+     */
+    abstract public float stringWidth(String text);
+    
     //=========================================================================
     
     /** 
@@ -286,13 +310,13 @@ public class VisualContext
         CSSProperty.FontFamily ff = style.getProperty("font-family");
         if (ff == null)
         {
-            family = font.getFamily(); //use current
+            family = getFontFamily(); //use current
         }
         else if (ff == FontFamily.list_values)
         {
             TermList fmlspec = style.getValue(TermList.class, "font-family");
             if (fmlspec == null)
-                family = font.getFamily();
+                family = getFontFamily();
             else
                 family = getFontName(fmlspec, fontWeight, fontStyle);
         }
@@ -329,8 +353,7 @@ public class VisualContext
         else
             rem = em; //we don't have a root context?
         
-        font = createFont(family, Math.round(size), fontWeight, fontStyle, letterSpacing);
-        em = size;
+        setCurrentFont(family, Math.round(size), fontWeight, fontStyle, letterSpacing);
         
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
         if (variant != null) fontVariant = variant;
@@ -367,62 +390,34 @@ public class VisualContext
         
         //color
         TermColor clr = style.getSpecifiedValue(TermColor.class, "color");
-        if (clr != null) color = CSSUnits.convertColor(clr.getValue());
+        if (clr != null) color = clr.getValue();
     }
-    
-    /** 
-     * Updates a Graphics according to this context
-     * @param g Graphics to be updated
-     */
-    public void updateGraphics(Graphics2D g)
-    {
-        g.setFont(font);
-        g.setColor(color);
-    }
-     
-    /** 
-     * Updates this context according to the given style. Moreover given Graphics is updated
-     * to this style and used for taking the font metrics.
-     * @param style the style data to be used
-     * @param g Graphics to be updated and used 
-     */
-    public void updateForGraphics(NodeData style, Graphics2D g)
-    {
-        if (style != null) update(style);
-        updateGraphics(g);
-        fm = g.getFontMetrics();
-        
-        //update the width units
-        //em has been updated in update()
-        
-        FontRenderContext frc = new FontRenderContext(null, false, false);
-        TextLayout layout = new TextLayout("x", font, frc);
-        ex = (float) layout.getBounds().getHeight();
-        
-        ch = fm.charWidth('0');
-    }
-    
     
     //-----------------------------------------------------------------------
+    
+    /**
+     * Sets current font according to its given parametres.
+     *  
+     * @param family
+     * @param size
+     * @param weight
+     * @param style
+     * @param spacing
+     */
+    abstract public void setCurrentFont(String family, float size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style, float spacing);
     
     /**
      * Computes current text line height.
      * @return the height of the normal text line in pixels
      */
-    public float getFontHeight()
-    {
-        return fm.getHeight();
-    }
+    abstract public float getFontHeight();
     
     /**
      * Obtains the maximal distance from the line top to the baseline
      * for the current font.
      * @return the baseline <em>y</em> offset.
      */
-    public float getBaselineOffset()
-    {
-        return fm.getAscent();
-    }
+    abstract public float getBaselineOffset();
     
     /** 
      * Converts a length from a CSS length or percentage to 'pt'.
@@ -639,141 +634,10 @@ public class VisualContext
      * @param list of terms obtained from the font-family property
      * @return a font name string according to java.awt.Font
      */
-    private String getFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
-    {
-        for (Term<?> term : list)
-        {
-            Object value = term.getValue();
-            if (value instanceof CSSProperty.FontFamily)
-                return ((CSSProperty.FontFamily) value).getAWTValue();
-            else
-            {
-                String name = lookupFont(value.toString(), weight, style);
-                if (name != null) return name;
-            }
-        }
-        //nothing found, use Serif
-        return java.awt.Font.SERIF;
-    }
-    
-    /**
-     * Check if the font family is available either among the CSS defined fonts or the system fonts.
-     * If found, registers a system font with the given name. 
-     * @param family Required font family
-     * @param weight Required font weight
-     * @param style Required font style
-     * @return The corresponding system font name or {@code null} when no candidates have been found. 
-     */
-    private String lookupFont(String family, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
-    {
-        final String systemFontNames[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-        //try to look in the style font table
-        String nameFound = null;
-        FontSpec spec = new FontSpec(family, weight, style);
-        List<RuleFontFace.Source> srcs = findMatchingFontSources(spec);
-        if (srcs != null)
-        {
-            for (RuleFontFace.Source src : srcs)
-            {
-                if (src instanceof RuleFontFace.SourceLocal)
-                {
-                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName(), systemFontNames);
-                    if (name != null)
-                    {
-                        nameFound = name;
-                        break;
-                    }
-                }
-                else if (src instanceof RuleFontFace.SourceURL && viewport.getConfig().isLoadFonts())
-                {
-                    try
-                    {
-                        TermURI urlstring = ((RuleFontFace.SourceURL) src).getURI();
-                        String format = ((RuleFontFace.SourceURL) src).getFormat();
-                        if (format == null || FontDecoder.supportedFormats.contains(format))
-                        {
-                            URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
-                            String regName = FontDecoder.findRegisteredFont(url);
-                            if (regName == null)
-                            {
-                                DocumentSource imgsrc = viewport.getConfig().createDocumentSource(url);
-                                Font newFont = FontDecoder.decodeFont(imgsrc, format);
-                                if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
-                                    log.debug("Registered font: {}", newFont.getFontName());
-                                else
-                                    log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
-                                regName = newFont.getFontName();
-                                FontDecoder.registerFont(url, regName);
-                            }
-                            nameFound = regName;
-                        }
-                    } catch (MalformedURLException e) {
-                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    } catch (IOException e) {
-                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    } catch (FontFormatException e) {
-                        log.error("Couldn't decode font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    }
-                }
-            }
-        }
-        //if nothing found, try the system font names
-        if (nameFound == null)
-        {
-            nameFound = fontAvailable(family, systemFontNames);
-        }
-        //create the font when found
-        return nameFound;
-    }
-    
-    private List<RuleFontFace.Source> findMatchingFontSources(FontSpec spec)
-    {
-        if (factory != null)
-            return factory.getDecoder().getFontTable().findBestMatch(spec);
-        else
-            return null; //no factory available, boxes have been created in some alternative way, no font table is available
-    }
-    
-    public Font createFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
-    {
-        int fs = Font.PLAIN;
-        if (FontSpec.representsBold(weight))
-            fs = Font.BOLD;
-        if (style == CSSProperty.FontStyle.ITALIC || style == CSSProperty.FontStyle.OBLIQUE)
-            fs = fs | Font.ITALIC;
-        
-        return new Font(family, fs, size);
-    }
-    
-    public Font createFont(String family, int size, CSSProperty.FontWeight weight,
-            CSSProperty.FontStyle style, float spacing)
-    {
-        Font base = createFont(family, size, weight, style);
-        if (spacing < 0.0001)
-        {
-            return base;
-        }
-        else
-        {
-            // TRACKING value is multiplied by font size in AWT. 
-            // (0.75 has been empiricaly determined by comparing with other browsers) 
-            final float tracking = spacing / fontSize * 0.75f;
-            Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
-            attributes.put(TextAttribute.TRACKING, tracking);
-            return base.deriveFont(attributes);
-        }
-    }
-    
-    /** Returns true if the font family is available.
-     * @return The exact name of the font family or null if it's not available
-     */
-    private String fontAvailable(String family, String[] avail)
-    {
-        for (int i = 0; i < avail.length; i++)
-            if (avail[i].equalsIgnoreCase(family)) return avail[i];
-        return null;
-    }
+    abstract protected String getFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style);
 
+    //============================================================================================================================
+    
     private PxEvaluator getPxEval()
     {
         if (pxEval == null)

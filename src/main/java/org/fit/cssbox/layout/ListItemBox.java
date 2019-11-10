@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 import org.w3c.dom.Element;
 
 import cz.vutbr.web.css.CSSProperty;
@@ -51,9 +49,9 @@ public class ListItemBox extends BlockBox
 	/**
 	 * Create a new list item
 	 */
-	public ListItemBox(Element n, Graphics2D g, VisualContext ctx)
+	public ListItemBox(Element n, VisualContext ctx)
 	{
-		super(n, g, ctx);
+		super(n, ctx);
 		isblock = true;
 	}
 

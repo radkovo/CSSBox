@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-
 import org.w3c.dom.Element;
 
 /**
@@ -36,9 +34,9 @@ public class BlockReplacedBox extends BlockBox implements ReplacedBox
     /** 
      * Creates a new instance of BlockReplacedBox 
      */
-    public BlockReplacedBox(Element el, Graphics2D g, VisualContext ctx)
+    public BlockReplacedBox(Element el, VisualContext ctx)
     {
-        super(el, g, ctx);
+        super(el, ctx);
     }
 
     /** 

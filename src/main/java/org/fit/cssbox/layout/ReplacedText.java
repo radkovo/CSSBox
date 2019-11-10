@@ -155,13 +155,14 @@ public class ReplacedText extends ReplacedContent
     
     private void createLayout(Dimension dim)
     {
-        VisualContext ctx = new VisualContext(null, getOwner().getViewport().getFactory());
+        VisualContext ctx = getOwner().getVisualContext().create();
+        ctx.setParentContext(ctx); //ctx is the root context for the nested text
         
         log.trace("Creating boxes");
         BoxFactory factory = new BoxFactory(decoder, base);
         factory.setConfig(owner.getViewport().getConfig());
         factory.reset();
-        viewport = factory.createViewportTree(decoder.getRoot(), owner.getGraphics(), ctx, dim.width, dim.height);
+        viewport = factory.createViewportTree(decoder.getRoot(), ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
         viewport.initSubtree();
         

@@ -20,7 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -190,16 +189,15 @@ public class BoxFactory
      * Create the viewport and the underlying box tree from a DOM tree.
      * 
      * @param root the root element of the source DOM tree.
-     * @param g the root graphic context. Copies of this context will be used for the individual boxes. 
      * @param ctx the visual context (computed style). Copies of this context will be used for the individual boxes.
      * @param width preferred viewport width.
      * @param height preferred viewport height.
      * @return the created viewport box with the corresponding box subtrees.
      */
-    public Viewport createViewportTree(Element root, Graphics2D g, VisualContext ctx, float width, float height)
+    public Viewport createViewportTree(Element root, VisualContext ctx, float width, float height)
     {
         Element vp = createAnonymousElement(root.getOwnerDocument(), "Xdiv", "block");
-        viewport = new Viewport(vp, g, ctx, this, root, width, height);
+        viewport = new Viewport(vp, ctx, this, root, width, height);
         viewport.setConfig(config);
         overflowPropagated = false;
         BoxTreeCreationStatus stat = new BoxTreeCreationStatus(viewport);
@@ -526,7 +524,7 @@ public class BoxFactory
     private TextBox createTextBox(Text n, BoxTreeCreationStatus stat)
     {
         //TODO: in some whitespace processing modes, multiple boxes may be created
-        TextBox text = new TextBox(n, (Graphics2D) stat.parent.getGraphics().create(), stat.parent.getVisualContext().create());
+        TextBox text = new TextBox(n, stat.parent.getVisualContext().create());
         text.setOrder(next_order++);
         text.setContainingBlockBox(stat.contbox);
         text.setClipBlock(stat.clipbox);
@@ -802,7 +800,7 @@ public class BoxFactory
         if (block)
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
-            anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            anbox = new BlockBox(anelem, child.getVisualContext().create());
             anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("block"));
             ((BlockBox) anbox).contblock = false;
@@ -811,7 +809,7 @@ public class BoxFactory
         else
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xspan", "inline");
-            anbox = new InlineBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            anbox = new InlineBox(anelem, child.getVisualContext().create());
             anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("inline"));
             anbox.isblock = false;
@@ -953,7 +951,7 @@ public class BoxFactory
      */
     public ElementBox createElementInstance(ElementBox parent, Element n, NodeData style)
     {
-        ElementBox root = new InlineBox(n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
+        ElementBox root = new InlineBox(n, parent.getVisualContext().create());
         root.setViewport(viewport);
         root.setStyle(style);
         if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)

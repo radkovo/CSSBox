@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -66,9 +65,9 @@ public class TableBox extends BlockBox
     /**
      * Create a new table
      */
-    public TableBox(Element n, Graphics2D g, VisualContext ctx)
+    public TableBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
     }
     
@@ -86,7 +85,7 @@ public class TableBox extends BlockBox
      */
     public TableBox(BlockBox src)
     {
-        super(src.el, src.g, src.ctx);
+        super(src.el, src.ctx);
         copyValues(src);
         isblock = true;
     }
@@ -377,7 +376,7 @@ public class TableBox extends BlockBox
         //create the columns that haven't been specified explicitely
         determineColumnCount();
         while (columns.size() < columnCount)
-            columns.add(new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), g, ctx));
+            columns.add(new TableColumn(TableColumn.createAnonymousColumn(getParent().getElement().getOwnerDocument()), ctx));
         
         //load the parametres and ensure the minimal column widths
         if (header != null)
@@ -724,7 +723,7 @@ public class TableBox extends BlockBox
                         //the table itself may not have an owner document if it is an anonymous box itself
                         //therefore, we're using the parent's owner document
                         Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getElement().getOwnerDocument(), "tbody", "table-row-group"); 
-                        anonbody = new TableBodyBox(anonelem, g, ctx);
+                        anonbody = new TableBodyBox(anonelem, ctx);
                         anonbody.adoptParent(this);
                         anonbody.setStyle(viewport.getFactory().createAnonymousStyle("table-row-group"));
                         anonbody.setOwnerTable(this);

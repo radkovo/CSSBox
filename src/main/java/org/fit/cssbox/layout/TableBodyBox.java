@@ -19,8 +19,8 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.w3c.dom.Element;
 
@@ -46,9 +46,9 @@ public class TableBodyBox extends BlockBox
     /**
      * Create a new table body
      */
-    public TableBodyBox(Element n, Graphics2D g, VisualContext ctx)
+    public TableBodyBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         isblock = true;
         rows = new Vector<TableRowBox>();
     }
@@ -434,7 +434,7 @@ public class TableBodyBox extends BlockBox
                 if (anonrow == null)
                 {
                     Element anonelem = viewport.getFactory().createAnonymousElement(getParent().getParent().getElement().getOwnerDocument(), "tr", "table-row"); 
-                    anonrow = new TableRowBox(anonelem, g, ctx);
+                    anonrow = new TableRowBox(anonelem, ctx);
                     anonrow.adoptParent(this);
                     anonrow.setStyle(viewport.getFactory().createAnonymousStyle("table-row"));
                     addRow(anonrow);

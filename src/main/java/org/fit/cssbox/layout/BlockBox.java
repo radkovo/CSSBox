@@ -20,7 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -183,9 +182,9 @@ public class BlockBox extends ElementBox
     //=====================================================================
     
     /** Creates a new instance of BlockBox */
-    public BlockBox(Element n, Graphics2D g, VisualContext ctx)
+    public BlockBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         
         isblock = true;
         contblock = false;
@@ -219,7 +218,7 @@ public class BlockBox extends ElementBox
     /** Convert an inline box to a block box */
     public BlockBox(InlineBox src)
     {
-        super(src.el, src.g, src.ctx);
+        super(src.el, src.ctx);
         
         viewport = src.viewport;
         clipblock = src.clipblock;
@@ -284,7 +283,7 @@ public class BlockBox extends ElementBox
     @Override
     public BlockBox copyBox()
     {
-        BlockBox ret = new BlockBox(el, g, ctx);
+        BlockBox ret = new BlockBox(el, ctx);
         ret.copyValues(this);
         return ret;
     }

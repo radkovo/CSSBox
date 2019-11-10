@@ -20,8 +20,6 @@
 
 package org.fit.cssbox.layout;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -45,6 +43,7 @@ import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermNumber;
 import cz.vutbr.web.css.TermPercent;
 import cz.vutbr.web.css.TermURI;
+import cz.vutbr.web.csskit.Color;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.net.DataURLHandler;
@@ -219,9 +218,9 @@ abstract public class ElementBox extends Box
      * @param g current graphics context
      * @param ctx current visual context
      */
-    public ElementBox(Element n, Graphics2D g, VisualContext ctx)
+    public ElementBox(Element n, VisualContext ctx)
     {
-        super(n, g, ctx);
+        super(n, ctx);
         minAbsBounds = null;
         style = null;
         pseudoStyle = new HashMap<>();
@@ -1283,8 +1282,10 @@ abstract public class ElementBox extends Box
      */
     protected void loadBasicStyle()
     {
-        ctx.updateForGraphics(style, g);
+        // update the visual context based on the current style
+        ctx.update(style);
         
+        // decode additional style properties
         display = style.getProperty("display");
         if (display == null) display = CSSProperty.Display.INLINE;
         
@@ -1392,7 +1393,7 @@ abstract public class ElementBox extends Box
             if (bgc.isTransparent())
                 bgcolor = null;
             else
-                bgcolor = CSSUnits.convertColor(bgc.getValue());
+                bgcolor = bgc.getValue();
         }
         else
             bgcolor = null;
