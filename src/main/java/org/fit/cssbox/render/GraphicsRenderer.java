@@ -106,6 +106,15 @@ public class GraphicsRenderer implements BoxRenderer
         ctx.updateGraphics(g);
     }
     
+    /**
+     * Clears the drawing area represented by a Viewport and fills it with a background color.
+     * @param vp the Viewport for obtaining the canvas area and the background color 
+     */
+    public void clearCanvas(Viewport vp)
+    {
+        clearViewport(vp);
+    }
+    
     //====================================================================================================
     
     public void startElementContents(ElementBox elem)
@@ -148,12 +157,12 @@ public class GraphicsRenderer implements BoxRenderer
     @Override
     public void renderMarker(ListItemBox elem)
     {
-        drawMarker(elem, g);
+        drawListMarker(elem, g);
     }
 
     public void renderTextContent(TextBox text)
     {
-        drawContent(text, g);
+        drawTextContent(text, g);
     }
 
     public void renderReplacedContent(ReplacedBox box)
@@ -178,11 +187,6 @@ public class GraphicsRenderer implements BoxRenderer
     public void close()
     {
     }    
-    
-    public void clearCanvas(Viewport vp)
-    {
-        clearViewport(vp);
-    }
     
     //=============================================================================================
     // ElementBox
@@ -252,7 +256,7 @@ public class GraphicsRenderer implements BoxRenderer
             drawBorder(elem, g, bx1, by1, bx1, by2, border.left, 0, 0, "left", false); 
     }
     
-    private void drawBorder(ElementBox elem, Graphics2D g, float x1, float y1, float x2, float y2, float width, 
+    protected void drawBorder(ElementBox elem, Graphics2D g, float x1, float y1, float x2, float y2, float width, 
                             float right, float down, String side, boolean reverse)
     {
         TermColor tclr = elem.getStyle().getSpecifiedValue(TermColor.class, "border-"+side+"-color");
@@ -283,17 +287,17 @@ public class GraphicsRenderer implements BoxRenderer
     /**
      * Draw the list item symbol, number or image depending on list-style-type
      */
-    protected void drawMarker(ListItemBox elem, Graphics2D g)
+    protected void drawListMarker(ListItemBox elem, Graphics2D g)
     {
         Shape oldclip = setupBoxClip(g, elem); //original clip region
         
         if (elem.getMarkerImage() != null)
         {
-            if (!drawImage(elem, g))
-                drawBullet(elem, g);
+            if (!drawListImage(elem, g))
+                drawListBullet(elem, g);
         }
         else
-            drawBullet(elem, g);
+            drawListBullet(elem, g);
         
         g.setClip(oldclip);
     }
@@ -301,7 +305,7 @@ public class GraphicsRenderer implements BoxRenderer
     /**
      * Draws a bullet or text marker
      */
-    protected void drawBullet(ListItemBox elem, Graphics2D g)
+    protected void drawListBullet(ListItemBox elem, Graphics2D g)
     {
         final VisualContext ctx = elem.getVisualContext();
         setupGraphics(g, ctx);
@@ -315,13 +319,13 @@ public class GraphicsRenderer implements BoxRenderer
         else if (elem.getStyleType() == CSSProperty.ListStyleType.DISC)
             g.fill(new Ellipse2D.Float(x, y, r, r));
         else if (elem.getStyleType() != CSSProperty.ListStyleType.NONE)
-            drawText(elem, g, elem.getMarkerText());
+            drawListTextMarker(elem, g, elem.getMarkerText());
     }
     
     /**
      * Draws an image marker 
      */
-    protected boolean drawImage(ListItemBox elem, Graphics2D g)
+    protected boolean drawListImage(ListItemBox elem, Graphics2D g)
     {
         float ofs = elem.getFirstInlineBoxBaseline();
         if (ofs < 0)
@@ -341,9 +345,9 @@ public class GraphicsRenderer implements BoxRenderer
     }
 
     /**
-     * Draws a text marker
+     * Draws a text marker in a list.
      */
-    protected void drawText(ListItemBox elem, Graphics2D g, String text)
+    protected void drawListTextMarker(ListItemBox elem, Graphics2D g, String text)
     {
         // top left corner
         float x = elem.getAbsoluteContentX();
@@ -371,7 +375,7 @@ public class GraphicsRenderer implements BoxRenderer
      * @param tb the text box to draw
      * @param g the graphics context to draw on
      */
-    protected void drawContent(TextBox tb, Graphics2D g)
+    protected void drawTextContent(TextBox tb, Graphics2D g)
     {
         //top left corner
         final float x = tb.getAbsoluteBounds().x;
@@ -430,7 +434,7 @@ public class GraphicsRenderer implements BoxRenderer
     //====================================================================================================
     // Replaced boxes
     
-    public void drawReplacedContent(ReplacedBox box, Graphics2D g)
+    protected void drawReplacedContent(ReplacedBox box, Graphics2D g)
     {
         final ReplacedContent obj = box.getContentObj();
         if (obj != null)
@@ -456,7 +460,7 @@ public class GraphicsRenderer implements BoxRenderer
     }
 
     
-    public void drawReplacedImage(ReplacedImage img, Graphics2D g, int width, int height)
+    protected void drawReplacedImage(ReplacedImage img, Graphics2D g, int width, int height)
     {
         Rectangle bounds = img.getOwner().getAbsoluteContentBounds();
 
@@ -542,13 +546,16 @@ public class GraphicsRenderer implements BoxRenderer
         return oldclip;
     }
     
+    /**
+     * Converts a CSSBox LengthRect to an AWT Rectangle2D for drawing.
+     * @param rect the rectangle to be converted
+     * @return the resulting Rectangle2D
+     */
     protected Rectangle2D awtRect2D(Rectangle rect)
     {
         if (rect == null)
             return null;
         return new Rectangle2D.Float(rect.x, rect.y, rect.width, rect.height);
     }
-    
-    
     
 }
