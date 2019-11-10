@@ -123,7 +123,7 @@ public class Viewport extends BlockBox
      */
     public float getCanvasHeight()
     {
-        return width;
+        return height;
     }
     
     /**
