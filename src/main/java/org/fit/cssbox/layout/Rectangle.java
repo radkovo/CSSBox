@@ -32,7 +32,7 @@ public class Rectangle
     public float width;
     public float height;
     
-    protected Rectangle(float x, float y, float width, float height)
+    public Rectangle(float x, float y, float width, float height)
     {
         this.x = x;
         this.y = y;
@@ -40,7 +40,7 @@ public class Rectangle
         this.height = height;
     }
 
-    protected Rectangle(float width, float height)
+    public Rectangle(float width, float height)
     {
         this.x = 0;
         this.y = 0;
@@ -48,7 +48,7 @@ public class Rectangle
         this.height = height;
     }
 
-    protected Rectangle()
+    public Rectangle()
     {
         this.x = 0;
         this.y = 0;
@@ -56,7 +56,7 @@ public class Rectangle
         this.height = 0;
     }
     
-    protected Rectangle(Rectangle src)
+    public Rectangle(Rectangle src)
     {
         this.x = src.x;
         this.y = src.y;
@@ -64,7 +64,7 @@ public class Rectangle
         this.height = src.height;
     }
     
-    protected Rectangle(Dimension src)
+    public Rectangle(Dimension src)
     {
         this.x = 0;
         this.y = 0;
