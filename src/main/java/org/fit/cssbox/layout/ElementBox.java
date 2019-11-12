@@ -1351,7 +1351,7 @@ abstract public class ElementBox extends Box
                 r = ((TermInteger) len).getValue();
             else
                 r = ((TermNumber) len).getValue();
-            lineHeight = Math.round(r * ctx.getFontHeight());
+            lineHeight = r * ctx.getFontHeight();
         }
 
         //whitespace

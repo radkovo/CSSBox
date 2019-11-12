@@ -59,6 +59,8 @@ public class GraphicsVisualContext extends VisualContext
     private Graphics2D g;
     private Font font; //current font
     private FontMetrics fm; //current font metrics
+    private float ex; // 1ex length in points
+    private float ch; // 1ch length in points
     
 
     public GraphicsVisualContext(Graphics2D g, VisualContext parent, BoxFactory factory)
@@ -66,7 +68,7 @@ public class GraphicsVisualContext extends VisualContext
         super(parent, factory);
         this.g = g;
         font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
-        initGraphics(g);
+        updateMetrics(g);
     }
 
     @Override
@@ -74,6 +76,7 @@ public class GraphicsVisualContext extends VisualContext
     {
         GraphicsVisualContext ret = new GraphicsVisualContext(g, this, this.getFactory());
         ret.copyVisualContext(this);
+        ret.updateMetrics(g);
         return ret;
     }
     
@@ -84,6 +87,8 @@ public class GraphicsVisualContext extends VisualContext
         if (src instanceof GraphicsVisualContext)
         {
             font = ((GraphicsVisualContext) src).font;
+            ex = src.getEx();
+            ch = src.getCh();
         }
     }
     
@@ -92,24 +97,29 @@ public class GraphicsVisualContext extends VisualContext
     public void update(NodeData style)
     {
         super.update(style);
-        initGraphics(g);
+        updateMetrics(g);
     }
     
     /**
-     * The AWT font used for the box.
-     * @return current font
+     * Gets the 1ex length in points
+     * @return the ex size in points
      */
-    public Font getFont()
+    public float getEx()
     {
-        return font;
-    }
-    
-    @Override
-    public String getFontFamily()
-    {
-        return font.getFamily();
+        return ex;
     }
 
+    /**
+     * Gets the 1ch length in points
+     * @return the ch size in points
+     */
+    public float getCh()
+    {
+        return ch;
+    }
+    
+    //=========================================================================
+    
     /** 
      * Updates a Graphics according to this context
      * @param g Graphics to be updated
@@ -120,26 +130,31 @@ public class GraphicsVisualContext extends VisualContext
         g.setColor(GraphicsRenderer.convertColor(color));
     }
      
-    /** 
-     * Updates this context according to the given style. Moreover given Graphics is updated
-     * to this style and used for taking the font metrics.
-     * TODO ?
-     * @param style the style data to be used
-     * @param g Graphics to be updated and used 
+    /**
+     * Updates the font metrics and the ex, and ch values. 
+     * @param g Graphics to be used for computing the font metrics 
      */
-    private void initGraphics(Graphics2D g)
+    private void updateMetrics(Graphics2D g)
     {
-        updateGraphics(g);
-        fm = g.getFontMetrics();
+        // create a working copy of the graphic context
+        final Graphics2D cg = (Graphics2D) g.create(); 
+        // set the graphics font to the current font
+        updateGraphics(cg);
+        // get the font metrics
+        fm = cg.getFontMetrics();
         
         //update the width units
-        //em has been updated in update()
-        
+        //em and rem are maintained by the parent class (VisualContext)
         FontRenderContext frc = new FontRenderContext(null, false, false);
         TextLayout layout = new TextLayout("x", font, frc);
-        setEx((float) layout.getBounds().getHeight());
-        
-        setCh(fm.charWidth('0'));
+        ex = (float) layout.getBounds().getHeight();
+        ch = fm.charWidth('0');
+    }
+    
+    @Override
+    public float stringWidth(String text)
+    {
+        return fm.stringWidth(text);
     }
     
     //=========================================================================
@@ -147,10 +162,16 @@ public class GraphicsVisualContext extends VisualContext
     @Override
     public void setCurrentFont(String family, float size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style, float spacing)
     {
-        font = createFont(family, Math.round(size), weight, style, spacing);
-        setEm(size);
+        // AWT specifies the font sizes px (in points with 72dpi)
+        font = createFont(family, Math.round(CSSUnits.pixels(size)), weight, style, CSSUnits.pixels(spacing));
     }
     
+    @Override
+    public String getFontFamily()
+    {
+        return font.getFamily();
+    }
+
     @Override
     public FontInfo getFontInfo()
     {
@@ -185,6 +206,15 @@ public class GraphicsVisualContext extends VisualContext
         }
         //nothing found, use Serif
         return java.awt.Font.SERIF;
+    }
+    
+    /**
+     * The AWT font used for the box.
+     * @return current font
+     */
+    public Font getFont()
+    {
+        return font;
     }
     
     /**
@@ -314,12 +344,6 @@ public class GraphicsVisualContext extends VisualContext
     public LineMetrics getLineMetrics(String text)
     {
         return getFont().getLineMetrics(text, g.getFontRenderContext());
-    }
-    
-    @Override
-    public float stringWidth(String text)
-    {
-        return fm.stringWidth(text);
     }
     
 }

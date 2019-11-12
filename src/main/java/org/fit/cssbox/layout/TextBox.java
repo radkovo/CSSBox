@@ -168,8 +168,6 @@ public class TextBox extends Box implements Inline
         super.setParent(parent);
         if (getParent() != null)
         {
-            //update the visual context
-            ctx.update(getParent().getStyle());
             //load the relevant style values
             transform = getParent().getStyle().getProperty("text-transform");
             if (transform == null)
@@ -179,7 +177,7 @@ public class TextBox extends Box implements Inline
             {
                 TermLength lenspec = getParent().getStyle().getValue(TermLength.class, "word-spacing");
                 if (lenspec != null)
-                    wordSpacing = (float) ctx.pxLength(lenspec);            
+                    wordSpacing = ctx.pxLength(lenspec);            
             }
             else
                 wordSpacing = null;

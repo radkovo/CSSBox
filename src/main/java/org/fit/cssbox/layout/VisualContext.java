@@ -27,9 +27,16 @@ import org.fit.cssbox.css.CSSUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.vutbr.web.css.*;
-import cz.vutbr.web.css.CSSProperty.FontFamily;
-import cz.vutbr.web.css.CSSProperty.TextDecoration;
+import cz.vutbr.web.css.CSSProperty;
+import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermAngle;
+import cz.vutbr.web.css.TermCalc;
+import cz.vutbr.web.css.TermColor;
+import cz.vutbr.web.css.TermFloatValue;
+import cz.vutbr.web.css.TermLength;
+import cz.vutbr.web.css.TermLengthOrPercent;
+import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.csskit.CalcArgs;
 import cz.vutbr.web.csskit.Color;
 import cz.vutbr.web.csskit.TermCalcAngleImpl;
@@ -48,17 +55,13 @@ public abstract class VisualContext
     private VisualContext rootContext; //the visual context of the root element
     private BoxFactory factory; //the factory used for obtaining current configuration
     private Viewport viewport; //the viewport used for obtaining the vw sizes
-    private float fontSize;
+    private float fontSize; //font size in pt
     private CSSProperty.FontWeight fontWeight;
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
     private List<CSSProperty.TextDecoration> textDecoration;
     private float letterSpacing; //additional letter spacing in pixels
-    private float em; //number of pixels in 1em
-    private float rem; //number of pixels in 1rem 
-    private float ex; //number of pixels in 1ex
-    private float ch; //number of pixels in 1ch
-    private float dpi; //number of pixels in 1 inch
+    private float rem; // 1rem length in points 
     
     public Color color; //current text color
 
@@ -73,15 +76,11 @@ public abstract class VisualContext
         this.parent = parent;
         this.factory = factory;
         rootContext = (parent == null) ? this : parent.rootContext;
-        em = CSSUnits.medium_font;
-        rem = em;
-        ex = 0.6f * em;
-        ch = 0.8f * ch; //just an initial guess, updated in updateForGraphics()
-        dpi = org.fit.cssbox.css.CSSUnits.dpi;
-        fontSize = CSSUnits.points(CSSUnits.medium_font);
+        fontSize = CSSUnits.medium_font;
         fontWeight = CSSProperty.FontWeight.NORMAL;
         fontStyle = CSSProperty.FontStyle.NORMAL;
         fontVariant = CSSProperty.FontVariant.NORMAL;
+        rem = fontSize;
         textDecoration = new ArrayList<CSSProperty.TextDecoration>(2); //it is not very probable to have more than two decorations
         letterSpacing = 0.0f;
         color = new Color(0, 0, 0);
@@ -91,11 +90,7 @@ public abstract class VisualContext
     {
         viewport = src.viewport;
         rootContext = src.rootContext;
-        em = src.em;
         rem = src.rem;
-        ex = src.ex;
-        ch = src.ch;
-        dpi = src.dpi;
         fontSize = src.fontSize;
         fontWeight = src.fontWeight;
         fontStyle = src.fontStyle;
@@ -219,15 +214,17 @@ public abstract class VisualContext
     }
     
     /**
+     * Gets the em value for the current context. It is always equal to FontSize.
      * @return the em value of the context
      */
     public float getEm()
     {
-        return em;
+        return fontSize;
     }
 
     /**
-     * @return the rem value of the context
+     * Gets the 1rem length in points
+     * @return the rem size in points
      */
     public float getRem()
     {
@@ -235,47 +232,20 @@ public abstract class VisualContext
     }
 
     /**
-     * @return the ex value of the context
+     * Gets the 1ex length in points
+     * @return the ex size in points
      */
-    public float getEx()
-    {
-        return ex;
-    }
+    abstract public float getEx();
 
     /**
-     * @return the 'ch' value of the context
+     * Gets the 1ch length in points
+     * @return the ch size in points
      */
-    public float getCh()
-    {
-        return ch;
-    }
+    abstract public float getCh();
     
-    protected void setEm(float em)
-    {
-        this.em = em;
-    }
-
     protected void setRem(float rem)
     {
         this.rem = rem;
-    }
-
-    protected void setEx(float ex)
-    {
-        this.ex = ex;
-    }
-
-    protected void setCh(float ch)
-    {
-        this.ch = ch;
-    }
-
-    /**
-     * @return the dpi value used in the context
-     */
-    public float getDpi()
-    {
-        return dpi;
     }
 
     /**
@@ -300,19 +270,20 @@ public abstract class VisualContext
      */
     public void update(NodeData style)
     {
-        //setup the font
+        // font style and weight
         CSSProperty.FontWeight weight = style.getProperty("font-weight");
         if (weight != null) fontWeight = weight;
         CSSProperty.FontStyle fstyle =  style.getProperty("font-style");
         if (fstyle != null) fontStyle = fstyle;
         
+        // font family
         String family = null;
         CSSProperty.FontFamily ff = style.getProperty("font-family");
         if (ff == null)
         {
             family = getFontFamily(); //use current
         }
-        else if (ff == FontFamily.list_values)
+        else if (ff == CSSProperty.FontFamily.list_values)
         {
             TermList fmlspec = style.getValue(TermList.class, "font-family");
             if (fmlspec == null)
@@ -328,40 +299,40 @@ public abstract class VisualContext
                 family = ff.getAWTValue(); //could not translate - use as is
         }
         
+        // font size in pt
         float size;
-        float psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();
-        CSSProperty.FontSize fsize = style.getProperty("font-size");
-        if (fsize == null)
-            size = em;
+        final float psize = (parent == null) ? CSSUnits.medium_font : parent.getEm();
+        final CSSProperty.FontSize fsize = style.getProperty("font-size");
+        if (fsize == null) //no specification - use the parent size
+            size = psize;
         else if (fsize == CSSProperty.FontSize.length || fsize == CSSProperty.FontSize.percentage)
         {
             TermLengthOrPercent lenspec = style.getValue(TermLengthOrPercent.class, "font-size");
             if (lenspec != null)
             {
-                em = psize;
-                size = pxLength(lenspec, psize); //pixels are ok here (java is fixed to 72 dpi for font sizes)
+                if (parent != null)
+                    size = parent.ptLength(lenspec, psize);
+                else
+                    size = rootContext.ptLength(lenspec, psize);
             }
             else
-                size = em;
+                size = psize;
         }
-        else
+        else // size keywords
             size = CSSUnits.convertFontSize(psize, fsize);
-        fontSize = CSSUnits.points(size);
+        fontSize = size;
+        rem = rootContext.getEm();
         
-        if (rootContext != null)
-            rem = rootContext.getEm();
-        else
-            rem = em; //we don't have a root context?
-        
-        setCurrentFont(family, Math.round(size), fontWeight, fontStyle, letterSpacing);
-        
+        // font variant
         CSSProperty.FontVariant variant = style.getProperty("font-variant");
         if (variant != null) fontVariant = variant;
+
+        // text decoration
         CSSProperty.TextDecoration decor = style.getProperty("text-decoration");
         textDecoration.clear();
         if (decor != null)
         {
-            if (decor == TextDecoration.list_values)
+            if (decor == CSSProperty.TextDecoration.list_values)
             {
                 TermList list = style.getValue(TermList.class, "text-decoration");
                 for (Term<?> t : list)
@@ -370,11 +341,11 @@ public abstract class VisualContext
                         textDecoration.add((CSSProperty.TextDecoration) t.getValue());
                 }
             }
-            else if (decor != TextDecoration.NONE)
+            else if (decor != CSSProperty.TextDecoration.NONE)
                 textDecoration.add(decor);
         }
         
-        //letter spacing
+        // letter spacing
         CSSProperty.LetterSpacing spacing = style.getProperty("letter-spacing");
         if (spacing != null)
         {
@@ -384,13 +355,16 @@ public abstract class VisualContext
             {
                 TermLength lenspec = style.getValue(TermLength.class, "letter-spacing");
                 if (lenspec != null)
-                    letterSpacing = pxLength(lenspec);
+                    letterSpacing = ptLength(lenspec);
             }
         }
         
-        //color
+        // color
         TermColor clr = style.getSpecifiedValue(TermColor.class, "color");
         if (clr != null) color = clr.getValue();
+        
+        // update the font settings
+        setCurrentFont(family, size, fontWeight, fontStyle, letterSpacing);
     }
     
     //-----------------------------------------------------------------------
@@ -398,11 +372,11 @@ public abstract class VisualContext
     /**
      * Sets current font according to its given parametres.
      *  
-     * @param family
-     * @param size
-     * @param weight
-     * @param style
-     * @param spacing
+     * @param family font family
+     * @param size font size in pt
+     * @param weight font weight
+     * @param style font style
+     * @param spacing letter spacing in pt
      */
     abstract public void setCurrentFont(String family, float size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style, float spacing);
     
@@ -420,7 +394,7 @@ public abstract class VisualContext
     abstract public float getBaselineOffset();
     
     /** 
-     * Converts a length from a CSS length or percentage to 'pt'.
+     * Converts a length from a CSS length or percentage to 'pt'. The current font size is used for em units.
      * @param spec the CSS length specification
      * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
      * @return the length in 'pt' 
@@ -457,23 +431,23 @@ public abstract class VisualContext
                 case pc:
                     return nval * 12;
                 case px:
-                    return (nval * 72) / dpi;
+                    return CSSUnits.points(nval);
                 case em:
-                    return (em * nval * 72) / dpi; //em is in pixels
+                    return getFontSize() * nval;
                 case rem:
-                    return (rem * nval * 72) / dpi;
+                    return getRem() * nval;
                 case ex:
-                    return (ex * nval * 72) / dpi;
+                    return getEx() * nval;
                 case ch:
-                    return (ch * nval * 72) / dpi;
+                    return getCh() * nval;
                 case vw:
-                    return (viewport.getVisibleRect().getWidth() * nval * 72f) / (100.0f * dpi);
+                    return CSSUnits.points(viewport.getVisibleRect().getWidth()) * nval / 100.0f;
                 case vh:
-                    return (viewport.getVisibleRect().getHeight() * nval * 72f) / (100.0f * dpi);
+                    return CSSUnits.points(viewport.getVisibleRect().getWidth()) * nval / 100.0f;
                 case vmin:
-                    return (Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72f) / (100.0f * dpi);
+                    return CSSUnits.points(Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight())) * nval / 100.0f;
                 case vmax:
-                    return (Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval * 72f) / (100.0f * dpi);
+                    return CSSUnits.points(Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight())) * nval / 100.0f;
                 default:
                     return 0;
             }
@@ -491,7 +465,7 @@ public abstract class VisualContext
     }
     
     /** 
-     * Converts a length from a CSS length or percentage to 'px'.
+     * Converts a length from a CSS length or percentage to 'px'. The current font size is used for em units.
      * @param spec the CSS length specification
      * @param whole the value that corresponds to 100%. It is used only when spec is a percentage.
      * @return the length in 'px' 
@@ -516,27 +490,27 @@ public abstract class VisualContext
             switch (unit)
             {
                 case pt:
-                    return (nval * dpi) / 72;
+                    return nval * CSSUnits.dpi / 72.0f;
                 case in:
-                    return nval * dpi;
+                    return nval * CSSUnits.dpi;
                 case cm:
-                    return (nval * dpi) / 2.54f;
+                    return (nval * CSSUnits.dpi) / 2.54f;
                 case mm:
-                    return (nval * dpi) / 25.4f;
+                    return (nval * CSSUnits.dpi) / 25.4f;
                 case q:
-                    return (nval * dpi) / (2.54f * 40.0f);
+                    return (nval * CSSUnits.dpi) / (2.54f * 40.0f);
                 case pc:
-                    return (nval * 12 * dpi) / 72;
+                    return (nval * 12 * CSSUnits.dpi) / 72;
                 case px:
                     return nval;
                 case em:
-                    return em * nval; //em is in pixels
+                    return CSSUnits.pixels(getFontSize() * nval); //font size is in pt
                 case rem:
-                    return rem * nval; //em is in pixels
+                    return CSSUnits.pixels(getRem() * nval);
                 case ex:
-                    return ex * nval;
+                    return CSSUnits.pixels(getEx() * nval);
                 case ch:
-                    return ch * nval;
+                    return CSSUnits.pixels(getCh() * nval);
                 case vw:
                     return viewport.getVisibleRect().getWidth() * nval / 100.0f;
                 case vh:

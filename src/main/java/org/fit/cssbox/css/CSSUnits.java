@@ -30,7 +30,7 @@ import cz.vutbr.web.css.CSSProperty;
 public class CSSUnits 
 {
     public static final float dpi = 96; //CSS3 assumes fixed 96 dpi
-    public static final float medium_font = 16; //16px
+    public static final float medium_font = 12; //12pt
     private static final float font_step = 1.2f;
     public static final float THIN_BORDER = 1.0f;
     public static final float MEDIUM_BORDER = 3.0f;
@@ -56,7 +56,7 @@ public class CSSUnits
      */
     public static float convertFontSize(float parent, CSSProperty.FontSize value)
     {
-        float em = parent;
+        final float em = parent;
         float ret = em;
         if (value == CSSProperty.FontSize.MEDIUM)
             ret = medium_font;
