@@ -50,7 +50,7 @@ import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermURI;
 
 /**
- * A visual context based on a Graphics2D context
+ * A visual context implementation based on a Graphics2D context
  * 
  * @author burgetr
  */
