@@ -57,12 +57,12 @@ public class SVGRenderer implements BoxRenderer
 {
     private PrintWriter out;
     
-    private int rootw;
-    private int rooth;
+    private float rootw;
+    private float rooth;
     
     private int idcounter;
     
-    public SVGRenderer(int rootWidth, int rootHeight, Writer out)
+    public SVGRenderer(float rootWidth, float rootHeight, Writer out)
     {
         idcounter = 1;
         rootw = rootWidth;
