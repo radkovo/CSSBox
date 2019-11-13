@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.render.BoxRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,6 +228,17 @@ public abstract class Engine
     }
     
     /**
+     * Renders the viewport using the internal renderer.
+     * @param viewport the viewport to be rendered
+     */
+    protected void renderViewport(Viewport viewport)
+    {
+        final BoxRenderer r = getRenderer();
+        viewport.draw(r);
+        r.close();
+    }
+    
+    /**
      * Enables or disables the automatic viewport size update according to its contents. This is enabled by default.
      * @param b <code>true</code> for enable, <code>false</code> for disable.
      */
@@ -268,16 +280,29 @@ public abstract class Engine
 
     //==================================================================================================================
     
+    /**
+     * Initializes the output media for the given width and height. This method may be called
+     * either at the beginning process or anytime when the rendered page size changes and it
+     * gets re-rendered.
+     * @param width the output page width
+     * @param height the output page height
+     */
     protected void initOutputMedia(float width, float height)
     {
         // to be re-implemented in subclasses
     }
     
-    protected void renderViewport(Viewport viewport)
-    {
-        // to be re-implemented in subclasses
-    }
-    
+    /**
+     * Creates a root visual context which is later used in created boxes.
+     * @param factory The box factory used for creating the boxes
+     * @return The new visual context instance.
+     */
     protected abstract VisualContext createVisualContext(BoxFactory factory);
+    
+    /**
+     * Gets a renderer that is used for rendering the output in this rendering engine.
+     * @return The renderer instance
+     */
+    public abstract BoxRenderer getRenderer();
     
 }

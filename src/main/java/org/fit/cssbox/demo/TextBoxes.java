@@ -19,8 +19,6 @@
  */
 package org.fit.cssbox.demo;
 
-import java.awt.Dimension;
-
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.io.DOMSource;
@@ -28,8 +26,9 @@ import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.Box;
-import org.fit.cssbox.layout.BrowserCanvas;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
+import org.fit.cssbox.layout.GraphicsEngine;
 import org.fit.cssbox.layout.TextBox;
 import org.w3c.dom.Document;
 
@@ -90,7 +89,7 @@ public class TextBoxes
             da.getStyleSheets(); //load the author style sheets
             
             //Create the browser canvas
-            BrowserCanvas browser = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
+            GraphicsEngine browser = new GraphicsEngine(da.getRoot(), da, docSource.getURL());
             //Disable the image loading
             browser.getConfig().setLoadImages(false);
             browser.getConfig().setLoadBackgroundImages(false);

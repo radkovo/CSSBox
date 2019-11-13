@@ -24,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.render.BoxRenderer;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.w3c.dom.Element;
 
@@ -40,12 +41,27 @@ public class GraphicsEngine extends Engine
     private Graphics2D ig;
 
     
+    /** 
+     * Creates a new instance of the browser engine for a document. After creating the engine,
+     * the layout itself may be computed by calling {@link #createLayout(Dimension)}.
+     * @param root the &lt;body&gt; element of the document to be rendered
+     * @param decoder the CSS decoder used to compute the style
+     * @param baseurl the document base URL   
+     */
     public GraphicsEngine(Element root, DOMAnalyzer decoder, URL baseurl)
     {
         super(root, decoder, baseurl);
         this.createImage = true;
     }
 
+    /** 
+     * Creates a new instance of the browser engine for a document and creates the layout.
+     * 
+     * @param root the &lt;body&gt; element of the document to be rendered
+     * @param decoder the CSS decoder used to compute the style
+     * @param dim the preferred canvas dimensions
+     * @param baseurl the document base URL   
+     */
     public GraphicsEngine(Element root, DOMAnalyzer decoder, Dimension dim, URL baseurl)
     {
         super(root, decoder, dim, baseurl);
@@ -53,7 +69,8 @@ public class GraphicsEngine extends Engine
     }
 
     /**
-     * @return the graphics context for drawing in the page image
+     * Gets the graphic context for drawing in the page image.
+     * @return the graphics context
      */
     public Graphics2D getImageGraphics()
     {
@@ -61,6 +78,7 @@ public class GraphicsEngine extends Engine
     }
     
     /**
+     * Gets the image used for rendering the page.
      * @return image containing the rendered page
      */
     public BufferedImage getImage()
@@ -101,14 +119,19 @@ public class GraphicsEngine extends Engine
     }
     
     @Override
+    public BoxRenderer getRenderer()
+    {
+        return new GraphicsRenderer(ig);
+    }
+
+    @Override
     protected void renderViewport(Viewport viewport)
     {
-        GraphicsRenderer r = new GraphicsRenderer(ig); 
+        // adds clearCanvas before rendering
+        GraphicsRenderer r = (GraphicsRenderer) getRenderer();
         r.clearCanvas(viewport);
         viewport.draw(r);
         r.close();
     }
-
-    
     
 }

@@ -1,6 +1,6 @@
 /*
  * BrowserCanvas.java
- * Copyright (c) 2005-2014 Radek Burget
+ * Copyright (c) 2005-2019 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -41,19 +41,30 @@ public class BrowserCanvas extends JPanel
     private GraphicsEngine engine;
     
     /** 
-     * Creates a new instance of the browser engine for a document. After creating the engine,
-     * the layout itself may be computed by calling {@link #createLayout(Dimension)}.
+     * Creates a browser canvas using an existing configured rendering engine.
+     * @param engine the rendering engine
+     */
+    public BrowserCanvas(GraphicsEngine engine)
+    {
+        this.engine = engine;
+    }
+    
+    /**
+     * Creates a browser canvas together with a new instance of the browser engine for a document.
+     * After creating the engine, the layout itself may be computed by 
+     * calling {@link #createLayout(Dimension)}.
      * @param root the &lt;body&gt; element of the document to be rendered
      * @param decoder the CSS decoder used to compute the style
      * @param baseurl the document base URL   
      */
     public BrowserCanvas(org.w3c.dom.Element root, DOMAnalyzer decoder, URL baseurl)
     {
-        engine = new GraphicsEngine(root, decoder, baseurl);
+        this(new GraphicsEngine(root, decoder, baseurl));
     }
     
     /** 
-     * Creates a new instance of the browser engine for a document and creates the layout.
+     * Creates a browser canvas together with a new instance of the browser engine for a document
+     * and creates the layout.
      * 
      * @param root the &lt;body&gt; element of the document to be rendered
      * @param decoder the CSS decoder used to compute the style
@@ -64,7 +75,7 @@ public class BrowserCanvas extends JPanel
                          DOMAnalyzer decoder,
                          Dimension dim, URL baseurl)
     {
-        engine = new GraphicsEngine(root, decoder, dim, baseurl);
+        this(new GraphicsEngine(root, decoder, dim, baseurl));
     }
 
     /**
@@ -110,6 +121,19 @@ public class BrowserCanvas extends JPanel
     }
     
     /**
+     * Creates the document layout according to the canvas and viewport size and position. If the size 
+     * of the resulting page is greater than the specified one (e.g. there is an explicit width or height
+     * specified for the resulting page), the total canvas size is updated automatically.
+     * @param dim the total canvas size 
+     * @param visibleRect the viewport (the visible area) size and position
+     */
+    public void createLayout(java.awt.Dimension dim, java.awt.Rectangle visibleRect)
+    {
+        createLayout(new Dimension(dim.width, dim.height),
+                new Rectangle(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height));
+    }
+    
+    /**
      * Redraws all the rendered boxes.
      */
     public void redrawBoxes()
@@ -118,4 +142,24 @@ public class BrowserCanvas extends JPanel
         revalidate();
     }
 
+    /**
+     * Sets the internal browser engine configuration. This is equal to calling
+     * {@link #getEngine()}.{@link Engine#setConfig(BrowserConfig)}.
+     * @param config The new browser config.
+     */
+    public void setConfig(BrowserConfig config)
+    {
+        engine.setConfig(config);
+    }
+
+    /**
+     * Gets the internal browser engine configuration. This is equal to calling
+     * {@link #getEngine()}.{@link Engine#getConfig()}.
+     * @return the browser configuration
+     */
+    public BrowserConfig getConfig()
+    {
+        return engine.getConfig();
+    }
+    
 }

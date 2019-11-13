@@ -196,7 +196,7 @@ public class BoxBrowser
             contentScroll.setViewportView(contentCanvas);
 
             //box tree
-            Viewport viewport = ((BrowserCanvas) contentCanvas).getViewport();
+            Viewport viewport = ((BrowserCanvas) contentCanvas).getEngine().getViewport();
             root = createBoxTree(viewport);
             boxTree.setModel(new DefaultTreeModel(root));
             
@@ -805,7 +805,7 @@ public class BoxBrowser
                         ((BrowserCanvas) contentCanvas).createLayout(contentScroll.getSize(), contentScroll.getViewport().getViewRect());
                         contentScroll.repaint();
                         //new box tree
-                        root = createBoxTree(((BrowserCanvas) contentCanvas).getViewport());
+                        root = createBoxTree(((BrowserCanvas) contentCanvas).getEngine().getViewport());
                         boxTree.setModel(new DefaultTreeModel(root));
                     }
                 }
@@ -949,7 +949,7 @@ public class BoxBrowser
                         Box box = (Box) node.getUserObject();
                         if (box != null)
                         {
-                            drawExtent(box, ((BrowserCanvas) contentCanvas).getImageGraphics());
+                            drawExtent(box, ((BrowserCanvas) contentCanvas).getEngine().getImageGraphics());
                             contentCanvas.repaint();
                             displayBoxInfo(box);
                             

@@ -19,7 +19,6 @@
  */
 package org.fit.cssbox.testing;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,7 +36,8 @@ import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
-import org.fit.cssbox.layout.BrowserCanvas;
+import org.fit.cssbox.layout.Dimension;
+import org.fit.cssbox.layout.GraphicsEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -184,7 +184,7 @@ public class ReferenceTestCase implements Callable<Float>
         da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); //render form fields using css
         da.getStyleSheets(); //load the author style sheets
         
-        BrowserCanvas contentCanvas = new BrowserCanvas(da.getRoot(), da, docSource.getURL());
+        GraphicsEngine contentCanvas = new GraphicsEngine(da.getRoot(), da, docSource.getURL());
         contentCanvas.setAutoMediaUpdate(false); //we have a correct media specification, do not update
         contentCanvas.getConfig().setClipViewport(cropWindow);
         contentCanvas.getConfig().setLoadImages(loadImages);
