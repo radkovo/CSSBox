@@ -62,12 +62,16 @@ public class GraphicsVisualContext extends VisualContext
     private float ex; // 1ex length in points
     private float ch; // 1ch length in points
     
+    /** Default font attributes used when creating fonts */
+    private HashMap<TextAttribute, Object> defaultFontAttributes;
+    
 
     public GraphicsVisualContext(Graphics2D g, VisualContext parent, BoxFactory factory)
     {
         super(parent, factory);
         this.g = g;
         font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
+        defaultFontAttributes = new HashMap<>();
         updateMetrics(g);
     }
 
@@ -298,7 +302,7 @@ public class GraphicsVisualContext extends VisualContext
             return null; //no factory available, boxes have been created in some alternative way, no font table is available
     }
     
-    private Font createFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    protected Font createBaseFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
     {
         int fs = Font.PLAIN;
         if (FontSpec.representsBold(weight))
@@ -309,23 +313,25 @@ public class GraphicsVisualContext extends VisualContext
         return new Font(family, fs, size);
     }
     
-    private Font createFont(String family, int size, CSSProperty.FontWeight weight,
+    protected Font createFont(String family, int size, CSSProperty.FontWeight weight,
             CSSProperty.FontStyle style, float spacing)
     {
-        Font base = createFont(family, size, weight, style);
-        if (spacing < 0.0001)
-        {
-            return base;
-        }
-        else
+        Font base = createBaseFont(family, size, weight, style);
+        Map<TextAttribute, Object> attributes = new HashMap<>(defaultFontAttributes);
+        // add tracking when needed
+        if (spacing >= 0.0001)
         {
             // TRACKING value is multiplied by font size in AWT. 
             // (0.75 has been empiricaly determined by comparing with other browsers) 
             final float tracking = spacing / getFontSize() * 0.75f;
-            Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
+            
             attributes.put(TextAttribute.TRACKING, tracking);
-            return base.deriveFont(attributes);
         }
+        // derive the font when some attributes have been set
+        if (attributes.isEmpty())
+            return base;
+        else
+            return base.deriveFont(attributes);
     }
     
     /** Returns true if the font family is available.
@@ -336,6 +342,16 @@ public class GraphicsVisualContext extends VisualContext
         for (int i = 0; i < avail.length; i++)
             if (avail[i].equalsIgnoreCase(family)) return avail[i];
         return null;
+    }
+    
+    /**
+     * Gets the map of default font attributes used when creating new fonts.
+     * By modifying this map, the new font creation may be adjusted.
+     * @return The font attribute map
+     */
+    public HashMap<TextAttribute, Object> getDefaultFontAttributes()
+    {
+        return defaultFontAttributes;
     }
     
     //=========================================================================

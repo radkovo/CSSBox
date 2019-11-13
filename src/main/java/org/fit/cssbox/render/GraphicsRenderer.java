@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.TextAttribute;
@@ -85,24 +84,12 @@ public class GraphicsRenderer implements BoxRenderer
     }
     
     /**
-     * Sets the default Graphics2D parametres.
-     * @param g The graphics to be configured.
-     */
-    protected void setupGraphics(Graphics2D g)
-    {
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-    }
-    
-    /**
      * Sets the default Graphics2D parametres and configures according to a given visual context.
      * @param g The graphics to be configured.
      * @param ctx The visual context.
      */
     protected void setupGraphics(Graphics2D g, GraphicsVisualContext ctx)
     {
-        setupGraphics(g);
         ctx.updateGraphics(g);
     }
     

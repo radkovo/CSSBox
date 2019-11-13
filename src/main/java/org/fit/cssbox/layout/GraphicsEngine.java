@@ -20,6 +20,7 @@
 package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
@@ -96,10 +97,23 @@ public class GraphicsEngine extends Engine
     {
         img = image;
         ig = img.createGraphics();
+        setupGraphics(ig);
         createImage = false;
     }
 
     //==========================================================================================================
+    
+    /**
+     * Sets the default Graphics2D parametres.
+     * @param g The graphics to be configured.
+     */
+    protected void setupGraphics(Graphics2D g)
+    {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        //g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+    }
     
     @Override
     protected void initOutputMedia(float width, float height)
@@ -108,13 +122,15 @@ public class GraphicsEngine extends Engine
         {
             img = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_RGB);
             ig = img.createGraphics();
+            setupGraphics(ig);
         }
     }
 
     @Override
     protected VisualContext createVisualContext(BoxFactory factory)
     {
-        VisualContext ctx = new GraphicsVisualContext(ig, null, factory);
+        GraphicsVisualContext ctx = new GraphicsVisualContext(ig, null, factory);
+        //ctx.getDefaultFontAttributes().put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         return ctx;
     }
     
