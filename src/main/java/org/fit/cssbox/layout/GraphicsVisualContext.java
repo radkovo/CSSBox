@@ -94,6 +94,7 @@ public class GraphicsVisualContext extends VisualContext
     
     //=========================================================================
     
+    @Override
     public void update(NodeData style)
     {
         super.update(style);
@@ -104,6 +105,7 @@ public class GraphicsVisualContext extends VisualContext
      * Gets the 1ex length in points
      * @return the ex size in points
      */
+    @Override
     public float getEx()
     {
         return ex;
@@ -113,6 +115,7 @@ public class GraphicsVisualContext extends VisualContext
      * Gets the 1ch length in points
      * @return the ch size in points
      */
+    @Override
     public float getCh()
     {
         return ch;
@@ -147,8 +150,8 @@ public class GraphicsVisualContext extends VisualContext
         //em and rem are maintained by the parent class (VisualContext)
         FontRenderContext frc = new FontRenderContext(null, false, false);
         TextLayout layout = new TextLayout("x", font, frc);
-        ex = (float) layout.getBounds().getHeight();
-        ch = fm.charWidth('0');
+        ex = CSSUnits.points((float) layout.getBounds().getHeight());
+        ch = CSSUnits.points(fm.charWidth('0'));
     }
     
     @Override
