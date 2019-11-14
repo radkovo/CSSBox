@@ -19,6 +19,8 @@
  */
 package org.fit.cssbox.testing;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -184,14 +186,24 @@ public class ReferenceTestCase implements Callable<Float>
         da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT); //render form fields using css
         da.getStyleSheets(); //load the author style sheets
         
-        GraphicsEngine contentCanvas = new GraphicsEngine(da.getRoot(), da, docSource.getURL());
-        contentCanvas.setAutoMediaUpdate(false); //we have a correct media specification, do not update
-        contentCanvas.getConfig().setClipViewport(cropWindow);
-        contentCanvas.getConfig().setLoadImages(loadImages);
-        contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
+        GraphicsEngine engine = new GraphicsEngine(da.getRoot(), da, docSource.getURL()) {
+            @Override
+            protected void setupGraphics(Graphics2D g)
+            {
+                // disable antialiasing for testing in order to compare the resulting images more precisely
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+                g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            }
+        };
+        engine.setUseKerning(false);
+        engine.setAutoMediaUpdate(false); //we have a correct media specification, do not update
+        engine.getConfig().setClipViewport(cropWindow);
+        engine.getConfig().setLoadImages(loadImages);
+        engine.getConfig().setLoadBackgroundImages(loadBackgroundImages);
 
-        contentCanvas.createLayout(windowSize);
-        return contentCanvas.getImage();
+        engine.createLayout(windowSize);
+        return engine.getImage();
     }
     
     /**
