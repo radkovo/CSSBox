@@ -276,6 +276,7 @@ public class GraphicsRenderer implements BoxRenderer
      */
     protected void drawListMarker(ListItemBox elem, Graphics2D g)
     {
+        setupGraphics(g, (GraphicsVisualContext) elem.getVisualContext());
         Shape oldclip = setupBoxClip(g, elem); //original clip region
         
         if (elem.getMarkerImage() != null)
@@ -295,7 +296,6 @@ public class GraphicsRenderer implements BoxRenderer
     protected void drawListBullet(ListItemBox elem, Graphics2D g)
     {
         final VisualContext ctx = elem.getVisualContext();
-        setupGraphics(g, (GraphicsVisualContext) ctx);
         float x = elem.getAbsoluteContentX() - 1.2f * ctx.getEm();
         float y = elem.getAbsoluteContentY() + 0.5f * ctx.getEm();
         float r = 0.4f * ctx.getEm();
