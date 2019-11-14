@@ -21,6 +21,7 @@ package org.fit.cssbox.layout;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
@@ -40,6 +41,9 @@ public class GraphicsEngine extends Engine
     private boolean createImage;
     private BufferedImage img;
     private Graphics2D ig;
+    
+    boolean useFractionalMetrics = false;
+    boolean useKerning = true;
 
     
     /** 
@@ -101,6 +105,44 @@ public class GraphicsEngine extends Engine
         createImage = false;
     }
 
+    /**
+     * Tests if fractional metrics are used by this engine.
+     * @return {@code true} when yes
+     */
+    protected boolean isUseFractionalMetrics()
+    {
+        return useFractionalMetrics;
+    }
+
+    /**
+     * Switches using the fractional metrics on or off. This is a good idea for high-resolution or vector
+     * output (such as SVG). On low-resolution display (such as a standard bitmap output), better results
+     * are usually achieved with the fractional metrics switched off. Default is off.
+     * @param useFractionalMetrics
+     */
+    protected void setUseFractionalMetrics(boolean useFractionalMetrics)
+    {
+        this.useFractionalMetrics = useFractionalMetrics;
+    }
+
+    /**
+     * Tests if font kerning is used by this engine.
+     * @return {@code true} when yes
+     */
+    protected boolean isUseKerning()
+    {
+        return useKerning;
+    }
+
+    /**
+     * Switches the font kerning default is on.
+     * @param useKerning
+     */
+    protected void setUseKerning(boolean useKerning)
+    {
+        this.useKerning = useKerning;
+    }
+
     //==========================================================================================================
     
     /**
@@ -112,7 +154,8 @@ public class GraphicsEngine extends Engine
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        //g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        if (useFractionalMetrics)
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
     }
     
     @Override
@@ -130,7 +173,8 @@ public class GraphicsEngine extends Engine
     protected VisualContext createVisualContext(BoxFactory factory)
     {
         GraphicsVisualContext ctx = new GraphicsVisualContext(ig, null, factory);
-        //ctx.getDefaultFontAttributes().put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+        if (useKerning)
+            ctx.getDefaultFontAttributes().put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         return ctx;
     }
     

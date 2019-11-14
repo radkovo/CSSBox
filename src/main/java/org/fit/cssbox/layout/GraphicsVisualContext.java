@@ -91,6 +91,7 @@ public class GraphicsVisualContext extends VisualContext
         if (src instanceof GraphicsVisualContext)
         {
             font = ((GraphicsVisualContext) src).font;
+            defaultFontAttributes = ((GraphicsVisualContext) src).defaultFontAttributes;
             ex = src.getEx();
             ch = src.getCh();
         }
