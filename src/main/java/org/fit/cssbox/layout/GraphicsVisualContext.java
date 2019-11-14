@@ -162,7 +162,14 @@ public class GraphicsVisualContext extends VisualContext
     @Override
     public float stringWidth(String text)
     {
-        return fm.stringWidth(text);
+        if (text.isEmpty())
+            return 0;
+        else
+        {
+            final Graphics2D cg = (Graphics2D) g.create(); 
+            updateGraphics(cg);
+            return (float) fm.getStringBounds(text, cg).getWidth();
+        }
     }
     
     //=========================================================================
