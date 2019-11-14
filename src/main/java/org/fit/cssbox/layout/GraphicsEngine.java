@@ -109,7 +109,7 @@ public class GraphicsEngine extends Engine
      * Tests if fractional metrics are used by this engine.
      * @return {@code true} when yes
      */
-    protected boolean isUseFractionalMetrics()
+    public boolean isUseFractionalMetrics()
     {
         return useFractionalMetrics;
     }
@@ -120,7 +120,7 @@ public class GraphicsEngine extends Engine
      * are usually achieved with the fractional metrics switched off. Default is off.
      * @param useFractionalMetrics
      */
-    protected void setUseFractionalMetrics(boolean useFractionalMetrics)
+    public void setUseFractionalMetrics(boolean useFractionalMetrics)
     {
         this.useFractionalMetrics = useFractionalMetrics;
     }
@@ -129,7 +129,7 @@ public class GraphicsEngine extends Engine
      * Tests if font kerning is used by this engine.
      * @return {@code true} when yes
      */
-    protected boolean isUseKerning()
+    public boolean isUseKerning()
     {
         return useKerning;
     }
@@ -138,7 +138,7 @@ public class GraphicsEngine extends Engine
      * Switches the font kerning default is on.
      * @param useKerning
      */
-    protected void setUseKerning(boolean useKerning)
+    public void setUseKerning(boolean useKerning)
     {
         this.useKerning = useKerning;
     }
