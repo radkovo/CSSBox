@@ -80,7 +80,7 @@ public class GraphicsEngine extends Engine
      */
     public Graphics2D getImageGraphics()
     {
-        return img.createGraphics();
+        return ig;
     }
     
     /**

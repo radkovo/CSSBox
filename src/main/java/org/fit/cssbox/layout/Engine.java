@@ -120,6 +120,11 @@ public abstract class Engine
         return viewport;
     }
     
+    public void setViewport(Viewport viewport)
+    {
+        this.viewport = viewport;
+    }
+
     /**
      * Gets the DOM root used for rendering.
      * @return The root element of the DOM tree.
@@ -127,6 +132,11 @@ public abstract class Engine
     public org.w3c.dom.Element getRootElement()
     {
         return root;
+    }
+    
+    public void setRootElement(org.w3c.dom.Element root)
+    {
+        this.root = root;
     }
 
     /**
