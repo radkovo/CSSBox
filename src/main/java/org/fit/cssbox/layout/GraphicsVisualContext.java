@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.fit.cssbox.css.CSSUnits;
@@ -44,9 +43,6 @@ import org.fit.net.DataURLHandler;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.NodeData;
-import cz.vutbr.web.css.RuleFontFace;
-import cz.vutbr.web.css.Term;
-import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermURI;
 
 /**
@@ -205,24 +201,6 @@ public class GraphicsVisualContext extends VisualContext
         return fm.getAscent();
     }
     
-    @Override
-    protected String getFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
-    {
-        for (Term<?> term : list)
-        {
-            Object value = term.getValue();
-            if (value instanceof CSSProperty.FontFamily)
-                return ((CSSProperty.FontFamily) value).getAWTValue();
-            else
-            {
-                String name = lookupFont(value.toString(), weight, style);
-                if (name != null) return name;
-            }
-        }
-        //nothing found, use Serif
-        return java.awt.Font.SERIF;
-    }
-    
     /**
      * The AWT font used for the box.
      * @return current font
@@ -230,84 +208,6 @@ public class GraphicsVisualContext extends VisualContext
     public Font getFont()
     {
         return font;
-    }
-    
-    /**
-     * Check if the font family is available either among the CSS defined fonts or the system fonts.
-     * If found, registers a system font with the given name. 
-     * @param family Required font family
-     * @param weight Required font weight
-     * @param style Required font style
-     * @return The corresponding system font name or {@code null} when no candidates have been found. 
-     */
-    private String lookupFont(String family, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
-    {
-        final String systemFontNames[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-        //try to look in the style font table
-        String nameFound = null;
-        FontSpec spec = new FontSpec(family, weight, style);
-        List<RuleFontFace.Source> srcs = findMatchingFontSources(spec);
-        if (srcs != null)
-        {
-            for (RuleFontFace.Source src : srcs)
-            {
-                if (src instanceof RuleFontFace.SourceLocal)
-                {
-                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName(), systemFontNames);
-                    if (name != null)
-                    {
-                        nameFound = name;
-                        break;
-                    }
-                }
-                else if (src instanceof RuleFontFace.SourceURL && getViewport().getConfig().isLoadFonts())
-                {
-                    try
-                    {
-                        TermURI urlstring = ((RuleFontFace.SourceURL) src).getURI();
-                        String format = ((RuleFontFace.SourceURL) src).getFormat();
-                        if (format == null || FontDecoder.supportedFormats.contains(format))
-                        {
-                            URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
-                            String regName = FontDecoder.findRegisteredFont(url);
-                            if (regName == null)
-                            {
-                                DocumentSource imgsrc = getViewport().getConfig().createDocumentSource(url);
-                                Font newFont = FontDecoder.decodeFont(imgsrc, format);
-                                if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
-                                    log.debug("Registered font: {}", newFont.getFontName());
-                                else
-                                    log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
-                                regName = newFont.getFontName();
-                                FontDecoder.registerFont(url, regName);
-                            }
-                            nameFound = regName;
-                        }
-                    } catch (MalformedURLException e) {
-                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    } catch (IOException e) {
-                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    } catch (FontFormatException e) {
-                        log.error("Couldn't decode font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
-                    }
-                }
-            }
-        }
-        //if nothing found, try the system font names
-        if (nameFound == null)
-        {
-            nameFound = fontAvailable(family, systemFontNames);
-        }
-        //create the font when found
-        return nameFound;
-    }
-    
-    private List<RuleFontFace.Source> findMatchingFontSources(FontSpec spec)
-    {
-        if (getFactory() != null)
-            return getFactory().getDecoder().getFontTable().findBestMatch(spec);
-        else
-            return null; //no factory available, boxes have been created in some alternative way, no font table is available
     }
     
     protected Font createBaseFont(String family, int size, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
@@ -342,14 +242,72 @@ public class GraphicsVisualContext extends VisualContext
             return base.deriveFont(attributes);
     }
     
-    /** Returns true if the font family is available.
-     * @return The exact name of the font family or null if it's not available
-     */
-    private String fontAvailable(String family, String[] avail)
+    @Override
+    protected String fontAvailable(String family)
     {
+        final String avail[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         for (int i = 0; i < avail.length; i++)
-            if (avail[i].equalsIgnoreCase(family)) return avail[i];
+        {
+            if (avail[i].equalsIgnoreCase(family))
+                return avail[i];
+        }
         return null;
+    }
+    
+    @Override
+    protected String getFallbackFont()
+    {
+        final String avail[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        if (avail.length == 0)
+            return "Serif"; //no physical fonts available, give up
+        //first try: helvetica
+        String ret = fontAvailable("Helvetica");
+        if (ret == null) //second try: anything containing "Serif" or "Sans" to avoid strange fonts
+        {
+            for (int i = 0; i < avail.length; i++)
+            {
+                if (avail[i].toLowerCase().contains("sans") || avail[i].toLowerCase().contains("serif"))
+                {
+                    ret = avail[i];
+                    break;
+                }
+            }
+        }
+        if (ret == null) //third try: use the first available font
+        {
+            ret = avail[0];
+        }
+        return ret;
+    }
+    
+    @Override
+    protected String registerExternalFont(TermURI urlstring, String format)
+            throws MalformedURLException, IOException
+    {
+        String nameFound = null;
+        if (format == null || FontDecoder.supportedFormats.contains(format))
+        {
+            URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
+            String regName = FontDecoder.findRegisteredFont(url);
+            if (regName == null)
+            {
+                DocumentSource imgsrc = getViewport().getConfig().createDocumentSource(url);
+                Font newFont;
+                try {
+                    newFont = FontDecoder.decodeFont(imgsrc, format);
+                } catch (FontFormatException e) {
+                    throw new IOException(e);
+                }
+                if (GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(newFont))
+                    log.debug("Registered font: {}", newFont.getFontName());
+                else
+                    log.debug("Failed to register font: {} (not fatal, probably already existing)", newFont.getFontName());
+                regName = newFont.getFontName();
+                FontDecoder.registerFont(url, regName);
+            }
+            nameFound = regName;
+        }
+        return nameFound;
     }
     
     /**

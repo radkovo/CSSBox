@@ -20,15 +20,19 @@
 
 package org.fit.cssbox.layout;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.cssbox.css.CSSUnits;
+import org.fit.cssbox.css.FontSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.RuleFontFace;
 import cz.vutbr.web.css.Term;
 import cz.vutbr.web.css.TermAngle;
 import cz.vutbr.web.css.TermCalc;
@@ -37,6 +41,7 @@ import cz.vutbr.web.css.TermFloatValue;
 import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
 import cz.vutbr.web.css.TermList;
+import cz.vutbr.web.css.TermURI;
 import cz.vutbr.web.csskit.CalcArgs;
 import cz.vutbr.web.csskit.Color;
 import cz.vutbr.web.csskit.TermCalcAngleImpl;
@@ -289,14 +294,21 @@ public abstract class VisualContext
             if (fmlspec == null)
                 family = getFontFamily();
             else
-                family = getFontName(fmlspec, fontWeight, fontStyle);
+                family = findFontName(fmlspec, fontWeight, fontStyle);
         }
         else
         {
-            if (factory != null)
-                family = factory.getConfig().getDefaultFont(ff.getAWTValue()); //try to translate to physical font
+            family = findLogicalFont(ff, fontWeight, fontStyle);
+        }
+        if (family == null) {
+            //no alternative was usable try 'Serif' logical font
+            family = findLogicalFont(CSSProperty.FontFamily.SERIF, fontWeight, fontStyle);
+            //even Serif is not available - try the last fallback
             if (family == null)
-                family = ff.getAWTValue(); //could not translate - use as is
+            {
+                family = getFallbackFont();
+                log.warn("Couldn't find any usable font for {}, using {} as the last option", ff, family);
+            }
         }
         
         // font size in pt
@@ -603,13 +615,137 @@ public abstract class VisualContext
         }
     }
     
+    //===================================================================================
+    
     /** 
      * Scans a list of font definitions and chooses the first one that is available
      * @param list of terms obtained from the font-family property
      * @return a font name string according to java.awt.Font
      */
-    abstract protected String getFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style);
+    protected String findFontName(TermList list, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    {
+        String ret = null;
+        for (Term<?> term : list)
+        {
+            Object value = term.getValue();
+            if (value instanceof CSSProperty.FontFamily) //logical font
+            {
+                ret = findLogicalFont((CSSProperty.FontFamily) value, weight, style);
+            }
+            else //physical font
+            {
+                ret = lookupFont(value.toString(), weight, style);
+            }
+            if (ret != null)
+                break;
+        }
+        return ret;
+    }
 
+    /**
+     * Tries to find a physical font name for a given logical font
+     * @param ff the logical font family according to CSS specification
+     * @param weight the font weight to match
+     * @param style the font style to match
+     * @return physical font family name or {@code null} when nothing has been found
+     */
+    protected String findLogicalFont(CSSProperty.FontFamily ff, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    {
+        final List<String> flist = getFactory().getConfig().getLogicalFont(ff.toString());
+        for (String cand : flist)
+        {
+            String found = lookupFont(cand, weight, style);
+            if (found != null)
+                return found;
+        }
+        return null;
+    }
+    
+    /**
+     * Checks if the font family is available either among the CSS defined fonts or the system fonts.
+     * If found, registers a system font with the given name. 
+     * @param family Required font family
+     * @param weight Required font weight
+     * @param style Required font style
+     * @return The corresponding system font name or {@code null} when no candidates have been found. 
+     */
+    protected String lookupFont(String family, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
+    {
+        //try to look in the style font table
+        String nameFound = null;
+        FontSpec spec = new FontSpec(family, weight, style);
+        List<RuleFontFace.Source> srcs = findMatchingFontSources(spec);
+        if (srcs != null)
+        {
+            for (RuleFontFace.Source src : srcs)
+            {
+                if (src instanceof RuleFontFace.SourceLocal)
+                {
+                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName());
+                    if (name != null)
+                    {
+                        nameFound = name;
+                        break;
+                    }
+                }
+                else if (src instanceof RuleFontFace.SourceURL && getViewport().getConfig().isLoadFonts())
+                {
+                    try
+                    {
+                        final TermURI urlstring = ((RuleFontFace.SourceURL) src).getURI();
+                        final String format = ((RuleFontFace.SourceURL) src).getFormat();
+                        nameFound = registerExternalFont(urlstring, format);
+                    } catch (MalformedURLException e) {
+                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
+                    } catch (IOException e) {
+                        log.error("Couldn't load font with URI {} ({})", ((RuleFontFace.SourceURL) src).getURI(), e.getMessage());
+                    }
+                }
+            }
+        }
+        //if nothing found, try the system font names
+        if (nameFound == null)
+        {
+            nameFound = fontAvailable(family);
+        }
+        //create the font when found
+        return nameFound;
+    }
+
+    /**
+     * Finds the CSS font definitions matching the font specification.
+     * @param spec The font specification to match
+     * @return a list of available font sources or {@code null} when the font tables are not available
+     */
+    protected List<RuleFontFace.Source> findMatchingFontSources(FontSpec spec)
+    {
+        return getFactory().getDecoder().getFontTable().findBestMatch(spec);
+    }
+    
+    /** 
+     * Returns true if the font family is available.
+     * @return The exact name of the font family or {@code null} if the font is not available
+     */
+    protected abstract String fontAvailable(String family);
+
+    /**
+     * Gets the name of any usable font in the system. This is used as the last fallback
+     * if all other alternatives have failed.
+     * @return Any usable physical font name
+     */
+    protected abstract String getFallbackFont();
+    
+    /**
+     * Decodes and registers a new font based on its URL.
+     * @param urlstring the external font URL
+     * @param format the font format according to CSS spec (e.g. 'truetype')
+     * @return The registed font name or {@code null} when failed
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    protected abstract String registerExternalFont(TermURI urlstring, String format)
+            throws MalformedURLException, IOException;
+    
     //============================================================================================================================
     
     private PxEvaluator getPxEval()

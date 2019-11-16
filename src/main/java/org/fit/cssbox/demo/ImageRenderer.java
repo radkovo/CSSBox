@@ -19,12 +19,12 @@
  */
 package org.fit.cssbox.demo;
 
-import java.awt.Font;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
@@ -133,7 +133,7 @@ public class ImageRenderer
         }
         else if (type == Type.SVG)
         {
-            setDefaultFonts(contentCanvas.getConfig());
+            defineLogicalFonts(contentCanvas.getConfig()); //for SVG, the AWT logical fonts are not usable
             contentCanvas.createLayout(windowSize);
             Writer w = new OutputStreamWriter(out, "utf-8");
             writeSVG(contentCanvas.getViewport(), w);
@@ -148,11 +148,11 @@ public class ImageRenderer
     /**
      * Sets some common fonts as the defaults for generic font families.
      */
-    protected void setDefaultFonts(BrowserConfig config)
+    protected void defineLogicalFonts(BrowserConfig config)
     {
-        config.setDefaultFont(Font.SERIF, "Times New Roman");
-        config.setDefaultFont(Font.SANS_SERIF, "Arial");
-        config.setDefaultFont(Font.MONOSPACED, "Courier New");
+        config.setLogicalFont(BrowserConfig.SERIF, Arrays.asList("Times", "Times New Roman"));
+        config.setLogicalFont(BrowserConfig.SANS_SERIF, Arrays.asList("Arial", "Helvetica"));
+        config.setLogicalFont(BrowserConfig.MONOSPACE, Arrays.asList("Courier New", "Courier"));
     }
     
     /**

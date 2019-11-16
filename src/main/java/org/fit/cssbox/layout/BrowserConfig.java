@@ -19,11 +19,13 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Font;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.fit.cssbox.io.ContentObserver;
@@ -44,6 +46,12 @@ import cz.vutbr.web.csskit.Color;
 public class BrowserConfig
 {
     private static Logger log = LoggerFactory.getLogger(BrowserConfig.class);
+    
+    public static final String SERIF = "serif";
+    public static final String SANS_SERIF = "sans-serif";
+    public static final String MONOSPACE = "monospace";
+    public static final String CURSIVE = "cursive";
+    public static final String FANTASY = "fantasy";
 
     /** The viewport background color */
     private Color viewportBackgroundColor;
@@ -80,8 +88,8 @@ public class BrowserConfig
 
     private ImageCache imageCache;
     
-    /** Default font families */
-    private Map<String, String> defaultFonts;
+    /** Logical font mapping */
+    private Map<String, List<String>> logicalFonts;
     
     /**
      * Creates a new config with default values of the options.
@@ -99,7 +107,7 @@ public class BrowserConfig
         documentSourceClass = DefaultDocumentSource.class;
         domSourceClass = DefaultDOMSource.class;
         contentObserver = null;
-        initDefaultFonts();
+        logicalFonts = getDefaultLogicalFonts();
     }
 
     public Color getViewportBackgroundColor()
@@ -349,31 +357,36 @@ public class BrowserConfig
      * @param logical the logical font name
      * @param physical the physical font to be used
      */
-    public void setDefaultFont(String logical, String physical)
+    public void setLogicalFont(String logical, List<String> physical)
     {
-        defaultFonts.put(logical, physical);
+        logicalFonts.put(logical.toLowerCase(), physical);
     }
     
     /**
      * Obtains the physical font name used for a logical name.
      * @param logical the logical name
-     * @return the physicel font name or <code>null</code> if no default is defined for the logical name.
+     * @return a list of the physical font names. It may be empty when no alternatives are available.
      */
-    public String getDefaultFont(String logical)
+    public List<String> getLogicalFont(String logical)
     {
-        return defaultFonts.get(logical);
+        final List<String> ret = logicalFonts.get(logical.toLowerCase());
+        return (ret == null) ? Collections.emptyList() : ret;
     }
-    
+ 
     /**
-     * Initializes the default fonts. Current implementation just defines the same physical names for basic
-     * AWT logical fonts.
+     * Initializes the default logical font table. It maps the logical CSS fonts to the
+     * same AWT logical fonts. This is good when the result is rendered using the
+     * AWT rendering engine (GraphicsRenderingEngine) but it should be replaced
+     * by physical font alternatives in other cases (e.g. the PDF output).
+     * @return the default font table
      */
-    protected void initDefaultFonts()
+    protected Map<String, List<String>> getDefaultLogicalFonts()
     {
-        defaultFonts = new HashMap<String, String>(3);
-        defaultFonts.put(Font.SERIF, Font.SERIF);
-        defaultFonts.put(Font.SANS_SERIF, Font.SANS_SERIF);
-        defaultFonts.put(Font.MONOSPACED, Font.MONOSPACED);
+        Map<String, List<String>> ret = new HashMap<>();
+        ret.put(SERIF, Arrays.asList("Serif"));
+        ret.put(SANS_SERIF, Arrays.asList("SansSerif"));
+        ret.put(MONOSPACE, Arrays.asList("Monospaced"));
+        return ret;
     }
     
 }
