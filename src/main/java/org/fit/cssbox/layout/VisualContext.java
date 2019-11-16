@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.FontSpec;
+import org.fit.cssbox.css.FontTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,8 @@ public abstract class VisualContext
 
     private VisualContext parent;
     private VisualContext rootContext; //the visual context of the root element
-    private BoxFactory factory; //the factory used for obtaining current configuration
+    private BrowserConfig config; //the factory used for obtaining current configuration
+    private FontTable fontTable; //a table of CSS-defined fonts
     private Viewport viewport; //the viewport used for obtaining the vw sizes
     private float fontSize; //font size in pt
     private CSSProperty.FontWeight fontWeight;
@@ -76,10 +78,11 @@ public abstract class VisualContext
     private RadEvaluator radEval; //expression evaluator for obtaining radian values of expressions
 
     
-    public VisualContext(VisualContext parent, BoxFactory factory)
+    public VisualContext(VisualContext parent, BrowserConfig config, FontTable fontTable)
     {
         this.parent = parent;
-        this.factory = factory;
+        this.config = config;
+        this.fontTable = fontTable;
         rootContext = (parent == null) ? this : parent.rootContext;
         fontSize = CSSUnits.medium_font;
         fontWeight = CSSProperty.FontWeight.NORMAL;
@@ -119,9 +122,14 @@ public abstract class VisualContext
         this.parent = parent;
     }
     
-    public BoxFactory getFactory()
+    public BrowserConfig getConfig()
     {
-        return factory;
+        return config;
+    }
+
+    public FontTable getFontTable()
+    {
+        return fontTable;
     }
 
     public Viewport getViewport()
@@ -651,7 +659,7 @@ public abstract class VisualContext
      */
     protected String findLogicalFont(CSSProperty.FontFamily ff, CSSProperty.FontWeight weight, CSSProperty.FontStyle style)
     {
-        final List<String> flist = getFactory().getConfig().getLogicalFont(ff.toString());
+        final List<String> flist = getConfig().getLogicalFont(ff.toString());
         for (String cand : flist)
         {
             String found = lookupFont(cand, weight, style);
@@ -719,7 +727,10 @@ public abstract class VisualContext
      */
     protected List<RuleFontFace.Source> findMatchingFontSources(FontSpec spec)
     {
-        return getFactory().getDecoder().getFontTable().findBestMatch(spec);
+        if (getFontTable() != null)
+            return getFontTable().findBestMatch(spec);
+        else
+            return null;
     }
     
     /** 

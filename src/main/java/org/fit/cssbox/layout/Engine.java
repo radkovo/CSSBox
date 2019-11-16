@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.css.FontTable;
 import org.fit.cssbox.render.BoxRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,7 +180,7 @@ public abstract class Engine
         BoxFactory factory = new BoxFactory(decoder, baseurl);
         factory.setConfig(config);
         factory.reset();
-        VisualContext ctx = createVisualContext(factory);
+        VisualContext ctx = createVisualContext(config, decoder.getFontTable());
         viewport = factory.createViewportTree(root, ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
         viewport.setVisibleRect(new Rectangle(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height));
@@ -294,10 +295,10 @@ public abstract class Engine
     
     /**
      * Creates a root visual context which is later used in created boxes.
-     * @param factory The box factory used for creating the boxes
+     * 
      * @return The new visual context instance.
      */
-    protected abstract VisualContext createVisualContext(BoxFactory factory);
+    protected abstract VisualContext createVisualContext(BrowserConfig config, FontTable fontTable);
     
     /**
      * Gets a renderer that is used for rendering the output in this rendering engine.

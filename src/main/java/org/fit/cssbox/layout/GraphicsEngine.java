@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.css.FontTable;
 import org.fit.cssbox.render.BoxRenderer;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.w3c.dom.Element;
@@ -170,9 +171,9 @@ public class GraphicsEngine extends Engine
     }
 
     @Override
-    protected VisualContext createVisualContext(BoxFactory factory)
+    protected VisualContext createVisualContext(BrowserConfig config, FontTable fontTable)
     {
-        GraphicsVisualContext ctx = new GraphicsVisualContext(ig, null, factory);
+        GraphicsVisualContext ctx = new GraphicsVisualContext(ig, null, config, fontTable);
         if (useKerning)
             ctx.getDefaultFontAttributes().put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         return ctx;

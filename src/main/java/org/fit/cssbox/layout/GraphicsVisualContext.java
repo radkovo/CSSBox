@@ -37,6 +37,7 @@ import java.util.Map;
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.FontDecoder;
 import org.fit.cssbox.css.FontSpec;
+import org.fit.cssbox.css.FontTable;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.fit.net.DataURLHandler;
@@ -62,9 +63,17 @@ public class GraphicsVisualContext extends VisualContext
     private HashMap<TextAttribute, Object> defaultFontAttributes;
     
 
-    public GraphicsVisualContext(Graphics2D g, VisualContext parent, BoxFactory factory)
+    /**
+     * Creates a new visual context for a AWT graphics context.
+     * 
+     * @param g The graphics context
+     * @param parent the parent visual context or {@code null} for the root context
+     * @param config used browser configuration
+     * @param fontTable CSS font table or {@code null} when no CSS-defined fonts are used
+     */
+    public GraphicsVisualContext(Graphics2D g, VisualContext parent, BrowserConfig config, FontTable fontTable)
     {
-        super(parent, factory);
+        super(parent, config, fontTable);
         this.g = g;
         font = new Font(Font.SERIF, Font.PLAIN, (int) CSSUnits.medium_font);
         defaultFontAttributes = new HashMap<>();
@@ -74,7 +83,7 @@ public class GraphicsVisualContext extends VisualContext
     @Override
     public VisualContext create()
     {
-        GraphicsVisualContext ret = new GraphicsVisualContext(g, this, this.getFactory());
+        GraphicsVisualContext ret = new GraphicsVisualContext(g, this, this.getConfig(), this.getFontTable());
         ret.copyVisualContext(this);
         ret.updateMetrics(g);
         return ret;
