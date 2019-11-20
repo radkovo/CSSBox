@@ -67,7 +67,7 @@ public abstract class VisualContext
     private CSSProperty.FontStyle fontStyle;
     private CSSProperty.FontVariant fontVariant;
     private List<CSSProperty.TextDecoration> textDecoration;
-    private float letterSpacing; //additional letter spacing in pixels
+    private float letterSpacing; //additional letter spacing in pt
     private float rem; // 1rem length in points 
     
     public Color color; //current text color
