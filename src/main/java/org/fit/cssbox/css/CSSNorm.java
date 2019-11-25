@@ -83,8 +83,7 @@ public class CSSNorm
      */
     private static String getResource(String name) throws IOException
     {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        try (InputStream is = classLoader.getResourceAsStream(name))
+        try (InputStream is = CSSNorm.class.getResourceAsStream("/" + name))
         {
             if (is != null) 
             {
