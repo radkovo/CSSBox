@@ -252,7 +252,7 @@ public class GraphicsVisualContext extends VisualContext
     }
     
     @Override
-    protected String fontAvailable(String family)
+    protected String fontAvailable(String family, boolean isBold, boolean isItalic)
     {
         final String avail[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         for (int i = 0; i < avail.length; i++)
@@ -270,7 +270,7 @@ public class GraphicsVisualContext extends VisualContext
         if (avail.length == 0)
             return "Serif"; //no physical fonts available, give up
         //first try: helvetica
-        String ret = fontAvailable("Helvetica");
+        String ret = fontAvailable("Helvetica", false, false);
         if (ret == null) //second try: anything containing "Serif" or "Sans" to avoid strange fonts
         {
             for (int i = 0; i < avail.length; i++)

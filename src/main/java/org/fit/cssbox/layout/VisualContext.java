@@ -43,6 +43,7 @@ import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
 import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermURI;
+import cz.vutbr.web.css.CSSProperty.FontStyle;
 import cz.vutbr.web.csskit.CalcArgs;
 import cz.vutbr.web.csskit.Color;
 import cz.vutbr.web.csskit.TermCalcAngleImpl;
@@ -682,6 +683,8 @@ public abstract class VisualContext
         //try to look in the style font table
         String nameFound = null;
         FontSpec spec = new FontSpec(family, weight, style);
+        boolean isItalic = (style == FontStyle.ITALIC || style == FontStyle.OBLIQUE);
+        boolean isBold = FontSpec.representsBold(weight);
         List<RuleFontFace.Source> srcs = findMatchingFontSources(spec);
         if (srcs != null)
         {
@@ -689,7 +692,7 @@ public abstract class VisualContext
             {
                 if (src instanceof RuleFontFace.SourceLocal)
                 {
-                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName());
+                    String name = fontAvailable(((RuleFontFace.SourceLocal) src).getName(), isItalic, isBold);
                     if (name != null)
                     {
                         nameFound = name;
@@ -714,7 +717,7 @@ public abstract class VisualContext
         //if nothing found, try the system font names
         if (nameFound == null)
         {
-            nameFound = fontAvailable(family);
+            nameFound = fontAvailable(family, isItalic, isBold);
         }
         //create the font when found
         return nameFound;
@@ -737,7 +740,7 @@ public abstract class VisualContext
      * Returns true if the font family is available.
      * @return The exact name of the font family or {@code null} if the font is not available
      */
-    protected abstract String fontAvailable(String family);
+    protected abstract String fontAvailable(String family, boolean isBold, boolean isItalic);
 
     /**
      * Gets the name of any usable font in the system. This is used as the last fallback
