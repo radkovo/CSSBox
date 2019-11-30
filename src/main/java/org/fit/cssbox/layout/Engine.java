@@ -19,6 +19,7 @@
  */
 package org.fit.cssbox.layout;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -244,9 +245,13 @@ public abstract class Engine
      */
     protected void renderViewport(Viewport viewport)
     {
-        final BoxRenderer r = getRenderer();
-        viewport.draw(r);
-        r.close();
+        try {
+            final BoxRenderer r = getRenderer();
+            viewport.draw(r);
+            r.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     /**

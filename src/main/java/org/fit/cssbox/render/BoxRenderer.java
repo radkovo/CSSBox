@@ -19,6 +19,9 @@
  */
 package org.fit.cssbox.render;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.ReplacedBox;
@@ -30,7 +33,7 @@ import org.fit.cssbox.layout.TextBox;
  * 
  * @author burgetr
  */
-public interface BoxRenderer
+public interface BoxRenderer extends Closeable
 {
     /**
      * Initializes the rendering of an element. This is called before any contents of the element
@@ -74,6 +77,6 @@ public interface BoxRenderer
     /**
      * Finishes and the output.
      */
-    public void close();
+    public void close() throws IOException;
     
 }
