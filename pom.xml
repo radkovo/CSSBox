@@ -76,6 +76,19 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>net.sf.cssbox</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -154,7 +167,7 @@
 		<dependency>
 			<groupId>net.sf.cssbox</groupId>
 			<artifactId>jstyleparser</artifactId>
-			<version>3.5</version>
+			<version>3.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 		      <groupId>junit</groupId>
