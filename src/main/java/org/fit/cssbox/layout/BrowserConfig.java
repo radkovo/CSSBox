@@ -369,8 +369,10 @@ public class BrowserConfig
      */
     public List<String> getLogicalFont(String logical)
     {
-        final List<String> ret = logicalFonts.get(logical.toLowerCase());
-        return (ret == null) ? Collections.emptyList() : ret;
+        List<String> ret = logicalFonts.get(logical.toLowerCase());
+        if (ret == null)
+            ret = Collections.emptyList();
+        return ret;
     }
  
     /**
