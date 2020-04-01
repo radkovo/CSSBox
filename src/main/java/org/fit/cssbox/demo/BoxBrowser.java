@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
+import org.fit.cssbox.awt.BrowserCanvas;
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -32,7 +33,6 @@ import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BlockBox;
-import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.ElementBox;

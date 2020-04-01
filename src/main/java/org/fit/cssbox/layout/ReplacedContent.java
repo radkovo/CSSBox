@@ -29,12 +29,6 @@ public abstract class ReplacedContent
 	/** The owner box */
 	protected ElementBox owner;
     
-    /** Defined width (CSS syntax, e.g. "120px" or "auto") */
-    protected String def_width;
-
-    /** Defined height (CSS syntax, e.g. "120px" or "auto") */
-    protected String def_height;
-	
 	//============================================================
 	
 	public ReplacedContent(ElementBox owner)
@@ -63,9 +57,6 @@ public abstract class ReplacedContent
      */
     public void loadSizeDefs()
     {
-        //default behaviour - set 'auto' only
-        def_width = "auto";
-        def_height = "auto";
     }
     
     /**

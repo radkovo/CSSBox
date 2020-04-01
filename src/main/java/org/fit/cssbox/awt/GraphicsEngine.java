@@ -17,7 +17,7 @@
  *
  * Created on 13. 11. 2019, 15:05:30 by burgetr
  */
-package org.fit.cssbox.layout;
+package org.fit.cssbox.awt;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -27,6 +27,11 @@ import java.net.URL;
 
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.css.FontTable;
+import org.fit.cssbox.layout.BrowserConfig;
+import org.fit.cssbox.layout.Dimension;
+import org.fit.cssbox.layout.Engine;
+import org.fit.cssbox.layout.Viewport;
+import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.render.BoxRenderer;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.w3c.dom.Element;

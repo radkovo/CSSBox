@@ -17,7 +17,7 @@
  *
  * Created on 10. 11. 2019, 13:53:14 by burgetr
  */
-package org.fit.cssbox.layout;
+package org.fit.cssbox.awt;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -39,6 +39,9 @@ import org.fit.cssbox.css.FontDecoder;
 import org.fit.cssbox.css.FontSpec;
 import org.fit.cssbox.css.FontTable;
 import org.fit.cssbox.io.DocumentSource;
+import org.fit.cssbox.layout.BrowserConfig;
+import org.fit.cssbox.layout.FontInfo;
+import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.fit.net.DataURLHandler;
 

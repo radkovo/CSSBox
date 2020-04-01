@@ -18,7 +18,7 @@
  * Created on 13. z��� 2005, 15:44
  */
 
-package org.fit.cssbox.layout;
+package org.fit.cssbox.awt;
 
 import java.awt.Graphics;
 import java.net.URL;
@@ -26,6 +26,10 @@ import java.net.URL;
 import javax.swing.JPanel;
 
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.layout.BrowserConfig;
+import org.fit.cssbox.layout.Dimension;
+import org.fit.cssbox.layout.Engine;
+import org.fit.cssbox.layout.Rectangle;
 
 /**
  * This class provides an abstraction of a browser rendering area and the main layout engine

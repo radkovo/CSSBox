@@ -37,11 +37,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.fit.cssbox.awt.GraphicsVisualContext;
 import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
-import org.fit.cssbox.layout.GraphicsVisualContext;
 import org.fit.cssbox.layout.LengthSet;
 import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.Rectangle;

@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import org.fit.cssbox.awt.GraphicsEngine;
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
 import org.fit.cssbox.io.DOMSource;
@@ -36,7 +37,6 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.Dimension;
-import org.fit.cssbox.layout.GraphicsEngine;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.render.SVGRenderer;
 import org.w3c.dom.Document;
