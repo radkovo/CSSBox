@@ -90,7 +90,7 @@ public class ListItemBox extends BlockBox
             TermURI urlstring = style.getValue(TermURI.class, "list-style-image");
             ReplacedImage bgimg = new ReplacedImage(this, ctx, urlstring.getBase(), urlstring.getValue());
             if (ctx.getConfig().getLoadBackgroundImages())
-                bgimg.setImage(parent.getVisualContext().getImageLoader().loadImage(bgimg.getUrl()));
+                bgimg.setImage(ctx.getImageLoader().loadImage(bgimg.getUrl()));
             return bgimg;
         }
         else
