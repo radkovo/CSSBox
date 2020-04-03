@@ -17,7 +17,7 @@
  *
  * Created on 26. 11. 2016, 18:15:15 by burgetr
  */
-package org.fit.cssbox.render;
+package org.fit.cssbox.awt;
 
 import java.awt.geom.AffineTransform;
 

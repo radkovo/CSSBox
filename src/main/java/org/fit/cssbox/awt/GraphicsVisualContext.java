@@ -43,7 +43,6 @@ import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.FontInfo;
 import org.fit.cssbox.layout.ImageLoader;
 import org.fit.cssbox.layout.VisualContext;
-import org.fit.cssbox.render.GraphicsRenderer;
 import org.fit.net.DataURLHandler;
 
 import cz.vutbr.web.css.CSSProperty;

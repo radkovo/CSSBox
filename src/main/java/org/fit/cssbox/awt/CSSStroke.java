@@ -17,13 +17,14 @@
  *
  * Created on 9.11.2010, 17:31:58 by burgetr
  */
-package org.fit.cssbox.misc;
+package org.fit.cssbox.awt;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
+import org.fit.cssbox.misc.Coords;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

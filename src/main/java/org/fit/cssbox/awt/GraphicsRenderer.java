@@ -17,7 +17,7 @@
  *
  * Created on 8.3.2013, 11:41:50 by burgetr
  */
-package org.fit.cssbox.render;
+package org.fit.cssbox.awt;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.fit.cssbox.awt.BitmapImage;
-import org.fit.cssbox.awt.GraphicsVisualContext;
 import org.fit.cssbox.layout.BackgroundImage;
 import org.fit.cssbox.layout.BackgroundImageImage;
 import org.fit.cssbox.layout.BlockBox;
@@ -55,8 +53,8 @@ import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.layout.Box.DrawStage;
 import org.fit.cssbox.layout.ContentImage;
-import org.fit.cssbox.misc.CSSStroke;
 import org.fit.cssbox.misc.Coords;
+import org.fit.cssbox.render.BoxRenderer;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;

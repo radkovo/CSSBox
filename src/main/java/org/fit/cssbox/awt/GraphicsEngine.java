@@ -33,7 +33,6 @@ import org.fit.cssbox.layout.Engine;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.render.BoxRenderer;
-import org.fit.cssbox.render.GraphicsRenderer;
 import org.w3c.dom.Element;
 
 /**
