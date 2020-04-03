@@ -22,8 +22,6 @@ package org.fit.cssbox.demo;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
@@ -37,8 +35,6 @@ import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.Dimension;
-import org.fit.cssbox.layout.Viewport;
-import org.fit.cssbox.render.SVGRenderer;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -52,8 +48,6 @@ import cz.vutbr.web.css.MediaSpec;
  */
 public class ImageRenderer
 {
-    public enum Type { PNG, SVG }
-    
     private String mediaType = "screen";
     private Dimension windowSize;
     private boolean cropWindow = false;
@@ -87,11 +81,10 @@ public class ImageRenderer
      * format.
      * @param urlstring the source URL
      * @param out output stream
-     * @param type output type
      * @return true in case of success, false otherwise
      * @throws SAXException 
      */
-    public boolean renderURL(String urlstring, OutputStream out, Type type) throws IOException, SAXException
+    public boolean renderURL(String urlstring, OutputStream out) throws IOException, SAXException
     {
         if (!urlstring.startsWith("http:") &&
             !urlstring.startsWith("https:") &&
@@ -126,19 +119,8 @@ public class ImageRenderer
         contentCanvas.getConfig().setLoadImages(loadImages);
         contentCanvas.getConfig().setLoadBackgroundImages(loadBackgroundImages);
 
-        if (type == Type.PNG)
-        {
-            contentCanvas.createLayout(windowSize);
-            ImageIO.write(contentCanvas.getImage(), "png", out);
-        }
-        else if (type == Type.SVG)
-        {
-            defineLogicalFonts(contentCanvas.getConfig()); //for SVG, the AWT logical fonts are not usable
-            contentCanvas.createLayout(windowSize);
-            Writer w = new OutputStreamWriter(out, "utf-8");
-            writeSVG(contentCanvas.getViewport(), w);
-            w.close();
-        }
+        contentCanvas.createLayout(windowSize);
+        ImageIO.write(contentCanvas.getImage(), "png", out);
         
         docSource.close();
 
@@ -155,55 +137,27 @@ public class ImageRenderer
         config.setLogicalFont(BrowserConfig.MONOSPACE, Arrays.asList("Courier New", "Courier"));
     }
     
-    /**
-     * Renders the viewport using an SVGRenderer to the given output writer.
-     * @param vp
-     * @param out
-     * @throws IOException
-     */
-    protected void writeSVG(Viewport vp, Writer out) throws IOException
-    {
-        //obtain the viewport bounds depending on whether we are clipping to viewport size or using the whole page
-        float w = vp.getClippedContentBounds().width;
-        float h = vp.getClippedContentBounds().height;
-        
-        SVGRenderer render = new SVGRenderer((int) w, (int) h, out);
-        vp.draw(render);
-        render.close();
-    }
-    
     //=================================================================================
     
     public static void main(String[] args)
     {
-        if (args.length != 3)
+        if (args.length != 2)
         {
-            System.err.println("Usage: ImageRenderer <url> <output_file> <format>");
+            System.err.println("Usage: ImageRenderer <url> <output_file>");
             System.err.println();
             System.err.println("Renders a document at the specified URL and stores the document image");
-            System.err.println("to the specified file.");
-            System.err.println("Supported formats:");
-            System.err.println("png: a Portable Network Graphics file (bitmap image)");
-            System.err.println("svg: a SVG file (vector image)");
+            System.err.println("to the specified file in PNG format.");
+            System.err.println();
+            System.err.println("See the CSSBoxSvg and CSSBoxPdf or WebVector projects if you want");
+            System.err.println("to produce vector graphics in SVG or PDF.");
             System.exit(0);
         }
         
         try {
-            Type type = null;
-            if (args[2].equalsIgnoreCase("png"))
-                type = Type.PNG;
-            else if (args[2].equalsIgnoreCase("svg"))
-                type = Type.SVG;
-            else
-            {
-                System.err.println("Error: unknown format");
-                System.exit(0);
-            }
-            
             FileOutputStream os = new FileOutputStream(args[1]);
             
             ImageRenderer r = new ImageRenderer();
-            r.renderURL(args[0], os, type);
+            r.renderURL(args[0], os);
             
             os.close();
             System.err.println("Done.");
