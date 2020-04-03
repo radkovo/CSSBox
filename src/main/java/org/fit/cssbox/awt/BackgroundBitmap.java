@@ -59,19 +59,22 @@ public class BackgroundBitmap extends ElementBackground
     {
         if (bgimage != null && img.getImage() != null)
         {
-            final Rectangle pos = img.getComputedPosition();
-            final BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
-            final float origw = img.getIntrinsicWidth();
-            final float origh = img.getIntrinsicHeight();
-            
-            if (img.isRepeatX() && img.isRepeatY())
-                drawRepeatBoth(g, image, pos, getBounds().width, getBounds().height, origw, origh, getClipped());
-            else if (img.isRepeatX())
-                drawRepeatX(g, image, pos, getBounds().width, origw, origh, getClipped());
-            else if (img.isRepeatY())
-                drawRepeatY(g, image, pos, getBounds().height, origw, origh, getClipped());
-            else
-                drawScaledImage(g, image, pos.x, pos.y, pos.width, pos.height, origw, origh, null);
+            if (img.getImage() instanceof BitmapImage)
+            {
+                final Rectangle pos = img.getComputedPosition();
+                final BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
+                final float origw = img.getIntrinsicWidth();
+                final float origh = img.getIntrinsicHeight();
+                
+                if (img.isRepeatX() && img.isRepeatY())
+                    drawRepeatBoth(g, image, pos, getBounds().width, getBounds().height, origw, origh, getClipped());
+                else if (img.isRepeatX())
+                    drawRepeatX(g, image, pos, getBounds().width, origw, origh, getClipped());
+                else if (img.isRepeatY())
+                    drawRepeatY(g, image, pos, getBounds().height, origw, origh, getClipped());
+                else
+                    drawScaledImage(g, image, pos.x, pos.y, pos.width, pos.height, origw, origh, null);
+            }
         }
     }
     

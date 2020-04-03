@@ -325,10 +325,15 @@ public class GraphicsRenderer implements BoxRenderer
         ContentImage img = elem.getMarkerImage().getImage();
         if (img != null)
         {
-            float w = img.getWidth();
-            float h = img.getHeight();
-            g.drawImage(((BitmapImage) img).getBufferedImage(), Math.round(x - w), Math.round(y - h), null);
-            return true;
+            if (img instanceof BitmapImage)
+            {
+                float w = img.getWidth();
+                float h = img.getHeight();
+                g.drawImage(((BitmapImage) img).getBufferedImage(), Math.round(x - w), Math.round(y - h), null);
+                return true;
+            }
+            else
+                return false;
         }
         else
             return false; //could not decode the image
@@ -453,7 +458,7 @@ public class GraphicsRenderer implements BoxRenderer
     {
         Rectangle bounds = img.getOwner().getAbsoluteContentBounds();
 
-        if (img.getImage() != null)
+        if (img.getImage() != null && img.getImage() instanceof BitmapImage)
         {
             // update our configuration
             setupGraphics(g, (GraphicsVisualContext) img.getVisualContext());
