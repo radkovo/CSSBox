@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
+import cz.vutbr.web.css.CSSProperty.BackgroundOrigin;
 import cz.vutbr.web.css.CSSProperty.BackgroundPosition;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 import cz.vutbr.web.css.CSSProperty.BackgroundSize;
@@ -45,6 +46,7 @@ public abstract class BackgroundImage
     private CSSProperty.BackgroundPosition position;
     private CSSProperty.BackgroundRepeat repeat;
     private CSSProperty.BackgroundAttachment attachment;
+    private CSSProperty.BackgroundOrigin origin;
     private CSSProperty.BackgroundSize size;
     private TermList positionValues;
     private TermList sizeValues;
@@ -62,7 +64,7 @@ public abstract class BackgroundImage
     
     
     public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, TermList positionValues, 
-                            BackgroundRepeat repeat, BackgroundAttachment attachment,
+                            BackgroundRepeat repeat, BackgroundAttachment attachment, BackgroundOrigin origin,
                             BackgroundSize size, TermList sizeValues)
     {
         setOwner(owner);
@@ -72,6 +74,7 @@ public abstract class BackgroundImage
         this.sizeValues = sizeValues;
         this.repeat = repeat;
         this.attachment = attachment;
+        this.origin = origin;
         repeatx = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_X);
         repeaty = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_Y);
         viewportOwner = (owner instanceof Viewport);
@@ -103,6 +106,11 @@ public abstract class BackgroundImage
         return attachment;
     }
     
+    public CSSProperty.BackgroundOrigin getOrigin()
+    {
+        return origin;
+    }
+
     public CSSProperty.BackgroundSize getSize()
     {
         return size;
@@ -177,12 +185,26 @@ public abstract class BackgroundImage
     }
 
     /**
-     * Computes the image coordinates within the padding box of the element.
-     * After this, the coordinates may be obtained using {@link #getImgX()} and {@link #getImgY()}.
+     * Computes the image coordinates within the border box of the element according to the origin.
      */
-    public void computeCoordinates()
+    protected void computeCoordinates()
     {
-        computeCoordinates(getOwner().getAbsoluteBackgroundBounds());
+        switch (getOrigin())
+        {
+            case BORDER_BOX:
+                computeCoordinates(getOwner().getAbsoluteBorderBounds());
+                break;
+            case CONTENT_BOX:
+                computeCoordinates(getOwner().getAbsoluteContentBounds());
+                imgx += getOwner().getBorder().left + getOwner().getPadding().left; //recompute to border box
+                imgy += getOwner().getBorder().top + getOwner().getPadding().top;
+                break;
+            default: //PADDING_BOX
+                computeCoordinates(getOwner().getAbsolutePaddingBounds());
+                imgx += getOwner().getBorder().left; //recompute to border box
+                imgy += getOwner().getBorder().top;
+                break;
+        }
     }
     
     protected void computeCoordinates(Rectangle bounds)
@@ -234,7 +256,7 @@ public abstract class BackgroundImage
             ElementBox rootBox = ((Viewport) getOwner()).getRootBox();
             if (rootBox != null)
             {
-                Rectangle cbounds = rootBox.getAbsoluteBackgroundBounds(); //use root box bounds for viewport image coordinates
+                Rectangle cbounds = rootBox.getAbsolutePaddingBounds(); //use root box bounds for viewport image coordinates
                 imgx += cbounds.x;
                 imgy += cbounds.y;
             }

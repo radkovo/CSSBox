@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 import java.net.URL;
 
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
+import cz.vutbr.web.css.CSSProperty.BackgroundOrigin;
 import cz.vutbr.web.css.CSSProperty.BackgroundPosition;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 import cz.vutbr.web.css.CSSProperty.BackgroundSize;
@@ -44,9 +45,10 @@ public class BackgroundImageImage extends BackgroundImage
     
 
     public BackgroundImageImage(ElementBox owner, URL url, BackgroundPosition position, TermList positionValues,
-            BackgroundRepeat repeat, BackgroundAttachment attachment, BackgroundSize size, TermList sizeValues)
+            BackgroundRepeat repeat, BackgroundAttachment attachment, BackgroundOrigin origin,
+            BackgroundSize size, TermList sizeValues)
     {
-        super(owner, url, position, positionValues, repeat, attachment, size, sizeValues);
+        super(owner, url, position, positionValues, repeat, attachment, origin, size, sizeValues);
         this.url = url;
     }
     

@@ -593,12 +593,6 @@ public class Viewport extends BlockBox
     }
 
 	@Override
-	public Rectangle getAbsoluteBackgroundBounds()
-    {
-        return new Rectangle(visibleRect);
-    }
-
-	@Override
     public Rectangle getAbsoluteBorderBounds()
     {
         return new Rectangle(visibleRect);

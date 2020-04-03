@@ -221,7 +221,7 @@ public class GraphicsRenderer implements BoxRenderer
             }
             if (bitmap.getBufferedImage() != null)
             {
-                final Rectangle bg = elem.getAbsoluteBackgroundBounds();
+                final Rectangle bg = elem.getAbsoluteBorderBounds();
                 g.drawImage(bitmap.getBufferedImage(), Math.round(bg.x), Math.round(bg.y), null);
             }
         }

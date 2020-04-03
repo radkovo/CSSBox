@@ -40,7 +40,7 @@ public class ElementBackground
     {
         this.owner = owner;
         this.viewportOwner = (owner instanceof Viewport);
-        bounds = owner.getAbsoluteBackgroundBounds();
+        bounds = owner.getAbsoluteBorderBounds();
         clipped = owner.getClippedBounds();
         if (viewportOwner)
             bounds = clipped;  //for the root box (Viewport), use the whole clipped content (not only the visible part)

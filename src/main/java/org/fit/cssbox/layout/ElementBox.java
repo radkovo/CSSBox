@@ -30,6 +30,7 @@ import java.util.Vector;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
+import cz.vutbr.web.css.CSSProperty.BackgroundOrigin;
 import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
 import cz.vutbr.web.css.CSSProperty.BackgroundSize;
 import cz.vutbr.web.css.CSSProperty.ZIndex;
@@ -967,17 +968,6 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * Returns the bounds of the background according to the background-origin property.
-     * NOTE: currently, background-origin is not supported i.e. this method is equals to getAbsolutePaddingBounds().
-     * This will change in the future.
-     * @return a Rectangle representing the absolute background bounds
-     */
-    public Rectangle getAbsoluteBackgroundBounds()
-    {
-        return getAbsolutePaddingBounds(); //TODO change this when background-origin is supported
-    }
-    
-    /**
      * Computes the absolute clipping rectangle coordinates if this box is used as a clipping block.
      * @return the clipping rectangle coordinates
      */
@@ -1421,6 +1411,9 @@ abstract public class ElementBox extends Box
                 //repeat
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;
+                //origin
+                CSSProperty.BackgroundOrigin origin = style.getProperty("background-origin");
+                if (origin == null) origin = BackgroundOrigin.PADDING_BOX;
                 //attachment
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
@@ -1435,7 +1428,9 @@ abstract public class ElementBox extends Box
                 {
                     TermURI urlstring = style.getValue(TermURI.class, "background-image");
                     URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
-                    BackgroundImageImage bgimg = new BackgroundImageImage(this, url, position, positionValues, repeat, attachment, size, sizeValues);
+                    BackgroundImageImage bgimg =
+                            new BackgroundImageImage(this, url, position, positionValues, repeat, 
+                                    attachment, origin, size, sizeValues);
                     if (ctx.getConfig().getLoadBackgroundImages())
                         bgimg.setImage(ctx.getImageLoader().loadImage(url));
                     bgimages.add(bgimg);
