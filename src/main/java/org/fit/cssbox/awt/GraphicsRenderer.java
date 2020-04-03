@@ -30,7 +30,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +50,6 @@ import org.fit.cssbox.layout.ReplacedText;
 import org.fit.cssbox.layout.TextBox;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
-import org.fit.cssbox.layout.Box.DrawStage;
 import org.fit.cssbox.layout.ContentImage;
 import org.fit.cssbox.misc.Coords;
 import org.fit.cssbox.render.BoxRenderer;
@@ -190,8 +188,7 @@ public class GraphicsRenderer implements BoxRenderer
     }
     
     /** 
-     * Draw the background and border of this box (no subboxes).
-     * This method is normally called automatically from {@link Box#draw(DrawStage)}.
+     * Draws the background and border of an element box.
      * @param g the graphics context used for drawing 
      */
     protected void drawBackground(ElementBox elem, Graphics2D g)
@@ -214,18 +211,18 @@ public class GraphicsRenderer implements BoxRenderer
         //draw the background images
         if (elem.getBackgroundImages() != null)
         {
-            Rectangle bg = elem.getAbsoluteBackgroundBounds();
+            final BackgroundBitmap bitmap = new BackgroundBitmap(elem);
             for (BackgroundImage img : elem.getBackgroundImages())
             {
                 if (img instanceof BackgroundImageImage)
                 {
-                    final ContentImage cimg = ((BackgroundImageImage) img).getImage();
-                    if (cimg != null)
-                    {
-                        final BufferedImage bimg = ((BitmapImage) cimg).getBufferedImage();
-                        g.drawImage(bimg, Math.round(bg.x), Math.round(bg.y), null);
-                    }
+                    bitmap.addBackgroundImage((BackgroundImageImage) img);
                 }
+            }
+            if (bitmap.getBufferedImage() != null)
+            {
+                final Rectangle bg = elem.getAbsoluteBackgroundBounds();
+                g.drawImage(bitmap.getBufferedImage(), Math.round(bg.x), Math.round(bg.y), null);
             }
         }
         

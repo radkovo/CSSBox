@@ -107,6 +107,22 @@ public abstract class BackgroundImage
     {
         return size;
     }
+    
+    public Rectangle getComputedPosition()
+    {
+        computeCoordinates();
+        return new Rectangle(imgx, imgy, imgw, imgh);
+    }
+
+    public boolean isRepeatx()
+    {
+        return repeatx;
+    }
+
+    public boolean isRepeaty()
+    {
+        return repeaty;
+    }
 
     //===========================================================================
     
