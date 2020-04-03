@@ -1,6 +1,6 @@
-/**
+/*
  * ReplacedContent.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2020 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,7 +20,7 @@
 package org.fit.cssbox.layout;
 
 /**
- * A class that represents the contents of a replace box
+ * A class that represents the contents of a replaced box
  * 
  * @author radek
  */

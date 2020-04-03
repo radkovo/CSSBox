@@ -23,7 +23,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.TextAttribute;
@@ -37,8 +36,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.fit.cssbox.awt.BitmapImage;
 import org.fit.cssbox.awt.GraphicsVisualContext;
 import org.fit.cssbox.layout.BackgroundImage;
+import org.fit.cssbox.layout.BackgroundImageImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
@@ -53,6 +54,7 @@ import org.fit.cssbox.layout.TextBox;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.layout.Box.DrawStage;
+import org.fit.cssbox.layout.ContentImage;
 import org.fit.cssbox.misc.CSSStroke;
 import org.fit.cssbox.misc.Coords;
 
@@ -217,9 +219,15 @@ public class GraphicsRenderer implements BoxRenderer
             Rectangle bg = elem.getAbsoluteBackgroundBounds();
             for (BackgroundImage img : elem.getBackgroundImages())
             {
-                BufferedImage bimg = img.getBufferedImage();
-                if (bimg != null)
-                    g.drawImage(bimg, Math.round(bg.x), Math.round(bg.y), null);
+                if (img instanceof BackgroundImageImage)
+                {
+                    final ContentImage cimg = ((BackgroundImageImage) img).getImage();
+                    if (cimg != null)
+                    {
+                        final BufferedImage bimg = ((BitmapImage) cimg).getBufferedImage();
+                        g.drawImage(bimg, Math.round(bg.x), Math.round(bg.y), null);
+                    }
+                }
             }
         }
         
@@ -319,12 +327,12 @@ public class GraphicsRenderer implements BoxRenderer
             ofs = elem.getVisualContext().getBaselineOffset(); //use the font baseline
         float x = elem.getAbsoluteContentX() - 0.5f * elem.getVisualContext().getEm();
         float y = elem.getAbsoluteContentY() + ofs;
-        Image img = elem.getMarkerImage().getImage();
+        ContentImage img = elem.getMarkerImage().getImage();
         if (img != null)
         {
-            int w = img.getWidth(elem.getMarkerImage());
-            int h = img.getHeight(elem.getMarkerImage());
-            g.drawImage(img, Math.round(x - w), Math.round(y - h), elem.getMarkerImage());
+            float w = img.getWidth();
+            float h = img.getHeight();
+            g.drawImage(((BitmapImage) img).getBufferedImage(), Math.round(x - w), Math.round(y - h), null);
             return true;
         }
         else
@@ -455,14 +463,11 @@ public class GraphicsRenderer implements BoxRenderer
             // update our configuration
             setupGraphics(g, (GraphicsVisualContext) img.getVisualContext());
 
-            // no container that would repaint -- wait for the complete image
-            if (img.getContainer() == null)
-                img.waitForLoad();
             // draw image of the given size and position
             final AffineTransform tr = new AffineTransform();
             tr.translate(bounds.x, bounds.y);
             tr.scale(bounds.width / img.getIntrinsicWidth(), bounds.height / img.getIntrinsicHeight());
-            g.drawImage(img.getImage(), tr, img);
+            g.drawImage(((BitmapImage) img.getImage()).getBufferedImage(), tr, null);
         }
         else
         {

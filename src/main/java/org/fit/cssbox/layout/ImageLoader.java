@@ -1,6 +1,6 @@
 /*
- * ImageCache.java
- * Copyright (c) 2005-2015 Radek Burget
+ * ImageLoader.java
+ * Copyright (c) 2005-2020 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,23 +15,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 27. 7. 2015, 15:37:26 by burgetr
+ * Created on 2. 4. 2020, 19:03:28 by burgetr
  */
 package org.fit.cssbox.layout;
 
 import java.net.URL;
 
 /**
- * Image cache interface. Simple singleton implementation is not enough.
- * For example we can try to load failed image later, set some limits to memory storage or store them on local FS.
+ * A factory for loading ContentImage instances.
  * 
- * @author dedrakot
  * @author burgetr
  */
-public interface ImageCache
+public interface ImageLoader
 {
-    void put(URL uri, ContentImage image);
-    ContentImage get(URL uri);
-    void putFailed(URL uri);
-    boolean hasFailed(URL uri);
+
+    /**
+     * Loads an image from URL and creates the corresponding ContentImage instance
+     * that can be later displayed by the renderer.
+     * 
+     * @param url source URL
+     * @return the resulting ContentImage instance or {@code null} when the image cannot be
+     * loaded.
+     */
+    public ContentImage loadImage(URL url);
+    
 }

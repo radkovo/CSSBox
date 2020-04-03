@@ -141,7 +141,10 @@ public class HTMLBoxFactory
             rbox.setStyle(style);
     
             String src = HTMLNorm.getAttribute(e, "src");
-            rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
+            ReplacedImage img = new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src);
+            if (factory.getConfig().getLoadImages())
+                img.setImage(parent.getVisualContext().getImageLoader().loadImage(img.getUrl()));
+            rbox.setContentObj(img);
             
             if (rbox.isBlock())
                 return new BlockReplacedBox(rbox);
@@ -181,6 +184,11 @@ public class HTMLBoxFactory
                     if (mime.startsWith("image/"))
                     {
                         content = new ReplacedImage(rbox, rbox.getVisualContext(), base, dataurl);
+                        if (factory.getConfig().getLoadImages())
+                        {
+                            ContentImage cimg = parent.getVisualContext().getImageLoader().loadImage(((ReplacedImage) content).getUrl());
+                            ((ReplacedImage) content).setImage(cimg);
+                        }
                     }
                     else if (mime.equals("text/html"))
                     {

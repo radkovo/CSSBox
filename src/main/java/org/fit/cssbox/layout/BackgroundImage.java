@@ -19,10 +19,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.net.URL;
 
 import org.slf4j.Logger;
@@ -42,10 +38,10 @@ import cz.vutbr.web.css.TermList;
  * 
  * @author burgetr
  */
-public class BackgroundImage extends ContentImage
+public abstract class BackgroundImage
 {
     private static Logger log = LoggerFactory.getLogger(BackgroundImage.class);
-    
+
     private CSSProperty.BackgroundPosition position;
     private CSSProperty.BackgroundRepeat repeat;
     private CSSProperty.BackgroundAttachment attachment;
@@ -54,6 +50,8 @@ public class BackgroundImage extends ContentImage
     private TermList sizeValues;
     private boolean viewportOwner; //the owner is viewport? (special coordinate system)
 
+    private ElementBox owner;
+    
     //the coordinates of the image within the element
     private float imgx;
     private float imgy;
@@ -67,26 +65,26 @@ public class BackgroundImage extends ContentImage
                             BackgroundRepeat repeat, BackgroundAttachment attachment,
                             BackgroundSize size, TermList sizeValues)
     {
-        super(owner);
-        this.loadImages = owner.getViewport().getConfig().getLoadBackgroundImages();
-        this.url = url;
+        setOwner(owner);
         this.position = position;
         this.positionValues = positionValues;
         this.size = size;
         this.sizeValues = sizeValues;
         this.repeat = repeat;
         this.attachment = attachment;
-        if (loadImages)
-            image = loadImage(caching);
         repeatx = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_X);
         repeaty = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_Y);
         viewportOwner = (owner instanceof Viewport);
     }
 
-    @Override
+    public ElementBox getOwner()
+    {
+        return owner;
+    }
+    
     public void setOwner(ElementBox owner)
     {
-        super.setOwner(owner);
+        this.owner = owner;
         viewportOwner = (owner instanceof Viewport);
     }
 
@@ -112,121 +110,11 @@ public class BackgroundImage extends ContentImage
 
     //===========================================================================
     
-    @Override
-    public BufferedImage getBufferedImage()
-    {
-        if (image == null || abort)
-            return null;
+    public abstract float getIntrinsicWidth();
 
-        //image = new ImageIcon(image).getImage();
-        image = loadImage(caching);
-        // no container that would repaint -- wait for the complete image
-        if (container == null)
-            waitForLoad();
-        
-        Rectangle bounds = getOwner().getAbsoluteBackgroundBounds();
-        Rectangle clipped = getOwner().getClippedBounds();
-        if (viewportOwner)
-            bounds = clipped;  //for the root box (Viewport), use the whole clipped content (not only the visible part)
-        clipped = new Rectangle(bounds.x - clipped.x, bounds.y - clipped.y, clipped.width, clipped.height); //make the clip relative to the background bounds
-        if (bounds.width > 0 && bounds.height > 0)
-        {
-            computeCoordinates(bounds);
-            BufferedImage img = new BufferedImage(Math.round(bounds.width), Math.round(bounds.height), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = img.createGraphics();
-            
-            if (repeatx && repeaty)
-                drawRepeatBoth(g, imgx, imgy, bounds.width, bounds.height, clipped);
-            else if (repeatx)
-                drawRepeatX(g, imgx, imgy, bounds.width, clipped);
-            else if (repeaty)
-                drawRepeatY(g, imgx, imgy, bounds.height, clipped);
-            else
-                drawScaledImage(g, image, imgx, imgy, observer);
-            
-            g.dispose();
-    
-            return img;
-        }
-        else
-            return null;
-    }
-    
-    private void drawRepeatX(Graphics2D g, float sx, float sy, float limit, Rectangle clip)
-    {
-        float width = imgw;
-        float height = imgh;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (width > 0)
-        {
-            for (float x = sx; x < limit; x += width)
-            {
-                r.setLocation(x, sy);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, x, sy, observer);
-            }
-            for (float x = sx - width; x + width - 1 >= 0; x -= width)
-            {
-                r.setLocation(x, sy);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, x, sy, observer);
-            }
-        }
-        
-    }
-    
-    private void drawRepeatY(Graphics2D g, float sx, float sy, float limit, Rectangle clip)
-    {
-        float width = imgw;
-        float height = imgh;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (height > 0)
-        {
-            for (float y = sy; y < limit; y += height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, sx, y, observer);
-            }
-            for (float y = sy - height; y + height - 1 >= 0; y -= height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, sx, y, observer);
-            }
-        }
-        
-    }
-    
-    private void drawRepeatBoth(Graphics2D g, float sx, float sy, float limitx, float limity, Rectangle clip)
-    {
-        float width = imgw;
-        float height = imgh;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (height > 0)
-        {
-            for (float y = sy; y < limity; y += height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawRepeatX(g, sx, y, limitx, clip);
-            }
-            for (float y = sy - height; y + height - 1 >= 0; y -= height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawRepeatX(g, sx, y, limitx, clip);
-            }
-        }
-    }
-    
-    private void drawScaledImage(Graphics2D g, Image image, float x, float y, ImageObserver observer)
-    {
-        g.drawImage(image,
-                    Math.round(x), Math.round(y), Math.round(x + imgw), Math.round(y + imgh),
-                    0, 0, Math.round(getIntrinsicWidth()), Math.round(getIntrinsicHeight()),
-                    observer);
-    }
+    public abstract float getIntrinsicHeight();
+
+    public abstract float getIntrinsicRatio();
     
     //===========================================================================
     

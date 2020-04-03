@@ -1,6 +1,5 @@
 package org.fit.cssbox.layout;
 
-import java.awt.*;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class UnlimitedImageCache implements ImageCache
 {
-    private static ConcurrentHashMap<URL, Image> cache;
+    private static ConcurrentHashMap<URL, ContentImage> cache;
 
     static {
         cache = new ConcurrentHashMap<>();
@@ -24,13 +23,13 @@ public class UnlimitedImageCache implements ImageCache
     }
 
     @Override
-    public void put(URL uri, Image image)
+    public void put(URL uri, ContentImage image)
     {
         cache.put(uri, image);
     }
 
     @Override
-    public Image get(URL uri)
+    public ContentImage get(URL uri)
     {
         return cache.get(uri);
     }

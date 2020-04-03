@@ -22,6 +22,7 @@ package org.fit.cssbox.layout;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,7 @@ abstract public class ElementBox extends Box
     protected Map<Selector.PseudoClassType, NodeData> pseudoStyle;
     
     /** Background images or null when there are no background images */
-    protected Vector<BackgroundImage> bgimages;
+    protected List<BackgroundImage> bgimages;
     
     /** Set to true when the element box contains only text boxes */
     protected boolean textonly;
@@ -1407,27 +1408,42 @@ abstract public class ElementBox extends Box
      * @param style the style containing the image specifiations
      * @return a list of images
      */
-    protected Vector<BackgroundImage> loadBackgroundImages(NodeData style)
+    protected List<BackgroundImage> loadBackgroundImages(NodeData style)
     {
         CSSProperty.BackgroundImage img = style.getProperty("background-image");
         if (img == CSSProperty.BackgroundImage.uri)
         {
             try {
-                Vector<BackgroundImage> bgimages = new Vector<BackgroundImage>(1);
-                TermURI urlstring = style.getValue(TermURI.class, "background-image");
-                URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
+                List<BackgroundImage> bgimages = new ArrayList<BackgroundImage>(1); //TODO allow multiple images
+                //position
                 CSSProperty.BackgroundPosition position = style.getProperty("background-position");
                 TermList positionValues = style.getValue(TermList.class, "background-position");
+                //repeat
                 CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;
+                //attachment
                 CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
+                //size
                 CSSProperty.BackgroundSize size = style.getProperty("background-size");
                 TermList sizeValues = null;
                 if (size == null) size = BackgroundSize.list_values;
-                else if (size == BackgroundSize.list_values) sizeValues = style.getValue(TermList.class, "background-size"); 
-                BackgroundImage bgimg = new BackgroundImage(this, url, position, positionValues, repeat, attachment, size, sizeValues);
-                bgimages.add(bgimg);
+                else if (size == BackgroundSize.list_values) sizeValues = style.getValue(TermList.class, "background-size");
+                //image
+                CSSProperty.BackgroundImage image = style.getProperty("background-image");
+                if (image == CSSProperty.BackgroundImage.uri)
+                {
+                    TermURI urlstring = style.getValue(TermURI.class, "background-image");
+                    URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
+                    BackgroundImageImage bgimg = new BackgroundImageImage(this, url, position, positionValues, repeat, attachment, size, sizeValues);
+                    if (ctx.getConfig().getLoadBackgroundImages())
+                        bgimg.setImage(ctx.getImageLoader().loadImage(url));
+                    bgimages.add(bgimg);
+                }
+                else if (image == CSSProperty.BackgroundImage.gradient)
+                {
+                    //TODO grafients
+                }
                 return bgimages;
             } catch (MalformedURLException e) {
                 log.warn(e.getMessage());

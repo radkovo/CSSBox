@@ -60,7 +60,7 @@ public abstract class VisualContext
 
     private VisualContext parent;
     private VisualContext rootContext; //the visual context of the root element
-    private BrowserConfig config; //the factory used for obtaining current configuration
+    private BrowserConfig config; //used engine configuration
     private FontTable fontTable; //a table of CSS-defined fonts
     private Viewport viewport; //the viewport used for obtaining the vw sizes
     private float fontSize; //font size in pt
@@ -881,5 +881,13 @@ public abstract class VisualContext
                 return 0.0f; //this should not happen
         }
     }
+
+    //===================================================================================
+
+    /**
+     * Gets the image loader that can be used for obtaining ContentImage instances from URLs.
+     * @return the image loader
+     */
+    public abstract ImageLoader getImageLoader();
     
 }

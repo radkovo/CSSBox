@@ -41,6 +41,7 @@ import org.fit.cssbox.css.FontTable;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.cssbox.layout.FontInfo;
+import org.fit.cssbox.layout.ImageLoader;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.render.GraphicsRenderer;
 import org.fit.net.DataURLHandler;
@@ -64,6 +65,9 @@ public class GraphicsVisualContext extends VisualContext
     
     /** Default font attributes used when creating fonts */
     private HashMap<TextAttribute, Object> defaultFontAttributes;
+    
+    /** Used image loader instance */
+    private ImageLoader imageLoader;
     
 
     /**
@@ -341,6 +345,16 @@ public class GraphicsVisualContext extends VisualContext
     public LineMetrics getLineMetrics(String text)
     {
         return getFont().getLineMetrics(text, g.getFontRenderContext());
+    }
+
+    //=========================================================================
+    
+    @Override
+    public ImageLoader getImageLoader()
+    {
+        if (imageLoader == null)
+            imageLoader = new GraphicsImageLoader(this);
+        return imageLoader;
     }
     
 }
