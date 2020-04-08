@@ -1393,53 +1393,71 @@ abstract public class ElementBox extends Box
     }
     
     /**
-     * Loads background images from style. Considers their positions, repetition, etc. Currently, only a single background
-     * image is supported (CSS2).
+     * Loads background images from style. Considers their positions, repetition, etc.
      * @param style the style containing the image specifiations
      * @return a list of images
      */
     protected List<BackgroundImage> loadBackgroundImages(NodeData style)
     {
-        CSSProperty.BackgroundImage img = style.getProperty("background-image");
+        final int count = style.getListSize("background-image", true);
+        if (count > 0)
+        {
+            List<BackgroundImage> bgimages = new ArrayList<BackgroundImage>(count);
+            for (int i = 0; i < count; i++)
+            {
+                final BackgroundImage bgimg = loadBackgroundImage(style, i);
+                if (bgimg != null)
+                    bgimages.add(bgimg);
+            }
+            return bgimages;
+        }
+        else
+            return null;
+    }
+    
+    protected BackgroundImage loadBackgroundImage(NodeData style, int index)
+    {
+        CSSProperty.BackgroundImage img = style.getProperty("background-image", index);
         if (img == CSSProperty.BackgroundImage.uri)
         {
             try {
-                List<BackgroundImage> bgimages = new ArrayList<BackgroundImage>(1); //TODO allow multiple images
+                BackgroundImage ret = null;
                 //position
-                CSSProperty.BackgroundPosition position = style.getProperty("background-position");
-                TermList positionValues = style.getValue(TermList.class, "background-position");
+                CSSProperty.BackgroundPosition position = style.getProperty("background-position", index);
+                TermList positionValues = style.getValue(TermList.class, "background-position", index);
                 //repeat
-                CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat");
+                CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat", index);
                 if (repeat == null) repeat = BackgroundRepeat.REPEAT;
                 //origin
-                CSSProperty.BackgroundOrigin origin = style.getProperty("background-origin");
+                CSSProperty.BackgroundOrigin origin = style.getProperty("background-origin", index);
                 if (origin == null) origin = BackgroundOrigin.PADDING_BOX;
                 //attachment
-                CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment");
+                CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment", index);
                 if (attachment == null) attachment = BackgroundAttachment.SCROLL;
                 //size
-                CSSProperty.BackgroundSize size = style.getProperty("background-size");
+                CSSProperty.BackgroundSize size = style.getProperty("background-size", index);
                 TermList sizeValues = null;
                 if (size == null) size = BackgroundSize.list_values;
-                else if (size == BackgroundSize.list_values) sizeValues = style.getValue(TermList.class, "background-size");
+                else if (size == BackgroundSize.list_values)
+                    sizeValues = style.getValue(TermList.class, "background-size", index);
                 //image
-                CSSProperty.BackgroundImage image = style.getProperty("background-image");
+                CSSProperty.BackgroundImage image = style.getProperty("background-image", index);
                 if (image == CSSProperty.BackgroundImage.uri)
                 {
-                    TermURI urlstring = style.getValue(TermURI.class, "background-image");
+                    TermURI urlstring = style.getValue(TermURI.class, "background-image", index);
                     URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
                     BackgroundImageImage bgimg =
                             new BackgroundImageImage(this, url, position, positionValues, repeat, 
                                     attachment, origin, size, sizeValues);
                     if (ctx.getConfig().getLoadBackgroundImages())
                         bgimg.setImage(ctx.getImageLoader().loadImage(url));
-                    bgimages.add(bgimg);
+                    ret = bgimg;
                 }
                 else if (image == CSSProperty.BackgroundImage.gradient)
                 {
                     //TODO grafients
                 }
-                return bgimages;
+                return ret;
             } catch (MalformedURLException e) {
                 log.warn(e.getMessage());
                 return null;
