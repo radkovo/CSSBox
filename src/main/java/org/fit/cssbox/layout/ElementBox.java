@@ -1409,7 +1409,7 @@ abstract public class ElementBox extends Box
                 if (bgimg != null)
                     bgimages.add(bgimg);
             }
-            return bgimages;
+            return bgimages.isEmpty() ? null : bgimages; //return null when there are no images
         }
         else
             return null;
