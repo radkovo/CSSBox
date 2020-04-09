@@ -63,6 +63,18 @@ public abstract class BackgroundImage
     private boolean repeaty;
     
     
+    /**
+     * Ceates a new background image with the specified CSS property values.
+     * @param owner
+     * @param url
+     * @param position
+     * @param positionValues
+     * @param repeat
+     * @param attachment
+     * @param origin
+     * @param size
+     * @param sizeValues
+     */
     public BackgroundImage(ElementBox owner, URL url, BackgroundPosition position, TermList positionValues, 
                             BackgroundRepeat repeat, BackgroundAttachment attachment, BackgroundOrigin origin,
                             BackgroundSize size, TermList sizeValues)
@@ -80,6 +92,10 @@ public abstract class BackgroundImage
         viewportOwner = (owner instanceof Viewport);
     }
 
+    /**
+     * Obtains the element box the background belongs to.
+     * @return
+     */
     public ElementBox getOwner()
     {
         return owner;
@@ -91,58 +107,68 @@ public abstract class BackgroundImage
         viewportOwner = (owner instanceof Viewport);
     }
 
+    /**
+     * Obtains the used value of the CSS <code>background-position</code> property
+     * for this image.
+     * @return
+     */
     public CSSProperty.BackgroundPosition getPosition()
     {
         return position;
     }
 
+    /**
+     * Obtains the used value of the CSS <code>background-repeat</code> property.
+     * for this image.
+     * @return
+     */
     public CSSProperty.BackgroundRepeat getRepeat()
     {
         return repeat;
     }
 
+    /**
+     * Obtains the used value of the CSS <code>background-attachment</code> property.
+     * for this image.
+     * @return
+     */
     public CSSProperty.BackgroundAttachment getAttachment()
     {
         return attachment;
     }
     
+    /**
+     * Obtains the used value of the CSS <code>background-origin</code> property.
+     * for this image.
+     * @return
+     */
     public CSSProperty.BackgroundOrigin getOrigin()
     {
         return origin;
     }
 
+    /**
+     * Obtains the used value of the CSS <code>background-size</code> property.
+     * for this image.
+     * @return
+     */
     public CSSProperty.BackgroundSize getSize()
     {
         return size;
     }
     
+    /**
+     * Computes the coordinates of the image within the element border box.
+     * @return the coordinates within the owning element border box
+     */
     public Rectangle getComputedPosition()
     {
         computeCoordinates();
         return new Rectangle(imgx, imgy, imgw, imgh);
     }
 
-    public boolean isRepeatx()
-    {
-        return repeatx;
-    }
-
-    public boolean isRepeaty()
-    {
-        return repeaty;
-    }
-
-    //===========================================================================
-    
-    public abstract float getIntrinsicWidth();
-
-    public abstract float getIntrinsicHeight();
-
-    public abstract float getIntrinsicRatio();
-    
-    //===========================================================================
-    
     /**
+     * Obtains the used value of the repeat-x CSS property.
      * @return <code>true</code> if the image is repeated in the X direction
      */
     public boolean isRepeatX()
@@ -151,6 +177,7 @@ public abstract class BackgroundImage
     }
 
     /**
+     * Obtains the used value of the repeat-y CSS property.
      * @return <code>true</code> if the image is repeated in the Y direction
      */
     public boolean isRepeatY()
@@ -158,8 +185,31 @@ public abstract class BackgroundImage
         return repeaty;
     }
 
+    //===========================================================================
+    
     /**
-     * @return the imgx
+     * Obtains the intrinsic width of the image.
+     * @return the intrinsic width
+     */
+    public abstract float getIntrinsicWidth();
+
+    /**
+     * Obtains the intrinsic height of the image.
+     * @return the intrinsic height
+     */
+    public abstract float getIntrinsicHeight();
+
+    /**
+     * Obtains the intrinsic aspect ratio of the image (width / height).
+     * @return the intrinsic aspect ratio
+     */
+    public abstract float getIntrinsicRatio();
+    
+    //===========================================================================
+    
+    /**
+     * Gets the computed X coordinate of the image within the owner element border box.
+     * @return the x coordinate
      */
     public float getImgX()
     {
@@ -167,18 +217,27 @@ public abstract class BackgroundImage
     }
 
     /**
-     * @return the imgy
+     * Gets the computed Y coordinate of the image within the owner element border box.
+     * @return the y coordinate
      */
     public float getImgY()
     {
         return imgy;
     }
     
+    /**
+     * Gets the computed image width.
+     * @return the image width
+     */
     public float getImgWidth()
     {
         return imgw;
     }
 
+    /**
+     * Gets the computed image height.
+     * @return the image height
+     */
     public float getImgHeight()
     {
         return imgh;
@@ -338,6 +397,5 @@ public abstract class BackgroundImage
         }
         
     }
-    
     
 }

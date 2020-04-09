@@ -22,16 +22,40 @@ package org.fit.cssbox.layout;
 import java.net.URL;
 
 /**
- * Image cache interface. Simple singleton implementation is not enough.
- * For example we can try to load failed image later, set some limits to memory storage or store them on local FS.
+ * A generic cache for storing and re-using downloaded images. It uses the image URI as a unique
+ * identifier of the image.
  * 
  * @author dedrakot
  * @author burgetr
  */
 public interface ImageCache
 {
+    /**
+     * Adds a new image to the cache.
+     * @param uri source URI
+     * @param image the image
+     */
     void put(URL uri, ContentImage image);
+    
+    /**
+     * Retrieves an image from the cache based on its URI.
+     * @param uri the image URI
+     * @return the retrieved image or {@code null} when there is no such image in the cache.
+     */
     ContentImage get(URL uri);
+    
+    /**
+     * Stores an information about that the image downloading has failed before in order to avoid
+     * further attempts to download the image again.
+     * @param uri the image URL
+     */
     void putFailed(URL uri);
+    
+    /**
+     * Checks whether the image downloading or decoding has failed before in order to avoid
+     * further attempts to download the image again.
+     * @param uri the image URI
+     * @return {@code true} when the image could not be downloaded or decoded in the past
+     */
     boolean hasFailed(URL uri);
 }

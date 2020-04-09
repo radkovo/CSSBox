@@ -21,8 +21,12 @@ package org.fit.cssbox.layout;
 
 import java.net.URL;
 
+import org.fit.cssbox.render.BoxRenderer;
+
 /**
- * A factory for loading ContentImage instances.
+ * A factory for loading ContentImage instances. Typically, each implementation of the {@link BoxRenderer}
+ * provides its own ImageLoader that produces the {@link ContentImage} implementations that the renderer
+ * can use in rendering.
  * 
  * @author burgetr
  */

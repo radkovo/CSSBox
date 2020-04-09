@@ -52,11 +52,19 @@ public class BackgroundImageImage extends BackgroundImage
         this.url = url;
     }
     
+    /**
+     * Obtains the source URL of the image.
+     * @return the source URL
+     */
     public URL getUrl()
     {
         return url;
     }
 
+    /**
+     * Obtains the actual image used for creating this background image.
+     * @return an image representation
+     */
     public ContentImage getImage()
     {
         return image;

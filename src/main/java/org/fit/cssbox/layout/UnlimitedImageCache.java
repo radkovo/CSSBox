@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation with unlimited storage size.
+ * An implementation of the image cache with unlimited storage size.
  *
  * @author dedrakot. Based on Alessandro Tucci simple cache for storing already loaded images.
  */

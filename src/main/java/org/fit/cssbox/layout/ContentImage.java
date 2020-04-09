@@ -29,10 +29,22 @@ import java.net.URL;
 public interface ContentImage
 {
     
+    /**
+     * Obtains the source URL of the image.
+     * @return the source URL
+     */
     public URL getUrl();
 
+    /**
+     * Obtains the original width of the image.
+     * @return the original width (depending on the image format)
+     */
     public abstract float getWidth();
     
+    /**
+     * Obtains the original height of the image.
+     * @return the original height (depending on the image format)
+     */
     public abstract float getHeight();
     
 }
