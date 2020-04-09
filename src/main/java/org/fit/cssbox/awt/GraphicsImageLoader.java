@@ -34,6 +34,7 @@ import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.ContentImage;
 import org.fit.cssbox.layout.ImageCache;
 import org.fit.cssbox.layout.ImageLoader;
+import org.fit.cssbox.layout.VisualContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,10 +49,10 @@ public class GraphicsImageLoader implements ImageLoader
 {
     protected static final Logger log = LoggerFactory.getLogger(GraphicsImageLoader.class);
     
-    private GraphicsVisualContext ctx;
+    private VisualContext ctx;
     
     
-    protected GraphicsImageLoader(GraphicsVisualContext ctx)
+    public GraphicsImageLoader(VisualContext ctx)
     {
         this.ctx = ctx;
     }
