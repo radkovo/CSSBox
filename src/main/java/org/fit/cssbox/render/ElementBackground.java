@@ -19,6 +19,8 @@
  */
 package org.fit.cssbox.render;
 
+import org.fit.cssbox.layout.BackgroundImage;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Rectangle;
 import org.fit.cssbox.layout.Viewport;
@@ -70,6 +72,33 @@ public class ElementBackground
     public boolean isZeroSize()
     {
         return bounds.getWidth() <= 0 || bounds.getHeight() <= 0;
+    }
+    
+    /**
+     * Computes the target position of an image within the background according to its CSS
+     * background-position and background-size values. Specifics of the viewport background
+     * are considered as well.
+     * @param img The image to be positioned
+     * @return the target position and size of the image
+     */
+    protected Rectangle computeTargetImagePosition(BackgroundImage img)
+    {
+        final Rectangle pos;
+        if (isViewportOwner() && ((Viewport) getOwner()).getRootBox() != null)
+        {
+            // compute the image position within the root box
+            final ElementBox root = ((Viewport) getOwner()).getRootBox();
+            pos = img.getComputedPosition(root);
+            // position the image within the viewport
+            Dimension ofs = ((Viewport) getOwner()).getBackgroundOffset();
+            pos.x += ofs.width;
+            pos.y += ofs.height;
+        }
+        else
+        {
+            pos = img.getComputedPosition();
+        }
+        return pos;
     }
     
 }

@@ -20,15 +20,18 @@
 package org.fit.cssbox.awt;
 
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
-import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Rectangle;
-import org.fit.cssbox.layout.Viewport;
+import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.ElementBackground;
+import org.fit.cssbox.render.LinearGradient;
 
 /**
  * A bitmap representing a complete rendered background of an element. It provides functions
@@ -52,46 +55,78 @@ public class BackgroundBitmap extends ElementBackground
         }
     }
     
+    /**
+     * Returns a bitmap containing the entire element background.
+     * @return
+     */
     public BufferedImage getBufferedImage()
     {
         return bgimage;
     }
     
+    /**
+     * Adds a new image to the background based on its CSS properties.
+     * @param img the image to add
+     */
     public void addBackgroundImage(BackgroundImageImage img)
     {
         if (bgimage != null && img.getImage() != null)
         {
             if (img.getImage() instanceof BitmapImage)
             {
-                final Rectangle pos;
-                if (isViewportOwner() && ((Viewport) getOwner()).getRootBox() != null)
-                {
-                    // compute the image position within the root box
-                    final ElementBox root = ((Viewport) getOwner()).getRootBox();
-                    pos = img.getComputedPosition(root);
-                    // position the image within the viewport
-                    Dimension ofs = ((Viewport) getOwner()).getBackgroundOffset();
-                    pos.x += ofs.width;
-                    pos.y += ofs.height;
-                }
-                else
-                {
-                    pos = img.getComputedPosition();
-                }
-                final BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
-                final float origw = img.getIntrinsicWidth();
-                final float origh = img.getIntrinsicHeight();
-                
-                if (img.isRepeatX() && img.isRepeatY())
-                    drawRepeatBoth(g, image, pos, getBounds().width, getBounds().height, origw, origh, getClipped());
-                else if (img.isRepeatX())
-                    drawRepeatX(g, image, pos, getBounds().width, origw, origh, getClipped());
-                else if (img.isRepeatY())
-                    drawRepeatY(g, image, pos, getBounds().height, origw, origh, getClipped());
-                else
-                    drawScaledImage(g, image, pos.x, pos.y, pos.width, pos.height, origw, origh, null);
+                Rectangle pos = computeTargetImagePosition(img);
+                BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
+                float origw = img.getIntrinsicWidth();
+                float origh = img.getIntrinsicHeight();
+                applyImage(image, pos, origw, origh, img.isRepeatX(), img.isRepeatY());
             }
         }
+    }
+    
+    /**
+     * Adds a new gradient to the background based on its CSS properties
+     * @param img the gradient to add
+     */
+    public void addBackgroundImage(BackgroundImageGradient img)
+    {
+        if (bgimage != null && img.getGradient() != null)
+        {
+            if (img.getGradient() instanceof LinearGradient)
+            {
+                final LinearGradient grad = (LinearGradient) img.getGradient();
+                LinearGradientPaint p = createLinearGradientPaint(grad);
+                Rectangle pos = computeTargetImagePosition(img);
+                BufferedImage gradImg =
+                        new BufferedImage(Math.round(pos.getWidth()), Math.round(pos.getHeight()), BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = gradImg.createGraphics();
+                g.setPaint(p);
+                g.fill(new Rectangle2D.Float(0, 0, pos.width, pos.height));
+                applyImage(gradImg, pos, pos.width, pos.height, img.isRepeatX(), img.isRepeatY());
+            }
+        }
+    }
+
+    /**
+     * Adds an image to the target bitmap while applying the repeat directions and scaling when
+     * necessary.
+     * @param image The image to add.
+     * @param pos Target position in the target bitmap.
+     * @param origw Original image width
+     * @param origh Original image height
+     * @param repeatX Should the image be repeated in X direction?
+     * @param repeatY Should the image be repeated in Y direction?
+     */
+    private void applyImage(final BufferedImage image, final Rectangle pos, final float origw, final float origh,
+            boolean repeatX, boolean repeatY)
+    {
+        if (repeatX && repeatY)
+            drawRepeatBoth(g, image, pos, getBounds().width, getBounds().height, origw, origh, getClipped());
+        else if (repeatX)
+            drawRepeatX(g, image, pos, getBounds().width, origw, origh, getClipped());
+        else if (repeatY)
+            drawRepeatY(g, image, pos, getBounds().height, origw, origh, getClipped());
+        else
+            drawScaledImage(g, image, pos.x, pos.y, pos.width, pos.height, origw, origh, null);
     }
     
     private void drawRepeatX(Graphics2D g, BufferedImage image, Rectangle pos,
@@ -182,6 +217,20 @@ public class BackgroundBitmap extends ElementBackground
                     Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h),
                     0, 0, Math.round(origw), Math.round(origh),
                     observer);
+    }
+
+    private LinearGradientPaint createLinearGradientPaint(final LinearGradient grad)
+    {
+        Point2D start = new Point2D.Float(grad.getX1(), grad.getY1());
+        Point2D end = new Point2D.Float(grad.getX2(), grad.getY2());
+        float[] dists = new float[grad.getStops().size()];
+        java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
+        for (int i = 0; i < grad.getStops().size(); i++)
+        {
+            dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
+            colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
+        }
+        return new LinearGradientPaint(start, end, dists, colors);
     }
 
     
