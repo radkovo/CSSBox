@@ -167,6 +167,12 @@ public class BackgroundDecoder
             return null;
     }
     
+    /**
+     * Creates background a image structure based on a style definition.
+     * @param style the style definition
+     * @param index index of the image to take (there may be multiple images defined, 0 for the first image defined)
+     * @return The corresponding BackgroundImage object.
+     */
     protected BackgroundImage loadBackgroundImage(NodeData style, int index)
     {
         CSSProperty.BackgroundImage image = style.getProperty("background-image", index);

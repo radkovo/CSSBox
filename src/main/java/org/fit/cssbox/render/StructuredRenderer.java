@@ -44,16 +44,29 @@ public abstract class StructuredRenderer implements BoxRenderer
         findViewportBackgroundSource();
     }
     
+    /**
+     * Returns the viewport for which the renderer was initialized.
+     * @return The viewport box.
+     */
     public Viewport getViewport()
     {
         return vp;
     }
     
+    /**
+     * Returns the element box used for obtaining the viewport background. It may be the
+     * HTML or BODY element for HTML mode, the root element for non-HTML mode.
+     * @return The background source element or {@code null} when the box tree is empty.
+     */
     public ElementBox getViewportBackgroundSource()
     {
         return bgSource;
     }
     
+    /**
+     * Returns a representation of the viewport background.
+     * @return the corresponding background decoder 
+     */
     public BackgroundDecoder getViewportBackground()
     {
         return vpBackground;
@@ -109,6 +122,10 @@ public abstract class StructuredRenderer implements BoxRenderer
         }
     }
     
+    /**
+     * Finds the background source element according to
+     * https://www.w3.org/TR/CSS2/colors.html#background
+     */
     protected void findViewportBackgroundSource()
     {
         ElementBox root = getViewport().getRootBox();

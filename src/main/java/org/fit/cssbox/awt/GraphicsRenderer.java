@@ -51,7 +51,6 @@ import org.fit.cssbox.layout.TextBox;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.layout.ContentImage;
-import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.misc.Coords;
 import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.StructuredRenderer;
