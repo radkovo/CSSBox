@@ -201,16 +201,46 @@ public abstract class BackgroundImage
     public abstract float getIntrinsicWidth();
 
     /**
+     * Checks whether the image has an intrinsic width.
+     * @return {@code true} when the image has an intrinsic width
+     */
+    public abstract boolean hasIntrinsicWidth();
+    
+    /**
      * Obtains the intrinsic height of the image.
      * @return the intrinsic height
      */
     public abstract float getIntrinsicHeight();
 
     /**
+     * Checks whether the image has an intrinsic height.
+     * @return {@code true} when the image has an intrinsic height
+     */
+    public abstract boolean hasIntrinsicHeight();
+    
+    /**
      * Obtains the intrinsic aspect ratio of the image (width / height).
      * @return the intrinsic aspect ratio
      */
     public abstract float getIntrinsicRatio();
+    
+    /**
+     * Checks whether the image has an intrinsic ratio.
+     * @return {@code true} when the image has an intrinsic ratio
+     */
+    public abstract boolean hasIntrinsicRatio();
+    
+    //===========================================================================
+    
+    protected float getAutoWidth(Rectangle bounds)
+    {
+        return hasIntrinsicWidth() ? getIntrinsicWidth() : bounds.width;
+    }
+    
+    protected float getAutoHeight(Rectangle bounds)
+    {
+        return hasIntrinsicHeight() ? getIntrinsicHeight() : bounds.height;
+    }
     
     //===========================================================================
     
@@ -310,44 +340,60 @@ public abstract class BackgroundImage
 
     protected void computeSize(Rectangle bounds, CSSDecoder dec)
     {
-        final float ir = getIntrinsicRatio();
-        
         if (size == BackgroundSize.COVER)
         {
-            float w1 = bounds.width;
-            float h1 = w1 / ir;
-            float h2 = bounds.height;
-            float w2 = h2 * ir;
-            if (h1 - bounds.height > w2 - bounds.width)
+            if (hasIntrinsicRatio())
             {
-                imgw = w1; imgh = h1;
+                final float ir = getIntrinsicRatio();
+                float w1 = bounds.width;
+                float h1 = w1 / ir;
+                float h2 = bounds.height;
+                float w2 = h2 * ir;
+                if (h1 - bounds.height > w2 - bounds.width)
+                {
+                    imgw = w1; imgh = h1;
+                }
+                else
+                {
+                    imgw = w2; imgh = h2;
+                }
             }
             else
             {
-                imgw = w2; imgh = h2;
+                imgw = bounds.width;
+                imgh = bounds.height;
             }
         }
         else if (size == BackgroundSize.CONTAIN)
         {
-            float w1 = bounds.width;
-            float h1 = w1 / ir;
-            float h2 = bounds.height;
-            float w2 = h2 * ir;
-            if (h1 - bounds.height < w2 - bounds.width)
+            if (hasIntrinsicRatio())
             {
-                imgw = w1; imgh = h1;
+                final float ir = getIntrinsicRatio();
+                float w1 = bounds.width;
+                float h1 = w1 / ir;
+                float h2 = bounds.height;
+                float w2 = h2 * ir;
+                if (h1 - bounds.height < w2 - bounds.width)
+                {
+                    imgw = w1; imgh = h1;
+                }
+                else
+                {
+                    imgw = w2; imgh = h2;
+                }
             }
             else
             {
-                imgw = w2; imgh = h2;
+                imgw = bounds.width;
+                imgh = bounds.height;
             }
         }
         else if (size == BackgroundSize.list_values)
         {
             if (sizeValues == null) //no values provided: auto,auto is the default
             {
-                imgw = getIntrinsicWidth();
-                imgh = getIntrinsicHeight();
+                imgw = getAutoWidth(bounds);
+                imgh = getAutoHeight(bounds);
             }
             else if (sizeValues.size() == 2) //two values should be provided by jStyleParser
             {
@@ -360,25 +406,31 @@ public abstract class BackgroundImage
                 }
                 else if (w instanceof TermLengthOrPercent)
                 {
-                    imgw = dec.getLength((TermLengthOrPercent) w, false, 0, 0, bounds.width);                    
-                    imgh = Math.round(imgw / ir);
+                    imgw = dec.getLength((TermLengthOrPercent) w, false, 0, 0, bounds.width);
+                    if (hasIntrinsicRatio())
+                        imgh = Math.round(imgw / getIntrinsicRatio());
+                    else
+                        imgh = getAutoHeight(bounds);
                 }
                 else if (h instanceof TermLengthOrPercent)
                 {
-                    imgh = dec.getLength((TermLengthOrPercent) h, false, 0, 0, bounds.height);                    
-                    imgw = Math.round(imgh * ir);
+                    imgh = dec.getLength((TermLengthOrPercent) h, false, 0, 0, bounds.height);
+                    if (hasIntrinsicRatio())
+                        imgw = Math.round(imgh * getIntrinsicRatio());
+                    else
+                        imgw = getAutoWidth(bounds);
                 }
                 else
                 {
-                    imgw = getIntrinsicWidth();
-                    imgh = getIntrinsicHeight();
+                    imgw = getAutoWidth(bounds);
+                    imgh = getAutoHeight(bounds);
                 }
             }
             else //this should not happen
             {
                 log.error("Invalid number BackgroundSize values: {}", sizeValues);
-                imgw = getIntrinsicWidth();
-                imgh = getIntrinsicHeight();
+                imgw = getAutoWidth(bounds);
+                imgh = getAutoHeight(bounds);
             }
         }
         

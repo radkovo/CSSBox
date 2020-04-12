@@ -100,4 +100,22 @@ public class BackgroundImageImage extends BackgroundImage
         return getIntrinsicWidth() / getIntrinsicHeight();
     }
 
+    @Override
+    public boolean hasIntrinsicWidth()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean hasIntrinsicHeight()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean hasIntrinsicRatio()
+    {
+        return true;
+    }
+
 }

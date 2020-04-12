@@ -44,7 +44,6 @@ public class BackgroundImageGradient extends BackgroundImage
             TermList sizeValues)
     {
         super(owner, null, position, positionValues, repeat, attachment, origin, size, sizeValues);
-        // TODO Auto-generated constructor stub
     }
     
     public Gradient getGradient()
@@ -60,22 +59,37 @@ public class BackgroundImageGradient extends BackgroundImage
     @Override
     public float getIntrinsicWidth()
     {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public float getIntrinsicHeight()
     {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public float getIntrinsicRatio()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        return 1;
+    }
+
+    @Override
+    public boolean hasIntrinsicWidth()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasIntrinsicHeight()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasIntrinsicRatio()
+    {
+        return false;
     }
 
 }
