@@ -1,6 +1,6 @@
 /*
  * ElementBox.java
- * Copyright (c) 2005-2007 Radek Burget
+ * Copyright (c) 2005-2020 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,40 +15,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with CSSBox. If not, see <http://www.gnu.org/licenses/>.
  *
- * Created on 5. �nor 2006, 21:32
+ * Created on 5. unor 2006, 21:32
  */
 
 package org.fit.cssbox.layout;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import cz.vutbr.web.css.CSSProperty;
-import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
-import cz.vutbr.web.css.CSSProperty.BackgroundOrigin;
-import cz.vutbr.web.css.CSSProperty.BackgroundRepeat;
-import cz.vutbr.web.css.CSSProperty.BackgroundSize;
 import cz.vutbr.web.css.CSSProperty.ZIndex;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Selector;
 import cz.vutbr.web.css.Term;
-import cz.vutbr.web.css.TermColor;
 import cz.vutbr.web.css.TermInteger;
 import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
-import cz.vutbr.web.css.TermList;
 import cz.vutbr.web.css.TermNumber;
 import cz.vutbr.web.css.TermPercent;
-import cz.vutbr.web.css.TermURI;
-import cz.vutbr.web.csskit.Color;
 
 import org.fit.cssbox.css.CSSUnits;
-import org.fit.net.DataURLHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -128,9 +116,6 @@ abstract public class ElementBox extends Box
     /** Efficient styles for the pseudo classes */
     protected Map<Selector.PseudoClassType, NodeData> pseudoStyle;
     
-    /** Background images or null when there are no background images */
-    protected List<BackgroundImage> bgimages;
-    
     /** Set to true when the element box contains only text boxes */
     protected boolean textonly;
     
@@ -166,9 +151,6 @@ abstract public class ElementBox extends Box
     /** The white-space property value */
     protected CSSProperty.WhiteSpace whitespace;
     
-    /** Background color or null when transparent */
-    protected Color bgcolor;
-
     /** Margin widths */
     protected LengthSet margin;
     
@@ -268,8 +250,6 @@ abstract public class ElementBox extends Box
         display = src.display;
         lineHeight = src.lineHeight;
         whitespace = src.whitespace;
-        bgcolor = (src.bgcolor == null) ? null : new Color(src.bgcolor.getRed(), src.bgcolor.getGreen(), src.bgcolor.getBlue(), src.bgcolor.getAlpha());
-        bgimages = (src.bgimages == null) ? null : new Vector<BackgroundImage>(src.bgimages);
         transform = src.transform;
         position = src.position;
         topset = src.topset;
@@ -485,32 +465,6 @@ abstract public class ElementBox extends Box
                 || whitespace== ElementBox.WHITESPACE_PRE_LINE);
     }
     
-    /**
-     * Obtains the efficient background color to be used for drawing the background.
-     * @return the background color or null when transparent
-     */
-    public Color getBgcolor()
-    {
-        return bgcolor;
-    }
-    
-    /**
-     * Obtains the list of background images of the element.
-     * @return a list of the background images
-     */
-    public List<BackgroundImage> getBackgroundImages()
-    {
-        return bgimages;
-    }
-
-    /**
-     * @param bgcolor the background color
-     */
-    public void setBgcolor(Color bgcolor)
-    {
-        this.bgcolor = bgcolor;
-    }
-
     /**
      * @return the number of subboxes in this box
      */
@@ -1349,9 +1303,6 @@ abstract public class ElementBox extends Box
         whitespace = style.getProperty("white-space");
         if (whitespace == null) whitespace = WHITESPACE_NORMAL;
         
-        //background
-        loadBackground();
-        
         //z-index
         CSSProperty.ZIndex z = style.getProperty("z-index");
         if (z != null && z != ZIndex.AUTO)
@@ -1370,101 +1321,6 @@ abstract public class ElementBox extends Box
         if (isBlock() || isReplaced())
             transform = style.getProperty("transform");
         if (transform == null) transform = CSSProperty.Transform.NONE;
-    }
-    
-    /**
-     * Loads the background information from the style
-     */
-    protected void loadBackground()
-    {
-        CSSProperty.BackgroundColor bg = style.getProperty("background-color");
-        if (bg == CSSProperty.BackgroundColor.color)
-        {
-            TermColor bgc = style.getSpecifiedValue(TermColor.class, "background-color");
-            if (bgc.isTransparent())
-                bgcolor = null;
-            else
-                bgcolor = bgc.getValue();
-        }
-        else
-            bgcolor = null;
-
-        bgimages = loadBackgroundImages(style);
-    }
-    
-    /**
-     * Loads background images from style. Considers their positions, repetition, etc.
-     * @param style the style containing the image specifiations
-     * @return a list of images
-     */
-    protected List<BackgroundImage> loadBackgroundImages(NodeData style)
-    {
-        final int count = style.getListSize("background-image", true);
-        if (count > 0)
-        {
-            List<BackgroundImage> bgimages = new ArrayList<BackgroundImage>(count);
-            for (int i = 0; i < count; i++)
-            {
-                final BackgroundImage bgimg = loadBackgroundImage(style, i);
-                if (bgimg != null)
-                    bgimages.add(bgimg);
-            }
-            return bgimages.isEmpty() ? null : bgimages; //return null when there are no images
-        }
-        else
-            return null;
-    }
-    
-    protected BackgroundImage loadBackgroundImage(NodeData style, int index)
-    {
-        CSSProperty.BackgroundImage img = style.getProperty("background-image", index);
-        if (img == CSSProperty.BackgroundImage.uri)
-        {
-            try {
-                BackgroundImage ret = null;
-                //position
-                CSSProperty.BackgroundPosition position = style.getProperty("background-position", index);
-                TermList positionValues = style.getValue(TermList.class, "background-position", index);
-                //repeat
-                CSSProperty.BackgroundRepeat repeat = style.getProperty("background-repeat", index);
-                if (repeat == null) repeat = BackgroundRepeat.REPEAT;
-                //origin
-                CSSProperty.BackgroundOrigin origin = style.getProperty("background-origin", index);
-                if (origin == null) origin = BackgroundOrigin.PADDING_BOX;
-                //attachment
-                CSSProperty.BackgroundAttachment attachment = style.getProperty("background-attachment", index);
-                if (attachment == null) attachment = BackgroundAttachment.SCROLL;
-                //size
-                CSSProperty.BackgroundSize size = style.getProperty("background-size", index);
-                TermList sizeValues = null;
-                if (size == null) size = BackgroundSize.list_values;
-                else if (size == BackgroundSize.list_values)
-                    sizeValues = style.getValue(TermList.class, "background-size", index);
-                //image
-                CSSProperty.BackgroundImage image = style.getProperty("background-image", index);
-                if (image == CSSProperty.BackgroundImage.uri)
-                {
-                    TermURI urlstring = style.getValue(TermURI.class, "background-image", index);
-                    URL url = DataURLHandler.createURL(urlstring.getBase(), urlstring.getValue());
-                    BackgroundImageImage bgimg =
-                            new BackgroundImageImage(this, url, position, positionValues, repeat, 
-                                    attachment, origin, size, sizeValues);
-                    if (ctx.getConfig().getLoadBackgroundImages())
-                        bgimg.setImage(ctx.getImageLoader().loadImage(url));
-                    ret = bgimg;
-                }
-                else if (image == CSSProperty.BackgroundImage.gradient)
-                {
-                    //TODO grafients
-                }
-                return ret;
-            } catch (MalformedURLException e) {
-                log.warn(e.getMessage());
-                return null;
-            }
-        }
-        else
-            return null;
     }
     
     /**

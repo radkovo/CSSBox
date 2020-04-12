@@ -194,7 +194,8 @@ public class GraphicsEngine extends Engine
     {
         // adds clearCanvas before rendering
         GraphicsRenderer r = (GraphicsRenderer) getRenderer();
-        r.clearCanvas(viewport);
+        r.init(viewport);
+        r.clearCanvas();
         viewport.draw(r);
         r.close();
     }

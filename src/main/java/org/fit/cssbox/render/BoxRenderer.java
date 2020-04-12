@@ -26,6 +26,7 @@ import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ListItemBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
+import org.fit.cssbox.layout.Viewport;
 
 /**
  * A generic renderer that is able to render box contents and background based on
@@ -35,6 +36,13 @@ import org.fit.cssbox.layout.TextBox;
  */
 public interface BoxRenderer extends Closeable
 {
+    /**
+     * Initializes the renderer for rendering a ready-to-render viewport.
+     * @param vp The viewport that will be rendered. The viewport must be fully initialized
+     * and ready to draw.
+     */
+    public void init(Viewport vp);
+    
     /**
      * Initializes the rendering of an element. This is called before any contents of the element
      * or child boxes are rendered. Note that the {@link BoxRenderer#renderElementBackground} method 

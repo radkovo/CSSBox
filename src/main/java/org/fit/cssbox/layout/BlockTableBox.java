@@ -216,13 +216,6 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
-    protected void loadBackground()
-    {
-        //anonymous table box has never a background
-        bgcolor = null;
-    }
-
-    @Override
     protected void loadBorders(CSSDecoder dec, float contw)
     {
         //anonymous table box has never a border

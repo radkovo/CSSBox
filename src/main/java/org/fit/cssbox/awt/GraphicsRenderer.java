@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.fit.cssbox.css.BackgroundDecoder;
 import org.fit.cssbox.layout.BackgroundImage;
-import org.fit.cssbox.layout.BackgroundImageImage;
 import org.fit.cssbox.layout.BlockBox;
 import org.fit.cssbox.layout.Box;
 import org.fit.cssbox.layout.ElementBox;
@@ -51,8 +51,10 @@ import org.fit.cssbox.layout.TextBox;
 import org.fit.cssbox.layout.Viewport;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.layout.ContentImage;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.misc.Coords;
-import org.fit.cssbox.render.BoxRenderer;
+import org.fit.cssbox.render.BackgroundImageImage;
+import org.fit.cssbox.render.StructuredRenderer;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermColor;
@@ -63,7 +65,7 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
  * 
  * @author burgetr
  */
-public class GraphicsRenderer implements BoxRenderer
+public class GraphicsRenderer extends StructuredRenderer
 {
     /** the used graphic context */
     protected Graphics2D g;
@@ -95,9 +97,9 @@ public class GraphicsRenderer implements BoxRenderer
      * Clears the drawing area represented by a Viewport and fills it with a background color.
      * @param vp the Viewport for obtaining the canvas area and the background color 
      */
-    public void clearCanvas(Viewport vp)
+    public void clearCanvas()
     {
-        clearViewport(vp);
+        clearViewport(getViewport());
     }
     
     //====================================================================================================
@@ -178,13 +180,14 @@ public class GraphicsRenderer implements BoxRenderer
     
     protected void clearViewport(Viewport vp)
     {
-        if (vp.getBgcolor() != null)
-        {
-            Color color = g.getColor();
-            g.setColor(convertColor(vp.getBgcolor()));
-            g.fillRect(0, 0, Math.round(vp.getCanvasWidth()), Math.round(vp.getCanvasHeight()));
-            g.setColor(color);
-        }
+        Color bgcolor = convertColor(vp.getConfig().getViewportBackgroundColor());
+        if (getViewportBackground() != null && getViewportBackground().getBgcolor() != null)
+            bgcolor = convertColor(getViewportBackground().getBgcolor());
+        
+        Color color = g.getColor();
+        g.setColor(bgcolor);
+        g.fillRect(0, 0, Math.round(vp.getCanvasWidth()), Math.round(vp.getCanvasHeight()));
+        g.setColor(color);
     }
     
     /** 
@@ -200,29 +203,33 @@ public class GraphicsRenderer implements BoxRenderer
         //border bounds
         Rectangle brd = elem.getAbsoluteBorderBounds();
         
-        //draw the background - it should be visible below the border too
-        if (elem.getBgcolor() != null)
+        //draw the background
+        BackgroundDecoder bg = findBackgroundSource(elem);
+        if (bg != null)
         {
-            g.setColor(convertColor(elem.getBgcolor()));
-            final Rectangle2D abrd = awtRect2D(brd);
-            g.fill(abrd);
-        }
-        
-        //draw the background images
-        if (elem.getBackgroundImages() != null)
-        {
-            final BackgroundBitmap bitmap = new BackgroundBitmap(elem);
-            for (BackgroundImage img : elem.getBackgroundImages())
+            //draw the background color
+            if (bg.getBgcolor() != null)
             {
-                if (img instanceof BackgroundImageImage)
-                {
-                    bitmap.addBackgroundImage((BackgroundImageImage) img);
-                }
+                g.setColor(convertColor(bg.getBgcolor()));
+                final Rectangle2D abrd = awtRect2D(brd);
+                g.fill(abrd);
             }
-            if (bitmap.getBufferedImage() != null)
+            
+            //draw the background images
+            if (bg.getBackgroundImages() != null)
             {
-                final Rectangle bg = elem.getAbsoluteBorderBounds();
-                g.drawImage(bitmap.getBufferedImage(), Math.round(bg.x), Math.round(bg.y), null);
+                final BackgroundBitmap bitmap = new BackgroundBitmap(elem);
+                for (BackgroundImage img : bg.getBackgroundImages())
+                {
+                    if (img instanceof BackgroundImageImage)
+                    {
+                        bitmap.addBackgroundImage((BackgroundImageImage) img);
+                    }
+                }
+                if (bitmap.getBufferedImage() != null)
+                {
+                    g.drawImage(bitmap.getBufferedImage(), Math.round(brd.x), Math.round(brd.y), null);
+                }
             }
         }
         

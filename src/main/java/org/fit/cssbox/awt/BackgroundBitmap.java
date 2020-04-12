@@ -23,9 +23,11 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
-import org.fit.cssbox.layout.BackgroundImageImage;
+import org.fit.cssbox.layout.Dimension;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Rectangle;
+import org.fit.cssbox.layout.Viewport;
+import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.ElementBackground;
 
 /**
@@ -62,6 +64,12 @@ public class BackgroundBitmap extends ElementBackground
             if (img.getImage() instanceof BitmapImage)
             {
                 final Rectangle pos = img.getComputedPosition();
+                if (isViewportOwner())
+                {
+                    Dimension ofs = ((Viewport) getOwner()).getBackgroundOffset();
+                    pos.x += ofs.width;
+                    pos.y += ofs.height;
+                }
                 final BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
                 final float origw = img.getIntrinsicWidth();
                 final float origh = img.getIntrinsicHeight();

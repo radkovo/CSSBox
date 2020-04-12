@@ -21,7 +21,6 @@ package org.fit.cssbox.layout;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.TermLengthOrPercent;
-import cz.vutbr.web.csskit.Color;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.slf4j.Logger;
@@ -374,20 +373,6 @@ public class TableCellBox extends BlockBox
 	public boolean canIncreaseWidth()
     {
         return true;
-    }
-
-    @Override
-    public Color getBgcolor()
-    {
-        //if no background is specified for the cell, we try to use the row, row group, column, column group
-        Color bg = bgcolor;
-        if (bg == null)
-            bg = getOwnerRow().getBgcolor();
-        if (bg == null)
-            bg = getOwnerColumn().getBgcolor();
-        if (bg == null)
-            bg = getOwnerRow().getOwnerBody().getBgcolor();
-        return bg;
     }
 
     @Override

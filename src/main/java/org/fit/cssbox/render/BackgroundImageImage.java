@@ -17,9 +17,13 @@
  *
  * Created on 2. 4. 2020, 13:09:02 by burgetr
  */
-package org.fit.cssbox.layout;
+package org.fit.cssbox.render;
 
 import java.net.URL;
+
+import org.fit.cssbox.layout.BackgroundImage;
+import org.fit.cssbox.layout.ContentImage;
+import org.fit.cssbox.layout.ElementBox;
 
 import cz.vutbr.web.css.CSSProperty.BackgroundAttachment;
 import cz.vutbr.web.css.CSSProperty.BackgroundOrigin;
@@ -29,7 +33,7 @@ import cz.vutbr.web.css.CSSProperty.BackgroundSize;
 import cz.vutbr.web.css.TermList;
 
 /**
- * A background image that is really created with an image;
+ * A background image that is really created with an image.
  * 
  * @author burgetr
  */

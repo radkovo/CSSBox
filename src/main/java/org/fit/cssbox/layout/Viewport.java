@@ -1,6 +1,6 @@
 /*
  * Viewport.java
- * Copyright (c) 2005-2014 Radek Burget
+ * Copyright (c) 2005-2020 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -147,7 +147,6 @@ public class Viewport extends BlockBox
     public void initSubtree()
     {
         super.initSubtree();
-        loadBackgroundFromContents();
     }
     
     @Override
@@ -317,14 +316,9 @@ public class Viewport extends BlockBox
             super.setContentHeight(height);
     }
 
-    @Override
-    protected void loadBackground()
-    {
-	    bgcolor = null; //during the initialization, the background is not known
-    }
-
     /**
      * Gets the box that was used as the source of the viewport background (usually the root box or the body box).
+     * it is normally done by a renderer during the box tree rendering.
      * @return The corresponding element box or {@code null} when no such box was found (e.g. an empty rendering tree).
      */
     public ElementBox getBackgroundSource()
@@ -332,39 +326,32 @@ public class Viewport extends BlockBox
         return bgSrc;
     }
     
-	/**
-	 * Use the root box or the body box (for HTML documents) for obtaining the backgrounds.
-	 */
-	private void loadBackgroundFromContents()
-	{
-	    if (rootBox != null && bgSrc == null)
-	    {
-    	    ElementBox src = rootBox;
-    	    if (src.getBgcolor() == null && src.getBackgroundImages() == null && config.getUseHTML()) //for HTML, try to use the body
-    	        src = getElementBoxByName("body", false);
-    	    
-    	    if (src != null)
-    	    {
-    	        bgSrc = src;
-        	    if (src.getBgcolor() != null)
-        	    {
-        	        bgcolor = src.getBgcolor();
-        	        src.setBgcolor(null);
-        	    }
-        	    else if (bgcolor == null) //use white color when not set already and the body is transparent
-        	        bgcolor = config.getViewportBackgroundColor();
-        	    
-        	    if (src.getBackgroundImages() != null && !src.getBackgroundImages().isEmpty())
-        	    {
-        	        bgimages = loadBackgroundImages(src.getStyle());
-        	        src.getBackgroundImages().clear();
-        	    }
-    	    }
-    	    else
-    	        log.debug("Couldn't find background source for viewport");
-	    }
-	}
-	
+    /**
+     * Sets the background source element for viewport. This is normally done by a renderer during the
+     * box tree rendering.
+     * @param elem the background source element box
+     */
+    public void setBackgroundSource(ElementBox elem)
+    {
+        bgSrc = elem;
+    }
+    
+    /**
+     * Computes the offset of the background image positions given by the difference between the background
+     * source element position and the viewport position.
+     * @return the background offset
+     */
+    public Dimension getBackgroundOffset()
+    {
+        if (getRootBox() != null)
+        {
+            final Rectangle rbg = getRootBox().getAbsoluteBorderBounds();
+            return new Dimension(rbg.x, rbg.y);
+        }
+        else
+            return new Dimension();
+    }
+
     /**
 	 * Calculates the absolute positions and updates the viewport size
 	 * in order to enclose all the boxes.
@@ -381,7 +368,6 @@ public class Viewport extends BlockBox
 		if (width < maxx) width = maxx;
 		if (height < maxy) height = maxy;
 		loadSizes();
-		loadBackgroundFromContents(); //the background image positions may have changed
 	}
 
     @Override

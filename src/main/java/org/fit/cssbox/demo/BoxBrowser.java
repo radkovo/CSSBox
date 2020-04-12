@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.fit.cssbox.awt.BrowserCanvas;
+import org.fit.cssbox.css.BackgroundDecoder;
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.CSSUnits;
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -397,8 +398,9 @@ public class BoxBrowser
         if (box instanceof ElementBox)
         {
             ElementBox eb = (ElementBox) box;
+            BackgroundDecoder bg = new BackgroundDecoder(eb);
             vals.add(infoTableData("Display", eb.getDisplayString()));
-            vals.add(infoTableData("BgColor", (eb.getBgcolor() == null) ? "" : eb.getBgcolor().toString()));
+            vals.add(infoTableData("BgColor", (bg.getBgcolor() == null) ? "" : bg.getBgcolor().toString()));
             vals.add(infoTableData("Margin", eb.getMargin().toString()));
             vals.add(infoTableData("EMargin", eb.getEMargin().toString()));
             vals.add(infoTableData("Padding", eb.getPadding().toString()));

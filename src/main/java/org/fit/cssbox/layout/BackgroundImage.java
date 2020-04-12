@@ -268,15 +268,15 @@ public abstract class BackgroundImage
     
     protected void computeCoordinates(Rectangle bounds)
     {
-        ElementBox contextBox;
-        if (viewportOwner)
+        ElementBox contextBox = getOwner();
+        /*if (viewportOwner)
         {
             contextBox = ((Viewport) getOwner()).getBackgroundSource(); //for viewport, we take context of the original box with the background 
             if (contextBox == null)
                 contextBox = getOwner();
         }
         else
-            contextBox = getOwner();
+            contextBox = getOwner();*/
         
         CSSDecoder dec = new CSSDecoder(contextBox.getVisualContext());
         computeSize(bounds, dec);
@@ -310,7 +310,7 @@ public abstract class BackgroundImage
         else
             imgy = 0;
         
-        if (viewportOwner)
+        /*if (viewportOwner)
         {
             ElementBox rootBox = ((Viewport) getOwner()).getRootBox();
             if (rootBox != null)
@@ -319,7 +319,7 @@ public abstract class BackgroundImage
                 imgx += cbounds.x;
                 imgy += cbounds.y;
             }
-        }
+        }*/
     }
 
     protected void computeSize(Rectangle bounds, CSSDecoder dec)
