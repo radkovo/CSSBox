@@ -53,7 +53,6 @@ public class Viewport extends BlockBox
 	private BoxRenderer renderer;
 	private Element root; //the DOM root
 	private ElementBox rootBox; //the box that corresponds to the root node. It should be one of the child boxes.
-	private ElementBox bgSrc; //source element for the background
     private boolean rootOverflowVisible = true; //has the root box originally had overflow:visible?
     private float maxx; //maximal X position of all the content
     private float maxy; //maximal Y position of all the content
@@ -316,26 +315,6 @@ public class Viewport extends BlockBox
             super.setContentHeight(height);
     }
 
-    /**
-     * Gets the box that was used as the source of the viewport background (usually the root box or the body box).
-     * it is normally done by a renderer during the box tree rendering.
-     * @return The corresponding element box or {@code null} when no such box was found (e.g. an empty rendering tree).
-     */
-    public ElementBox getBackgroundSource()
-    {
-        return bgSrc;
-    }
-    
-    /**
-     * Sets the background source element for viewport. This is normally done by a renderer during the
-     * box tree rendering.
-     * @param elem the background source element box
-     */
-    public void setBackgroundSource(ElementBox elem)
-    {
-        bgSrc = elem;
-    }
-    
     /**
      * Computes the offset of the background image positions given by the difference between the background
      * source element position and the viewport position.

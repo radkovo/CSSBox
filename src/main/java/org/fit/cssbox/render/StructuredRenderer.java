@@ -42,7 +42,6 @@ public abstract class StructuredRenderer implements BoxRenderer
     {
         this.vp = vp;
         findViewportBackgroundSource();
-        this.vp.setBackgroundSource(bgSource);
     }
     
     public Viewport getViewport()

@@ -1,6 +1,6 @@
 /*
  * BackgroundImage.java
- * Copyright (c) 2005-2012 Radek Burget
+ * Copyright (c) 2005-2020 Radek Burget
  *
  * CSSBox is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -50,7 +50,6 @@ public abstract class BackgroundImage
     private CSSProperty.BackgroundSize size;
     private TermList positionValues;
     private TermList sizeValues;
-    private boolean viewportOwner; //the owner is viewport? (special coordinate system)
 
     private ElementBox owner;
     
@@ -89,7 +88,6 @@ public abstract class BackgroundImage
         this.origin = origin;
         repeatx = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_X);
         repeaty = (repeat == BackgroundRepeat.REPEAT || repeat == BackgroundRepeat.REPEAT_Y);
-        viewportOwner = (owner instanceof Viewport);
     }
 
     /**
@@ -104,7 +102,6 @@ public abstract class BackgroundImage
     public void setOwner(ElementBox owner)
     {
         this.owner = owner;
-        viewportOwner = (owner instanceof Viewport);
     }
 
     /**
@@ -158,12 +155,22 @@ public abstract class BackgroundImage
     }
     
     /**
-     * Computes the coordinates of the image within the element border box.
+     * Computes the coordinates of the image within the owner element border box.
      * @return the coordinates within the owning element border box
      */
     public Rectangle getComputedPosition()
     {
-        computeCoordinates();
+        computeCoordinates(getOwner());
+        return new Rectangle(imgx, imgy, imgw, imgh);
+    }
+
+    /**
+     * Computes the coordinates of the image within the specified element border box.
+     * @return the coordinates within the owning element border box
+     */
+    public Rectangle getComputedPosition(ElementBox contextBox)
+    {
+        computeCoordinates(contextBox);
         return new Rectangle(imgx, imgy, imgw, imgh);
     }
 
@@ -246,38 +253,28 @@ public abstract class BackgroundImage
     /**
      * Computes the image coordinates within the border box of the element according to the origin.
      */
-    protected void computeCoordinates()
+    protected void computeCoordinates(ElementBox contextBox)
     {
         switch (getOrigin())
         {
             case BORDER_BOX:
-                computeCoordinates(getOwner().getAbsoluteBorderBounds());
+                computeCoordinates(contextBox.getAbsoluteBorderBounds(), contextBox);
                 break;
             case CONTENT_BOX:
-                computeCoordinates(getOwner().getAbsoluteContentBounds());
-                imgx += getOwner().getBorder().left + getOwner().getPadding().left; //recompute to border box
-                imgy += getOwner().getBorder().top + getOwner().getPadding().top;
+                computeCoordinates(contextBox.getAbsoluteContentBounds(), contextBox);
+                imgx += contextBox.getBorder().left + contextBox.getPadding().left; //recompute to border box
+                imgy += contextBox.getBorder().top + contextBox.getPadding().top;
                 break;
             default: //PADDING_BOX
-                computeCoordinates(getOwner().getAbsolutePaddingBounds());
-                imgx += getOwner().getBorder().left; //recompute to border box
-                imgy += getOwner().getBorder().top;
+                computeCoordinates(contextBox.getAbsolutePaddingBounds(), contextBox);
+                imgx += contextBox.getBorder().left; //recompute to border box
+                imgy += contextBox.getBorder().top;
                 break;
         }
     }
     
-    protected void computeCoordinates(Rectangle bounds)
+    protected void computeCoordinates(Rectangle bounds, ElementBox contextBox)
     {
-        ElementBox contextBox = getOwner();
-        /*if (viewportOwner)
-        {
-            contextBox = ((Viewport) getOwner()).getBackgroundSource(); //for viewport, we take context of the original box with the background 
-            if (contextBox == null)
-                contextBox = getOwner();
-        }
-        else
-            contextBox = getOwner();*/
-        
         CSSDecoder dec = new CSSDecoder(contextBox.getVisualContext());
         computeSize(bounds, dec);
         
@@ -309,17 +306,6 @@ public abstract class BackgroundImage
         }
         else
             imgy = 0;
-        
-        /*if (viewportOwner)
-        {
-            ElementBox rootBox = ((Viewport) getOwner()).getRootBox();
-            if (rootBox != null)
-            {
-                Rectangle cbounds = rootBox.getAbsolutePaddingBounds(); //use root box bounds for viewport image coordinates
-                imgx += cbounds.x;
-                imgy += cbounds.y;
-            }
-        }*/
     }
 
     protected void computeSize(Rectangle bounds, CSSDecoder dec)

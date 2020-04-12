@@ -63,12 +63,20 @@ public class BackgroundBitmap extends ElementBackground
         {
             if (img.getImage() instanceof BitmapImage)
             {
-                final Rectangle pos = img.getComputedPosition();
-                if (isViewportOwner())
+                final Rectangle pos;
+                if (isViewportOwner() && ((Viewport) getOwner()).getRootBox() != null)
                 {
+                    // compute the image position within the root box
+                    final ElementBox root = ((Viewport) getOwner()).getRootBox();
+                    pos = img.getComputedPosition(root);
+                    // position the image within the viewport
                     Dimension ofs = ((Viewport) getOwner()).getBackgroundOffset();
                     pos.x += ofs.width;
                     pos.y += ofs.height;
+                }
+                else
+                {
+                    pos = img.getComputedPosition();
                 }
                 final BufferedImage image = ((BitmapImage) img.getImage()).getBufferedImage();
                 final float origw = img.getIntrinsicWidth();
