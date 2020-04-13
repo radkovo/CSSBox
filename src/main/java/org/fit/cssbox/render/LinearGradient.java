@@ -99,7 +99,6 @@ public class LinearGradient extends Gradient
         
         final double procDeg = (deg % 360 + 360) % 360;
         final double normDeg = 90 - procDeg;
-        final double wRatio = (double) w / h;
 
         x1 = x2 = y1 = y2 = 0;
 
@@ -122,9 +121,9 @@ public class LinearGradient extends Gradient
         if (procDeg == 0)
         {
             x1 = w / 2;
-            y1 = 0;
+            y1 = h;
             x2 = w / 2;
-            y2 = h;
+            y2 = 0;
         }
         else if (procDeg == 90)
         {
@@ -136,9 +135,9 @@ public class LinearGradient extends Gradient
         else if (procDeg == 180)
         {
             x1 = w / 2;
-            y1 = h;
+            y1 = 0;
             x2 = w / 2;
-            y2 = 0;
+            y2 = h;
         }
         else if (procDeg == 270)
         {
@@ -151,61 +150,55 @@ public class LinearGradient extends Gradient
         {
             final double tan = Math.tan((normDeg / 180) * Math.PI);
 
-            double qqq, kkk;
-            double qqq1, pdir;
-            double qqq2;
-
             //compute the direction of the gradient axis
-            kkk = -tan / wRatio;
-            qqq = sy - kkk * sx;
+            double k = -tan;
+            double q = sy - k * sx;
 
             //direction of the perpendiculars
-            pdir = 1 / (tan / wRatio);
+            double kn = 1 / tan;
 
+            double q1, q2;
             if (procDeg > 0 && procDeg <= 90)
             {
-                qqq1 = dy - pdir * dx;
-                qqq2 = by - pdir * bx;
+                q1 = dy - kn * dx;
+                q2 = by - kn * bx;
 
-                x2 = (float) ((qqq2 - qqq) / (kkk - pdir));
-                y2 = (float) (kkk * x2 + qqq);
-                x1 = (float) ((qqq1 - qqq) / (kkk - pdir));
-                y1 = (float) (kkk * x1 + qqq);
+                x2 = (float) ((q2 - q) / (k - kn));
+                y2 = (float) (k * x2 + q);
+                x1 = (float) ((q1 - q) / (k - kn));
+                y1 = (float) (k * x1 + q);
 
             }
             else if (procDeg > 90 && procDeg < 180)
             {
-                qqq1 = ay - pdir * ax;
-                qqq2 = cy - pdir * cx;
+                q1 = ay - kn * ax;
+                q2 = cy - kn * cx;
 
-                x2 = (float) ((qqq2 - qqq) / (kkk - pdir));
-                y2 = (float) (kkk * x2 + qqq);
-
-                x1 = (float) ((qqq1 - qqq) / (kkk - pdir));
-                y1 = (float) (kkk * x1 + qqq);
+                x2 = (float) ((q2 - q) / (k - kn));
+                y2 = (float) (k * x2 + q);
+                x1 = (float) ((q1 - q) / (k - kn));
+                y1 = (float) (k * x1 + q);
 
             }
             else if (procDeg > 180 && procDeg < 270)
             {
-                qqq1 = by - pdir * bx;
-                qqq2 = dy - pdir * dx;
+                q1 = by - kn * bx;
+                q2 = dy - kn * dx;
 
-                x2 = (float) ((qqq2 - qqq) / (kkk - pdir));
-                y2 = (float) (kkk * x2 + qqq);
-
-                x1 = (float) ((qqq1 - qqq) / (kkk - pdir));
-                y1 = (float) (kkk * x1 + qqq);
+                x2 = (float) ((q2 - q) / (k - kn));
+                y2 = (float) (k * x2 + q);
+                x1 = (float) ((q1 - q) / (k - kn));
+                y1 = (float) (k * x1 + q);
             }
             else if (procDeg > 270 && procDeg < 360)
             {
-                qqq1 = cy - pdir * cx;
-                qqq2 = ay - pdir * ax;
+                q1 = cy - kn * cx;
+                q2 = ay - kn * ax;
 
-                x2 = (float) ((qqq2 - qqq) / (kkk - pdir));
-                y2 = (float) (kkk * x2 + qqq);
-
-                x1 = (float) ((qqq1 - qqq) / (kkk - pdir));
-                y1 = (float) (kkk * x1 + qqq);
+                x2 = (float) ((q2 - q) / (k - kn));
+                y2 = (float) (k * x2 + q);
+                x1 = (float) ((q1 - q) / (k - kn));
+                y1 = (float) (k * x1 + q);
             }
         }
     }

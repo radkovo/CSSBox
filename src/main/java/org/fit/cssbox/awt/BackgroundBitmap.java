@@ -21,6 +21,9 @@ package org.fit.cssbox.awt;
 
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.MultipleGradientPaint.ColorSpaceType;
+import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -97,7 +100,7 @@ public class BackgroundBitmap extends ElementBackground
                 LinearGradientPaint p = createLinearGradientPaint(grad);
                 Rectangle pos = computeTargetImagePosition(img);
                 BufferedImage gradImg =
-                        new BufferedImage(Math.round(pos.getWidth()), Math.round(pos.getHeight()), BufferedImage.TYPE_INT_ARGB);
+                        new BufferedImage(Math.round(pos.getWidth()), Math.round(pos.getHeight()), BufferedImage.TYPE_INT_ARGB_PRE);
                 Graphics2D g = gradImg.createGraphics();
                 g.setPaint(p);
                 g.fill(new Rectangle2D.Float(0, 0, pos.width, pos.height));
@@ -230,7 +233,7 @@ public class BackgroundBitmap extends ElementBackground
             dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
             colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
         }
-        return new LinearGradientPaint(start, end, dists, colors);
+        return new LinearGradientPaint(start, end, dists, colors, CycleMethod.NO_CYCLE, ColorSpaceType.LINEAR_RGB, new AffineTransform());
     }
 
     
