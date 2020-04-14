@@ -102,16 +102,16 @@ public class LinearGradient extends Gradient
 
         // calculating coordinates of corners of the element
         final float ax = 0;
-        final float ay = h;
+        final float ay = 0;
 
         final float bx = w;
-        final float by = h;
+        final float by = 0;
 
         final float cx = w;
-        final float cy = 0;
+        final float cy = h;
 
         final float dx = 0;
-        final float dy = 0;
+        final float dy = h;
 
         if (procDeg == 0)
         {
