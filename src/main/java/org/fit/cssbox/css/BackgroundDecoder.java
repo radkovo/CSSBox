@@ -33,6 +33,7 @@ import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.GradientStop;
 import org.fit.cssbox.render.LinearGradient;
+import org.fit.cssbox.render.RadialGradient;
 import org.fit.net.DataURLHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,6 +217,7 @@ public class BackgroundDecoder
                             new BackgroundImageGradient(owner, position, positionValues, repeat, 
                                     attachment, origin, size, sizeValues);
                     Rectangle bgsize = bgimg.getComputedPosition();
+                    
                     TermFunction.Gradient values = style.getValue(TermFunction.Gradient.class, "background-image", index);
                     if (values instanceof TermFunction.LinearGradient)
                     {
@@ -233,7 +235,52 @@ public class BackgroundDecoder
                         bgimg.setGradient(grad);
                         ret = bgimg;
                     }
-                    //TODO other gradients
+                    else if (values instanceof TermFunction.RadialGradient)
+                    {
+                        TermFunction.RadialGradient spec = (TermFunction.RadialGradient) values;
+                        RadialGradient grad = new RadialGradient(bgsize);
+                        CSSDecoder dec = new CSSDecoder(ctx);
+                        float px = dec.getLength(spec.getPosition()[0], false, 0, 0, bgsize.width);
+                        float py = dec.getLength(spec.getPosition()[1], false, 0, 0, bgsize.height);
+                        if ("circle".equals(spec.getShape().getValue()))
+                        {
+                            RadialGradient.GradientSize ident = RadialGradient.decodeSizeIdent(spec.getSizeIdent());
+                            if (ident != null)
+                            {
+                                grad.setCircleDataRadLengths(ident, px, py);
+                            }
+                            else
+                            {
+                                //actually, percentages are not allowed here but they could be in the future
+                                // https://drafts.csswg.org/css-images-3/#typedef-size
+                                float r = dec.getLength(spec.getSize()[0], false, 0, 0, bgsize.width);
+                                grad.setCircle(r, px, py);
+                            }
+                        }
+                        else //ellipse
+                        {
+                            RadialGradient.GradientSize ident = RadialGradient.decodeSizeIdent(spec.getSizeIdent());
+                            if (ident != null)
+                            {
+                                grad.setEllipse(ident, px, py);
+                            }
+                            else
+                            {
+                                float rx = dec.getLength(spec.getSize()[0], false, 0, 0, bgsize.width);
+                                float ry = dec.getLength(spec.getSize()[1], false, 0, 0, bgsize.height);
+                                grad.setEllipse(rx, ry, px, py);
+                            }
+                        }
+                        for (TermFunction.Gradient.ColorStop stop : spec.getColorStops())
+                        {
+                            Color color = stop.getColor().getValue();
+                            Float percentage = decodePercentage(stop.getLength(), new CSSDecoder(ctx), grad.getLength());
+                            grad.addStop(new GradientStop(color, percentage));
+                        }
+                        grad.recomputeStops();
+                        bgimg.setGradient(grad);
+                        ret = bgimg;
+                    }
                 }
                 return ret;
             } catch (MalformedURLException e) {

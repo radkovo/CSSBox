@@ -21,8 +21,10 @@ package org.fit.cssbox.awt;
 
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.RadialGradientPaint;
 import java.awt.MultipleGradientPaint.ColorSpaceType;
 import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -35,6 +37,7 @@ import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.ElementBackground;
 import org.fit.cssbox.render.LinearGradient;
+import org.fit.cssbox.render.RadialGradient;
 
 /**
  * A bitmap representing a complete rendered background of an element. It provides functions
@@ -97,16 +100,32 @@ public class BackgroundBitmap extends ElementBackground
             if (img.getGradient() instanceof LinearGradient)
             {
                 final LinearGradient grad = (LinearGradient) img.getGradient();
-                LinearGradientPaint p = createLinearGradientPaint(grad);
-                Rectangle pos = computeTargetImagePosition(img);
-                BufferedImage gradImg =
-                        new BufferedImage(Math.round(pos.getWidth()), Math.round(pos.getHeight()), BufferedImage.TYPE_INT_ARGB_PRE);
-                Graphics2D g = gradImg.createGraphics();
-                g.setPaint(p);
-                g.fill(new Rectangle2D.Float(0, 0, pos.width, pos.height));
-                applyImage(gradImg, pos, pos.width, pos.height, img.isRepeatX(), img.isRepeatY());
+                final LinearGradientPaint p = createLinearGradientPaint(grad);
+                addsGradientUsingPaint(p, img);
+            }
+            else if (img.getGradient() instanceof RadialGradient)
+            {
+                final RadialGradient grad = (RadialGradient) img.getGradient();
+                final RadialGradientPaint p = createRadialGradientPaint(grad);
+                addsGradientUsingPaint(p, img);
             }
         }
+    }
+
+    /**
+     * Uses the paint for creating an image of the gradient and adding it to the target bitmap. 
+     * @param p the paint to be applied
+     * @param img the gradient image to be drawn
+     */
+    private void addsGradientUsingPaint(Paint p, BackgroundImageGradient img)
+    {
+        Rectangle pos = computeTargetImagePosition(img);
+        BufferedImage gradImg =
+                new BufferedImage(Math.round(pos.getWidth()), Math.round(pos.getHeight()), BufferedImage.TYPE_INT_ARGB_PRE);
+        Graphics2D g = gradImg.createGraphics();
+        g.setPaint(p);
+        g.fill(new Rectangle2D.Float(0, 0, pos.width, pos.height));
+        applyImage(gradImg, pos, pos.width, pos.height, img.isRepeatX(), img.isRepeatY());
     }
 
     /**
@@ -222,7 +241,7 @@ public class BackgroundBitmap extends ElementBackground
                     observer);
     }
 
-    private LinearGradientPaint createLinearGradientPaint(final LinearGradient grad)
+    private LinearGradientPaint createLinearGradientPaint(LinearGradient grad)
     {
         Point2D start = new Point2D.Float(grad.getX1(), grad.getY1());
         Point2D end = new Point2D.Float(grad.getX2(), grad.getY2());
@@ -233,9 +252,55 @@ public class BackgroundBitmap extends ElementBackground
             dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
             colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
         }
-        return new LinearGradientPaint(start, end, dists, colors, CycleMethod.NO_CYCLE, ColorSpaceType.LINEAR_RGB, new AffineTransform());
+        return new LinearGradientPaint(start, end, dists, colors, CycleMethod.NO_CYCLE, ColorSpaceType.SRGB, new AffineTransform());
     }
 
-    
+    private RadialGradientPaint createRadialGradientPaint(RadialGradient grad)
+    {
+        final float cx = grad.getCx();
+        final float cy = grad.getCy();
+        
+        Point2D center = new Point2D.Float(cx, cy);
+        
+        AffineTransform gradientTransform = new AffineTransform();
+        if (!grad.isCircle())
+        {
+            // scale to meet the radiuses
+            float scaleX = 1.0f;
+            float scaleY = 1.0f;
+            if (grad.getRy() < grad.getRx())
+            {
+                if (grad.getRx() > 0)
+                    scaleY = grad.getRy() / grad.getRx();
+            }
+            else
+            {
+                if (grad.getRy() > 0)
+                    scaleX = grad.getRx() / grad.getRy();
+            }
+            gradientTransform.translate(cx, cy);
+            gradientTransform.scale(scaleX, scaleY);
+            gradientTransform.translate(-cx, -cy);
+        }
+        
+        // convert stops
+        float[] dists = new float[grad.getStops().size()];
+        java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
+        for (int i = 0; i < grad.getStops().size(); i++)
+        {
+            dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
+            colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
+        }
+        
+        float rx = grad.getRx();
+        if (rx < 0.1f) rx = 0.1f; //avoid zero radius
+        RadialGradientPaint gp =
+                new RadialGradientPaint(center, rx, center,
+                                        dists, colors,
+                                        CycleMethod.NO_CYCLE,
+                                        ColorSpaceType.SRGB,
+                                        gradientTransform);
+        return gp;
+    }
 
 }
