@@ -97,6 +97,7 @@ public class RadialGradient extends Gradient
         return ry;
     }
 
+    @Override
     public float getLength()
     {
         return Math.max(rx, ry);

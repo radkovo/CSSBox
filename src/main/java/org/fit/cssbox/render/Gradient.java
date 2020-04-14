@@ -27,15 +27,23 @@ import java.util.List;
  * 
  * @author burgetr
  */
-public class Gradient
+public abstract class Gradient
 {
     private List<GradientStop> stops;
+    private float maxPercentage;
     
 
     public Gradient()
     {
         stops = new ArrayList<>();
+        maxPercentage = 0f;
     }
+    
+    /**
+     * Obtains the total gradient length (100%) for computing the stop percentages.
+     * @return the gradient length in pixels
+     */
+    public abstract float getLength();
     
     public List<GradientStop> getStops()
     {
@@ -44,6 +52,14 @@ public class Gradient
     
     public void addStop(GradientStop stop)
     {
+        if (stop.getPercentage() != null)
+        {
+            //ensure that the percentages are increasing
+            if (stop.getPercentage() < maxPercentage)
+                stop.setPercentage(maxPercentage);
+            else
+                maxPercentage = stop.getPercentage();
+        }
         stops.add(stop);
     }
 

@@ -42,12 +42,7 @@ public class LinearGradient extends Gradient
         super();
     }
     
-    /**
-     * Computes the gradient length from its rectangular width and height.
-     * @param w
-     * @param h
-     * @return
-     */
+    @Override
     public float getLength()
     {
         final double dx = Math.abs(x2 - x1);

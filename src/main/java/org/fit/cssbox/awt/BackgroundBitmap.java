@@ -36,6 +36,7 @@ import org.fit.cssbox.layout.Rectangle;
 import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
 import org.fit.cssbox.render.ElementBackground;
+import org.fit.cssbox.render.Gradient;
 import org.fit.cssbox.render.LinearGradient;
 import org.fit.cssbox.render.RadialGradient;
 
@@ -247,11 +248,7 @@ public class BackgroundBitmap extends ElementBackground
         Point2D end = new Point2D.Float(grad.getX2(), grad.getY2());
         float[] dists = new float[grad.getStops().size()];
         java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
-        for (int i = 0; i < grad.getStops().size(); i++)
-        {
-            dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
-            colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
-        }
+        stopsToPaintValues(grad, dists, colors);
         return new LinearGradientPaint(start, end, dists, colors, CycleMethod.NO_CYCLE, ColorSpaceType.SRGB, new AffineTransform());
     }
 
@@ -286,11 +283,7 @@ public class BackgroundBitmap extends ElementBackground
         // convert stops
         float[] dists = new float[grad.getStops().size()];
         java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
-        for (int i = 0; i < grad.getStops().size(); i++)
-        {
-            dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
-            colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
-        }
+        stopsToPaintValues(grad, dists, colors);
         
         float rx = grad.getRx();
         if (rx < 0.1f) rx = 0.1f; //avoid zero radius
@@ -301,6 +294,22 @@ public class BackgroundBitmap extends ElementBackground
                                         ColorSpaceType.SRGB,
                                         gradientTransform);
         return gp;
+    }
+
+    private void stopsToPaintValues(Gradient grad, float[] dists, java.awt.Color[] colors)
+    {
+        for (int i = 0; i < grad.getStops().size(); i++)
+        {
+            dists[i] = grad.getStops().get(i).getPercentage() / 100.0f;
+            if (dists[i] < 0.0f) dists[i] = 0.0f;
+            if (dists[i] > 1.0f) dists[i] = 1.0f;
+            if (i > 0 && dists[i] <= dists[i - 1])
+            {
+                dists[i] = dists[i-1] + 0.001f; //awt does not like equal stops, increase a bit
+                if (dists[i] > 1.0f) { dists[i] = 1.0f; dists[i-1] -= 0.001; }
+            }
+            colors[i] = GraphicsRenderer.convertColor(grad.getStops().get(i).getColor());
+        }
     }
 
 }

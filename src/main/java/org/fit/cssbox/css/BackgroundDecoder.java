@@ -31,6 +31,7 @@ import org.fit.cssbox.layout.Rectangle;
 import org.fit.cssbox.layout.VisualContext;
 import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
+import org.fit.cssbox.render.Gradient;
 import org.fit.cssbox.render.GradientStop;
 import org.fit.cssbox.render.LinearGradient;
 import org.fit.cssbox.render.RadialGradient;
@@ -225,13 +226,7 @@ public class BackgroundDecoder
                         LinearGradient grad = new LinearGradient();
                         double angle = (spec.getAngle() != null) ? ctx.degAngle(spec.getAngle()) : 180.0;
                         grad.setAngleDeg(angle, bgsize.width, bgsize.height);
-                        for (TermFunction.Gradient.ColorStop stop : spec.getColorStops())
-                        {
-                            Color color = stop.getColor().getValue();
-                            Float percentage = decodePercentage(stop.getLength(), new CSSDecoder(ctx), grad.getLength());
-                            grad.addStop(new GradientStop(color, percentage));
-                        }
-                        grad.recomputeStops();
+                        addStopsToGradient(grad, spec.getColorStops());
                         bgimg.setGradient(grad);
                         ret = bgimg;
                     }
@@ -271,13 +266,7 @@ public class BackgroundDecoder
                                 grad.setEllipse(rx, ry, px, py);
                             }
                         }
-                        for (TermFunction.Gradient.ColorStop stop : spec.getColorStops())
-                        {
-                            Color color = stop.getColor().getValue();
-                            Float percentage = decodePercentage(stop.getLength(), new CSSDecoder(ctx), grad.getLength());
-                            grad.addStop(new GradientStop(color, percentage));
-                        }
-                        grad.recomputeStops();
+                        addStopsToGradient(grad, spec.getColorStops());
                         bgimg.setGradient(grad);
                         ret = bgimg;
                     }
@@ -290,6 +279,25 @@ public class BackgroundDecoder
         }
         else
             return null;
+    }
+
+    /**
+     * Extracts the stops
+     * @param grad
+     * @param spec
+     */
+    private void addStopsToGradient(Gradient grad, List<TermFunction.Gradient.ColorStop> stops)
+    {
+        if (stops != null)
+        {
+            for (TermFunction.Gradient.ColorStop stop : stops)
+            {
+                Color color = stop.getColor().getValue();
+                Float percentage = decodePercentage(stop.getLength(), new CSSDecoder(ctx), grad.getLength());
+                grad.addStop(new GradientStop(color, percentage));
+            }
+        }
+        grad.recomputeStops();
     }
     
     private Float decodePercentage(TermLengthOrPercent spec, CSSDecoder dec, double wholeLength)
