@@ -145,56 +145,37 @@ public class LinearGradient extends Gradient
         {
             final double tan = Math.tan((normDeg / 180) * Math.PI);
 
-            //compute the direction of the gradient axis
+            //compute the direction of the gradient axis - y=k*x+q
             double k = -tan;
             double q = sy - k * sx;
 
-            //direction of the perpendiculars
+            //direction of the perpendiculars - y=kn*x+q1 and y=kn*x+q2 
             double kn = 1 / tan;
-
             double q1, q2;
             if (procDeg > 0 && procDeg <= 90)
             {
                 q1 = dy - kn * dx;
                 q2 = by - kn * bx;
-
-                x2 = (float) ((q2 - q) / (k - kn));
-                y2 = (float) (k * x2 + q);
-                x1 = (float) ((q1 - q) / (k - kn));
-                y1 = (float) (k * x1 + q);
-
             }
             else if (procDeg > 90 && procDeg < 180)
             {
                 q1 = ay - kn * ax;
                 q2 = cy - kn * cx;
-
-                x2 = (float) ((q2 - q) / (k - kn));
-                y2 = (float) (k * x2 + q);
-                x1 = (float) ((q1 - q) / (k - kn));
-                y1 = (float) (k * x1 + q);
-
             }
             else if (procDeg > 180 && procDeg < 270)
             {
                 q1 = by - kn * bx;
                 q2 = dy - kn * dx;
-
-                x2 = (float) ((q2 - q) / (k - kn));
-                y2 = (float) (k * x2 + q);
-                x1 = (float) ((q1 - q) / (k - kn));
-                y1 = (float) (k * x1 + q);
             }
-            else if (procDeg > 270 && procDeg < 360)
+            else //if (procDeg > 270 && procDeg < 360)
             {
                 q1 = cy - kn * cx;
                 q2 = ay - kn * ax;
-
-                x2 = (float) ((q2 - q) / (k - kn));
-                y2 = (float) (k * x2 + q);
-                x1 = (float) ((q1 - q) / (k - kn));
-                y1 = (float) (k * x1 + q);
             }
+            x2 = (float) ((q2 - q) / (k - kn));
+            y2 = (float) (k * x2 + q);
+            x1 = (float) ((q1 - q) / (k - kn));
+            y1 = (float) (k * x1 + q);
         }
     }
     
