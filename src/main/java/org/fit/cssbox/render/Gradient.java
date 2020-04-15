@@ -117,7 +117,7 @@ public abstract class Gradient
                         float frac = (lPerc - fPerc) / (i - f + 1);
                         for (int j = f; j < i; j++)
                         {
-                            stops.get(j).setPercentage(frac * (j - f + 1));
+                            stops.get(j).setPercentage(fPerc + frac * (j - f + 1));
                         }
                         f = -1;
                     }
