@@ -97,6 +97,34 @@ public class RadialGradient extends Gradient
         return ry;
     }
 
+    /**
+     * Gets the X radius after limiting the length of the gradient by the
+     * distance of the last stop (when specified). For non-repeating gradients or
+     * when the last stop distance is not explicitily specified, Rx is returned.
+     * @return
+     */
+    public float getEfficientRx()
+    {
+        if (isRepeating() && getLastLengthPx() != null)
+            return getRx()  * getLastLengthPx() / getLength();
+        else
+            return getRx();
+    }
+    
+    /**
+     * Gets the X radius after limiting the length of the gradient by the
+     * distance of the last stop (when specified). For non-repeating gradients or
+     * when the last stop distance is not explicitily specified, Rx is returned.
+     * @return
+     */
+    public float getEfficientRy()
+    {
+        if (isRepeating() && getLastLengthPx() != null)
+            return getRy()  * getLastLengthPx() / getLength();
+        else
+            return getRy();
+    }
+    
     @Override
     public float getLength()
     {

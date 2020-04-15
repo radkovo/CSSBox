@@ -29,16 +29,28 @@ import java.util.List;
  */
 public abstract class Gradient
 {
+    private boolean repeating;
     private List<GradientStop> stops;
     private float maxPercentage;
     
 
     public Gradient()
     {
+        repeating = false;
         stops = new ArrayList<>();
         maxPercentage = 0f;
     }
     
+    public boolean isRepeating()
+    {
+        return repeating;
+    }
+
+    public void setRepeating(boolean repeating)
+    {
+        this.repeating = repeating;
+    }
+
     /**
      * Obtains the total gradient length (100%) for computing the stop percentages.
      * @return the gradient length in pixels
@@ -52,22 +64,28 @@ public abstract class Gradient
     
     public void addStop(GradientStop stop)
     {
-        if (stop.getPercentage() != null)
-        {
-            //ensure that the percentages are increasing
-            if (stop.getPercentage() < maxPercentage)
-                stop.setPercentage(maxPercentage);
-            else
-                maxPercentage = stop.getPercentage();
-        }
         stops.add(stop);
     }
 
+    /**
+     * Returns the absolute length if it is specified for the last step.
+     * @return The length converted to pixels or {@code null} if the stop list is empty or there
+     * is no absolute length specified for the last stop.
+     */
+    public Float getLastLengthPx()
+    {
+        if (!stops.isEmpty())
+            return stops.get(stops.size() - 1).getPxLength();
+        else
+            return null;
+    }
+    
     /**
      * Computes missing percentages for stops.
      */
     public void recomputeStops()
     {
+        recomputePercentages();
         if (!stops.isEmpty())
         {
             //the first one is 0% if missing
@@ -104,6 +122,29 @@ public abstract class Gradient
                         f = -1;
                     }
                 }
+            }
+        }
+    }
+    
+    private void recomputePercentages()
+    {
+        maxPercentage = 0f;
+        final float whole = (isRepeating() && getLastLengthPx() != null) ? getLastLengthPx() : getLength();
+        //final float whole = getLength();
+        for (GradientStop stop : stops)
+        {
+            //recompute the percentages for the absolute stops
+            if (stop.getPxLength() != null)
+            {
+                stop.setPercentage((stop.getPxLength() / whole) * 100.0f);
+            }
+            //ensure that the percentages are increasing
+            if (stop.getPercentage() != null)
+            {
+                if (stop.getPercentage() < maxPercentage)
+                    stop.setPercentage(maxPercentage);
+                else
+                    maxPercentage = stop.getPercentage();
             }
         }
     }

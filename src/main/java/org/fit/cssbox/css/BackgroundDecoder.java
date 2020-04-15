@@ -224,6 +224,7 @@ public class BackgroundDecoder
                     {
                         TermFunction.LinearGradient spec = (TermFunction.LinearGradient) values;
                         LinearGradient grad = new LinearGradient();
+                        grad.setRepeating(spec.isRepeating());
                         double angle = (spec.getAngle() != null) ? ctx.degAngle(spec.getAngle()) : 180.0;
                         grad.setAngleDeg(angle, bgsize.width, bgsize.height);
                         addStopsToGradient(grad, spec.getColorStops());
@@ -234,6 +235,7 @@ public class BackgroundDecoder
                     {
                         TermFunction.RadialGradient spec = (TermFunction.RadialGradient) values;
                         RadialGradient grad = new RadialGradient(bgsize);
+                        grad.setRepeating(spec.isRepeating());
                         CSSDecoder dec = new CSSDecoder(ctx);
                         float px = dec.getLength(spec.getPosition()[0], false, 0, 0, bgsize.width);
                         float py = dec.getLength(spec.getPosition()[1], false, 0, 0, bgsize.height);
@@ -290,32 +292,24 @@ public class BackgroundDecoder
     {
         if (stops != null)
         {
+            CSSDecoder dec = new CSSDecoder(ctx);
             for (TermFunction.Gradient.ColorStop stop : stops)
             {
                 Color color = stop.getColor().getValue();
-                Float percentage = decodePercentage(stop.getLength(), new CSSDecoder(ctx), grad.getLength());
-                grad.addStop(new GradientStop(color, percentage));
+                Float percentage = null;
+                Float pxLength = null;
+                TermLengthOrPercent spec = stop.getLength();
+                if (spec != null)
+                {
+                    if (spec.isPercentage())
+                        percentage = spec.getValue();
+                    else
+                        pxLength = dec.getLength(spec, false, 0, 0, 0);
+                }
+                grad.addStop(new GradientStop(color, percentage, pxLength));
             }
         }
         grad.recomputeStops();
-    }
-    
-    private Float decodePercentage(TermLengthOrPercent spec, CSSDecoder dec, double wholeLength)
-    {
-        if (spec != null)
-        {
-            if (spec.isPercentage())
-            {
-                return spec.getValue();
-            }
-            else
-            {
-                float abs = dec.getLength(spec, false, 0, 0, 0);
-                return (float) ((abs / wholeLength) * 100.0);
-            }
-        }
-        else
-            return null;
     }
     
 }

@@ -245,11 +245,14 @@ public class BackgroundBitmap extends ElementBackground
     private LinearGradientPaint createLinearGradientPaint(LinearGradient grad)
     {
         Point2D start = new Point2D.Float(grad.getX1(), grad.getY1());
-        Point2D end = new Point2D.Float(grad.getX2(), grad.getY2());
+        Point2D end = new Point2D.Float(grad.getEfficientX2(), grad.getEfficientY2());
         float[] dists = new float[grad.getStops().size()];
         java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
         stopsToPaintValues(grad, dists, colors);
-        return new LinearGradientPaint(start, end, dists, colors, CycleMethod.NO_CYCLE, ColorSpaceType.SRGB, new AffineTransform());
+        return new LinearGradientPaint(start, end, dists, colors,
+                grad.isRepeating() ? CycleMethod.REPEAT : CycleMethod.NO_CYCLE,
+                ColorSpaceType.SRGB, 
+                new AffineTransform());
     }
 
     private RadialGradientPaint createRadialGradientPaint(RadialGradient grad)
@@ -262,21 +265,12 @@ public class BackgroundBitmap extends ElementBackground
         AffineTransform gradientTransform = new AffineTransform();
         if (!grad.isCircle())
         {
-            // scale to meet the radiuses
-            float scaleX = 1.0f;
+            // scale Y to achieve desired radius ratio
             float scaleY = 1.0f;
-            if (grad.getRy() < grad.getRx())
-            {
-                if (grad.getRx() > 0)
-                    scaleY = grad.getRy() / grad.getRx();
-            }
-            else
-            {
-                if (grad.getRy() > 0)
-                    scaleX = grad.getRx() / grad.getRy();
-            }
+            if (grad.getRx() > 0)
+                scaleY = grad.getRy() / grad.getRx();
             gradientTransform.translate(cx, cy);
-            gradientTransform.scale(scaleX, scaleY);
+            gradientTransform.scale(1.0f, scaleY);
             gradientTransform.translate(-cx, -cy);
         }
         
@@ -285,12 +279,12 @@ public class BackgroundBitmap extends ElementBackground
         java.awt.Color[] colors = new java.awt.Color[grad.getStops().size()];
         stopsToPaintValues(grad, dists, colors);
         
-        float rx = grad.getRx();
+        float rx = grad.getEfficientRx();
         if (rx < 0.1f) rx = 0.1f; //avoid zero radius
         RadialGradientPaint gp =
                 new RadialGradientPaint(center, rx, center,
                                         dists, colors,
-                                        CycleMethod.NO_CYCLE,
+                                        grad.isRepeating() ? CycleMethod.REPEAT : CycleMethod.NO_CYCLE,
                                         ColorSpaceType.SRGB,
                                         gradientTransform);
         return gp;

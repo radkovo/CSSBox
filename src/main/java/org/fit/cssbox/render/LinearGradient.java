@@ -60,26 +60,70 @@ public class LinearGradient extends Gradient
         return height;
     }
 
+    /**
+     * Gets the start point X coordinate.
+     * @return
+     */
     public float getX1()
     {
         return x1;
     }
 
+    /**
+     * Gets the start point Y coordinate.
+     * @return
+     */
     public float getY1()
     {
         return y1;
     }
 
+    /**
+     * Gets the end point X coordinate.
+     * @return
+     */
     public float getX2()
     {
         return x2;
     }
 
+    /**
+     * Gets the end point Y coordinate.
+     * @return
+     */
     public float getY2()
     {
         return y2;
     }
 
+    /**
+     * Gets the end point X coordinate after limiting the length of the gradient by the
+     * distance of the last stop (when specified). For non-repeating gradients or
+     * when the last stop distance is not explicitily specified, X2 is returned.
+     * @return
+     */
+    public float getEfficientX2()
+    {
+        if (isRepeating() && getLastLengthPx() != null)
+            return ((getX2() - getX1()) * getLastLengthPx() / getLength()) + getX1();
+        else
+            return getX2();
+    }
+    
+    /**
+     * Gets the end point X coordinate after limiting the length of the gradient by the
+     * distance of the last stop (when specified). For non-repeating gradients or
+     * when the last stop distance is not explicitily specified, Y2 is returned.
+     * @return
+     */
+    public float getEfficientY2()
+    {
+        if (isRepeating() && getLastLengthPx() != null)
+            return ((getY2() - getY1()) * getLastLengthPx() / getLength()) + getY1();
+        else
+            return getY2();
+    }
+    
     /**
      * Sets the gradient angle and computes the coordinates.
      * 

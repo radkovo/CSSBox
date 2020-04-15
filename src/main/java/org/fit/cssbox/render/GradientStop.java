@@ -31,11 +31,20 @@ public class GradientStop
 {
     private Color color;
     private Float percentage;
-
-    public GradientStop(Color color, Float percentage)
+    private Float pxLength;
+    
+    /**
+     * Creates a new gradient stop.
+     * 
+     * @param color stop color (must be always specified)
+     * @param percentage the percentage value (if specified)
+     * @param pxLength the absolute length value in pixels (if specified)
+     */
+    public GradientStop(Color color, Float percentage, Float pxLength)
     {
         this.color = color;
         this.percentage = percentage;
+        this.pxLength = pxLength;
     }
 
     public Color getColor()
@@ -48,6 +57,11 @@ public class GradientStop
         return percentage;
     }
 
+    public Float getPxLength()
+    {
+        return pxLength;
+    }
+
     public void setColor(Color color)
     {
         this.color = color;
@@ -56,6 +70,11 @@ public class GradientStop
     public void setPercentage(Float percentage)
     {
         this.percentage = percentage;
+    }
+
+    public void setPxLength(Float pxLength)
+    {
+        this.pxLength = pxLength;
     }
 
 }
