@@ -35,6 +35,7 @@ import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.Rectangle;
 import org.fit.cssbox.render.BackgroundImageGradient;
 import org.fit.cssbox.render.BackgroundImageImage;
+import org.fit.cssbox.render.BackgroundRepeater;
 import org.fit.cssbox.render.ElementBackground;
 import org.fit.cssbox.render.Gradient;
 import org.fit.cssbox.render.LinearGradient;
@@ -142,94 +143,9 @@ public class BackgroundBitmap extends ElementBackground
     private void applyImage(final BufferedImage image, final Rectangle pos, final float origw, final float origh,
             boolean repeatX, boolean repeatY)
     {
-        if (repeatX && repeatY)
-            drawRepeatBoth(g, image, pos, getBounds().width, getBounds().height, origw, origh, getClipped());
-        else if (repeatX)
-            drawRepeatX(g, image, pos, getBounds().width, origw, origh, getClipped());
-        else if (repeatY)
-            drawRepeatY(g, image, pos, getBounds().height, origw, origh, getClipped());
-        else
-            drawScaledImage(g, image, pos.x, pos.y, pos.width, pos.height, origw, origh, null);
-    }
-    
-    private void drawRepeatX(Graphics2D g, BufferedImage image, Rectangle pos,
-            float limit, float origw, float origh, Rectangle clip)
-    {
-        final float sx = pos.x;
-        final float sy = pos.y;
-        final float width = pos.width;
-        final float height = pos.height;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (width > 0)
-        {
-            for (float x = sx; x < limit; x += width)
-            {
-                r.setLocation(x, sy);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, x, sy, width, height, origw, origh, null);
-            }
-            for (float x = sx - width; x + width - 1 >= 0; x -= width)
-            {
-                r.setLocation(x, sy);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, x, sy, width, height, origw, origh, null);
-            }
-        }
-        
-    }
-    
-    private void drawRepeatY(Graphics2D g, BufferedImage image, Rectangle pos,
-            float limit, float origw, float origh, Rectangle clip)
-    {
-        final float sx = pos.x;
-        final float sy = pos.y;
-        final float width = pos.width;
-        final float height = pos.height;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (height > 0)
-        {
-            for (float y = sy; y < limit; y += height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, sx, y, width, height, origw, origh, null);
-            }
-            for (float y = sy - height; y + height - 1 >= 0; y -= height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawScaledImage(g, image, sx, y, width, height, origw, origh, null);
-            }
-        }
-        
-    }
-    
-    private void drawRepeatBoth(Graphics2D g, BufferedImage image, Rectangle pos,
-            float limitx, float limity, float origw, float origh,
-            Rectangle clip)
-    {
-        final float sx = pos.x;
-        final float sy = pos.y;
-        final float width = pos.width;
-        final float height = pos.height;
-        Rectangle r = new Rectangle(0, 0, width, height);
-        if (height > 0)
-        {
-            for (float y = sy; y < limity; y += height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawRepeatX(g, image, new Rectangle(sx, y, width, height),
-                            limitx, origw, origh, clip);
-            }
-            for (float y = sy - height; y + height - 1 >= 0; y -= height)
-            {
-                r.setLocation(sx, y);
-                if (r.intersects(clip))
-                    drawRepeatX(g, image, new Rectangle(sx, y, width, height),
-                            limitx, origw, origh, clip);
-            }
-        }
+        BackgroundRepeater rep = new BackgroundRepeater();
+        rep.repeatImage(getBounds(), pos, getClipped(), repeatX, repeatY,
+                (x, y) -> drawScaledImage(g, image, x, y, pos.width, pos.height, origw, origh, null));
     }
     
     private void drawScaledImage(Graphics2D g, BufferedImage image,
