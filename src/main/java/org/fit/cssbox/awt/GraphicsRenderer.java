@@ -219,8 +219,9 @@ public class GraphicsRenderer extends StructuredRenderer
             if (bg.getBackgroundImages() != null)
             {
                 final BackgroundBitmap bitmap = new BackgroundBitmap(elem);
-                for (BackgroundImage img : bg.getBackgroundImages())
+                for (int i = bg.getBackgroundImages().size() - 1; i >= 0; i--)
                 {
+                    BackgroundImage img = bg.getBackgroundImages().get(i);
                     if (img instanceof BackgroundImageImage)
                     {
                         bitmap.addBackgroundImage((BackgroundImageImage) img);
