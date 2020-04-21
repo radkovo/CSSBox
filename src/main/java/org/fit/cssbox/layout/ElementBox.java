@@ -30,12 +30,15 @@ import cz.vutbr.web.css.CSSProperty.ZIndex;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.Selector;
 import cz.vutbr.web.css.Term;
+import cz.vutbr.web.css.TermColor;
 import cz.vutbr.web.css.TermInteger;
 import cz.vutbr.web.css.TermLength;
 import cz.vutbr.web.css.TermLengthOrPercent;
 import cz.vutbr.web.css.TermNumber;
 import cz.vutbr.web.css.TermPercent;
+import cz.vutbr.web.csskit.Color;
 
+import org.fit.cssbox.css.BackgroundDecoder;
 import org.fit.cssbox.css.CSSUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -463,6 +466,27 @@ abstract public class ElementBox extends Box
         return (whitespace == ElementBox.WHITESPACE_NORMAL
                 || whitespace == ElementBox.WHITESPACE_PRE_WRAP
                 || whitespace== ElementBox.WHITESPACE_PRE_LINE);
+    }
+    
+    /**
+     * Obtains the efficient background color to be used for drawing the background. This is a convenience
+     * method for obtaining the color only. Other background properties such as images should
+     * be obtained using {@link BackgroundDecoder}.
+     * @return the background color or null when transparent
+     */
+    public Color getBgcolor()
+    {
+        CSSProperty.BackgroundColor bg = style.getProperty("background-color");
+        if (bg == CSSProperty.BackgroundColor.color)
+        {
+            TermColor bgc = style.getSpecifiedValue(TermColor.class, "background-color");
+            if (bgc.isTransparent())
+                return null;
+            else
+                return bgc.getValue();
+        }
+        else
+            return null;
     }
     
     /**
