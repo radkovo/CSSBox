@@ -162,7 +162,8 @@ public abstract class Engine
      * Creates the document layout according to the given viewport size where the visible area size
      * is equal to the whole canvas. If the size of the resulting page is greater than the specified
      * one (e.g. there is an explicit width or height specified for the resulting page), the viewport
-     * size is updated automatically.
+     * size is updated automatically. The resulting layout is automatically rendered using the 
+     * associated renderer obtained using #{@link Engine#getRenderer()}.
      * @param dim the viewport size
      */
     public void createLayout(Dimension dim)
@@ -173,11 +174,28 @@ public abstract class Engine
     /**
      * Creates the document layout according to the canvas and viewport size and position. If the size 
      * of the resulting page is greater than the specified one (e.g. there is an explicit width or height
-     * specified for the resulting page), the total canvas size is updated automatically.
+     * specified for the resulting page), the total canvas size is updated automatically. The resulting
+     * layout is automatically rendered using the associated renderer obtained
+     * using #{@link Engine#getRenderer()}.
      * @param dim the total canvas size 
      * @param visibleRect the viewport (the visible area) size and position
      */
     public void createLayout(Dimension dim, Rectangle visibleRect)
+    {
+        createLayout(dim, visibleRect, true);
+    }
+    
+    /**
+     * Creates the document layout according to the canvas and viewport size and position. If the size 
+     * of the resulting page is greater than the specified one (e.g. there is an explicit width or height
+     * specified for the resulting page), the total canvas size is updated automatically. The resulting
+     * layout is may be optionally rendered using the associated renderer obtained
+     * using #{@link Engine#getRenderer()}.
+     * @param dim the total canvas size 
+     * @param visibleRect the viewport (the visible area) size and position
+     * @param performRendering when set to true, the page is rendered using the associated renderer
+     */
+    public void createLayout(Dimension dim, Rectangle visibleRect, boolean performRendering)
     {
         initOutputMedia(dim.width, dim.height);
         
@@ -216,8 +234,11 @@ public abstract class Engine
         log.trace("Positioning for "+viewport.getWidth()+"x"+viewport.getHeight()+"px");
         viewport.absolutePositions();
         
-        log.trace("Drawing");
-        renderViewport(viewport);
+        if (performRendering)
+        {
+            log.trace("Drawing");
+            renderViewport(viewport);
+        }
     }
 
     /**
