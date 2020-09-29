@@ -54,6 +54,8 @@ import org.w3c.dom.Element;
 abstract public class ElementBox extends Box
 {
     private static Logger log = LoggerFactory.getLogger(ElementBox.class);
+
+    protected LayoutManager typeoflayout;
     
     public static final CSSProperty.Display DISPLAY_ANY = null;
     public static final CSSProperty.Display DISPLAY_NONE = CSSProperty.Display.NONE;
@@ -1395,5 +1397,11 @@ abstract public class ElementBox extends Box
             }
         }
     }
-    
+
+    @Override
+    public boolean doLayout(float availw, boolean force, boolean linestart) {
+        LayoutManager lm = typeoflayout;
+        lm.doLayout(availw, force, linestart);
+        return true;
+    }
 }

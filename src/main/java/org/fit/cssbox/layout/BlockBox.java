@@ -210,6 +210,8 @@ public class BlockBox extends ElementBox
         topstatic = false;
         leftstatic = false;
         widthAdjust = 0;
+
+        typeoflayout = new BlockBoxLayoutManager(this);
         
       	if (style != null)
       		loadBlockStyle();
@@ -254,6 +256,8 @@ public class BlockBox extends ElementBox
         nested = src.nested;
         startChild = src.startChild;
         endChild = src.endChild;
+
+        typeoflayout = new BlockBoxLayoutManager(this);
         
         setStyle(src.getStyle());
     }
@@ -278,6 +282,8 @@ public class BlockBox extends ElementBox
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
         clipRegion = src.clipRegion;
+
+        typeoflayout = src.typeoflayout;
     }
     
     @Override
@@ -789,58 +795,6 @@ public class BlockBox extends ElementBox
         	emargin.bottom = 0;
         }
         
-    }
-    
-    /** Layout the sub-elements.
-     * @param availw Maximal width available to the child elements
-     * @param force Use the area even if the used width is greater than maxwidth
-     * @param linestart Indicates whether the element is placed at the line start
-     * @return <code>true</code> if the box has been succesfully placed
-     */
-    @Override
-    public boolean doLayout(float availw, boolean force, boolean linestart)
-    {
-    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-    	//	System.out.println("jo!");
-        //Skip if not displayed
-        if (!displayed)
-        {
-            content.setSize(0, 0);
-            bounds.setSize(0, 0);
-            return true;
-        }
-
-        //remove previously splitted children from possible previous layout
-        clearSplitted();
-
-        //shrink-to-fit when the width is not given by containing box or specified explicitly
-        if (!hasFixedWidth())
-        {
-            //float min = getMinimalContentWidthLimit();
-            float min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-            float max = getMaximalContentWidth();
-            float availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-            //float pref = Math.min(max, availcont);
-            //if (pref < min) pref = min;
-            float pref = Math.min(Math.max(min, availcont), max);
-            setContentWidth(pref);
-            updateChildSizes();
-        }
-        
-        //the width should be fixed from this point
-        widthComputed = true;
-        
-        /* Always try to use the full width. If the box is not in flow, its width
-         * is updated after the layout */
-        setAvailableWidth(totalWidth());
-        
-        if (!contblock)  //block elements containing inline elements only
-            layoutInline();
-        else //block elements containing block elements
-            layoutBlocks();
-        
-        //allways fits as well possible
-        return true;
     }
 
     /**
