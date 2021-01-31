@@ -1,3 +1,9 @@
+2021-01-31 - Version 5.0.0
+- Java 8 target
+- Reworked API (see the demos)
+- Layout computation rewritten to floating point
+- Reworked rendering infrastructure
+
 2019-11-01 - Version 4.17
 - Added support for CSS counters
 - Text decoration propagation fixes
