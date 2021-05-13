@@ -19,11 +19,9 @@ public class BlockBoxLayoutManager implements LayoutManager {
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
         System.out.println("jsem blockBoxdoLayout");
-        //if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-        //	System.out.println("jo!");
+
         //Skip if not displayed
-        if (!blockBox.displayed)
-        {
+        if (!blockBox.displayed) {
             blockBox.content.setSize(0, 0);
             blockBox.bounds.setSize(0, 0);
             return true;
@@ -33,8 +31,7 @@ public class BlockBoxLayoutManager implements LayoutManager {
         blockBox.clearSplitted();
 
         //shrink-to-fit when the width is not given by containing box or specified explicitly
-        if (!blockBox.hasFixedWidth())
-        {
+        if (!blockBox.hasFixedWidth()) {
             //float min = getMinimalContentWidthLimit();
             float min = Math.max(blockBox.getMinimalContentWidthLimit(), blockBox.getMinimalContentWidth());
             float max = blockBox.getMaximalContentWidth();
@@ -51,7 +48,8 @@ public class BlockBoxLayoutManager implements LayoutManager {
 
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
-        blockBox.setAvailableWidth(blockBox.totalWidth());
+        blockBox.setAvailableWidth(availw);
+
 
         if (!blockBox.contblock)  //block elements containing inline elements only
             blockBox.layoutInline();

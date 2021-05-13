@@ -74,7 +74,13 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_COLUMN = CSSProperty.Display.TABLE_COLUMN;
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
-    
+
+    public static final CSSProperty.Display DISPLAY_GRID = CSSProperty.Display.GRID;
+    public static final CSSProperty.Display DISPLAY_INLINE_GRID = CSSProperty.Display.INLINE_GRID;
+
+    public static final CSSProperty.Display DISPLAY_FLEX = CSSProperty.Display.FLEX;
+    public static final CSSProperty.Display DISPLAY_INLINE_FLEX = CSSProperty.Display.INLINE_FLEX;
+
     public static final CSSProperty.Transform TRANSFORM_NONE = CSSProperty.Transform.NONE;
     
     public static final CSSProperty.Position POS_STATIC = CSSProperty.Position.STATIC;
@@ -654,7 +660,7 @@ abstract public class ElementBox extends Box
     {
     	return content.width;
     }
-    
+
     /**
      * @return the height of the content without any margins and borders
      */
@@ -1117,6 +1123,7 @@ abstract public class ElementBox extends Box
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
             Box child = getSubBox(i);
+
             if (child instanceof BlockBox)
             {
                 //update the children only when some size has changed
@@ -1401,7 +1408,7 @@ abstract public class ElementBox extends Box
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
         LayoutManager lm = typeoflayout;
-        lm.doLayout(availw, force, linestart);
+        lm.doLayout(availw,force, linestart);
         return true;
     }
 }

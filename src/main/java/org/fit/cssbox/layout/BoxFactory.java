@@ -797,10 +797,15 @@ public class BoxFactory
     protected ElementBox createAnonymousBox(ElementBox parent, Box child, boolean block)
     {
         ElementBox anbox;
-        if (block)
-        {
+        if (block) {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
-            anbox = new BlockBox(anelem, child.getVisualContext().create());
+            if (parent.display == ElementBox.DISPLAY_GRID) {
+                anbox = new GridItem(anelem, child.getVisualContext().create());
+            } else if (parent.display == ElementBox.DISPLAY_FLEX) {
+                anbox = new FlexItem(anelem, child.getVisualContext().create());
+            }else {
+                anbox = new BlockBox(anelem, child.getVisualContext().create());
+            }
             anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("block"));
             ((BlockBox) anbox).contblock = false;
@@ -954,7 +959,14 @@ public class BoxFactory
         ElementBox root = new InlineBox(n, parent.getVisualContext().create());
         root.setViewport(viewport);
         root.setStyle(style);
-        if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
+
+        if (root.getDisplay() == ElementBox.DISPLAY_GRID)
+            root = new GridBox((InlineBox) root);
+        else if(root.getDisplay() == ElementBox.DISPLAY_FLEX)
+            root = new FlexBox((InlineBox) root);
+
+
+        else if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
             root = new ListItemBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
             root = new BlockTableBox((InlineBox) root);
@@ -976,6 +988,14 @@ public class BoxFactory
             root = new TableColumnGroup((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
             root = new InlineBlockBox((InlineBox) root);
+//        else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_GRID)
+//            root = new InlineGridBox((InlineBox) root);
+//        else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_FLEX)
+//            root = new InlineFlexBox((InlineBox) root);
+        else if (parent instanceof GridBox)
+            root = new GridItem((InlineBox) root);
+        else if (parent instanceof FlexBox)
+            root = new FlexItem((InlineBox) root);
         else if (root.isBlock())
             root = new BlockBox((InlineBox) root);
         return root;

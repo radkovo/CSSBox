@@ -43,16 +43,16 @@ public class InlineBox extends ElementBox implements InlineElement
     private LineBox linebox;
     
     /** line box describing the children layout */
-    private LineBox curline;
+    protected LineBox curline;
     
     /** half-lead after layout */
     private float halflead;
     
     /** minimal relative Y coordinate of the descendants (computed during the layout) */
-    private float minDescendantY;
+    protected float minDescendantY;
     
     /** maximal relative Y coordinate of the descendants (computed during the layout) */
-    private float maxDescendantY;
+    protected float maxDescendantY;
     
     /** Layout finished with a line break? */
     protected boolean lineBreakStop;
@@ -626,48 +626,4 @@ public class InlineBox extends ElementBox implements InlineElement
 	        return true;
     	}
 	}
-    
-    //=====================================================================================================
-
-    /**
-     * Vertically aligns the contained boxes according to their vertical-align properties.
-     */
-    protected void alignBoxes()
-    {
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box sub = getSubBox(i);
-            if (!sub.isBlock())
-            {
-                //position relative to the line box
-                float dif = curline.alignBox((Inline) sub);
-                //recompute to the content box
-                dif = dif - getLineboxOffset();
-                //recompute to the bounding box
-                if (sub instanceof InlineBox)
-                    dif = dif - ((ElementBox) sub).getContentOffsetY();
-                //update the Y coordinate
-                if (dif != 0)
-                    sub.moveDown(dif);
-                //update minDescendantY and maxDescendantY
-                float y1 = sub.getContentY();
-                if (sub instanceof InlineBox)
-                {
-                    final float dy = ((InlineBox) sub).getMinDescendantY();
-                    if (dy < 0)
-                        y1 += dy;
-                }
-                minDescendantY = Math.min(minDescendantY, y1);
-                float y2 = sub.getContentY() + sub.getContentHeight() - 1;
-                if (sub instanceof InlineBox)
-                {
-                    final float dy = ((InlineBox) sub).getMaxDescendantY();
-                    if (dy > sub.getContentHeight())
-                        y2 += dy;
-                }
-                maxDescendantY = Math.max(maxDescendantY, y2);
-            }
-        }
-    }
-    
 }

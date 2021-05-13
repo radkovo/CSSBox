@@ -523,6 +523,8 @@ public abstract class VisualContext
                 case pc:
                     return (nval * 12 * CSSUnits.dpi) / 72;
                 case px:
+                case fr:
+                case none:
                     return nval;
                 case em:
                     return CSSUnits.pixels(getFontSize() * nval); //font size is in pt
