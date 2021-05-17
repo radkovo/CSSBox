@@ -53,7 +53,6 @@ public class GridLayoutManager implements LayoutManager {
 
         for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
             GridItem gridItem = (GridItem) gridBox.getSubBox(i);
-            System.out.println(gridItem.gridItemCoords.toString());
             if (gridBox.isGridAutoColumn || !gridBox.isGridTemplateColumnsNone) {
                 if (findUnitsForFr(gridBox.gridTemplateColumnValues, gridBox.gapColumn, gridBox.getContentWidth())) {
                     gridBox.oneFrUnitColumn = computingFrUnits(gridBox.flexFactorSum, gridBox.sumOfPixels, gridBox.content.width);
