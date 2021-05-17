@@ -1,109 +1,160 @@
 package org.fit.cssbox.layout;
 
 import cz.vutbr.web.css.*;
-import cz.vutbr.web.csskit.fn.MinMaxImpl;
 import cz.vutbr.web.csskit.fn.RepeatImpl;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
 
 /**
+ * A box corresponding to a Grid container
  *
+ * @author Ondra
  */
 public class GridBox extends BlockBox {
 
-    /** Size of row gaps in grid container */
+    /**
+     * Row gaps size
+     */
     protected float gapRow;
 
-    /** Size of column gaps in grid container */
+    /**
+     * Column gaps size
+     */
     protected float gapColumn;
 
-    /** Represents row tracks in explicit grid */
+    /**
+     * Row tracks in explicit grid
+     */
     protected TermList gridTemplateRowValues;
 
-    /** Represents column tracks in explicit grid */
+    /**
+     * Column tracks in explicit grid
+     */
     protected TermList gridTemplateColumnValues;
 
-    /** Are specified rows in explicit grid? */
+    /**
+     * Are specified rows in explicit grid?
+     */
     protected boolean isGridTemplateRows;
 
-    /** Are specified columns in explicit grid? */
+    /**
+     * Are specified columns in explicit grid?
+     */
     protected boolean isGridTemplateColumns;
 
-    /** Is specified only one auto value in explicit grid? */
+    /**
+     * Is specified one auto value in explicit grid?
+     */
     protected boolean isGridTemplateRowsAuto;
 
-    /** Is specified only one auto value in explicit grid? */
+    /**
+     * Is specified one auto value in explicit grid?
+     */
     protected boolean isGridTemplateColumnsAuto;
 
-    /** Are specified columns in explicit grid? */
+    /**
+     * Are specified columns in explicit grid?
+     */
     protected boolean isGridTemplateColumnsNone;
 
-    /** Is specified auto flow for automatic grid items? */
+    /**
+     * Auto flow for automatic grid items
+     */
     protected boolean isGridAutoFlowRow;
 
-    /** Are specified rows of implicit grid? */
+    /**
+     * Rows of implicit grid
+     */
     protected boolean isGridAutoRow;
 
-    /** Are specified columns of implicit grid? */
+    /**
+     * Columns of implicit grid?
+     */
     protected boolean isGridAutoColumn;
 
-    /** Size of row tracks in implicit grid */
+    /**
+     * Row tracks values in implicit grid
+     */
     protected float gridAutoRows;
 
-    /** Size of column tracks in implicit grid */
+    /**
+     * Column tracks values in implicit grid
+     */
     protected float gridAutoColumns;
 
-    /** Is specified size min-content of rows in implicit grid? */
+    /**
+     * Min-content of rows in implicit grid
+     */
     protected boolean isMinContentAutoRow;
 
-    /** Is specified size max-content of rows in implicit grid? */
+    /**
+     * Max-content of rows in implicit grid
+     */
     protected boolean isMaxContentAutoRow;
 
-    /** Is specified size min-content of columns in implicit grid? */
+    /**
+     * Min-content of columns in implicit grid
+     */
     protected boolean isMinContentAutoColumn;
 
-    /** Is specified size max-content of columns in implicit grid? */
+    /**
+     * Max-content of columns in implicit grid
+     */
     protected boolean isMaxContentAutoColumn;
 
-    /** Max row line in container */
+    /**
+     * Max row line of container
+     */
     protected int maxRowLine;
 
-    /** Max column line in container */
+    /**
+     * Max column line of container
+     */
     protected int maxColumnLine;
 
-    /** There are new rows values (in pixels) after computing auto, min-content or max-content values*/
-    protected ArrayList<Float> arrayofrows = new ArrayList<>();
+    /**
+     * Rows values (in pixels) after computing auto, min-content or max-content values
+     */
+    protected ArrayList<Float> arrayOfRows = new ArrayList<>();
 
-    /** There are new columns values (in pixels) after computing auto, min-content or max-content values*/
-    protected ArrayList<Float> arrayofcolumns = new ArrayList<>();
+    /**
+     * Columns values (in pixels) after computing auto, min-content or max-content values
+     */
+    protected ArrayList<Float> arrayOfColumns = new ArrayList<>();
 
-    /** Count of fr units in explicit grid */
+    /**
+     * Fr units sum
+     */
     protected float flexFactorSum;
 
-    /** Count of fixed tracks in explicit grid */
+    /**
+     * Fixed tracks count
+     */
     protected float sumOfPixels;
 
-    /** Size of 1fr (in pixels) in explicit grid */
-    protected float oneFrUnitColumn;
-
-    /** Size of 1fr (in pixels) in explicit grid */
+    /**
+     * 1fr size row
+     */
     protected float oneFrUnitRow;
 
     /**
-     *
+     * 1fr size column
+     */
+    protected float oneFrUnitColumn;
+
+    /**
+     * Repeated tracks sum of repeat function
      */
     protected TermFunction.Repeat.Unit countOfRepeated;
 
     /**
-     *
+     * Repeat function in grid
      */
     protected boolean isRepeatRows;
 
     /**
-     *
-     * @param n
-     * @param ctx
+     * Creates a new instance of Grid container
      */
     public GridBox(Element n, VisualContext ctx) {
         super(n, ctx);
@@ -123,8 +174,7 @@ public class GridBox extends BlockBox {
     }
 
     /**
-     *
-     * @param src
+     * Convert an inline box to a Grid container
      */
     public GridBox(InlineBox src) {
         super(src.el, src.ctx);
@@ -162,7 +212,7 @@ public class GridBox extends BlockBox {
     }
 
     /**
-     *
+     * Loads styles according to Grid container
      */
     protected void loadGridBoxGaps() {
 
@@ -192,7 +242,7 @@ public class GridBox extends BlockBox {
     }
 
     /**
-     *
+     * Loads grid-template row/columns property
      */
     protected void loadGridTemplateRowColumn() {
         CSSProperty.GridTemplateRowsColumns gridTemplateRows = style.getProperty("grid-template-rows");
@@ -226,7 +276,7 @@ public class GridBox extends BlockBox {
     }
 
     /**
-     *
+     * Loads grid-auto-flow property
      */
     protected void loadGridAutoFlow() {
         CSSProperty.GridAutoFlow gridAutoFlow = style.getProperty("grid-auto-flow");
@@ -242,9 +292,10 @@ public class GridBox extends BlockBox {
     }
 
     /**
+     * Loads grid-auto-rows property
      *
-     * @param conth
-     * @return
+     * @param conth available height
+     * @return false if auto, else true if not
      */
     protected boolean isGridAutoRows(float conth) {
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -266,9 +317,10 @@ public class GridBox extends BlockBox {
     }
 
     /**
+     * Loads grid-auto-columns property
      *
-     * @param contw
-     * @return
+     * @param contw available width
+     * @return false if auto, else true if not
      */
     protected boolean isGridAutoColumns(float contw) {
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -289,6 +341,15 @@ public class GridBox extends BlockBox {
         return true;
     }
 
+    /**
+     * Computes grid item size from explicit grid with pixels
+     *
+     * @param dec       decoder
+     * @param tl        terList
+     * @param oneFrUnit 1fr size
+     * @param cont      available space
+     * @return -1 if is auto, min-content or max-content, else grid item size
+     */
     protected int findSizeOfGridItem(CSSDecoder dec, TermList tl, int i, float oneFrUnit, float cont) {
         int length;
 
@@ -315,6 +376,11 @@ public class GridBox extends BlockBox {
         return length;
     }
 
+    /**
+     * Computes auto value sizes in pixels
+     *
+     * @return true if is auto, else false if not
+     */
     protected boolean processColumnAuto() {
         float content = getContentWidth();
         float size = 0;
@@ -322,22 +388,22 @@ public class GridBox extends BlockBox {
         int countofauto = 0;
         float finalautovalue;
 
-        for (int i = 0; i < arrayofcolumns.size(); i++) {
-            if (arrayofcolumns.get(i) != 0) {
-                size += arrayofcolumns.get(i);
+        for (Float arrayOfColumn : arrayOfColumns) {
+            if (arrayOfColumn != 0) {
+                size += arrayOfColumn;
             } else {
                 countofauto++;
             }
         }
-        countgaps = (arrayofcolumns.size() - 1) * gapColumn;
+        countgaps = (arrayOfColumns.size() - 1) * gapColumn;
 
         if (countofauto != 0) {
             finalautovalue = (content - size - countgaps) / countofauto;
 
-            for (int i = 0; i < arrayofcolumns.size(); i++) {
-                if (arrayofcolumns.get(i) == 0) {
-                    arrayofcolumns.remove(i);
-                    arrayofcolumns.add(i, finalautovalue);
+            for (int i = 0; i < arrayOfColumns.size(); i++) {
+                if (arrayOfColumns.get(i) == 0) {
+                    arrayOfColumns.remove(i);
+                    arrayOfColumns.add(i, finalautovalue);
                 }
             }
             return true;
@@ -346,36 +412,50 @@ public class GridBox extends BlockBox {
         }
     }
 
+    /**
+     * Computes explicit grid size
+     *
+     * @param dec decoder
+     * @param tl termList
+     * @param oneFrUnit 1fr unit in pixels
+     * @param cont available space
+     * @return -1 if is auto, min-content or max-content, else number
+     */
     protected float sumOfLengthForGridTemplateColumnRow(CSSDecoder dec, TermList tl, float oneFrUnit, float cont) {
         float c = 0;
-        for (int k = 0; k < tl.size(); k++) {
-            if (tl.get(k).getValue().toString().equals("auto") ||
-                    tl.get(k).getValue().toString().equals("min-content") ||
-                    tl.get(k).getValue().toString().equals("max-content")) {
+        for (Term<?> term : tl) {
+            if (term.getValue().toString().equals("auto") ||
+                    term.getValue().toString().equals("min-content") ||
+                    term.getValue().toString().equals("max-content")) {
                 return -1;
             }
         }
 
         TermLength.Unit unit;
-        for (int k = 0; k < tl.size(); k++) {
-            TermLengthOrPercent a = (TermLengthOrPercent) tl.get(k);
+        for (Term<?> term : tl) {
+            TermLengthOrPercent a = (TermLengthOrPercent) term;
             unit = a.getUnit();
             if (unit != TermNumeric.Unit.fr) {
-                c += dec.getLength((TermLengthOrPercent) tl.get(k), false, 0, 0, cont);
+                c += dec.getLength((TermLengthOrPercent) term, false, 0, 0, cont);
             } else {
-                float tmpForFrUnit = dec.getLength((TermLengthOrPercent) tl.get(k), false, 0, 0, cont);
+                float tmpForFrUnit = dec.getLength((TermLengthOrPercent) term, false, 0, 0, cont);
                 c += (tmpForFrUnit * oneFrUnit);
             }
         }
         return c;
     }
 
+    /**
+     * Auxiliary method, checks track
+     * @param tmp termList
+     * @return false if is auto, min-content or max-content, else true if not
+     */
     public boolean containsOnlyUnit(TermList tmp) {
         if (tmp != null) {
-            for (int i = 0; i < tmp.size(); i++) {
-                if (tmp.get(i).getValue().toString().equals("auto") ||
-                        tmp.get(i).getValue().toString().equals("min-content") ||
-                        tmp.get(i).getValue().toString().equals("max-content")) {
+            for (Term<?> term : tmp) {
+                if (term.getValue().toString().equals("auto") ||
+                        term.getValue().toString().equals("min-content") ||
+                        term.getValue().toString().equals("max-content")) {
                     return false;
                 }
             }
@@ -384,37 +464,24 @@ public class GridBox extends BlockBox {
         return false;
     }
 
+    /**
+     * Computes array sizes
+     *
+     * @return array size with gaps
+     */
     public float getSizeOfArrayOfRows() {
         float count = 0;
-        for (int i = 0; i < arrayofrows.size(); i++) {
-            count += arrayofrows.get(i);
+        for (Float arrayOfRow : arrayOfRows) {
+            count += arrayOfRow;
         }
-        count += (arrayofrows.size() -1) * gapRow;
+        count += (arrayOfRows.size() - 1) * gapRow;
         return count;
     }
 
-    public void containsRepeatInColumns() {
-        //very basic solution of repeat notation in columns
-        RepeatImpl repeat;
-        Term term;
-        if (gridTemplateColumnValues != null) {
-            term = gridTemplateColumnValues.get(0);
-            try {
-                repeat = (RepeatImpl) term;
-            } catch (Exception e) {
-                return;
-            }
-            countOfRepeated = repeat.getNumberOfRepetitions();
-            gridTemplateColumnValues = null;
-            CSSDecoder dec = new CSSDecoder(ctx);
-            for (int i = 0; i < countOfRepeated.getNumberOfRepetitions(); i++) {
-                arrayofcolumns.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentWidth()));
-            }
-        }
-    }
-
+    /**
+     * Computes repeat rows in grid
+     */
     public void containsRepeatInRows() {
-        //very basic solution of repeat notation in columns
         RepeatImpl repeat;
         Term term;
         if (gridTemplateRowValues != null) {
@@ -428,17 +495,32 @@ public class GridBox extends BlockBox {
             gridTemplateRowValues = null;
             CSSDecoder dec = new CSSDecoder(ctx);
             for (int i = 0; i < a.getNumberOfRepetitions(); i++) {
-                arrayofrows.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentHeight()));
+                arrayOfRows.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentHeight()));
             }
             isRepeatRows = true;
-            maxRowLine = a.getNumberOfRepetitions()+1;
-            System.out.println("max row line: " + maxRowLine);
+            maxRowLine = a.getNumberOfRepetitions() + 1;
         }
     }
 
-    public void processMinMaxFunction() {
-        MinMaxImpl max;
+    /**
+     * Computes repeat columns in grid
+     */
+    public void containsRepeatInColumns() {
+        RepeatImpl repeat;
         Term term;
+        if (gridTemplateColumnValues != null) {
+            term = gridTemplateColumnValues.get(0);
+            try {
+                repeat = (RepeatImpl) term;
+            } catch (Exception e) {
+                return;
+            }
+            countOfRepeated = repeat.getNumberOfRepetitions();
+            gridTemplateColumnValues = null;
+            CSSDecoder dec = new CSSDecoder(ctx);
+            for (int i = 0; i < countOfRepeated.getNumberOfRepetitions(); i++) {
+                arrayOfColumns.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentWidth()));
+            }
+        }
     }
 }
-

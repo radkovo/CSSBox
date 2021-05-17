@@ -8,54 +8,54 @@ import cz.vutbr.web.csskit.TermIntegerImpl;
 import org.w3c.dom.Element;
 
 /**
+ * A box corresponding to a Grid item
  *
+ * @author Ondra
  */
 public class GridItem extends BlockBox implements Comparable<GridItem> {
 
     /**
-     * Declare coordinates of grid item
+     * Grid item coords
      */
     protected GridItemCoords gridItemCoords;
 
     /**
-     * Width of item
+     * Item's width
      */
     protected float widthOfGridItem;
 
     /**
-     * Height of item
+     * Item's height
      */
     protected float heightOfGridItem;
 
     /**
-     * Distance of grid item from left edge
+     * Grid item's distance in grid
      */
     protected float columnDistanceFromZero;
 
     /**
-     * Distance of grid item from top edge
+     * Grid item's distance in grid
      */
     protected float rowDistanceFromZero;
 
     /**
-     * Indicates count of column gaps in explicit grid
+     * Column gaps count of explicit grid
      */
     protected int w;
 
     /**
-     * Indicates count of row gaps in explicit grid
+     * Row gaps count of explicit grid
      */
     protected int h;
 
     /**
-     *
+     * Grid item order value
      */
     protected int gridItemOrderValue;
 
     /**
-     *
-     * @param n
-     * @param ctx
+     * Creates a new instance of Grid Item
      */
     public GridItem(Element n, VisualContext ctx) {
         super(n, ctx);
@@ -70,8 +70,7 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
     }
 
     /**
-     *
-     * @param src
+     * Converts an inline box to Grid item
      */
     public GridItem(InlineBox src) {
         super(src.el, src.ctx);
@@ -94,10 +93,6 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
         loadGridItemStyles();
     }
 
-    /**
-     *
-     * @return
-     */
     public int getGridItemOrderValue() {
         return gridItemOrderValue;
     }
@@ -108,7 +103,7 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
     }
 
     /**
-     *
+     * Loads styles according to Grid item
      */
     private void loadGridItemStyles() {
         gridItemCoords = new GridItemCoords();
@@ -120,11 +115,10 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
         gridItemOrderValue = 0;
         if (len != null)
             gridItemOrderValue = len.getIntValue();
-        System.out.println("order grid itemu je: " + gridItemOrderValue);
     }
 
     /**
-     *
+     * Loads grid-row property
      */
     protected void loadGridItemRows() {
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -179,7 +173,7 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
     }
 
     /**
-     *
+     * Loads grid-column property
      */
     protected void loadGridItemColumns() {
         CSSDecoder dec = new CSSDecoder(ctx);
@@ -237,17 +231,17 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
     }
 
     /**
+     * Sets grid item's width
      *
-     * @param gridBox
+     * @param gridBox grid container
      */
     public void setWidthOfItem(GridBox gridBox) {
         CSSDecoder dec = new CSSDecoder(ctx);
         float countGridColumnGapsInItem;
 
         for (int j = gridItemCoords.columnStart - 1; j < gridItemCoords.columnEnd - 1; j++) {
-            //very basic solution of repeat notation
-            if (gridBox.gridTemplateColumnValues == null && gridBox.arrayofcolumns.size() != 0) {
-                widthOfGridItem += gridBox.arrayofcolumns.get(j);
+            if (gridBox.gridTemplateColumnValues == null && gridBox.arrayOfColumns.size() != 0) {
+                widthOfGridItem += gridBox.arrayOfColumns.get(j);
                 break;
             }
             if (gridBox.isGridAutoColumn && gridBox.gridTemplateColumnValues == null) {
@@ -299,20 +293,18 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
     }
 
     /**
+     * Sets grid item's height
      *
-     * @param gridBox
+     * @param gridBox grid container
      */
     public void setHeightOfItem(GridBox gridBox) {
         CSSDecoder dec = new CSSDecoder(ctx);
         float countGridRowGapsInItem;
         for (int j = gridItemCoords.rowStart - 1; j < gridItemCoords.rowEnd - 1; j++) {
-
-            //very basic solution of repeat notation
-            if (gridBox.gridTemplateRowValues == null && gridBox.arrayofrows.size() != 0) {
-                heightOfGridItem += gridBox.arrayofrows.get(j);
+            if (gridBox.gridTemplateRowValues == null && gridBox.arrayOfRows.size() != 0) {
+                heightOfGridItem += gridBox.arrayOfRows.get(j);
                 break;
             }
-
             if (gridBox.isGridAutoRow && gridBox.gridTemplateRowValues == null) {
                 if (gridBox.gridTemplateRowValues == null) {
                     if (gridItemCoords.rowStart > 1) {
@@ -337,17 +329,9 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
                         heightOfGridItem += getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
                     } else heightOfGridItem += gridBox.gridAutoRows;
                 } else if ((j + 1) < gridBox.gridTemplateRowValues.size()) {
-                    if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-                        heightOfGridItem = getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
-                    } else {
-                        heightOfGridItem += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
-                    }
+                    computeHeight(gridBox, dec, j);
                 } else {
-                    if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-                        heightOfGridItem = getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
-                    } else {
-                        heightOfGridItem += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
-                    }
+                    computeHeight(gridBox, dec, j);
                 }
             } else {
                 if (!gridBox.isGridTemplateRows) {
@@ -375,11 +359,7 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
                         if (!gridBox.isGridAutoRow) {
                             heightOfGridItem = getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
                         } else {
-                            if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-                                heightOfGridItem = getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
-                            } else {
-                                heightOfGridItem += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
-                            }
+                            computeHeight(gridBox, dec, j);
                         }
                     }
                 }
@@ -389,84 +369,18 @@ public class GridItem extends BlockBox implements Comparable<GridItem> {
         heightOfGridItem += countGridRowGapsInItem * gridBox.gapRow;
     }
 
-//    /**
-//     *
-//     * @param gridBox
-//     */
-//    public void setDistanceInHorizontalDirection(GridBox gridBox) {
-//        CSSDecoder dec = new CSSDecoder(ctx);
-//        for (int j = 0; j < gridItemCoords.columnStart - 1; j++) {
-//            if (gridBox.isGridAutoColumn && gridBox.gridTemplateColumnValues == null) {
-//                columnDistanceFromZero += gridBox.gridAutoColumns;
-//            } else if (gridBox.isGridAutoColumn && gridBox.gridTemplateColumnValues != null) {
-//                if (gridItemCoords.columnStart >= gridBox.gridTemplateColumnValues.size() + 1) {
-//                    columnDistanceFromZero = gridBox.sumOfLengthForGridTemplateColumnRow(dec, gridBox.gridTemplateColumnValues, gridBox.oneFrUnitColumn, gridBox.getContentWidth());
-//                    w++;
-//                } else {
-//                    columnDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateColumnValues, j, gridBox.oneFrUnitColumn, gridBox.getContentWidth());
-//                }
-//            } else {
-//                if (!gridBox.containsOnlyUnit(gridBox.gridTemplateColumnValues)) {
-//                    if (gridItemCoords.columnStart == 1) {
-//                        columnDistanceFromZero = 0;
-//                        System.out.println("dsfgfhgjhghkjgkhg");
-//                    } else {
-//                        columnDistanceFromZero += gridBox.arrayofcolumns.get(j);
-//                        System.out.println("okkpkpkpkp");
-//                    }
-//                } else {
-//                    columnDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateColumnValues, j, gridBox.oneFrUnitColumn, gridBox.getContentWidth());
-//                }
-//            }
-//        }
-//        columnDistanceFromZero += (gridItemCoords.columnStart - 1) * gridBox.gapColumn;
-//        if (w != 0) {
-//            columnDistanceFromZero += (w - gridBox.gridTemplateColumnValues.size()) * gridBox.gridAutoColumns;
-//        }
-//    }
-
-//    /**
-//     *
-//     * @param gridBox
-//     */
-//    public void setDistanceInVerticalDirection(GridBox gridBox) {
-//        CSSDecoder dec = new CSSDecoder(ctx);
-//        for (int j = 0; j < gridItemCoords.rowStart - 1; j++) {
-//            if (gridBox.isGridAutoRow && gridBox.gridTemplateRowValues == null) {
-//                rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//            } else if (gridBox.isGridAutoRow && gridBox.gridTemplateRowValues != null) {
-//                if (gridItemCoords.rowStart >= gridBox.gridTemplateRowValues.size() + 1) {
-//                    if (gridBox.sumOfLengthForGridTemplateColumnRow(dec, gridBox.gridTemplateRowValues, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-//                        rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                    } else {
-//                        rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                    }
-//                } else {
-//                    if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-//                        rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                    } else {
-//                        rowDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitColumn, gridBox.getContentHeight());
-//                    }
-//                }
-//            } else {
-//                if (gridBox.isGridTemplateRowsAuto) {
-//                    rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                } else {
-//                    if (!gridBox.containsOnlyUnit(gridBox.gridTemplateRowValues)) {
-//                        if (gridItemCoords.rowStart == 1) {
-//                            rowDistanceFromZero = 0;
-//                        } else {
-//                            rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                        }
-//                    } else {
-//                        if (gridItemCoords.rowStart > gridBox.gridTemplateRowValues.size()) {
-//                            rowDistanceFromZero += gridBox.arrayofrows.get(j);
-//                        } else
-//                            rowDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
-//                    }
-//                }
-//            }
-//        }
-//        rowDistanceFromZero += (gridItemCoords.rowStart - 1) * gridBox.gapRow;
-//    }
+    /**
+     * Computes grid item's heoght
+     *
+     * @param gridBox grid container
+     * @param dec     decoder
+     * @param j       grid item's coordinate
+     */
+    private void computeHeight(GridBox gridBox, CSSDecoder dec, int j) {
+        if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
+            heightOfGridItem = getContentHeight() + padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom;
+        } else {
+            heightOfGridItem += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
+        }
+    }
 }

@@ -5,26 +5,36 @@ import cz.vutbr.web.css.*;
 import java.util.ArrayList;
 
 /**
+ * Layout manager of Grid layout
  *
+ * @author Ondra, Ondry
  */
 public class GridLayoutManager implements LayoutManager {
 
     /**
-     *
+     * Grid container
      */
-    GridBox gridBox;
+    protected GridBox gridBox;
 
     /**
+     * Creates a new instance of Grid layout manager
      *
-     * @param gridBox
+     * @param gridBox grid container
      */
     public GridLayoutManager(GridBox gridBox) {
         this.gridBox = gridBox;
     }
 
+    /**
+     * Layout the sub-elements.
+     *
+     * @param availw    Maximal width available to the child elements
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
+     * @return <code>true</code> if the box has been succesfully placed
+     */
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
-        System.out.println("Jsem grid konterner, doLayout: " + availw);
 
         if (!gridBox.displayed) {
             gridBox.content.setSize(0, 0);
@@ -41,7 +51,7 @@ public class GridLayoutManager implements LayoutManager {
         processAutomaticItems();
 
 
-        for(int i = 0; i < gridBox.getSubBoxNumber(); i++) {
+        for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
             GridItem gridItem = (GridItem) gridBox.getSubBox(i);
             System.out.println(gridItem.gridItemCoords.toString());
             if (gridBox.isGridAutoColumn || !gridBox.isGridTemplateColumnsNone) {
@@ -90,7 +100,7 @@ public class GridLayoutManager implements LayoutManager {
             for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
                 GridItem griditem = (GridItem) gridBox.getSubBox(i);
                 if (griditem.widthOfGridItem == 0) {
-                    griditem.widthOfGridItem = gridBox.arrayofcolumns.get(griditem.gridItemCoords.columnStart-1);
+                    griditem.widthOfGridItem = gridBox.arrayOfColumns.get(griditem.gridItemCoords.columnStart - 1);
                     griditem.setAvailableWidth(griditem.widthOfGridItem);
                     if (griditem.widthOfGridItem < griditem.getMaximalWidth()) {
                         griditem.setAvailableWidth(griditem.getMaximalWidth());
@@ -155,12 +165,13 @@ public class GridLayoutManager implements LayoutManager {
 
         }
 
-        if (gridBox.getSizeOfArrayOfRows() > gridBox.content.height) gridBox.content.height = gridBox.getSizeOfArrayOfRows();
+        if (gridBox.getSizeOfArrayOfRows() > gridBox.content.height)
+            gridBox.content.height = gridBox.getSizeOfArrayOfRows();
 
         if (gridBox.isRepeatRows) {
             gridBox.content.height = 0;
             gridBox.bounds.height = 0;
-            for (float i : gridBox.arrayofrows) {
+            for (float i : gridBox.arrayOfRows) {
                 gridBox.content.height += i;
             }
         }
@@ -170,6 +181,9 @@ public class GridLayoutManager implements LayoutManager {
         return true;
     }
 
+    /**
+     * Determines grid size
+     */
     protected void setSizeOfGrid() {
         for (int i = 1; i <= gridBox.getSubBoxNumber(); i++) {
             GridItem griditem = (GridItem) gridBox.getSubBox(i - 1);
@@ -208,9 +222,9 @@ public class GridLayoutManager implements LayoutManager {
             }
         }
 
-        if (gridBox.arrayofcolumns != null && !gridBox.isRepeatRows) {
-            if (gridBox.maxColumnLine < gridBox.arrayofcolumns.size() + 1) {
-                gridBox.maxColumnLine = gridBox.arrayofcolumns.size() + 1;
+        if (gridBox.arrayOfColumns != null && !gridBox.isRepeatRows) {
+            if (gridBox.maxColumnLine < gridBox.arrayOfColumns.size() + 1) {
+                gridBox.maxColumnLine = gridBox.arrayOfColumns.size() + 1;
             }
         }
 
@@ -221,6 +235,9 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Allocates item coordinates based on available grid space
+     */
     protected void processAutomaticItems() {
         if (gridBox.isGridAutoFlowRow) {
             for (int a = 1; a < gridBox.maxRowLine; a++) {
@@ -323,6 +340,14 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Searches units fr in grid tracks
+     *
+     * @param tmp   termList of sizes
+     * @param gap   size of gaps
+     * @param contw available width
+     * @return true if contains unit fr, else false if not
+     */
     protected boolean findUnitsForFr(TermList tmp, float gap, float contw) {
         CSSDecoder dec = new CSSDecoder(gridBox.ctx);
         TermNumeric.Unit unit;
@@ -342,8 +367,8 @@ public class GridLayoutManager implements LayoutManager {
         float b;
         int j = 0;
 
-        for (int i = 0; i < tmp.size(); i++) {
-            a = (TermLengthOrPercent) tmp.get(i);
+        for (Term<?> term : tmp) {
+            a = (TermLengthOrPercent) term;
             unit = a.getUnit();
 
             if (unit == TermNumeric.Unit.fr) {
@@ -363,11 +388,24 @@ public class GridLayoutManager implements LayoutManager {
         return containFr;
     }
 
+    /**
+     * Computes size of fr
+     *
+     * @param flexFactorSum fr units count
+     * @param sumOfPixels   fixed units sum
+     * @param availContent  available content
+     * @return size of fr unit in pixels
+     */
     protected float computingFrUnits(float flexFactorSum, float sumOfPixels, float availContent) {
         if (flexFactorSum == 0) return 0;
         else return (availContent - sumOfPixels) / flexFactorSum;
     }
 
+    /**
+     * Searches biggest width in column, then assigns it to all items in same column
+     *
+     * @param columnStart start coordinate of item
+     */
     public void checkColumnLine(int columnStart) {
         float maxwidth = 0;
         GridItem griditem;
@@ -391,6 +429,9 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Detects current column grid size, then fills list with these values
+     */
     public void fillColumnsSizesToArray() {
         int maxactualcolumnline = 0;
         for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
@@ -405,7 +446,7 @@ public class GridLayoutManager implements LayoutManager {
                 GridItem griditem = (GridItem) gridBox.getSubBox(i);
                 if (griditem.gridItemCoords.columnStart == a) {
                     if (griditem.gridItemCoords.columnEnd - griditem.gridItemCoords.columnStart == 1) {
-                        gridBox.arrayofcolumns.add(griditem.widthOfGridItem);
+                        gridBox.arrayOfColumns.add(griditem.widthOfGridItem);
                         break;
                     }
                 }
@@ -413,6 +454,9 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Computing new size of grid items
+     */
     public void checkNewSizeOfColumnsBigItems() {
         GridItem griditem;
         for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
@@ -421,7 +465,7 @@ public class GridLayoutManager implements LayoutManager {
                 griditem.widthOfGridItem = 0;
                 for (int j = griditem.gridItemCoords.columnStart; j < griditem.gridItemCoords.columnEnd; j++) {
                     try {
-                        griditem.widthOfGridItem += gridBox.arrayofcolumns.get(j - 1);
+                        griditem.widthOfGridItem += gridBox.arrayOfColumns.get(j - 1);
                     } catch (IndexOutOfBoundsException e) {
                         if (gridBox.gridAutoColumns != 0) {
                             griditem.widthOfGridItem += gridBox.gridAutoColumns;
@@ -435,6 +479,11 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Searches biggest height in row, then assigns it to all items in same row
+     *
+     * @param rowStart row coordinate of item
+     */
     public void checkRowLine(int rowStart) {
         float maxheight = 0;
         GridItem griditem;
@@ -458,41 +507,49 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Detects current row grid size, then fills list with these values
+     */
     public void fillRowsSizesToArray() {
         if (gridBox.gridTemplateRowValues != null) {
-            int maxactualrowline = 0;
-            for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
-                GridItem griditem = (GridItem) gridBox.getSubBox(i);
-                if (griditem.gridItemCoords.rowEnd > maxactualrowline) {
-                    maxactualrowline = griditem.gridItemCoords.rowEnd;
-                }
-            }
-            onlyFill(maxactualrowline);
+            getItemAndFill();
 
-            if (gridBox.arrayofrows.size() < gridBox.gridTemplateRowValues.size()) {
-                for (int i = gridBox.arrayofrows.size(); i < gridBox.gridTemplateRowValues.size(); i++) {
+            if (gridBox.arrayOfRows.size() < gridBox.gridTemplateRowValues.size()) {
+                for (int i = gridBox.arrayOfRows.size(); i < gridBox.gridTemplateRowValues.size(); i++) {
                     if (gridBox.gridTemplateRowValues.get(i).getValue().toString().equals("auto") ||
                             gridBox.gridTemplateRowValues.get(i).getValue().toString().equals("min-content") ||
                             gridBox.gridTemplateRowValues.get(i).getValue().toString().equals("max-content")) {
-                        gridBox.arrayofrows.add(i, 0f);
+                        gridBox.arrayOfRows.add(i, 0f);
                     } else {
                         CSSDecoder decoder = new CSSDecoder(gridBox.ctx);
-                        gridBox.arrayofrows.add(i, decoder.getLength((TermLengthOrPercent) gridBox.gridTemplateRowValues.get(i), false, 0, 0, gridBox.getContentWidth()));
+                        gridBox.arrayOfRows.add(i, decoder.getLength((TermLengthOrPercent) gridBox.gridTemplateRowValues.get(i), false, 0, 0, gridBox.getContentWidth()));
                     }
                 }
             }
         } else {
-            int maxactualrowline = 0;
-            for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
-                GridItem griditem = (GridItem) gridBox.getSubBox(i);
-                if (griditem.gridItemCoords.rowEnd > maxactualrowline) {
-                    maxactualrowline = griditem.gridItemCoords.rowEnd;
-                }
-            }
-            onlyFill(maxactualrowline);
+            getItemAndFill();
         }
     }
 
+    /**
+     * Auxiliary method to fillRowsSizesToArray() method, that gets item and call next method
+     */
+    private void getItemAndFill() {
+        int maxactualrowline = 0;
+        for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
+            GridItem griditem = (GridItem) gridBox.getSubBox(i);
+            if (griditem.gridItemCoords.rowEnd > maxactualrowline) {
+                maxactualrowline = griditem.gridItemCoords.rowEnd;
+            }
+        }
+        onlyFill(maxactualrowline);
+    }
+
+    /**
+     * Auxiliary method to fillRowsSizesToArray() method, that only fill list
+     *
+     * @param maxActualRowLine row size
+     */
     public void onlyFill(int maxActualRowLine) {
 
         for (int a = 1; a < maxActualRowLine; a++) {
@@ -500,7 +557,7 @@ public class GridLayoutManager implements LayoutManager {
                 GridItem griditem = (GridItem) gridBox.getSubBox(i);
                 if (griditem.gridItemCoords.rowStart == a) {
                     if (griditem.gridItemCoords.rowEnd - griditem.gridItemCoords.rowStart == 1) {
-                        gridBox.arrayofrows.add(griditem.heightOfGridItem);
+                        gridBox.arrayOfRows.add(griditem.heightOfGridItem);
                         break;
                     }
                 }
@@ -508,12 +565,17 @@ public class GridLayoutManager implements LayoutManager {
         }
         if (gridBox.isRepeatRows) {
             int count = gridBox.countOfRepeated.getNumberOfRepetitions();
-            for (int i = gridBox.arrayofrows.size()-1; i > count; i--) {
-                gridBox.arrayofrows.remove(i);
+            if (gridBox.arrayOfRows.size() > count + 1) {
+                gridBox.arrayOfRows.subList(count + 1, gridBox.arrayOfRows.size()).clear();
             }
         }
     }
 
+    /**
+     *  Checks auto, min-content or max-content values
+     *
+     * @return number
+     */
     public boolean checkBeforeNewSizes() {
         int count = 0;
         if (gridBox.gridTemplateRowValues != null) {
@@ -531,6 +593,9 @@ public class GridLayoutManager implements LayoutManager {
         return count == 0;
     }
 
+    /**
+     * Computing new size of grid items
+     */
     public void checkNewSizeOfRowsBigItems() {
         GridItem griditem;
         for (int i = 0; i < gridBox.getSubBoxNumber(); i++) {
@@ -540,7 +605,7 @@ public class GridLayoutManager implements LayoutManager {
                 griditem.heightOfGridItem = 0;
                 for (int j = griditem.gridItemCoords.rowStart; j < griditem.gridItemCoords.rowEnd; j++) {
                     try {
-                        griditem.heightOfGridItem += gridBox.arrayofrows.get(j - 1);
+                        griditem.heightOfGridItem += gridBox.arrayOfRows.get(j - 1);
                     } catch (IndexOutOfBoundsException e) {
                         if (gridBox.gridAutoRows != 0) {
                             griditem.heightOfGridItem += gridBox.gridAutoRows;
@@ -554,6 +619,12 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Sets distance of item from left corner
+     *
+     * @param gridBox grid container
+     * @param item grid item
+     */
     public void setDistanceInHorizontalDirection(GridBox gridBox, GridItem item) {
         CSSDecoder dec = new CSSDecoder(gridBox.ctx);
         for (int j = 0; j < item.gridItemCoords.columnStart - 1; j++) {
@@ -571,7 +642,7 @@ public class GridLayoutManager implements LayoutManager {
                     if (item.gridItemCoords.columnStart == 1) {
                         item.columnDistanceFromZero = 0;
                     } else {
-                        item.columnDistanceFromZero += gridBox.arrayofcolumns.get(j);
+                        item.columnDistanceFromZero += gridBox.arrayOfColumns.get(j);
                     }
                 } else {
                     item.columnDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateColumnValues, j, gridBox.oneFrUnitColumn, gridBox.getContentWidth());
@@ -584,38 +655,44 @@ public class GridLayoutManager implements LayoutManager {
         }
     }
 
+    /**
+     * Sets distance of item from top corner
+     *
+     * @param gridBox grid container
+     * @param item grid item
+     */
     public void setDistanceInVerticalDirection(GridBox gridBox, GridItem item) {
         CSSDecoder dec = new CSSDecoder(gridBox.ctx);
         for (int j = 0; j < item.gridItemCoords.rowStart - 1; j++) {
             if (gridBox.isGridAutoRow && gridBox.gridTemplateRowValues == null) {
-                item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
             } else if (gridBox.isGridAutoRow && gridBox.gridTemplateRowValues != null) {
                 if (item.gridItemCoords.rowStart >= gridBox.gridTemplateRowValues.size() + 1) {
                     if (gridBox.sumOfLengthForGridTemplateColumnRow(dec, gridBox.gridTemplateRowValues, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-                        item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                        item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                     } else {
-                        item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                        item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                     }
                 } else {
                     if (gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight()) == -1) {
-                        item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                        item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                     } else {
                         item.rowDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitColumn, gridBox.getContentHeight());
                     }
                 }
             } else {
                 if (gridBox.isGridTemplateRowsAuto) {
-                    item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                    item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                 } else {
                     if (!gridBox.containsOnlyUnit(gridBox.gridTemplateRowValues)) {
                         if (item.gridItemCoords.rowStart == 1) {
                             item.rowDistanceFromZero = 0;
                         } else {
-                            item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                            item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                         }
                     } else {
                         if (item.gridItemCoords.rowStart > gridBox.gridTemplateRowValues.size()) {
-                            item.rowDistanceFromZero += gridBox.arrayofrows.get(j);
+                            item.rowDistanceFromZero += gridBox.arrayOfRows.get(j);
                         } else
                             item.rowDistanceFromZero += gridBox.findSizeOfGridItem(dec, gridBox.gridTemplateRowValues, j, gridBox.oneFrUnitRow, gridBox.getContentHeight());
                     }
