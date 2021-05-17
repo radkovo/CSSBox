@@ -1,9 +1,22 @@
 package org.fit.cssbox.layout;
 
+/**
+ * Layout manager of Block box layout
+ *
+ * @author Ondra, Ondry
+ */
 public class BlockBoxLayoutManager implements LayoutManager {
 
+    /**
+     * Block box container
+     */
     protected BlockBox blockBox;
 
+    /**
+     * Creates a new instance of Block box layout manager
+     *
+     * @param blockBox block box container
+     */
     public BlockBoxLayoutManager(BlockBox blockBox) {
         this.blockBox = blockBox;
     }
@@ -18,7 +31,6 @@ public class BlockBoxLayoutManager implements LayoutManager {
      */
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
-        System.out.println("jsem blockBoxdoLayout");
 
         //Skip if not displayed
         if (!blockBox.displayed) {

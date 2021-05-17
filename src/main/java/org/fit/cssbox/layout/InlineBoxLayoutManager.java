@@ -1,9 +1,22 @@
 package org.fit.cssbox.layout;
 
+/**
+ * Layout manager for Inline box layout
+ *
+ * @author Ondra, Ondry
+ */
 public class InlineBoxLayoutManager implements LayoutManager {
 
-    private InlineBox inlineBox;
+    /**
+     * Inline box container
+     */
+    protected InlineBox inlineBox;
 
+    /**
+     * Creates a new instance of Inline box layout manager
+     *
+     * @param inlineBox inline box
+     */
     public InlineBoxLayoutManager(InlineBox inlineBox) {
         this.inlineBox = inlineBox;
     }
@@ -18,9 +31,7 @@ public class InlineBoxLayoutManager implements LayoutManager {
      */
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
-        System.out.println("jsem InlineBox doLAyout");
-        //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-        //  System.out.println("jo!");
+
         //Skip if not displayed
         if (!inlineBox.displayed) {
             inlineBox.content.setSize(0, 0);
@@ -118,6 +129,8 @@ public class InlineBoxLayoutManager implements LayoutManager {
 
     /**
      * Vertically aligns the contained boxes according to their vertical-align properties.
+     *
+     * @param inlineBox inline box
      */
     protected void alignBoxes(InlineBox inlineBox) {
         for (int i = inlineBox.startChild; i < inlineBox.endChild; i++) {
