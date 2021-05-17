@@ -7,15 +7,18 @@ import org.w3c.dom.Element;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * A box corresponding to a Flexbox container
+ *
+ * @author Ondra, Ondry
+ */
 public class FlexBox extends BlockBox {
 
     public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW = CSSProperty.FlexDirection.ROW;
     public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW_REVERSE = CSSProperty.FlexDirection.ROW_REVERSE;
-    public static final CSSProperty.FlexDirection FLEX_DIRECTION_COLUMN = CSSProperty.FlexDirection.COLUMN;
     public static final CSSProperty.FlexDirection FLEX_DIRECTION_COLUMN_REVERSE = CSSProperty.FlexDirection.COLUMN_REVERSE;
 
     public static final CSSProperty.FlexWrap FLEX_WRAP_NOWRAP = CSSProperty.FlexWrap.NOWRAP;
-    public static final CSSProperty.FlexWrap FLEX_WRAP_WRAP = CSSProperty.FlexWrap.WRAP;
     public static final CSSProperty.FlexWrap FLEX_WRAP_WRAP_REVERSE = CSSProperty.FlexWrap.WRAP_REVERSE;
 
     public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_FLEX_START = CSSProperty.JustifyContent.FLEX_START;
@@ -38,49 +41,47 @@ public class FlexBox extends BlockBox {
     public static final CSSProperty.AlignItems ALIGN_ITEMS_STRETCH = CSSProperty.AlignItems.STRETCH;
 
     /**
-     * flex direction specified by the style
+     * Flex-direction property
      */
     protected CSSProperty.FlexDirection flexDirection;
     /**
-     * flex wrap specified by the style
+     * Flex-wrap property
      */
     protected CSSProperty.FlexWrap flexWrap;
     /**
-     * justify content specified by the style
+     * Justify-content property
      */
     protected CSSProperty.JustifyContent justifyContent;
     /**
-     * align content specified by the style
+     * Align-content property
      */
     protected CSSProperty.AlignContent alignContent;
     /**
-     * align items specified by the style
+     * Align-items property
      */
     protected CSSProperty.AlignItems alignItems;
 
     /**
-     * main size of this box (in horizontal (row) container it is width, in vertical it is height)
+     * Main size of container
      */
     protected float mainSize;
     /**
-     * cross size of this box (in horizontal (row) container it is height, in vertical it is width)
+     * Cross size of container
      */
     protected float crossSize;
 
     /**
-     * defines if is main size set by content
+     * Defines main size set by content
      */
     protected boolean mainSizeSetByCont;
 
     /**
-     * first flex line (row or column based on container direction) of this container
+     * First flex line of container
      */
     protected FlexLine firstFlexLine;
 
     /**
-     *
-     * @param n
-     * @param ctx
+     * Creates a new instance of Flexbox container
      */
     public FlexBox(Element n, VisualContext ctx) {
         super(n, ctx);
@@ -92,8 +93,7 @@ public class FlexBox extends BlockBox {
     }
 
     /**
-     *
-     * @param src
+     * Convert an inline box to a Flexbox container
      */
     public FlexBox(InlineBox src) {
         super(src.el, src.ctx);
@@ -107,7 +107,7 @@ public class FlexBox extends BlockBox {
     }
 
     /**
-     *
+     * Sets main size before layout content
      */
     public void setInceptiveMainSize() {
         if (isRowContainer()) {
@@ -122,7 +122,7 @@ public class FlexBox extends BlockBox {
     }
 
     /**
-     *
+     * Sets cross size before layout content
      */
     public void setInceptiveCrossSize() {
         if (isRowContainer()) {
@@ -139,7 +139,7 @@ public class FlexBox extends BlockBox {
     }
 
     /**
-     *
+     * Loads styles according to Flex container
      */
     private void loadFlexBoxStyles() {
         flexDirection = style.getProperty("flex-direction");
@@ -159,31 +159,28 @@ public class FlexBox extends BlockBox {
     }
 
     /**
+     * Checks direction of container
      *
-     * @return
+     * @return true if container is row, else if container is column
      */
     public boolean isRowContainer() {
-        if (flexDirection == FLEX_DIRECTION_ROW || flexDirection == FLEX_DIRECTION_ROW_REVERSE)
-            return true;
-        else
-            return false;
+        return flexDirection == FLEX_DIRECTION_ROW || flexDirection == FLEX_DIRECTION_ROW_REVERSE;
     }
 
     /**
+     * Checks reversed direction of container
      *
-     * @return
+     * @return true if container is reversed, else if not reversed
      */
     public boolean isDirectionReversed() {
-        if (flexDirection == FLEX_DIRECTION_ROW_REVERSE || flexDirection == FLEX_DIRECTION_COLUMN_REVERSE)
-            return true;
-        else
-            return false;
+        return flexDirection == FLEX_DIRECTION_ROW_REVERSE || flexDirection == FLEX_DIRECTION_COLUMN_REVERSE;
     }
 
     /**
+     * Creates first line based on direction of container
      *
-     * @param lines
-     * @return
+     * @param lines list of Flex lines
+     * @return new flex line
      */
     private FlexLine createFirstLineToList(ArrayList<FlexLine> lines) {
         FlexLine line = firstFlexLine;
@@ -198,21 +195,17 @@ public class FlexBox extends BlockBox {
     }
 
     /**
+     * Creates flex lines based on direction of container and fills them with flex items
      *
-     * @param lines
-     * @param items
+     * @param lines flex lines
+     * @param items flex items
      */
     protected void createAndFillLines(ArrayList<FlexLine> lines, ArrayList<FlexItem> items) {
         FlexLine line = createFirstLineToList(lines);
 
-        for (int i = 0; i < items.size(); i++) {
-            FlexItem Item = items.get(i);
-            //try set item to line
-            boolean result = line.registerItem(Item);
+        for (FlexItem item : items) {
+            boolean result = line.registerItem(item);
             if (!result) {
-                //this item does not fit anymore
-                //make new line and register item to it
-
                 FlexLine newLine;
                 if (isRowContainer()) {
                     newLine = new FlexLineRow(this);
@@ -220,7 +213,7 @@ public class FlexBox extends BlockBox {
                     newLine = new FlexLineColumn(this);
                 }
                 lines.add(newLine);
-                newLine.registerItem(Item);
+                newLine.registerItem(item);
                 line = newLine;
             }
         }
@@ -229,36 +222,30 @@ public class FlexBox extends BlockBox {
     }
 
     /**
+     * Fixes height of container after layout items
      *
-     * @param Item
+     * @param item flex item
      */
-    protected void fixContainerHeight(FlexItem Item) {
+    protected void fixContainerHeight(FlexItem item) {
         if (!hasFixedHeight()) {
-            //height is not fixed
             if (isRowContainer()) {
-                //row
                 if (max_size.height == -1) {
-                    //container has no height limit
-                    if (Item.bounds.y + Item.totalHeight() > crossSize) {
-                        //Item is higher than container so far
-                        crossSize = Item.bounds.y + Item.totalHeight();
+                    if (item.bounds.y + item.totalHeight() > crossSize) {
+                        crossSize = item.bounds.y + item.totalHeight();
                         setContentHeight(crossSize);
                     }
                 } else {
-                    //container has max height limit
-                    if (Item.bounds.y + Item.totalHeight() < max_size.height) {
-                        //it fits to max
-                        if (Item.bounds.y + Item.totalHeight() > crossSize) {
-                            crossSize = Item.bounds.y + Item.totalHeight();
+                    if (item.bounds.y + item.totalHeight() < max_size.height) {
+                        if (item.bounds.y + item.totalHeight() > crossSize) {
+                            crossSize = item.bounds.y + item.totalHeight();
                             setContentHeight(crossSize);
                         }
                     } else {
-                        //it doesn't fit to max, set max
                         setContentHeight(max_size.height);
                     }
                 }
             } else {
-                mainSize += Item.bounds.height;
+                mainSize += item.bounds.height;
                 setContentHeight(mainSize);
             }
         }

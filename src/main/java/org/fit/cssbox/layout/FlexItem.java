@@ -4,6 +4,11 @@ import cz.vutbr.web.css.*;
 import cz.vutbr.web.csskit.TermIntegerImpl;
 import org.w3c.dom.Element;
 
+/**
+ * A box corresponding to a Flex item
+ *
+ * @author Ondra, Ondry
+ */
 public class FlexItem extends BlockBox implements Comparable<FlexItem> {
 
     public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.AUTO;
@@ -19,64 +24,62 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     public static final CSSProperty.FlexBasis FLEX_BASIS_AUTO = CSSProperty.FlexBasis.AUTO;
 
     /**
-     * align self specified by the style
+     * Align-self property
      */
     protected CSSProperty.AlignSelf alignSelf;
     /**
-     * flex basis specified by the style
+     * Flex-basis property
      */
     protected CSSProperty.FlexBasis flexBasis;
     /**
-     * flex grow specified by the style
+     * Flex-grow property
      */
     protected CSSProperty.FlexGrow flexGrow;
     /**
-     * flex shrink specified by the style
+     * Flex-shrink property
      */
     protected CSSProperty.FlexShrink flexShrink;
     /**
-     * order specified by the style
+     * Flex order property
      */
     protected CSSProperty.Order flexOrder;
 
     /**
-     * float value of flex grow specified by style
+     * Flex-grow value
      */
     protected float flexGrowValue;
     /**
-     * float value of flex shrink specified by style
+     * Flex-shrink value
      */
     protected float flexShrinkValue;
 
     /**
-     * int value of order specified by style
+     * Flex order value
      */
     protected int flexOrderValue;
 
     /**
-     * defines if flex basis is set by content
+     * Defines flex basis by content
      */
     protected boolean flexBasisSetByCont;
 
     /**
-     * hypotetical main size of flex item which is width in horizontal flex container and height in vertical flex container.
+     * Hypothetical main size of flex item
      */
     protected float hypotheticalMainSize;
 
     /**
-     * defines if cross size of flex item is set by content
+     * Defines cross size by content
      */
     protected boolean crossSizeSetByCont;
 
     /**
-     * defines if flex basis is set by percentage value
+     * Defines cross size by percentage value
      */
     protected boolean crossSizeSetByPercentage;
 
     /**
-     *
-     * @param n
-     * @param ctx
+     * Creates a new instance of Flex item
      */
     public FlexItem(Element n, VisualContext ctx) {
         super(n, ctx);
@@ -88,8 +91,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
-     * @param src
+     * Converts an inline box to a Flex item
      */
     public FlexItem(InlineBox src) {
         super(src.el, src.ctx);
@@ -103,8 +105,9 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
+     * Gets flex order value
      *
-     * @return
+     * @return flex order value
      */
     public int getFlexOrderValue() {
         return flexOrderValue;
@@ -117,7 +120,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
+     * Loads styles according to Flex item
      */
     public void loadFlexItemsStyles() {
 
@@ -141,7 +144,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
+     * Sets flex factors
      */
     private void setFactorValues() {
         Term<?> len = style.getValue("flex-grow", false);
@@ -151,10 +154,11 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
+     * Sets flex factors values of TermList
      *
-     * @param len
-     * @param isGrow
-     * @return
+     * @param len    termList
+     * @param isGrow defines flex grow/shrink value
+     * @return flex factor value
      */
     private float setFactor(Term<?> len, boolean isGrow) {
         float ret;
@@ -169,7 +173,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
+     * Sets flex order value
      */
     private void setFlexOrder() {
         TermIntegerImpl len = (TermIntegerImpl) style.getValue("order", false);
@@ -186,7 +190,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
+     * Disables floats
      */
     protected void disableFloats() {
         floatY = 0;
@@ -196,18 +200,17 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
+     * Sets hypothetical main size of flex item
      *
-     * @param container
-     * @return
+     * @param container flex container
+     * @return hypothetical main size
      */
     protected float setHypotheticalMainSize(FlexBox container) {
         CSSDecoder dec = new CSSDecoder(container.ctx);
         float contw = container.getContentWidth();
 
         if (flexBasis == FLEX_BASIS_LENGTH || flexBasis == FLEX_BASIS_PERCENTAGE) {
-            //flex-basis is set by style
             if (flexBasis == FLEX_BASIS_PERCENTAGE && !container.isRowContainer()) {
-                //COLUMN
                 if (container.content.height != 0) {
                     hypotheticalMainSize = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, container.mainSize);
                 } else {
@@ -221,7 +224,6 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
             } else {
                 hypotheticalMainSize = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
             }
-            //when setted flex basis in row container is smaller than min content -> flex basis = min content
             if (container.isRowContainer()) {
                 if (hypotheticalMainSize < getMinimalContentWidth())
                     hypotheticalMainSize = getMinimalContentWidth();
@@ -230,14 +232,12 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
             flexBasisSetByCont = true;
         } else if (flexBasis == FlexItem.FLEX_BASIS_AUTO) {
             if (container.isRowContainer()) {
-                //ROW
                 if (style.getProperty("width") == CSSProperty.Width.AUTO || style.getProperty("width") == null) {
                     flexBasisSetByCont = true;
                 } else {
                     hypotheticalMainSize = dec.getLength(getLengthValue("width"), false, 0, 0, contw); //use width
                 }
             } else {
-                //COLUMN
                 if (style.getProperty("height") == CSSProperty.Height.AUTO || style.getProperty("height") == null) {
                     flexBasisSetByCont = true;
                 } else if (style.getProperty("height") == CSSProperty.Height.valueOf("percentage")) {
@@ -251,24 +251,23 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
                 }
             }
         }
-
-        //set flex basis content in row container, in column container it is solved later
         if (flexBasisSetByCont && container.isRowContainer())
             setFlexBasisBasedByContent();
         return hypotheticalMainSize;
     }
 
     /**
-     *
+     * Sets hypothetical main size by flex basis content
      */
     private void setFlexBasisBasedByContent() {
         hypotheticalMainSize = getMaximalContentWidth();
     }
 
     /**
+     * Bounds flex basis with min/max values
      *
-     * @param value
-     * @return
+     * @param value flex basis value
+     * @return bounded flex basis
      */
     protected float boundFlexBasisByMinAndMax(float value) {
         if (((FlexBox) parent).isRowContainer()) {
@@ -293,7 +292,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
-     *
+     * Fixes right margin
      */
     protected void fixRightMargin() {
         FlexBox parent = (FlexBox) this.getContainingBlockBox();
@@ -306,28 +305,25 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
     }
 
     /**
+     * Defines if item hasn't align-self: auto
      *
-     * @return
+     * @return true if align-self property is set
      */
     protected boolean isNotAlignSelfAuto() {
-        if (alignSelf == CSSProperty.AlignSelf.AUTO)
-            return false;
-        else
-            return true;
+        return alignSelf != CSSProperty.AlignSelf.AUTO;
     }
 
     /**
+     * Sets cross size of flex item
      *
-     * @param container
+     * @param container flex container
      */
     protected void setCrossSize(FlexBox container) {
         CSSDecoder dec = new CSSDecoder(ctx);
         if (container.isRowContainer()) {
             if (style.getProperty("height") == null && style.getProperty("min-height") == null) {
-                //vyska itemu u row direction nenastavena
                 crossSizeSetByCont = true;
             } else if ((style.getProperty("height") == CSSProperty.Height.percentage) && !getContainingBlockBox().hasFixedHeight()) {
-                //vyska itemu u row direction nastavena v %
                 crossSizeSetByPercentage = true;
             } else if (style.getProperty("height") == CSSProperty.Height.length) {
                 setContentHeight(dec.getLength(getLengthValue("height"), false, 0, 0, 0));
@@ -336,9 +332,7 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
             float contw = container.crossSize;
             float width = dec.getLength(getLengthValue("width"), false, -1, -1, contw);
 
-            //is width set
             if (width != -1) {
-                //yes, set it to content and bound it by min and max
                 content.width = width;
                 if (content.width < min_size.width && min_size.width != -1)
                     content.width = min_size.width;
@@ -346,7 +340,6 @@ public class FlexItem extends BlockBox implements Comparable<FlexItem> {
                 if (content.width > max_size.width && max_size.width != -1)
                     content.width = max_size.width;
             } else {
-                //no, set to max content width
                 content.width = getMaximalContentWidth();
 
                 if (content.width + margin.left + margin.right + padding.left + padding.right + border.right + border.left > container.crossSize) {

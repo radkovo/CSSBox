@@ -4,21 +4,27 @@ import cz.vutbr.web.css.CSSProperty;
 
 import java.util.ArrayList;
 
+/**
+ * Flex lint in horizontal flex container
+ *
+ * @author Ondra, Ondry
+ */
 public class FlexLineRow extends FlexLine {
 
     /**
-     * saved start remaining height used for align-content: stretch
+     * Saved start remaining height used for align-content: stretch
      */
     protected float savedHeight;
 
     /**
-     * y coordinate of top side of flex line
+     * Y coordinate of top side of flex line
      */
     protected float y;
 
     /**
+     * Creates new instance of flex line in horizontal flex container
      *
-     * @param owner
+     * @param owner flex container
      */
     public FlexLineRow(FlexBox owner) {
         this.owner = owner;
@@ -42,7 +48,7 @@ public class FlexLineRow extends FlexLine {
 
     @Override
     protected void applyAlignContent(ArrayList<FlexLine> lines, int countOfPreviousLines) {
-        if (owner.crossSize == 0 || owner.flexWrap == FlexBox.FLEX_WRAP_NOWRAP) //is container height set? is container nowrap?
+        if (owner.crossSize == 0 || owner.flexWrap == FlexBox.FLEX_WRAP_NOWRAP)
             return;
 
         float remainingHeightSpace = owner.crossSize;
@@ -57,27 +63,27 @@ public class FlexLineRow extends FlexLine {
             if (owner.flexWrap == FlexBox.FLEX_WRAP_WRAP_REVERSE)
                 setY(getY() + remainingHeightSpace);
             else
-                return; //was already set
+                return;
         } else if (owner.alignContent == FlexBox.ALIGN_CONTENT_FLEX_END) {
             if (owner.flexWrap == FlexBox.FLEX_WRAP_WRAP_REVERSE)
-                return; //was already set
+                return;
             else
                 setY(getY() + remainingHeightSpace);
 
         } else if (owner.alignContent == FlexBox.ALIGN_CONTENT_CENTER) {
-            setY(getY() + remainingHeightSpace / 2); //wrap reverse is same (just centerize)
+            setY(getY() + remainingHeightSpace / 2);
 
         } else if (owner.alignContent == FlexBox.ALIGN_CONTENT_STRETCH) {
             savedHeight = getHeight();
-            setHeight(getHeight() + remainingHeightSpace / lines.size()); //wrap reverse is same
+            setHeight(getHeight() + remainingHeightSpace / lines.size());
 
         } else if (owner.alignContent == FlexBox.ALIGN_CONTENT_SPACE_BETWEEN) {
             if (lines.size() != 1)
-                setY(getY() + (countOfPreviousLines) * remainingHeightSpace / (lines.size() - 1)); //wrap reverse is same
-            else if (owner.flexWrap == FlexBox.FLEX_WRAP_WRAP_REVERSE) //wrap reverse is same as flex-end
+                setY(getY() + (countOfPreviousLines) * remainingHeightSpace / (lines.size() - 1));
+            else if (owner.flexWrap == FlexBox.FLEX_WRAP_WRAP_REVERSE)
                 setY(getY() + remainingHeightSpace);
             else
-                return; //was already set as flex-start
+                return;
         } else if (owner.alignContent == FlexBox.ALIGN_CONTENT_SPACE_AROUND) {
             if (countOfPreviousLines == 0)
                 setY(getY() + remainingHeightSpace / (2 * lines.size()));
@@ -115,13 +121,11 @@ public class FlexLineRow extends FlexLine {
             if (!(owner.flexWrap == FlexBox.FLEX_WRAP_NOWRAP && owner.hasFixedHeight()))
                 setHeight(item.getHeight());
 
-            //zmenila se velikost line(pro itemy, ktere jiz byly v itemsInLine)
             if (owner.alignItems == FlexBox.ALIGN_ITEMS_STRETCH) {
                 for (FlexItem itemInLine : itemsInLine) {
                     if ((itemInLine.alignSelf == FlexItem.ALIGN_SELF_AUTO && owner.alignItems == FlexBox.ALIGN_ITEMS_STRETCH)
                             || itemInLine.alignSelf == FlexItem.ALIGN_SELF_STRETCH) {
 
-                        //if item is set by height value, it does not stretch
                         if (!itemInLine.hasFixedHeight() && !itemInLine.isNotAlignSelfAuto() && itemInLine.alignSelf != FlexItem.ALIGN_SELF_STRETCH) {
 
                             itemInLine.bounds.height = getHeight();
@@ -144,7 +148,6 @@ public class FlexLineRow extends FlexLine {
 
         setCrossCoordToItem(item);
 
-        //fixing line height because of align-items baseline
         if (getHeight() < item.bounds.y - y + item.getHeight()) {
             if (!(owner.flexWrap == FlexBox.FLEX_WRAP_NOWRAP && owner.hasFixedHeight()))
                 setHeight(item.bounds.y - y + item.getHeight());
@@ -175,7 +178,6 @@ public class FlexLineRow extends FlexLine {
     protected void applyAlignItemsAndSelf() {
         for (int j = 0; j < itemsInLine.size(); j++) {
             if (j == 0) {
-                //is first item, so it is easier to handle (it does not need to fix previous items)
                 setCrossCoordToItem(itemsInLine.get(j));
                 continue;
             }
@@ -211,7 +213,7 @@ public class FlexLineRow extends FlexLine {
             item.setPosition(0, y + (getHeight() - item.getHeight()) / 2);
         else if (item.alignSelf == FlexItem.ALIGN_SELF_BASELINE)
             alignBaseline(item);
-        else //STRETCH
+        else
             alignStretch(item);
         return true;
     }
@@ -229,7 +231,6 @@ public class FlexLineRow extends FlexLine {
 
         } else if (owner.justifyContent == FlexBox.JUSTIFY_CONTENT_SPACE_BETWEEN) {
             if (itemsInLine.size() - 1 == 0 || totalWidthOfItems > owner.mainSize) {
-                //only one item or items are outside of container - it works like start
                 if (owner.isDirectionReversed())
                     item.setPosition(owner.mainSize - widthOfPreviousItems - item.bounds.width, item.bounds.y);
                 else
@@ -242,14 +243,12 @@ public class FlexLineRow extends FlexLine {
                         item.setPosition(owner.mainSize - item.bounds.width, item.bounds.y);
                     } else if (j == itemsInLine.size() - 1) {
                         item.setPosition(0, item.bounds.y);
-                    } else {//it is not first item in row
                         spaceBetween = getRemainingMainSpace() / (itemsInLine.size() - 1);
                         item.setPosition(spaceBetween * (itemsInLine.size() - 1 - j) + totalWidthOfItems - widthOfPreviousItems - item.bounds.width, item.bounds.y);
                     }
                 } else {
                     if (j == 0) {
                         item.setPosition(0, item.bounds.y);
-                    } else {//it is not first item in row
                         spaceBetween = getRemainingMainSpace() / (itemsInLine.size() - 1);
                         item.setPosition(spaceBetween * j + widthOfPreviousItems, item.bounds.y);
                     }
@@ -258,11 +257,9 @@ public class FlexLineRow extends FlexLine {
 
         } else if (owner.justifyContent == FlexBox.JUSTIFY_CONTENT_SPACE_AROUND) {
             if (itemsInLine.size() - 1 == 0 || totalWidthOfItems > owner.mainSize) {
-                //only one item - it works like center
                 float halfOfRemainSpace = (owner.bounds.x + owner.mainSize) / 2;
                 item.setPosition(halfOfRemainSpace - totalWidthOfItems / 2 + widthOfPreviousItems, item.bounds.y);
             } else {
-                //more than one item
                 float spaceAround = getRemainingMainSpace() / (itemsInLine.size());
                 spaceAround /= 2;
                 if (owner.isDirectionReversed()) {
@@ -272,7 +269,6 @@ public class FlexLineRow extends FlexLine {
                 }
             }
         } else {
-            //flex start
             if (owner.isDirectionReversed())
                 item.setPosition(owner.mainSize - widthOfPreviousItems - item.bounds.width, item.bounds.y);
             else
@@ -305,8 +301,9 @@ public class FlexLineRow extends FlexLine {
     }
 
     /**
+     * Aligns flex item with baseline value of align-items/self property
      *
-     * @param item
+     * @param item flex item
      */
     private void alignBaseline(FlexItem item) {
         if (item.getPadding().top + item.getMargin().top + item.ctx.getBaselineOffset() > refItem.getPadding().top + refItem.getMargin().top + refItem.ctx.getBaselineOffset()) {
@@ -331,8 +328,9 @@ public class FlexLineRow extends FlexLine {
     }
 
     /**
+     * Aligns flex item with stretch value of align-items/self property
      *
-     * @param item
+     * @param item flex item
      */
     private void alignStretch(FlexItem item) {
         if (!item.hasFixedHeight()) {
@@ -360,8 +358,9 @@ public class FlexLineRow extends FlexLine {
     }
 
     /**
+     * Auxiliary method for processing height
      *
-     * @param item
+     * @param item flex item
      */
     private void processHeight(FlexItem item) {
         if (item.bounds.height > item.max_size.height && item.max_size.height != -1) {

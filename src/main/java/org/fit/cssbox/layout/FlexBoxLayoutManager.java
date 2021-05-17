@@ -6,27 +6,36 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * Layout manager of Flexible box layout
  *
+ * @author Ondra, Ondry
  */
 public class FlexBoxLayoutManager implements LayoutManager {
 
     /**
-     *
+     * Flex container
      */
     FlexBox flexBox;
 
     /**
+     * Creates a new instance of Flexbox layout manager
      *
-     * @param flexBox
+     * @param flexBox flex container
      */
     public FlexBoxLayoutManager(FlexBox flexBox) {
         this.flexBox = flexBox;
     }
 
+    /**
+     * Layout the sub-elements.
+     *
+     * @param availw    Maximal width available to the child elements
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
+     * @return <code>true</code> if the box has been succesfully placed
+     */
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
-        System.out.println("jsem flex kontejner doLayout");
-
         if (!flexBox.displayed) {
             flexBox.content.setSize(0, 0);
             flexBox.bounds.setSize(0, 0);
@@ -68,8 +77,9 @@ public class FlexBoxLayoutManager implements LayoutManager {
     }
 
     /**
+     * Creates list of flex items and disables floats with clearing
      *
-     * @return
+     * @return List of flex items
      */
     private ArrayList<FlexItem> getItemList() {
         ArrayList<FlexItem> ItemList = new ArrayList<>();
@@ -84,13 +94,13 @@ public class FlexBoxLayoutManager implements LayoutManager {
     }
 
     /**
+     * Layouts content in row flex container
      *
-     * @param listItems
-     * @param force
-     * @param listart
+     * @param listItems list of flex items
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
      */
-    protected void layoutItemsInRow(ArrayList<FlexItem> listItems, boolean force, boolean listart) {
-        //sort listItems according to flex property order
+    protected void layoutItemsInRow(ArrayList<FlexItem> listItems, boolean force, boolean linestart) {
         Collections.sort(listItems);
 
         for (FlexItem Item : listItems) {
@@ -111,7 +121,7 @@ public class FlexBoxLayoutManager implements LayoutManager {
         }
 
         for (FlexItem Item : listItems) {
-            Item.doLayout(Item.hypotheticalMainSize, force, listart);
+            Item.doLayout(Item.hypotheticalMainSize, force, linestart);
 
             Item.fixRightMargin();
             Item.bounds.width = Item.hypotheticalMainSize + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
@@ -140,7 +150,6 @@ public class FlexBoxLayoutManager implements LayoutManager {
                 Item.bounds.height = Item.content.height + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top + Item.margin.bottom;
             }
         }
-        //set of line height
         for (FlexLine value : lines) {
             value.setLineCrossSize();
         }
@@ -155,47 +164,43 @@ public class FlexBoxLayoutManager implements LayoutManager {
             ((FlexLineRow) flexLine).setY(sumOfPreviousLinesHeights);
             flexLine.applyAlignContent(lines, i);
 
-            //set Y coord of items
             flexLine.applyAlignItemsAndSelf();
         }
-        //set X coord of items
         for (FlexLine flexLine : lines) {
             flexLine.alignByJustifyContent();
         }
-        //set container height
         for (FlexLine line : lines)
             for (int j = 0; j < line.itemsInLine.size(); j++)
                 flexBox.fixContainerHeight(line.itemsInLine.get(j));
     }
 
     /**
+     * Layouts content in column flex container
      *
-     * @param items
-     * @param force
-     * @param linestart
+     * @param listItems list of flex items
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
      */
-    protected void layoutItemsInColumn(ArrayList<FlexItem> items, boolean force, boolean linestart) {
-        //sort items according to flex property order
-        Collections.sort(items);
+    protected void layoutItemsInColumn(ArrayList<FlexItem> listItems, boolean force, boolean linestart) {
 
-        //setting height for item (main size)
-        for (FlexItem Item : items) {
+        Collections.sort(listItems);
+
+        for (FlexItem Item : listItems) {
             Item.hypotheticalMainSize = Item.setHypotheticalMainSize(flexBox);
             Item.hypotheticalMainSize = Item.boundFlexBasisByMinAndMax(Item.hypotheticalMainSize);
         }
 
-        //setting width for item (cross size)
-        for (FlexItem Item : items) {
+        for (FlexItem Item : listItems) {
             Item.setCrossSize(flexBox);
 
             processRightMarginAndWidth(Item);
             Item.setAvailableWidth(Item.content.width + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
         }
 
-        for (FlexItem Item : items) {
-            if (!Item.contblock)  //item contains inline elements only
+        for (FlexItem Item : listItems) {
+            if (!Item.contblock)
                 Item.layoutInline();
-            else //item contains at least one block element, layout all as blocks
+            else
                 Item.layoutBlocks();
 
             processRightMarginAndWidth(Item);
@@ -210,7 +215,7 @@ public class FlexBoxLayoutManager implements LayoutManager {
         }
 
         ArrayList<FlexLine> lines = new ArrayList<>();
-        flexBox.createAndFillLines(lines, items);
+        flexBox.createAndFillLines(lines, listItems);
 
         for (FlexLine line : lines) line.setLineCrossSize();
 
@@ -218,7 +223,6 @@ public class FlexBoxLayoutManager implements LayoutManager {
         handleFlexGrow(lines);
         handleFlexShrink(lines);
 
-        //setting of line height
         for (FlexLine line : lines) {
             line.setLineCrossSize();
             if (line.height > flexBox.mainSize)
@@ -235,34 +239,34 @@ public class FlexBoxLayoutManager implements LayoutManager {
             ((FlexLineColumn) flexLine).setX(sumOfPreviousLinesWidths);
             flexLine.applyAlignContent(lines, i);
 
-            //set X coord of items
             flexLine.applyAlignItemsAndSelf();
         }
 
-        //set Y coord of items
         for (FlexLine line : lines) {
             line.alignByJustifyContent();
         }
     }
 
     /**
+     * Process correct margin and width
      *
-     * @param Item
+     * @param item flex item
      */
-    private void processRightMarginAndWidth(FlexItem Item) {
-        Item.fixRightMargin();
+    private void processRightMarginAndWidth(FlexItem item) {
+        item.fixRightMargin();
 
-        if (Item.crossSizeSetByCont) {
-            Item.content.width = Item.getMaximalContentWidth();
-            if (Item.content.width > flexBox.crossSize)
-                Item.content.width = flexBox.crossSize - (Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
+        if (item.crossSizeSetByCont) {
+            item.content.width = item.getMaximalContentWidth();
+            if (item.content.width > flexBox.crossSize)
+                item.content.width = flexBox.crossSize - (item.padding.left + item.padding.right + item.border.left + item.border.right + item.margin.left + item.margin.right);
         }
     }
 
     /**
+     * Edits height in row container
      *
-     * @param container
-     * @param item
+     * @param container flex container
+     * @param item      flex item
      */
     protected void adjustHeight(FlexBox container, FlexItem item) {
         if (item.getSubBoxNumber() != 0) {
@@ -272,7 +276,6 @@ public class FlexBoxLayoutManager implements LayoutManager {
                     item.content.height = contheight;
                     item.content.height = boundByHeight(container, item);
                 }
-
             } else if (item.flexBasisSetByCont) {
                 item.content.height = item.getSubBox(item.getSubBoxNumber() - 1).getContentY() + item.getSubBox(item.getSubBoxNumber() - 1).getContentHeight();
 
@@ -281,16 +284,16 @@ public class FlexBoxLayoutManager implements LayoutManager {
     }
 
     /**
+     * Method for adjustHeight() method
      *
-     * @param container
-     * @param item
-     * @return
+     * @param container flex container
+     * @param item      flex item
+     * @return bounded height
      */
     protected float boundByHeight(FlexBox container, FlexItem item) {
         CSSDecoder dec = new CSSDecoder(item.ctx);
         float height = dec.getLength(item.getLengthValue("height"), false, -1, -1, container.mainSize);
         if (height != -1) {
-            //height nenastaveno
             if (item.style.getProperty("height") == CSSProperty.Height.percentage && container.mainSize == 0)
                 return item.content.height;
 
@@ -310,8 +313,9 @@ public class FlexBoxLayoutManager implements LayoutManager {
     }
 
     /**
+     * Distributes remaining space of container to items, based on flex-grow property
      *
-     * @param lines
+     * @param lines flex lines
      */
     protected void handleFlexGrow(ArrayList<FlexLine> lines) {
         for (FlexLine line : lines) {
@@ -361,8 +365,9 @@ public class FlexBoxLayoutManager implements LayoutManager {
     }
 
     /**
+     * Distributes remaining space of container to items, based on flex-shrink property
      *
-     * @param lines
+     * @param lines flex lines
      */
     protected void handleFlexShrink(ArrayList<FlexLine> lines) {
         for (FlexLine line : lines) {
@@ -397,7 +402,6 @@ public class FlexBoxLayoutManager implements LayoutManager {
                     if (itemInLine.hypotheticalMainSize + result < itemInLine.min_size.width && itemInLine.min_size.width != -1) {
                         itemInLine.hypotheticalMainSize = itemInLine.min_size.width;
                     } else if (itemInLine.hypotheticalMainSize + result < itemInLine.getMinimalContentWidth()) {
-                        //item should shrink less than its main size content, it is not possible
                         itemInLine.hypotheticalMainSize = itemInLine.getMinimalContentWidth();
                     } else
                         itemInLine.hypotheticalMainSize += result;
@@ -407,7 +411,6 @@ public class FlexBoxLayoutManager implements LayoutManager {
                     if (result < itemInLine.min_size.height && itemInLine.min_size.height != -1) {
                         itemInLine.content.height = itemInLine.min_size.height;
                     } else if (itemInLine.getSubBoxNumber() != 0 && result < itemInLine.getSubBox(itemInLine.getSubBoxNumber() - 1).bounds.y + itemInLine.getSubBox(itemInLine.getSubBoxNumber() - 1).bounds.height) {
-                        //item should shrink less than its cross size content, it is not possible
                         itemInLine.content.height = itemInLine.getSubBox(itemInLine.getSubBoxNumber() - 1).bounds.y + itemInLine.getSubBox(itemInLine.getSubBoxNumber() - 1).bounds.height;
                     } else
                         itemInLine.content.height = result;
