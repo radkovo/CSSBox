@@ -100,7 +100,8 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.20</version>
                 <configuration>
-                	<skipTests>true</skipTests> <!-- the tests take too long; should be executed separately -->
+                	<skipTests>true</skipTests>
+					<forkCount>1.5C</forkCount> <!-- the tests take too long; should be executed separately -->
                 </configuration>
 			</plugin>
 
