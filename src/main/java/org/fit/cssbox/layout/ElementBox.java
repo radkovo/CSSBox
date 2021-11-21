@@ -55,8 +55,6 @@ abstract public class ElementBox extends Box
 {
     private static Logger log = LoggerFactory.getLogger(ElementBox.class);
 
-    protected LayoutManager typeoflayout;
-    
     public static final CSSProperty.Display DISPLAY_ANY = null;
     public static final CSSProperty.Display DISPLAY_NONE = CSSProperty.Display.NONE;
     public static final CSSProperty.Display DISPLAY_INLINE = CSSProperty.Display.INLINE;
@@ -96,6 +94,9 @@ abstract public class ElementBox extends Box
     
     /** Default line height if nothing or 'normal' is specified */
     private static final float DEFAULT_LINE_HEIGHT = 1.12f;
+    
+    /** The layout manager used for creating layout inside of this box */
+    private LayoutManager layoutManager;
     
     /** Assigned element */
     protected Element el;
@@ -308,6 +309,24 @@ abstract public class ElementBox extends Box
         return el;
     }
     
+    /**
+     * Gets the layout manager used for creating the layout of the box contents.
+     * @return the layout manager
+     */
+    public LayoutManager getLayoutManager()
+    {
+        return layoutManager;
+    }
+
+    /**
+     * Sets the layout manager used for creating the layout of the box contents. 
+     * @param layoutManager the layout manager to be used
+     */
+    public void setLayoutManager(LayoutManager layoutManager)
+    {
+        this.layoutManager = layoutManager;
+    }
+
     /**
      * Indicates whether the backgound and borders should be rendered for this element.
      * This is true for normal elements but it is false e.g. for table row and body
@@ -1407,7 +1426,7 @@ abstract public class ElementBox extends Box
 
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart) {
-        LayoutManager lm = typeoflayout;
+        LayoutManager lm = layoutManager;
         lm.doLayout(availw,force, linestart);
         return true;
     }

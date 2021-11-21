@@ -159,7 +159,7 @@ public class GridBox extends BlockBox {
     public GridBox(Element n, VisualContext ctx) {
         super(n, ctx);
 
-        typeoflayout = new GridLayoutManager(this);
+        setLayoutManager(new GridLayoutManager(this));
         isblock = true;
         isGridAutoRow = false;
         isGridAutoColumn = false;
@@ -179,7 +179,7 @@ public class GridBox extends BlockBox {
     public GridBox(InlineBox src) {
         super(src.el, src.ctx);
 
-        typeoflayout = new GridLayoutManager(this);
+        setLayoutManager(new GridLayoutManager(this));
 
         setStyle(src.getStyle());
         isblock = true;
@@ -483,7 +483,7 @@ public class GridBox extends BlockBox {
      */
     public void containsRepeatInRows() {
         RepeatImpl repeat;
-        Term term;
+        Term<?> term;
         if (gridTemplateRowValues != null) {
             term = gridTemplateRowValues.get(0);
             try {
@@ -507,7 +507,7 @@ public class GridBox extends BlockBox {
      */
     public void containsRepeatInColumns() {
         RepeatImpl repeat;
-        Term term;
+        Term<?> term;
         if (gridTemplateColumnValues != null) {
             term = gridTemplateColumnValues.get(0);
             try {

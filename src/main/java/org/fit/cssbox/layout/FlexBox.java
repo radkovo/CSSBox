@@ -86,7 +86,7 @@ public class FlexBox extends BlockBox {
     public FlexBox(Element n, VisualContext ctx) {
         super(n, ctx);
 
-        typeoflayout = new FlexBoxLayoutManager(this);
+        setLayoutManager(new FlexBoxLayoutManager(this));
         isblock = true;
         firstFlexLine = null;
         mainSizeSetByCont = false;
@@ -98,7 +98,7 @@ public class FlexBox extends BlockBox {
     public FlexBox(InlineBox src) {
         super(src.el, src.ctx);
 
-        typeoflayout = new FlexBoxLayoutManager(this);
+        setLayoutManager(new FlexBoxLayoutManager(this));
 
         setStyle(src.getStyle());
         isblock = true;

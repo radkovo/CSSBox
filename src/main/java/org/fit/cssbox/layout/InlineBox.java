@@ -70,7 +70,7 @@ public class InlineBox extends ElementBox implements InlineElement
         lineBreakStop = false;
         collapsedCompletely = false;
 
-        typeoflayout = new InlineBoxLayoutManager(this);
+        setLayoutManager(new InlineBoxLayoutManager(this));
     }
     
     public void copyValues(InlineBox src)
