@@ -803,7 +803,7 @@ public class BoxFactory
                 anbox = new GridItem(anelem, child.getVisualContext().create());
             } else if (parent.display == ElementBox.DISPLAY_FLEX) {
                 anbox = new FlexItem(anelem, child.getVisualContext().create());
-            }else {
+            } else {
                 anbox = new BlockBox(anelem, child.getVisualContext().create());
             }
             anbox.setViewport(viewport);

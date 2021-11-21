@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.fit.cssbox.io.DocumentSource;
-
 /**
  * A dummy implementation of the document source for encapsulating an already created input stream
  * and the additional parametres.
