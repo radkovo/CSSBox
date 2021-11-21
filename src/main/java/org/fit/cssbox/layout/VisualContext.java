@@ -523,9 +523,10 @@ public abstract class VisualContext
                 case pc:
                     return (nval * 12 * CSSUnits.dpi) / 72;
                 case px:
+                    return nval;
                 case fr:
                 case none:
-                    return nval;
+                    return nval; //TODO fr and none should be treated in another way!
                 case em:
                     return CSSUnits.pixels(getFontSize() * nval); //font size is in pt
                 case rem:
