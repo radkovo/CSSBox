@@ -210,6 +210,8 @@ public class BlockBox extends ElementBox
         topstatic = false;
         leftstatic = false;
         widthAdjust = 0;
+
+        typeoflayout = new BlockBoxLayoutManager(this);
         
       	if (style != null)
       		loadBlockStyle();
@@ -254,6 +256,8 @@ public class BlockBox extends ElementBox
         nested = src.nested;
         startChild = src.startChild;
         endChild = src.endChild;
+
+        typeoflayout = new BlockBoxLayoutManager(this);
         
         setStyle(src.getStyle());
     }
@@ -278,6 +282,8 @@ public class BlockBox extends ElementBox
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
         clipRegion = src.clipRegion;
+
+        typeoflayout = src.typeoflayout;
     }
     
     @Override
@@ -683,7 +689,17 @@ public class BlockBox extends ElementBox
      */
     private void alignLineHorizontally(LineBox line, boolean isLast)
     {
-        final float dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+
+        final float dif;//difference between maximal available and current width
+        if (this instanceof GridItem) {
+            GridItem gridItem = (GridItem) this;
+            dif = gridItem.widthOfGridItem - gridItem.margin.left - gridItem.margin.right -
+                    gridItem.margin.left - gridItem.padding.left - gridItem.padding.right -
+                    gridItem.border.left - gridItem.border.right - line.getLimits() - line.getWidth();
+        } else {
+            dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+        }
+
         if (dif > 0)
         {
             if (align == ALIGN_JUSTIFY)
@@ -790,65 +806,13 @@ public class BlockBox extends ElementBox
         }
         
     }
-    
-    /** Layout the sub-elements.
-     * @param availw Maximal width available to the child elements
-     * @param force Use the area even if the used width is greater than maxwidth
-     * @param linestart Indicates whether the element is placed at the line start
-     * @return <code>true</code> if the box has been succesfully placed
-     */
-    @Override
-    public boolean doLayout(float availw, boolean force, boolean linestart)
-    {
-    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-    	//	System.out.println("jo!");
-        //Skip if not displayed
-        if (!displayed)
-        {
-            content.setSize(0, 0);
-            bounds.setSize(0, 0);
-            return true;
-        }
-
-        //remove previously splitted children from possible previous layout
-        clearSplitted();
-
-        //shrink-to-fit when the width is not given by containing box or specified explicitly
-        if (!hasFixedWidth())
-        {
-            //float min = getMinimalContentWidthLimit();
-            float min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-            float max = getMaximalContentWidth();
-            float availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-            //float pref = Math.min(max, availcont);
-            //if (pref < min) pref = min;
-            float pref = Math.min(Math.max(min, availcont), max);
-            setContentWidth(pref);
-            updateChildSizes();
-        }
-        
-        //the width should be fixed from this point
-        widthComputed = true;
-        
-        /* Always try to use the full width. If the box is not in flow, its width
-         * is updated after the layout */
-        setAvailableWidth(totalWidth());
-        
-        if (!contblock)  //block elements containing inline elements only
-            layoutInline();
-        else //block elements containing block elements
-            layoutBlocks();
-        
-        //allways fits as well possible
-        return true;
-    }
 
     /**
      * Lay out inline boxes inside of this block
      */
     protected void layoutInline()
     {
-        float x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats 
+        float x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats
         float x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
@@ -864,7 +828,7 @@ public class BlockBox extends ElementBox
 
         //apply indentation
         x += indent;
-        
+
         //line boxes
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = firstLine;
@@ -875,7 +839,7 @@ public class BlockBox extends ElementBox
         for (int i = 0; i < getSubBoxNumber(); i++)
         {
             Box subbox = getSubBox(i);
-            
+
             //if we find a block here, it must be an out-of-flow box
             //make the positioning and continue
             if (subbox.isBlock())
@@ -885,9 +849,9 @@ public class BlockBox extends ElementBox
                 stat.inlineWidth = x - x1;
                 stat.y = y;
                 stat.maxh = 0;
-                
+
                 boolean atstart = (x <= x1); //check if the line has already started
-                
+
                 //clear set - try to find the first possible Y value
                 if (sb.getClearing() != CLEAR_NONE)
                 {
@@ -900,7 +864,7 @@ public class BlockBox extends ElementBox
                         ny = Math.max(fleft.getMaxY(), fright.getMaxY()) - floatY;
                     if (stat.y < ny) stat.y = ny;
                 }
-                
+
                 if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
                 {
                     layoutBlockFloating(sb, wlimit, stat);
@@ -920,7 +884,7 @@ public class BlockBox extends ElementBox
                 {
                     layoutBlockPositioned(sb, stat);
                 }
-                
+
                 //in case the block was floating, we need to update the bounds
                 x1 = fleft.getWidth(y + floatY) - floatXl;
                 x2 = fright.getWidth(y + floatY) - floatXr;
@@ -932,7 +896,7 @@ public class BlockBox extends ElementBox
                 //continue with next subboxes
                 continue;
             }
-            
+
             //process inline elements
             if (subbox.canSplitBefore())
                 lastbreak = i;
@@ -945,7 +909,7 @@ public class BlockBox extends ElementBox
                 //force: we're at the leftmost position or the line cannot be broken
                 // if there is no space on the line because of the floats, do not force
                 boolean f = (x == x1 || lastbreak == lnstr || !allowsWrapping()) && !narrowed;
-                //do the layout                
+                //do the layout
                 boolean fit = false;
                 if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
                     fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
@@ -959,7 +923,7 @@ public class BlockBox extends ElementBox
                     //update current line metrics
                     curline.considerBox((Inline) subbox);
                 }
-                
+
                 //check line overflows
                 boolean over = (x > wlimit - x2); //space overflow?
                 boolean linebreak = (subbox instanceof Inline && ((Inline) subbox).finishedByLineBreak()); //finished by a line break?
@@ -1019,11 +983,11 @@ public class BlockBox extends ElementBox
                     }
                 }
             } while (split);
-            
+
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
        }
-        
+
         //block height
         if (!hasFixedHeight())
         {
@@ -1039,10 +1003,12 @@ public class BlockBox extends ElementBox
                 updateSizes();
                 updateChildSizes();
         }
+
         setSize(totalWidth(), totalHeight());
-        
+
+
         //finish the last line
-        curline.setWidth(x - x1); 
+        curline.setWidth(x - x1);
         curline.setLimits(x1, x2);
         curline.setEnd(getSubBoxNumber());
         //align the lines according to the real box width
@@ -1182,7 +1148,9 @@ public class BlockBox extends ElementBox
             updateSizes();
             updateChildSizes();
         }
+
         setSize(totalWidth(), totalHeight());
+
     }
 
     protected void layoutBlockInFlow(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
@@ -2017,7 +1985,7 @@ public class BlockBox extends ElementBox
         //containing box sizes
         float contw = getContainingBlock().width;
         float conth = getContainingBlock().height;
-        
+
         //Borders
         if (!update) //borders needn't be updated
             loadBorders(dec, contw);
@@ -2038,7 +2006,7 @@ public class BlockBox extends ElementBox
             
         //Margins, widths and heights
         loadWidthsHeights(dec, contw, conth, update);
-        
+
         if (!update)
         {
         	emargin = new LengthSet(margin);
@@ -2191,7 +2159,7 @@ public class BlockBox extends ElementBox
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
-            if (!update || isInFlow())
+            if ((!update || isInFlow()) && !(this.parent instanceof GridItem))
             {
                 content.width = contw - margin.left - border.left - padding.left
                                   - padding.right - border.right - margin.right;
@@ -2407,14 +2375,14 @@ public class BlockBox extends ElementBox
     protected void computeHeightsAbsolute(TermLengthOrPercent height, boolean auto, boolean exact, float contw, float conth, boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
-        
+
     	if (height == null) auto = true; //no value behaves as "auto"
 
     	boolean mtopauto = style.getProperty("margin-top") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mtop = getLengthValue("margin-top");
         boolean mbottomauto = style.getProperty("margin-bottom") == CSSProperty.Margin.AUTO;
         TermLengthOrPercent mbottom = getLengthValue("margin-bottom");
-    	
+
         if (!auto && height != null)
         {
             hset = exact; //not a percentage - it's a fixed height
@@ -2425,13 +2393,13 @@ public class BlockBox extends ElementBox
         {
             hset = false;
         }
-    	
+
     	//count top, bottom and height constraints
     	int constr = 0;
     	if (hset) constr++;
     	if (topset) constr++;
     	if (bottomset) constr++;
-    	
+
     	//compute margins
     	if (constr < 3)  //too many auto values - auto margins are treated as zero
     	{
@@ -2468,7 +2436,7 @@ public class BlockBox extends ElementBox
                 margin.bottom = dec.getLength(mbottom, false, 0, 0, contw);
     	    }
     	}
-    	
+
     	//compute the top and bottom
     	LengthSet m = update ? emargin : margin; //use the efficient margins instead of the declared ones when the efficient have been computed
 	    if (!topset && !bottomset)
