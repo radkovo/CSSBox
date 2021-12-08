@@ -737,7 +737,8 @@ public abstract class VisualContext
     }
     
     /** 
-     * Returns true if the font family is available.
+     * Find the font family available with the given family name, bold and italic properties,
+     * or return {@code null} if the font is not available
      * @return The exact name of the font family or {@code null} if the font is not available
      */
     protected abstract String fontAvailable(String family, boolean isBold, boolean isItalic);
