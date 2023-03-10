@@ -22,8 +22,8 @@ package org.fit.cssbox.io;
 import java.io.IOException;
 
 import org.apache.xerces.parsers.DOMParser;
-import org.cyberneko.html.HTMLConfiguration;
-import org.cyberneko.html.HTMLElements;
+import org.codelibs.nekohtml.HTMLConfiguration;
+import org.codelibs.nekohtml.HTMLElements;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
