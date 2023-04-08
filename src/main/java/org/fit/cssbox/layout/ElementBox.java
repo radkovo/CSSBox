@@ -650,7 +650,7 @@ abstract public class ElementBox extends Box
      */
     public float getContentWidth()
     {
-    	return content.width;
+        return content==null?0:content.width;
     }
     
     /**
@@ -658,7 +658,7 @@ abstract public class ElementBox extends Box
      */
     public float getContentHeight()
     {
-    	return content.height;
+        return content==null?0:content.height;
     }
     
     /**
@@ -821,18 +821,22 @@ abstract public class ElementBox extends Box
     
     public float getAbsoluteContentX()
     {
-        return absbounds.x + emargin.left + border.left + padding.left;
+        return (absbounds==null?0:absbounds.x) + (emargin==null?0:emargin.left)
+                + (border==null?0:border.left) + (padding==null?0:padding.left);
     }
     
     public float getAbsoluteContentY()
     {
-        return absbounds.y + emargin.top + border.top + padding.top;
+	return (absbounds==null?0:absbounds.y) + (emargin==null?0:emargin.top)
+                + (border==null?0:border.top) + (padding==null?0:padding.top);
     }
     
     public float totalWidth()
     {
-        return emargin.left + border.left + padding.left + content.width +
-            padding.right + border.right + emargin.right;
+        return (emargin==null?0:emargin.left) + (border==null?0:border.left)
+               + (padding==null?0:padding.left) + getContentWidth()
+               + (padding==null?0:padding.right) + (border==null?0:border.right)
+               + (emargin==null?0:emargin.right);
     }
     
     //totalHeight() differs for inline and block boxes
@@ -1162,7 +1166,7 @@ abstract public class ElementBox extends Box
     
     /**
      * Extends the total width of inline childs boxes by the given offset considering the 'expandability' of every child.
-     * @param ofs the additional width in pixels (positive or negative)
+     * @param dif the additional width in pixels (positive or negative)
      * @param start the first child to be processed
      * @param end the last child (the first one not to be processed)
      * @param atLineStart is the start box at the start of a line?
