@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import org.unbescape.html.HtmlEscape;
 import org.w3c.dom.*;
 
 /**
@@ -105,12 +106,18 @@ public class NormalOutput extends Output
                 Node attr = attrs.item(i);
                 tag = tag + " " + attr.getNodeName() + "=\"" + attr.getNodeValue() + "\"";
             }
+            if (n.getChildNodes().getLength() == 0) {
+                // Use self-closing tag for empty node
+                tag = tag + "/>";
+                p.print(tag);
+                return;
+            }
             tag = tag + ">";
             p.print(tag);
         }
         else if (n.getNodeType() == Node.TEXT_NODE)
         {
-            p.print(n.getNodeValue());
+            p.print(HtmlEscape.escapeHtml4Xml(n.getNodeValue()));
         }
         else if (n.getNodeType() == Node.COMMENT_NODE)
         {
@@ -150,6 +157,13 @@ public class NormalOutput extends Output
                 Node attr = attrs.item(i);
                 tag = tag + " " + attr.getNodeName() + "=\"" + attr.getNodeValue() + "\"";
             }
+            if (n.getChildNodes().getLength() == 0) {
+                // Use self-closing tag for empty node
+                tag = tag + "/>";
+                indent(level, p);
+                p.print(tag);
+                return;
+            }
             tag = tag + ">";
             indent(level, p);
             p.println(tag);
@@ -157,7 +171,7 @@ public class NormalOutput extends Output
         else if (n.getNodeType() == Node.TEXT_NODE)
         {
             indent(level, p);
-            p.println(n.getNodeValue());
+            p.print(HtmlEscape.escapeHtml4Xml(n.getNodeValue()));
         }
         else if (n.getNodeType() == Node.COMMENT_NODE)
         {
