@@ -41,7 +41,7 @@ public class DefaultDOMSource extends DOMSource
     @Override
     public Document parse() throws SAXException, IOException
     {
-        DOMParser parser = new DOMParser(new HTMLConfiguration());
+        DOMParser parser = new DOMParser(HTMLDocumentImpl.class);
         parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
         if (charset != null)
             parser.setProperty("http://cyberneko.org/html/properties/default-encoding", charset);
