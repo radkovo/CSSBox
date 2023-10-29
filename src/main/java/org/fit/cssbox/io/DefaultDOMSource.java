@@ -21,9 +21,8 @@ package org.fit.cssbox.io;
 
 import java.io.IOException;
 
-import org.apache.xerces.parsers.DOMParser;
-import org.codelibs.nekohtml.HTMLConfiguration;
-import org.codelibs.nekohtml.HTMLElements;
+import org.htmlunit.cyberneko.html.dom.HTMLDocumentImpl;
+import org.htmlunit.cyberneko.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -34,8 +33,6 @@ import org.xml.sax.SAXException;
  */
 public class DefaultDOMSource extends DOMSource
 {
-    static boolean neko_fixed = false;
-
     public DefaultDOMSource(DocumentSource src)
     {
         super(src);
@@ -44,19 +41,7 @@ public class DefaultDOMSource extends DOMSource
     @Override
     public Document parse() throws SAXException, IOException
     {
-        //temporay NekoHTML fix until nekohtml gets fixed
-        if (!neko_fixed)
-        {
-            HTMLElements.Element li = HTMLElements.getElement(HTMLElements.LI);
-            HTMLElements.Element[] oldparents = li.parent;
-            li.parent = new HTMLElements.Element[oldparents.length + 1];
-            for (int i = 0; i < oldparents.length; i++)
-                li.parent[i] = oldparents[i];
-            li.parent[oldparents.length] = HTMLElements.getElement(HTMLElements.MENU);
-            neko_fixed = true;
-        }
-        
-        DOMParser parser = new DOMParser(new HTMLConfiguration());
+        DOMParser parser = new DOMParser(HTMLDocumentImpl.class);
         parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
         if (charset != null)
             parser.setProperty("http://cyberneko.org/html/properties/default-encoding", charset);
