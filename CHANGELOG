@@ -1,3 +1,10 @@
+2024-11-13 - Version 5.0.2
+- Java 11 target
+- Dependency updates
+
+2023-03-19 - Version 5.0.1
+- Dependency updates
+
 2021-01-31 - Version 5.0.0
 - Java 8 target
 - Reworked API (see the demos)
