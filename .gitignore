@@ -3,3 +3,9 @@
 .idea
 *.iml
 *~
+.metadata/
+.settings/
+.apt*/
+.project
+.classpath
+.factorypath
