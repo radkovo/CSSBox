@@ -4,7 +4,7 @@ CSSBox
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.cssbox/cssbox/badge.png)](https://maven-badges.herokuapp.com/maven-central/net.sf.cssbox/cssbox)
 
 An HTML/CSS rendering engine library
-(c) 2005-2024 Radek Burget (burgetr@fit.vutbr.cz)
+(c) 2005-2026 Radek Burget (burgetr@fit.vutbr.cz)
 
 See the project page for more information and downloads:
 [http://cssbox.sourceforge.net/](http://cssbox.sourceforge.net/)
