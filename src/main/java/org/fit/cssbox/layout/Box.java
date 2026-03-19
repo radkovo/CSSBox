@@ -81,7 +81,11 @@ abstract public class Box
     
     /** The parent box of the stacking context where this box is contained */
     protected ElementBox stackingParent;
-    
+
+    /** The layout manager responsible for arranging this box's children.
+     *  Assigned after the box tree is fully built, before the layout pass. */
+    protected LayoutManager layoutManager;
+
     /** Maximal total width for the layout (obtained from the owner box) */
     protected float availwidth;
     
@@ -152,11 +156,22 @@ abstract public class Box
     }
     
     /**
-     * Provides the internal object initialization, after the box tree has been completed. 
+     * Provides the internal object initialization, after the box tree has been completed.
      * Should be used fpr subtree content organization, etc. Called from {@link #initSubtree()} during
-     * the tree initialization. 
+     * the tree initialization.
      */
     protected void initBox()
+    {
+    }
+
+    /**
+     * Selects and assigns the {@link LayoutManager} for this box. Called by
+     * {@link ElementBox#initLayoutManagerSubtree()} after the full box tree has
+     * been constructed and {@link #initSubtree()} has completed. The default
+     * implementation does nothing (boxes without children need no manager).
+     * Override in concrete box classes that arrange children.
+     */
+    public void initLayoutManager()
     {
     }
     
@@ -187,6 +202,17 @@ abstract public class Box
     
     //========================================================================
         
+    /**
+     * Returns the layout manager assigned to this box, or {@code null} if none
+     * has been assigned (e.g. for leaf boxes such as {@link TextBox}).
+     *
+     * @return the layout manager, or {@code null}
+     */
+    public LayoutManager getLayoutManager()
+    {
+        return layoutManager;
+    }
+
     /**
      * Returns the DOM node that forms this box.
      * @return the DOM node

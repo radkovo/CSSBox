@@ -71,7 +71,7 @@ public class ElementBackground
 
     public boolean isZeroSize()
     {
-        return bounds.getWidth() <= 0 || bounds.getHeight() <= 0;
+        return Math.round(bounds.getWidth()) <= 0 || Math.round(bounds.getHeight()) <= 0;
     }
     
     /**

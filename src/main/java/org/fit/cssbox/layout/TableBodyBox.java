@@ -260,144 +260,20 @@ public class TableBodyBox extends BlockBox
     }
     
     @Override
+    public void initLayoutManager()
+    {
+        layoutManager = new TableLayoutManager(this);
+    }
+
+    @Override
     public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         return true;
     }
-    
+
     public boolean doLayout(float widthlimit, Vector<TableColumn> columns)
     {
-        setAvailableWidth(widthlimit);
-
-        float y = spacing;
-        float x = spacing;
-        float maxw = 0;
-        float maxh = 0;
-        float wlimit = getAvailableContentWidth();
-        
-        /*System.out.println("Table body " + getColumnCount() + "x" + getRowCount());
-        for (int r = 0; r < rows.size(); r++)
-        {
-            for (int c = 0; c < numCols; c++)
-                System.out.print("| " + cells[c][r]);
-            System.out.println(" |");
-        }*/
-
-        float rowY[] = new float[getRowCount()]; //Y offests of the rows
-        
-        for (int r = 0; r < getRowCount(); r++)
-        {
-            TableRowBox row = getRow(r);
-            
-            x = spacing;
-            maxh = 0;
-            int c = 0;
-            while (c < getColumnCount())
-            {
-                TableCellBox cell = cells[c][r];
-                if (cell != null)
-                {
-                    int firstrow = cell.getRow();
-                    int lastrow = cell.getRow() + cell.getRowspan() - 1;
-                    //compute cell width according to span
-                    float cw = columns.elementAt(c).getWidth();
-                    for (int i = 1; i < cell.getColspan(); i++)
-                        cw += spacing + columns.elementAt(c+i).getWidth();
-                    cell.setWidth(cw);
-                    //compute the position
-                    if (r == firstrow)
-                    {
-                        cell.doLayout(wlimit, true, true);
-                        cell.setPosition(x, 0);
-                        //int ch = cell.getHeight() / cell.getRowspan();
-                        if (cell.getRowspan() == 1)
-                        {
-                        	float ch = cell.getHeight();
-                        	if (ch > maxh) maxh = ch;
-                        }
-                    }
-                    else if (r < lastrow)
-                    {
-                        //int ch = cell.getHeight() / cell.getRowspan();
-                        if (cell.getRowspan() == 1)
-                        {
-                        	float ch = cell.getHeight();
-                        	if (ch > maxh) maxh = ch;
-                        }
-                    }
-                    else if (r == lastrow) 
-                    {
-                        //use the remaining height of the cell
-                        //int rh = y - cell.getContainingBlock().bounds.x;
-                        float startY = rowY[cell.getRow()];
-                        float remain = cell.getHeight() - (y - startY); 
-                        if (remain > maxh) maxh = remain;
-                    }
-                    x += cw + spacing;
-                    c += cell.getColspan();
-                }
-                else
-                    c++;
-            }
-            
-            //compute the row baseline offset
-            float baseline = 0;
-            c = 0;
-            while (c < getColumnCount())
-            {
-                TableCellBox cell = cells[c][r];
-                if (cell != null)
-                {
-                    if (cell.getRow() == r) //if starts on this line
-                    {
-                        float cbase = cell.getFirstInlineBoxBaseline();
-                        if (cbase > baseline)
-                            baseline = cbase;
-                    }
-                    c += cell.getColspan();
-                }
-                else
-                    c++;
-            }
-            
-            //enlarge all the cells to the row height (maxh)
-            c = 0;
-            while (c < getColumnCount())
-            {
-                TableCellBox cell = cells[c][r];
-                if (cell != null)
-                {
-                    if (cell.getRow()+cell.getRowspan()-1 == r) //if ends on this line
-                    {
-                        float startY;
-                        if (cell.getRowspan() > 1)
-                            startY = rowY[cell.getRow()];
-                        else
-                            startY = y;
-                        float oldheight = cell.getHeight();
-                        float newheight = y + maxh - startY;
-                        cell.setHeight(newheight);
-                        cell.applyVerticalAlign(oldheight, newheight, baseline);
-                    }
-                    c += cell.getColspan();
-                }
-                else
-                    c++;
-            }
-            
-            //set the row size
-            rowY[r] = y;
-            row.setPosition(0, y);
-            row.content.width = x;
-            row.content.height = maxh;
-            row.setSize(row.totalWidth(), row.totalHeight());
-            if (x > maxw) maxw = x;
-            y += maxh + spacing;
-        }
-        content.width = maxw;
-        content.height = y;
-        setSize(totalWidth(), totalHeight());
-        return true;
+        return ((TableLayoutManager) layoutManager).performBodyLayout(this, widthlimit, columns);
     }
     
     @Override

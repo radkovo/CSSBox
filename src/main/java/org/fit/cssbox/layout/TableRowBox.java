@@ -148,7 +148,13 @@ public class TableRowBox extends BlockBox
         emargin = new LengthSet(margin);
     }
 	
-	@Override
+    @Override
+    public void initLayoutManager()
+    {
+        layoutManager = new TableLayoutManager(this);
+    }
+
+    @Override
     public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         //do nothing (table line must be laid out other way, through the table body)

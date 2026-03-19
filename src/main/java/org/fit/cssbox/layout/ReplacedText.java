@@ -165,7 +165,8 @@ public class ReplacedText extends ReplacedContent
         viewport = factory.createViewportTree(decoder.getRoot(), ctx, dim.width, dim.height);
         log.trace("We have " + factory.next_order + " boxes");
         viewport.initSubtree();
-        
+        viewport.initLayoutManagerSubtree();
+
         log.trace("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
         log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");

@@ -22,7 +22,6 @@ package org.fit.cssbox.layout;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.CSSProperty.Clip;
@@ -681,7 +680,7 @@ public class BlockBox extends ElementBox
      * Aligns the subboxes in a line according to the selected alignment settings.
      * @param line The line box to be aligned
      */
-    private void alignLineHorizontally(LineBox line, boolean isLast)
+    void alignLineHorizontally(LineBox line, boolean isLast)
     {
         final float dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
         if (dif > 0)
@@ -708,7 +707,7 @@ public class BlockBox extends ElementBox
         }
     }
     
-    private void alignLineVertically(LineBox line)
+    void alignLineVertically(LineBox line)
     {
         for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
         {
@@ -797,6 +796,20 @@ public class BlockBox extends ElementBox
      * @param linestart Indicates whether the element is placed at the line start
      * @return <code>true</code> if the box has been succesfully placed
      */
+    /**
+     * Selects and assigns the layout manager based on the box contents.
+     * Block boxes containing only inline children get an {@link InlineLayoutManager};
+     * block boxes containing block-level children get a {@link BlockLayoutManager}.
+     */
+    @Override
+    public void initLayoutManager()
+    {
+        if (contblock)
+            layoutManager = new BlockLayoutManager(this);
+        else
+            layoutManager = new InlineLayoutManager(this);
+    }
+
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart)
     {
@@ -817,8 +830,8 @@ public class BlockBox extends ElementBox
         if (!hasFixedWidth())
         {
             //float min = getMinimalContentWidthLimit();
-            float min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-            float max = getMaximalContentWidth();
+            float min = Math.max(getMinimalContentWidthLimit(), layoutManager.getMinimalContentWidth());
+            float max = layoutManager.getMaximalContentWidth();
             float availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
             //float pref = Math.min(max, availcont);
             //if (pref < min) pref = min;
@@ -826,532 +839,20 @@ public class BlockBox extends ElementBox
             setContentWidth(pref);
             updateChildSizes();
         }
-        
+
         //the width should be fixed from this point
         widthComputed = true;
-        
+
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
         setAvailableWidth(totalWidth());
-        
-        if (!contblock)  //block elements containing inline elements only
-            layoutInline();
-        else //block elements containing block elements
-            layoutBlocks();
-        
-        //allways fits as well possible
+
+        layoutManager.layout(availw, force, linestart);
+
+        //always fits as well as possible
         return true;
     }
 
-    /**
-     * Lay out inline boxes inside of this block
-     */
-    protected void layoutInline()
-    {
-        float x1 = fleft.getWidth(floatY) - floatXl;  //available width with considering floats 
-        float x2 = fright.getWidth(floatY) - floatXr;
-        if (x1 < 0) x1 = 0;
-        if (x2 < 0) x2 = 0;
-        float wlimit = getAvailableContentWidth();
-        float minx1 = 0 - floatXl;   //maximal available width if there were no floats
-        float minx2 = 0 - floatXr;
-        if (minx1 < 0) minx1 = 0;
-        if (minx2 < 0) minx2 = 0;
-        float x = x1; //current x
-        float y = 0; //current y
-        int lnstr = 0; //the index of the first subbox on current line
-        int lastbreak = 0; //last possible position of a line break
-
-        //apply indentation
-        x += indent;
-        
-        //line boxes
-        Vector<LineBox> lines = new Vector<LineBox>();
-        LineBox curline = firstLine;
-        if (curline == null)
-            curline = new LineBox(this, 0, 0);
-        lines.add(curline);
-
-        for (int i = 0; i < getSubBoxNumber(); i++)
-        {
-            Box subbox = getSubBox(i);
-            
-            //if we find a block here, it must be an out-of-flow box
-            //make the positioning and continue
-            if (subbox.isBlock())
-            {
-                BlockBox sb = (BlockBox) subbox;
-                BlockLayoutStatus stat = new BlockLayoutStatus();
-                stat.inlineWidth = x - x1;
-                stat.y = y;
-                stat.maxh = 0;
-                
-                boolean atstart = (x <= x1); //check if the line has already started
-                
-                //clear set - try to find the first possible Y value
-                if (sb.getClearing() != CLEAR_NONE)
-                {
-                    float ny = stat.y;
-                    if (sb.getClearing() == CLEAR_LEFT)
-                        ny = fleft.getMaxY() - floatY;
-                    else if (sb.getClearing() == CLEAR_RIGHT)
-                        ny = fright.getMaxY() - floatY;
-                    else if (sb.getClearing() == CLEAR_BOTH)
-                        ny = Math.max(fleft.getMaxY(), fright.getMaxY()) - floatY;
-                    if (stat.y < ny) stat.y = ny;
-                }
-                
-                if (sb.getFloating() == FLOAT_LEFT || sb.getFloating() == FLOAT_RIGHT) //floating boxes
-                {
-                    layoutBlockFloating(sb, wlimit, stat);
-                    //if there were some boxes before the float on the line, move them behind
-                    if (sb.getFloating() == FLOAT_LEFT && stat.inlineWidth > 0 && curline.getStart() < i)
-                    {
-                        for (int j = curline.getStart(); j < i; j++)
-                        {
-                            Box child = getSubBox(j);
-                            if (!child.isBlock())
-                                child.moveRight(sb.getWidth());
-                        }
-                        x += sb.getWidth();
-                    }
-                }
-                else //absolute or fixed positioning
-                {
-                    layoutBlockPositioned(sb, stat);
-                }
-                
-                //in case the block was floating, we need to update the bounds
-                x1 = fleft.getWidth(y + floatY) - floatXl;
-                x2 = fright.getWidth(y + floatY) - floatXr;
-                if (x1 < 0) x1 = 0;
-                if (x2 < 0) x2 = 0;
-                //if the line hasn't started yet, update its start
-                if (atstart && x < x1)
-                    x = x1;
-                //continue with next subboxes
-                continue;
-            }
-            
-            //process inline elements
-            if (subbox.canSplitBefore())
-                lastbreak = i;
-            boolean split;
-            do //repeat while the box is being split to sub-boxes
-            {
-                split = false;
-                float space = wlimit - x1 - x2; //total space on the line
-                boolean narrowed = (x1 > minx1 || x2 > minx2); //the space is narrowed by floats and it may be enough space somewhere below
-                //force: we're at the leftmost position or the line cannot be broken
-                // if there is no space on the line because of the floats, do not force
-                boolean f = (x == x1 || lastbreak == lnstr || !allowsWrapping()) && !narrowed;
-                //do the layout                
-                boolean fit = false;
-                if (space >= INFLOW_SPACE_THRESHOLD || !narrowed)
-                    fit = subbox.doLayout(wlimit - x - x2, f, x == x1);
-                if (fit) //positioning succeeded, at least a part fit -- set the x coordinate
-                {
-                    if (subbox.isInFlow())
-                    {
-                        subbox.setPosition(x,  0); //y position will be determined during the line box vertical alignment
-                        x += subbox.getWidth();
-                    }
-                    //update current line metrics
-                    curline.considerBox((Inline) subbox);
-                }
-                
-                //check line overflows
-                boolean over = (x > wlimit - x2); //space overflow?
-                boolean linebreak = (subbox instanceof Inline && ((Inline) subbox).finishedByLineBreak()); //finished by a line break?
-                if (!fit && narrowed && (x == x1 || lastbreak == lnstr)) //failed because of no space caused by floats
-                {
-                    //finish the line if there are already some boxes on the line
-                    if (lnstr < i)
-                    {
-                        lnstr = i; //new line starts here
-                        curline.setEnd(lnstr); //finish the old line
-                        curline = new LineBox(this, lnstr, y); //create the new line
-                        lines.add(curline);
-                    }
-                    //go to the new line
-                    y += getLineHeight();
-                    curline.setY(y);
-                    x1 = fleft.getWidth(y + floatY) - floatXl;
-                    x2 = fright.getWidth(y + floatY) - floatXr;
-                    if (x1 < 0) x1 = 0;
-                    if (x2 < 0) x2 = 0;
-                    x = x1;
-                    //force repeating the same once again unless line height is non-positive (prevent infinite loop)
-                    if (getLineHeight() > 0)
-                        split = true;
-                }
-                else if ((!fit && lastbreak > lnstr) //line overflow and the line can be broken
-                           || (fit && (over || linebreak || subbox.getRest() != null))) //or something fit but something has left
-                {
-                    //the width and height for text alignment
-                    curline.setWidth(x - x1);
-                    curline.setLimits(x1, x2);
-                    //go to the new line
-                    y += curline.getMaxBoxHeight();
-                    x1 = fleft.getWidth(y + floatY) - floatXl;
-                    x2 = fright.getWidth(y + floatY) - floatXr;
-                    if (x1 < 0) x1 = 0;
-                    if (x2 < 0) x2 = 0;
-                    x = x1;
-
-                    //create a new line
-                    if (!fit) //not fit - try again with a new line
-                    {
-                        lnstr = i; //new line starts here
-                        curline.setEnd(lnstr); //finish the old line
-                        curline = new LineBox(this, lnstr, y); //create the new line
-                        lines.add(curline);
-                        split = true; //force repeating the same once again
-                    }
-                    else if (over || linebreak || subbox.getRest() != null) //something fit but not everything placed or line exceeded - create a new empty line
-                    {
-                        if (subbox.getRest() != null)
-                            insertSubBox(i+1, subbox.getRest()); //insert a new subbox with the rest
-                        lnstr = i+1; //new line starts with the next subbox
-                        curline.setEnd(lnstr); //finish the old line
-                        curline = new LineBox(this, lnstr, y); //create the new line
-                        lines.add(curline);
-                    }
-                }
-            } while (split);
-            
-            if (subbox.canSplitAfter())
-            	lastbreak = i+1;
-       }
-        
-        //block height
-        if (!hasFixedHeight())
-        {
-                y += curline.getMaxBoxHeight(); //last unfinished line
-                if (encloseFloats())
-                {
-                    //enclose all floating boxes we own
-                    float mfy = getFloatHeight() - floatY;
-                    if (mfy > y) y = mfy;
-                }
-                //the total height is the last Y coordinate
-                setContentHeight(y);
-                updateSizes();
-                updateChildSizes();
-        }
-        setSize(totalWidth(), totalHeight());
-        
-        //finish the last line
-        curline.setWidth(x - x1); 
-        curline.setLimits(x1, x2);
-        curline.setEnd(getSubBoxNumber());
-        //align the lines according to the real box width
-        for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
-        {
-            LineBox line = it.next();
-            alignLineHorizontally(line, !it.hasNext());
-            alignLineVertically(line);
-        }
-    }
-
-    /**
-     * Lay out nested block boxes in this box
-     */
-    protected void layoutBlocks()
-    {
-        float wlimit = getAvailableContentWidth();
-        BlockLayoutStatus stat = new BlockLayoutStatus();
-        float mtop = 0; //current accumulated top margin
-        float mbottom = 0; //current accumulated bottom marin
-
-        for (int i = 0; i < getSubBoxNumber(); i++)
-        {
-            float nexty = stat.y; //y coordinate after positioning the subbox 
-            BlockBox subbox = (BlockBox) getSubBox(i);
-            
-            if (subbox.isDisplayed())
-            {
-            	boolean clearance = false; //clearance applied?
-            	
-                //clear set - try to find the first possible Y value
-                if (subbox.getClearing() != CLEAR_NONE)
-                {
-                    float ny = stat.y;
-                    if (subbox.getClearing() == CLEAR_LEFT)
-                        ny = fleft.getMaxY() - floatY;
-                    else if (subbox.getClearing() == CLEAR_RIGHT)
-                        ny = fright.getMaxY() - floatY;
-                    else if (subbox.getClearing() == CLEAR_BOTH)
-                        ny = Math.max(fleft.getMaxY(), fright.getMaxY()) - floatY;
-                    if (stat.y < ny) 
-                    {
-                    	stat.y = ny;
-                    	clearance = true;
-                    }
-                }
-                
-                if (subbox.isInFlow()) //normal flow
-                {
-                    boolean boxempty = subbox.marginsAdjoin(); 
-                    
-                	//the border edge of the parent or the last placed box
-                	float borderY = stat.y;
-                	if (stat.lastinflow != null)
-                	    borderY -= stat.lastinflow.emargin.bottom; //do not consider the margin applied by the layout
-                	
-                	//update expected top margin
-                	if (subbox.emargin.top > mtop)
-                	    mtop = subbox.emargin.top;
-                	
-                    //top margins are separated?
-			        if (stat.firstseparated == null && separatedFromTop(this))
-			        {
-			        	//separated - cannot collapse, use the largest margin
-			            borderY += mtop;
-			        }
-			        
-			        //subsequent block margins
-			        if (stat.firstseparated != null)
-			        {
-    		        	if (clearance) //some clearance, cannot collapse
-    		        		borderY += mtop + mbottom;
-    		        	else //do collapse
-    		        		borderY += collapsedMarginHeight(mtop, mbottom);
-			        }
-			        
-			        stat.lastinflow = subbox;
-                    if (!boxempty && stat.firstseparated == null)
-                        stat.firstseparated = subbox;
-                    if (!boxempty)
-                    {
-                        stat.lastseparated = subbox;
-                        mtop = 0;
-                        mbottom = subbox.emargin.bottom;
-                    }
-			        
-                    //update expected bottom margin
-                    if (stat.lastseparated != null) //compute maximum of bottom margins after some separation
-                    {
-                        if (subbox.emargin.bottom > mbottom)
-                            mbottom = subbox.emargin.bottom;
-                    }
-                    
-                    if (subbox.emargin.top > 0) //place the border edge appropriately: overlap positive margins
-                        stat.y = borderY - subbox.emargin.top;
-                    
-                    if (subbox.mayOverlapFloats())
-                        layoutBlockInFlow(subbox, wlimit, stat);
-                    else
-                        layoutBlockInFlowAvoidFloats(subbox, wlimit, stat);
-                        
-                    if (subbox.getRest() != null) //not everything placed -- insert the rest to the queue
-                        insertSubBox(i+1, subbox.getRest());
-                    nexty = stat.y; //the flow influences current y
-                }
-                else if (subbox.getFloating() == FLOAT_LEFT || subbox.getFloating() == FLOAT_RIGHT) //floating boxes
-                {
-                    layoutBlockFloating(subbox, wlimit, stat);
-                }
-                else //absolute or fixed positioning
-                {
-                    layoutBlockPositioned(subbox, stat);
-                }
-                //accept the resulting Y coordinate
-                stat.y = nexty;
-            }
-        }
-
-        //collapse bottom margins
-        if (!separatedFromBottom(this))
-        {
-  			stat.y -= mbottom;
-        }
-        
-        //update the height when not set or set to "auto"
-        if (!hasFixedHeight())
-        {
-            if (encloseFloats())
-            {
-                //enclose all floating boxes we own
-                // http://www.w3.org/TR/CSS21/visudet.html#root-height
-                float mfy = getFloatHeight() - floatY;
-                if (mfy > stat.y) stat.y = mfy;
-            }
-            //the total height is the last Y coordinate
-            setContentHeight(stat.y);
-            updateSizes();
-            updateChildSizes();
-        }
-        setSize(totalWidth(), totalHeight());
-    }
-
-    protected void layoutBlockInFlow(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
-    {
-        //new floating box limits
-        float newfloatXl = floatXl + subbox.margin.left
-                            + subbox.border.left + subbox.padding.left;
-        float newfloatXr = floatXr + subbox.margin.right
-                            + subbox.border.right + subbox.padding.right;
-        float newfloatY = floatY + subbox.emargin.top
-                            + subbox.border.top + subbox.padding.top;
-        //consider the relative positioning if necessary
-        if (subbox.position == POS_RELATIVE)
-        {
-            float dx = subbox.leftset ? subbox.coords.left : (-subbox.coords.right);
-            float dy = subbox.topset ? subbox.coords.top : (-subbox.coords.bottom);
-            newfloatXl += dx;
-            newfloatXr -= dx;
-            newfloatY += dy;
-        }
-        
-        //floats should not exceed their parent box
-        if (newfloatXl < 0) newfloatXl = 0;
-        if (newfloatXr < 0) newfloatXr = 0;
-        //position the box
-        subbox.setFloats(fleft, fright, newfloatXl, newfloatXr, stat.y + newfloatY);
-        subbox.setPosition(0,  stat.y);
-        subbox.doLayout(wlimit, true, true);
-        stat.y += subbox.getHeight();
-        //maximal width
-        if (subbox.getWidth() > stat.maxw)
-            stat.maxw = subbox.getWidth();
-    }
-    
-    // http://www.w3.org/TR/CSS22/visuren.html#bfc-next-to-float 
-    protected void layoutBlockInFlowAvoidFloats(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
-    {
-        final float minw = subbox.getMinimalDecorationWidth(); //minimal subbox width for computing the space -- content is not considered (based on other browser observations) 
-        float yoffset = stat.y + floatY; //starting offset
-        float availw = 0;
-        do
-        {
-            float fy = yoffset;
-            float flx = fleft.getWidth(fy) - floatXl;
-            if (flx < 0) flx = 0;
-            float frx = fright.getWidth(fy) - floatXr;
-            if (frx < 0) frx = 0;
-            float avail = wlimit - flx - frx;
-            
-            //if it does not fit the width, try to move down
-            //TODO the available space must be tested for the whole height of the subbox
-            final float startfy = fy;
-            //System.out.println("minw=" + minw + " avail=" + avail + " availw=" + availw);
-            while ((flx > floatXl || frx > floatXr) //if the space can be narrower at least at one side
-                   && (minw > avail)) //the subbox doesn't fit in this Y coordinate
-            {
-                float nexty = FloatList.getNextY(fleft, fright, fy);
-                if (nexty == -1)
-                    fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
-                else
-                    fy = nexty;
-                //recompute the limits for the new fy
-                flx = fleft.getWidth(fy) - floatXl;
-                if (flx < 0) flx = 0;
-                frx = fright.getWidth(fy) - floatXr;
-                if (frx < 0) frx = 0;
-                avail = wlimit - flx - frx;
-            }
-            //do not consider the top margin when moving down
-            if (fy > startfy && subbox.margin.top != 0)
-            {
-                fy -= subbox.margin.top;
-                if (fy < startfy) fy = startfy;
-            }
-            stat.y = fy - floatY;
-            
-            //position the box
-            subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
-            subbox.setPosition(flx,  stat.y);
-            subbox.setWidthAdjust(-flx - frx);
-            //if (availw != 0)
-            //    System.out.println("jo!");
-            subbox.doLayout(avail, true, true);
-            //System.out.println("H=" + subbox.getHeight());
-            
-            //check the colisions after the layout
-            float xlimit[] = computeFloatLimits(fy, fy + subbox.getBounds().height, new float[]{flx, frx});
-            availw = wlimit - xlimit[0] - xlimit[1];
-            if (minw > availw) //the whole box still does not fit
-                yoffset = FloatList.getNextY(fleft, fright, fy); //new starting Y 
-        } while (minw > availw && yoffset != -1);
-        
-        stat.y += subbox.getHeight();
-        //maximal width
-        if (subbox.getWidth() > stat.maxw)
-            stat.maxw = subbox.getWidth();
-    }
-    
-    /**
-     * Calculates the position for a floating box in the given context.
-     * @param subbox the box to be placed
-     * @param wlimit the width limit for placing all the boxes
-     * @param stat status of the layout that should be updated
-     */
-    protected void layoutBlockFloating(BlockBox subbox, float wlimit, BlockLayoutStatus stat)
-    {
-        subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
-        subbox.doLayout(wlimit, true, true);
-        FloatList f = (subbox.getFloating() == FLOAT_LEFT) ? fleft : fright;    //float list at my side
-        FloatList of = (subbox.getFloating() == FLOAT_LEFT) ? fright : fleft;   //float list at the opposite side
-        float floatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXl : floatXr;  //float offset at this side
-        float oFloatX = (subbox.getFloating() == FLOAT_LEFT) ? floatXr : floatXl; //float offset at the opposite side
-        
-        float fy = stat.y + floatY;  //float Y position
-        if (fy < f.getLastY()) fy = f.getLastY(); //don't place above the last placed box
-
-        float fx = f.getWidth(fy);   //total width of floats at this side
-        if (fx < floatX) fx = floatX; //stay in the containing box if it is narrower
-        if (fx == 0 && floatX < 0) fx = floatX; //if it is wider (and there are no floating boxes yet)
-
-        float ofx = of.getWidth(fy); //total width of floats at the opposite side
-        if (ofx < oFloatX) ofx = oFloatX; //stay in the containing box at the opposite side
-        if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
-
-        //moving the floating box down until it fits
-        while ((fx > floatX || ofx > oFloatX || stat.inlineWidth > 0) //if the space can be narrower at least at one side
-               && (stat.inlineWidth + fx - floatX + ofx - oFloatX + subbox.getWidth() > wlimit)) //the subbox doesn't fit in this Y coordinate
-        {
-            float nexty = FloatList.getNextY(fleft, fright, fy);
-            if (nexty == -1)
-                fy += Math.max(stat.maxh, getLineHeight()); //if we don't know try increasing by a line
-            else
-                fy = nexty;
-            //recompute the limits for the new fy
-            fx = f.getWidth(fy);
-            if (fx < floatX) fx = floatX;
-            if (fx == 0 && floatX < 0) fx = floatX;
-            ofx = of.getWidth(fy);
-            if (ofx < oFloatX) ofx = oFloatX;
-            if (ofx == 0 && oFloatX < 0) ofx = oFloatX;
-            //do not consider current line below
-            stat.inlineWidth = 0;
-        }
-
-        subbox.setPosition(fx, fy);
-        f.add(subbox);
-        //a floating box must enclose all the floats inside
-        float floatw = maxFloatWidth(fy, fy + subbox.getHeight());
-        //maximal width
-        if (floatw > stat.maxw) stat.maxw = floatw;
-        if (stat.maxw > wlimit) stat.maxw = wlimit;
-    }
-    
-    protected void layoutBlockPositioned(BlockBox subbox, BlockLayoutStatus stat)
-    {
-        //calculate the available width for positioned boxes
-        float wlimit = availwidth;
-        if (leftset) wlimit -= coords.left;
-        if (rightset) wlimit -= coords.right;
-        //layout the contents
-        subbox.setFloats(new FloatList(subbox), new FloatList(subbox), 0, 0, 0);
-        subbox.doLayout(wlimit, true, true);
-    }
-
-    /**
-     * Initializes the first line box with the box properties. This may be used for considering special content
-     * such as list item markers.
-     * @param box the box that should be used for the initialization
-     */
     public void initFirstLine(ElementBox box)
     {
         if (firstLine == null)
@@ -1543,41 +1044,15 @@ public class BlockBox extends ElementBox
     }
 
     /**
-     * Computes the minimal width of the box content from the contained sub-boxes.
-     * @return the minimal content width
+     * Computes the minimal content width by delegating to the layout manager.
+     * The actual algorithm lives in {@link BlockLayoutManager#getMinimalContentWidth()}
+     * and {@link InlineLayoutManager#getMinimalContentWidth()}.
      */
     protected float getMinimalContentWidth()
     {
-        float ret = 0;
-        float max = 0; //block children
-        float sum = 0; //inline children
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box box = getSubBox(i);
-            if (box instanceof Inline)
-            {
-                if (allowsWrapping() && box.canSplitBefore())
-                    sum = 0;
-                sum += box.getMinimalWidth();
-            }
-            else
-            {
-                BlockBox block = (BlockBox) box;
-                if (block.position != POS_ABSOLUTE && block.position != POS_FIXED) //absolute or fixed position boxes don't affect the width
-                {
-                    float w = box.getMinimalWidth();
-                    if (w > max) max = w;
-                    sum = 0;
-                }
-            }
-            
-            if (sum > ret) ret = sum;
-            if (max > ret) ret = max;
-            
-            if (allowsWrapping() && box.canSplitAfter())
-                sum = 0;
-        }
-        return ret;
+        if (layoutManager != null)
+            return layoutManager.getMinimalContentWidth();
+        return 0;
     }
 
     /**
@@ -1623,50 +1098,15 @@ public class BlockBox extends ElementBox
     }
 
     /**
-     * Computes the maximal width of the box content from the contained sub-boxes.
-     * @return the maximal content width
+     * Computes the maximal content width by delegating to the layout manager.
+     * The actual algorithm lives in {@link BlockLayoutManager#getMaximalContentWidth()}
+     * and {@link InlineLayoutManager#getMaximalContentWidth()}.
      */
     protected float getMaximalContentWidth()
     {
-        float sum = 0;
-        float max = 0;
-        //the inline elements inside are summed up on the line
-        //the floating boxes are placed side by side
-        //the maximum of the remaining block boxes is taken 
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box subbox = getSubBox(i);
-            if (subbox.isBlock()) //block boxes
-            {
-                BlockBox block = (BlockBox) subbox;
-                if (block.getFloating() != BlockBox.FLOAT_NONE) //floating block
-                {
-                    sum += subbox.getMaximalWidth();
-                }
-                else if (!block.isInFlow()) //positioned blocks
-                {
-                	//positioned blocks should not be taken into account
-                }
-                else //in-flow blocks
-                {
-                    float sm = subbox.getMaximalWidth();
-                    if (sm > max) max = sm;
-                    if (sum > max) max = sum;
-                    sum = 0; //end of line forced by this block
-                }
-            }
-            else //inline boxes
-            {
-                if (preservesLineBreaks())
-                {
-                    float sm = subbox.getMaximalWidth();
-                    if (sm > max) max = sm;
-                }
-                else
-                    sum += subbox.getMaximalWidth();
-            }
-        }
-        return Math.max(sum, max);
+        if (layoutManager != null)
+            return layoutManager.getMaximalContentWidth();
+        return 0;
     }
     
     /**
@@ -2544,41 +1984,3 @@ public class BlockBox extends ElementBox
     
 }
 
-/**
- * A class describing the status of the block box layout
- */
-class BlockLayoutStatus
-{
-    /** width of inline boxes currently placed on the line */
-    public float inlineWidth;
-    
-    /** current <em>y</em> coordinate relatively to the content box */
-    public float y;
-    
-    /** maximal width of the boxes laid out */
-    public float maxw;
-    
-    /** maximal height of the boxes laid out on current line */
-    public float maxh;
-    
-    /** first placed non-empty box for collapsing margins */
-    public BlockBox firstseparated;
-    
-    /** last placed non-empty box for collapsing margins */
-    public BlockBox lastseparated;
-    
-    /** last placed in-flow box for collapsing margins */
-    public BlockBox lastinflow;
-    
-    /** Creates a new initialized layout status */
-    public BlockLayoutStatus()
-    {
-        inlineWidth = 0;
-        y = 0;
-        maxw = 0;
-        maxh = 0;
-        firstseparated = null;
-        lastseparated = null;
-        lastinflow = null;
-    }
-}

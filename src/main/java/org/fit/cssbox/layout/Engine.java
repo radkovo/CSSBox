@@ -214,7 +214,8 @@ public abstract class Engine
         log.trace("We have " + factory.next_order + " boxes");
         viewport.setVisibleRect(new Rectangle(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height));
         viewport.initSubtree();
-        
+        viewport.initLayoutManagerSubtree();
+
         log.trace("Layout for "+dim.width+"px");
         viewport.doLayout(dim.width, true, true);
         log.trace("Resulting size: " + viewport.getWidth() + "x" + viewport.getHeight() + " (" + viewport + ")");

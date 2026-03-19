@@ -44,7 +44,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     
     /* current layout parametres */
     private float availw;
-    private boolean force;
     
     
 	public InlineBlockBox(Element n, VisualContext ctx)
@@ -177,7 +176,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         this.availw = availw;
-        this.force = force;
         super.doLayout(availw, force, linestart);
         if (force || fitsSpace())
         {
@@ -206,20 +204,6 @@ public class InlineBlockBox extends BlockBox implements InlineElement
             return false;
     }
 
-    @Override
-    protected void layoutInline()
-    {
-        if (force || fitsSpace()) //do not layout if we don't fit the available space
-            super.layoutInline();
-    }
-
-    @Override
-    protected void layoutBlocks()
-    {
-        if (force || fitsSpace()) //do not layout if we don't fit the available space
-            super.layoutBlocks();
-    }
-    
     /**
      * Checks wheter the block fits the available space
      * @return <code>true</code> when there is enough space to fit the block

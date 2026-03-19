@@ -58,7 +58,7 @@ public class TableBox extends BlockBox
     private TableBodyBox anonbody;
     
     /** true if the column width have been already calculated */
-    private boolean columnsCalculated = false;
+    boolean columnsCalculated = false;
 
     //====================================================================================
     
@@ -114,47 +114,18 @@ public class TableBox extends BlockBox
         organizeContent(); //organize the child elements according to their display property
         propagateCellSpacing(spacing);
     }
-	
+
+    @Override
+    public void initLayoutManager()
+    {
+        layoutManager = new TableLayoutManager(this);
+    }
+
     @Override
     public boolean doLayout(float widthlimit, boolean force, boolean linestart)
     {
         setAvailableWidth(widthlimit);
-        float wlimit = getAvailableContentWidth();
-        float maxw = 0;
-        float y = 0;
-
-        //calculate the column widths
-        calculateColumns();
-        
-        //layout the bodies
-        if (header != null)
-        {
-            header.doLayout(wlimit, columns);
-            header.setPosition(0, y);
-            if (header.getWidth() > maxw)
-                maxw = header.getWidth();
-            y += header.getHeight();
-        }
-        for (Iterator<TableBodyBox> it = bodies.iterator(); it.hasNext(); )
-        {
-            TableBodyBox body = it.next();
-            body.doLayout(wlimit, columns);
-            body.setPosition(0, y);
-            if (body.getWidth() > maxw)
-                maxw = body.getWidth();
-            y += body.getHeight();
-        }
-        if (footer != null)
-        {
-            footer.doLayout(wlimit, columns);
-            footer.setPosition(0, y);
-            if (footer.getWidth() > maxw)
-                maxw = footer.getWidth();
-            y += footer.getHeight();
-        }
-        content.width = maxw;
-        content.height = y;
-        setSize(totalWidth(), totalHeight());
+        ((TableLayoutManager) layoutManager).performTableLayout(this);
         return true;
     }
     
@@ -357,7 +328,7 @@ public class TableBox extends BlockBox
     /**
      * Analyzes the cells in the body and updates the stored column parametres 
      */
-    private void updateColumns(TableBodyBox body)
+    void updateColumns(TableBodyBox body)
     {
         for (int i = 0; i < columns.size(); i++)
             if (i < body.getColumnCount())
@@ -367,7 +338,7 @@ public class TableBox extends BlockBox
     /**
      * Calculates the column widths.
      */
-    private void calculateColumns()
+    void calculateColumns()
     {
         float wlimit = getAvailableContentWidth();
         //System.out.println("wset="+wset);

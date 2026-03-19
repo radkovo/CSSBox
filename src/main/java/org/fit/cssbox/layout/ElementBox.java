@@ -283,11 +283,28 @@ abstract public class ElementBox extends Box
     {
         initBox();
         loadSizes();
-        
+
         for (int i = 0; i < getSubBoxNumber(); i++)
             getSubBox(i).initSubtree();
-        
+
         computeEfficientMargins();
+    }
+
+    /**
+     * Initialises the {@link LayoutManager} for this box and all descendant
+     * boxes in post-order (children before parent). Must be called after
+     * {@link #initSubtree()} has completed for the whole tree, so that
+     * properties such as {@link BlockBox#containsBlocks()} are reliable.
+     */
+    public void initLayoutManagerSubtree()
+    {
+        for (int i = 0; i < getSubBoxNumber(); i++)
+        {
+            Box child = getSubBox(i);
+            if (child instanceof ElementBox)
+                ((ElementBox) child).initLayoutManagerSubtree();
+        }
+        initLayoutManager();
     }
     
     //=======================================================================

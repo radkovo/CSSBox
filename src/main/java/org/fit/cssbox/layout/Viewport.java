@@ -368,10 +368,7 @@ public class Viewport extends BlockBox
          * is updated after the layout */
         setAvailableWidth(totalWidth());
         
-        if (!contblock)  //block elements containing inline elements only
-            layoutInline();
-        else //block elements containing block elements
-            layoutBlocks();
+        layoutManager.layout(availw, force, linestart);
         
         //allways fits as well possible
         return true;

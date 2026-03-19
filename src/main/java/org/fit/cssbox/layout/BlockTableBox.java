@@ -107,6 +107,12 @@ public class BlockTableBox extends BlockBox
     }
 
     @Override
+    public void initLayoutManager()
+    {
+        layoutManager = new TableLayoutManager(this);
+    }
+
+    @Override
     public boolean doLayout(float availw, boolean force, boolean linestart)
     {
         setAvailableWidth(availw);
@@ -124,7 +130,7 @@ public class BlockTableBox extends BlockBox
         BlockLayoutStatus stat = new BlockLayoutStatus();
         table.setAvailableWidth(wlimit);
         table.updateSizes();
-        layoutBlockInFlow(table, wlimit, stat);
+        layoutManager.layoutBlockInFlow(table, wlimit, stat);
         tabwidth = stat.maxw;
         tabheight = stat.y;
 
@@ -134,7 +140,7 @@ public class BlockTableBox extends BlockBox
             stat.y = 0;
             caption.setAvailableWidth(stat.maxw);
             caption.updateSizes();
-            layoutBlockInFlow(caption, stat.maxw, stat);
+            layoutManager.layoutBlockInFlow(caption, stat.maxw, stat);
             capwidth = stat.maxw;
             capheight = stat.y;
             if (captionbottom) //place the caption below or above
@@ -163,7 +169,7 @@ public class BlockTableBox extends BlockBox
             if (box instanceof BlockBox && ((BlockBox) box).isPositioned())
             {
                 ((BlockBox) box).updateSizes();
-                layoutBlockPositioned((BlockBox) box, stat);
+                layoutManager.layoutBlockPositioned((BlockBox) box, stat);
             }
         }
         

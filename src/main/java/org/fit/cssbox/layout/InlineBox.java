@@ -82,6 +82,7 @@ public class InlineBox extends ElementBox implements InlineElement
     {
         InlineBox ret = new InlineBox(el, ctx);
         ret.copyValues(this);
+        ret.initLayoutManager();
         return ret;
     }
     
@@ -297,6 +298,15 @@ public class InlineBox extends ElementBox implements InlineElement
     	return false;
     }
     
+    /**
+     * Assigns an {@link InlineLayoutManager} to this inline box.
+     */
+    @Override
+    public void initLayoutManager()
+    {
+        layoutManager = new InlineLayoutManager(this);
+    }
+
     /** Compute the width and height of this element. Layout the sub-elements.
      * @param availw Maximal width available to the child elements
      * @param force Use the area even if the used width is greater than maxwidth
@@ -305,6 +315,20 @@ public class InlineBox extends ElementBox implements InlineElement
      */
     @Override
     public boolean doLayout(float availw, boolean force, boolean linestart)
+    {
+        return layoutManager.layout(availw, force, linestart);
+    }
+
+    /**
+     * Performs the actual inline layout for this box. Called by
+     * {@link InlineLayoutManager#layout(float, boolean, boolean)}.
+     *
+     * @param availw    available width
+     * @param force     force placement
+     * @param linestart whether at the start of a line
+     * @return {@code true} if the box was successfully placed
+     */
+    boolean doLayoutInline(float availw, boolean force, boolean linestart)
     {
         //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
         //  System.out.println("jo!");
@@ -317,7 +341,7 @@ public class InlineBox extends ElementBox implements InlineElement
         }
 
         setAvailableWidth(availw);
-        
+
         curline = new LineBox(this, startChild, 0);
         float wlimit = getAvailableContentWidth();
         float x = 0; //current x
@@ -326,7 +350,7 @@ public class InlineBox extends ElementBox implements InlineElement
 
         int lastbreak = startChild; //last possible position of a line break
         collapsedCompletely = true;
-        
+
         for (int i = startChild; i < endChild; i++)
         {
             Box subbox = getSubBox(i);
@@ -381,10 +405,10 @@ public class InlineBox extends ElementBox implements InlineElement
             {
                 if (lastbreak == startChild) //no children have been placed, give up
                 {
-                    ret = false; 
-                    break; 
+                    ret = false;
+                    break;
                 }
-                else //some children have been placed, contintue the next time
+                else //some children have been placed, continue the next time
                 {
                     InlineBox rbox = copyBox();
                     rbox.splitted = true;
@@ -396,11 +420,11 @@ public class InlineBox extends ElementBox implements InlineElement
                     break;
                 }
             }
-            
+
             if (subbox.canSplitAfter())
             	lastbreak = i+1;
         }
-        
+
         //compute the vertical positions of the boxes
         //updateLineMetrics();
         content.width = x;
@@ -408,7 +432,7 @@ public class InlineBox extends ElementBox implements InlineElement
         halflead = (content.height - ctx.getFontHeight()) / 2;
         alignBoxes();
         setSize(totalWidth(), totalHeight());
-        
+
         return ret;
     }
     
