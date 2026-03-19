@@ -1412,5 +1412,56 @@ abstract public class ElementBox extends Box
             }
         }
     }
-    
+
+    /**
+     * Calculate absolute positions of all the subboxes.
+     * Implements the common 5-step pattern: update stacking contexts, guard on isDisplayed,
+     * compute this box's absolute position, then propagate to children.
+     * Subclasses override {@link #computeAbsolutePosition()} and/or
+     * {@link #propagateAbsolutePositions()} to customise the algorithm.
+     */
+    @Override
+    public void absolutePositions()
+    {
+        updateStackingContexts();
+        if (isDisplayed())
+        {
+            computeAbsolutePosition();
+            propagateAbsolutePositions();
+        }
+    }
+
+    /**
+     * Computes the absolute position of this box ({@code absbounds}) based on its relative
+     * {@code bounds} and CSS positioning properties. The default implementation handles the
+     * common in-flow case: parent content edge plus relative {@code bounds}, with an optional
+     * relative-position offset applied afterwards.
+     * Subclasses with different positioning schemes (floats, absolute, fixed, inline valign)
+     * override this method.
+     */
+    protected void computeAbsolutePosition()
+    {
+        absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
+        absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+        if (position == POS_RELATIVE)
+        {
+            absbounds.x += leftset ? coords.left : (-coords.right);
+            absbounds.y += topset ? coords.top : (-coords.bottom);
+        }
+        absbounds.width = bounds.width;
+        absbounds.height = bounds.height;
+    }
+
+    /**
+     * Propagates the absolute-positions computation to child boxes.
+     * The default implementation recurses over the active child range
+     * ({@code startChild} to {@code endChild}).
+     * Override in subclasses that use a different child collection (e.g. table cells).
+     */
+    protected void propagateAbsolutePositions()
+    {
+        for (int i = startChild; i < endChild; i++)
+            getSubBox(i).absolutePositions();
+    }
+
 }

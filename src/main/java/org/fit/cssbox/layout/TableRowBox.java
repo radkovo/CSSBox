@@ -161,51 +161,29 @@ public class TableRowBox extends BlockBox
     }
     
     @Override
-    public void absolutePositions()
+    protected void propagateAbsolutePositions()
     {
-        updateStackingContexts();
-        final Rectangle cblock = getAbsoluteContainingBlock();
-        float x = cblock.x + bounds.x;
-        float y = cblock.y + bounds.y;
-
-        if (position == POS_RELATIVE)
-        {
-            x += leftset ? coords.left : (-coords.right);
-            y += topset ? coords.top : (-coords.bottom);
-        }
-            
-        //set the absolute coordinates
-        absbounds.x = x;
-        absbounds.y = y;
-        absbounds.width = bounds.width;
-        absbounds.height = bounds.height;
-        
         //Compute the absolute positions as for in-flow boxes. Ignore floating.
-        if (isDisplayed())
+        for (TableCellBox child : cells)
         {
-            //for (int i = startChild; i < endChild; i++)
-            for (TableCellBox child : cells)
+            child.updateStackingContexts();
+            float x = getAbsoluteContentX() + child.getBounds().x;
+            float y = getAbsoluteContentY() + child.getBounds().y;
+
+            if (child.position == POS_RELATIVE)
             {
-                child.updateStackingContexts();
-                x = getAbsoluteContentX() + child.getBounds().x;
-                y = getAbsoluteContentY() + child.getBounds().y;
-
-                if (child.position == POS_RELATIVE)
-                {
-                    x += child.leftset ? child.coords.left : (-child.coords.right);
-                    y += child.topset ? child.coords.top : (-child.coords.bottom);
-                }
-                    
-                child.absbounds.x = x;
-                child.absbounds.y = y;
-                child.absbounds.width = child.bounds.width;
-                child.absbounds.height = child.bounds.height;
-                
-                for (int j = child.getStartChild(); j < child.getEndChild(); j++)
-                    child.getSubBox(j).absolutePositions();
+                x += child.leftset ? child.coords.left : (-child.coords.right);
+                y += child.topset ? child.coords.top : (-child.coords.bottom);
             }
-        }
 
+            child.absbounds.x = x;
+            child.absbounds.y = y;
+            child.absbounds.width = child.bounds.width;
+            child.absbounds.height = child.bounds.height;
+
+            for (int j = child.getStartChild(); j < child.getEndChild(); j++)
+                child.getSubBox(j).absolutePositions();
+        }
     }
 
     @Override

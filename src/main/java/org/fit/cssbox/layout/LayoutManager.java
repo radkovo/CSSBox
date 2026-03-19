@@ -74,16 +74,6 @@ public abstract class LayoutManager
     public abstract float getMaximalContentWidth();
 
     /**
-     * Second layout pass: resolves absolute and fixed child positions after
-     * the main layout pass has completed.
-     * The default implementation is a no-op; override in managers that place
-     * absolutely or fixed-positioned children.
-     */
-    public void absolutePositions()
-    {
-    }
-
-    /**
      * Returns the owner box.
      *
      * @return the owner box

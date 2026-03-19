@@ -807,75 +807,63 @@ public class BlockBox extends ElementBox
     }
     
     @Override
-    public void absolutePositions()
+    protected void computeAbsolutePosition()
     {
-        updateStackingContexts();
-        if (displayed)
+        //my top left corner
+        final Rectangle cblock = getAbsoluteContainingBlock();
+        float x = cblock.x + bounds.x;
+        float y = cblock.y + bounds.y;
+
+        if (floating == FLOAT_NONE)
         {
-            //my top left corner
-            final Rectangle cblock = getAbsoluteContainingBlock();
-            float x = cblock.x + bounds.x;
-            float y = cblock.y + bounds.y;
+            if (position == POS_RELATIVE)
+            {
+                x += leftset ? coords.left : (-coords.right);
+                y += topset ? coords.top : (-coords.bottom);
+            }
+            else if (position == POS_ABSOLUTE || position == POS_FIXED)
+            {
+                if (topstatic || leftstatic)
+                {
+                    updateStaticPosition();
+                }
+                x = cblock.x + coords.left;
+                y = cblock.y + coords.top;
+                //if fixed, update the position by the viewport visible offset
+                if (position == POS_FIXED && getContainingBlockBox() instanceof Viewport)
+                {
+                    x += ((Viewport) getContainingBlockBox()).getVisibleRect().x;
+                    y += ((Viewport) getContainingBlockBox()).getVisibleRect().y;
+                }
+            }
+        }
+        else if (floating == FLOAT_LEFT)
+        {
+        	BlockBox listowner = fown.getOwner();
+            x = listowner.getAbsoluteContentX() + bounds.x;
+            y = listowner.getAbsoluteContentY() + bounds.y;
+        }
+        else if (floating == FLOAT_RIGHT)
+        {
+        	BlockBox listowner = fown.getOwner();
+            x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x;
+            y = listowner.getAbsoluteContentY() + bounds.y;
+        }
 
-            if (floating == FLOAT_NONE)
-            {
-                if (position == POS_RELATIVE)
-                {
-                    x += leftset ? coords.left : (-coords.right);
-                    y += topset ? coords.top : (-coords.bottom);
-                }
-                else if (position == POS_ABSOLUTE || position == POS_FIXED)
-                {
-                    if (topstatic || leftstatic)
-                    {
-                        updateStaticPosition();
-                    }
-                    x = cblock.x + coords.left;
-                    y = cblock.y + coords.top;
-                    //if fixed, update the position by the viewport visible offset
-                    if (position == POS_FIXED && getContainingBlockBox() instanceof Viewport)
-                    {
-                        x += ((Viewport) getContainingBlockBox()).getVisibleRect().x; 
-                        y += ((Viewport) getContainingBlockBox()).getVisibleRect().y; 
-                    }
-                }
-            }
-            else if (floating == FLOAT_LEFT)
-            {
-            	BlockBox listowner = fown.getOwner();
-                x = listowner.getAbsoluteContentX() + bounds.x;
-                y = listowner.getAbsoluteContentY() + bounds.y;
-            }
-            else if (floating == FLOAT_RIGHT)
-            {
-            	BlockBox listowner = fown.getOwner();
-                x = listowner.getAbsoluteContentX() + listowner.getContentWidth() - bounds.width - bounds.x;
-                y = listowner.getAbsoluteContentY() + bounds.y;
-            }
+        //set the absolute coordinates
+        absbounds.x = x;
+        absbounds.y = y;
 
-            //set the absolute coordinates
-            absbounds.x = x;
-            absbounds.y = y;
-            
-            //update the width and height according to overflow of the cblock
-            absbounds.width = bounds.width;
-            absbounds.height = bounds.height;
-            
-            if (isDisplayed())
-            {
-                if (isVisible())
-                {
-                    if (clipblock == viewport)
-                        viewport.updateBoundsFor(absbounds);
-                    else
-                        viewport.updateBoundsFor(getClippedBounds());
-                }
-                
-                //repeat for all valid subboxes
-                for (int i = startChild; i < endChild; i++)
-                    getSubBox(i).absolutePositions();
-            }
-            
+        //update the width and height according to overflow of the cblock
+        absbounds.width = bounds.width;
+        absbounds.height = bounds.height;
+
+        if (isVisible())
+        {
+            if (clipblock == viewport)
+                viewport.updateBoundsFor(absbounds);
+            else
+                viewport.updateBoundsFor(getClippedBounds());
         }
     }
     

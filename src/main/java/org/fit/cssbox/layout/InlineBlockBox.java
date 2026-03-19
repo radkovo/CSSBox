@@ -271,42 +271,34 @@ public class InlineBlockBox extends BlockBox implements InlineElement
     }
 
     @Override
-    public void absolutePositions()
+    protected void computeAbsolutePosition()
     {
-        updateStackingContexts();
-        if (isDisplayed())
+        //x coordinate is taken from the content edge
+        absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
+        //y coordinate -- depends on the vertical alignment
+        if (valign == CSSProperty.VerticalAlign.TOP)
         {
-            //x coordinate is taken from the content edge
-            absbounds.x = getParent().getAbsoluteContentX() + bounds.x;
-            //y coordinate -- depends on the vertical alignment
-            if (valign == CSSProperty.VerticalAlign.TOP)
-            {
-                absbounds.y = linebox.getAbsoluteY();
-            }
-            else if (valign == CSSProperty.VerticalAlign.BOTTOM)
-            {
-                absbounds.y = linebox.getAbsoluteY() + linebox.getMaxBoxHeight() - getHeight();
-            }
-            else //other positions -- set during the layout. Relative to the parent content edge.
-            {
-                absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
-            }
-
-            //consider the relative position
-            if (position == POS_RELATIVE)
-            {
-                absbounds.x += leftset ? coords.left : (-coords.right);
-                absbounds.y += topset ? coords.top : (-coords.bottom);
-            }
-            
-            //update the width and height according to overflow of the parent
-            absbounds.width = bounds.width;
-            absbounds.height = bounds.height;
-            
-            //repeat for all valid subboxes
-            for (int i = startChild; i < endChild; i++)
-                getSubBox(i).absolutePositions();
+            absbounds.y = linebox.getAbsoluteY();
         }
+        else if (valign == CSSProperty.VerticalAlign.BOTTOM)
+        {
+            absbounds.y = linebox.getAbsoluteY() + linebox.getMaxBoxHeight() - getHeight();
+        }
+        else //other positions -- set during the layout. Relative to the parent content edge.
+        {
+            absbounds.y = getParent().getAbsoluteContentY() + bounds.y;
+        }
+
+        //consider the relative position
+        if (position == POS_RELATIVE)
+        {
+            absbounds.x += leftset ? coords.left : (-coords.right);
+            absbounds.y += topset ? coords.top : (-coords.bottom);
+        }
+
+        //update the width and height according to overflow of the parent
+        absbounds.width = bounds.width;
+        absbounds.height = bounds.height;
     }
     
     /**
