@@ -21,6 +21,11 @@ package org.fit.cssbox.layout;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.vutbr.web.css.CSSProperty;
+
 /**
  * A layout manager for two closely related cases:
  * <ol>
@@ -35,6 +40,8 @@ import java.util.Vector;
  */
 public class InlineLayoutManager extends LayoutManager
 {
+    private static Logger log = LoggerFactory.getLogger(InlineLayoutManager.class);
+
     public InlineLayoutManager(ElementBox owner)
     {
         super(owner);
@@ -45,7 +52,7 @@ public class InlineLayoutManager extends LayoutManager
     {
         if (owner instanceof InlineBox)
         {
-            return ((InlineBox) owner).doLayoutInline(availw, force, linestart);
+            return performInlineLayout((InlineBox) owner, availw, force, linestart);
         }
         else
         {
@@ -145,7 +152,158 @@ public class InlineLayoutManager extends LayoutManager
     }
 
     // -----------------------------------------------------------------------
-    // Inline layout algorithm (moved from BlockBox.layoutInline())
+    // Inline element layout (moved from InlineBox.doLayoutInline + alignBoxes)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Lays out the children of an inline element box.
+     * Moved from {@code InlineBox.doLayoutInline()}.
+     */
+    private boolean performInlineLayout(InlineBox box, float availw, boolean force, boolean linestart)
+    {
+        if (!box.displayed)
+        {
+            box.content.setSize(0, 0);
+            box.bounds.setSize(0, 0);
+            return true;
+        }
+
+        box.setAvailableWidth(availw);
+
+        LineBox curline = new LineBox(box, box.startChild, 0);
+        float wlimit = box.getAvailableContentWidth();
+        float x = 0;
+        boolean ret = true;
+        box.rest = null;
+
+        int lastbreak = box.startChild;
+        box.collapsedCompletely = true;
+
+        for (int i = box.startChild; i < box.endChild; i++)
+        {
+            Box subbox = box.getSubBox(i);
+            if (subbox.canSplitBefore())
+                lastbreak = i;
+            boolean f = force && (i == box.startChild || lastbreak == box.startChild);
+            boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == box.startChild));
+            if (fit)
+            {
+                if (subbox instanceof Inline)
+                {
+                    subbox.setPosition(x, 0);
+                    x += subbox.getWidth();
+                    curline.considerBox((Inline) subbox);
+                    if (((Inline) subbox).finishedByLineBreak())
+                        box.lineBreakStop = true;
+                    if (!((Inline) subbox).collapsedCompletely())
+                        box.collapsedCompletely = false;
+                }
+                else
+                    log.debug("Warning: performInlineLayout(): subbox is not inline: " + subbox);
+                if (subbox.getRest() != null)
+                {
+                    InlineBox rbox = box.copyBox();
+                    rbox.splitted = true;
+                    rbox.splitid = box.splitid + 1;
+                    rbox.setStartChild(i);
+                    rbox.nested.setElementAt(subbox.getRest(), i);
+                    rbox.adoptChildren();
+                    box.setEndChild(i + 1);
+                    box.rest = rbox;
+                    break;
+                }
+                else if (box.lineBreakStop)
+                {
+                    if (i + 1 < box.endChild)
+                    {
+                        InlineBox rbox = box.copyBox();
+                        rbox.splitted = true;
+                        rbox.splitid = box.splitid + 1;
+                        rbox.setStartChild(i + 1);
+                        rbox.adoptChildren();
+                        box.setEndChild(i + 1);
+                        box.rest = rbox;
+                    }
+                    break;
+                }
+            }
+            else
+            {
+                if (lastbreak == box.startChild)
+                {
+                    ret = false;
+                    break;
+                }
+                else
+                {
+                    InlineBox rbox = box.copyBox();
+                    rbox.splitted = true;
+                    rbox.splitid = box.splitid + 1;
+                    rbox.setStartChild(lastbreak);
+                    rbox.adoptChildren();
+                    box.setEndChild(lastbreak);
+                    box.rest = rbox;
+                    break;
+                }
+            }
+
+            if (subbox.canSplitAfter())
+                lastbreak = i + 1;
+        }
+
+        box.content.width = x;
+        box.content.height = box.ctx.getFontHeight();
+        box.setHalfLead((box.content.height - box.ctx.getFontHeight()) / 2);
+        alignInlineBoxes(box, curline);
+        box.setCurLine(curline);
+        box.setSize(box.totalWidth(), box.totalHeight());
+
+        return ret;
+    }
+
+    /**
+     * Vertically aligns the children of an inline box within its line box.
+     * Moved from {@code InlineBox.alignBoxes()}.
+     */
+    private void alignInlineBoxes(InlineBox box, LineBox curline)
+    {
+        float minDY = box.getMinDescendantY();
+        float maxDY = box.getMaxDescendantY();
+        for (int i = box.startChild; i < box.endChild; i++)
+        {
+            Box sub = box.getSubBox(i);
+            if (!sub.isBlock())
+            {
+                float dif = curline.alignBox((Inline) sub);
+                dif = dif - box.getLineboxOffset();
+                if (sub instanceof InlineBox)
+                    dif = dif - ((ElementBox) sub).getContentOffsetY();
+                if (dif != 0)
+                    sub.moveDown(dif);
+                float y1 = sub.getContentY();
+                if (sub instanceof InlineBox)
+                {
+                    final float dy = ((InlineBox) sub).getMinDescendantY();
+                    if (dy < 0)
+                        y1 += dy;
+                }
+                minDY = Math.min(minDY, y1);
+                float y2 = sub.getContentY() + sub.getContentHeight() - 1;
+                if (sub instanceof InlineBox)
+                {
+                    final float dy = ((InlineBox) sub).getMaxDescendantY();
+                    if (dy > sub.getContentHeight())
+                        y2 += dy;
+                }
+                maxDY = Math.max(maxDY, y2);
+            }
+        }
+        box.setMinDescendantY(minDY);
+        box.setMaxDescendantY(maxDY);
+    }
+
+    // -----------------------------------------------------------------------
+    // Block-with-inline-children layout (moved from BlockBox.layoutInline)
     // -----------------------------------------------------------------------
 
     /**
@@ -168,7 +326,7 @@ public class InlineLayoutManager extends LayoutManager
         int lnstr = 0;
         int lastbreak = 0;
 
-        x += block.indent;
+        x += block.getIndent();
 
         Vector<LineBox> lines = new Vector<LineBox>();
         LineBox curline = block.firstLine;
@@ -329,8 +487,66 @@ public class InlineLayoutManager extends LayoutManager
         for (Iterator<LineBox> it = lines.iterator(); it.hasNext();)
         {
             LineBox line = it.next();
-            block.alignLineHorizontally(line, !it.hasNext());
-            block.alignLineVertically(line);
+            alignLineHorizontally(block, line, !it.hasNext());
+            alignLineVertically(block, line);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Line alignment (moved from BlockBox.alignLineHorizontally/Vertically)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Aligns the subboxes in a line according to the text-align setting.
+     * Moved from {@code BlockBox.alignLineHorizontally()}.
+     */
+    private void alignLineHorizontally(BlockBox block, LineBox line, boolean isLast)
+    {
+        final float dif = block.getContentWidth() - line.getLimits() - line.getWidth();
+        if (dif > 0)
+        {
+            CSSProperty.TextAlign align = block.getTextAlign();
+            if (align == BlockBox.ALIGN_JUSTIFY)
+            {
+                if (!isLast)
+                    block.extendInlineChildWidths(dif, line.getStart(), line.getEnd(), true, true);
+            }
+            else if (align != BlockBox.ALIGN_LEFT)
+            {
+                for (int i = line.getStart(); i < line.getEnd(); i++)
+                {
+                    Box subbox = block.getSubBox(i);
+                    if (subbox instanceof Inline)
+                    {
+                        if (align == BlockBox.ALIGN_RIGHT)
+                            subbox.moveRight(dif);
+                        else if (align == BlockBox.ALIGN_CENTER)
+                            subbox.moveRight(dif / 2);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Vertically aligns the subboxes within a line box.
+     * Moved from {@code BlockBox.alignLineVertically()}.
+     */
+    private void alignLineVertically(BlockBox block, LineBox line)
+    {
+        for (int i = line.getStart(); i < line.getEnd(); i++)
+        {
+            Box subbox = block.getSubBox(i);
+            if (!subbox.isBlock())
+            {
+                float dif = line.alignBox((Inline) subbox);
+                if (subbox instanceof InlineBox)
+                    dif = dif - ((ElementBox) subbox).getContentOffsetY();
+                if (subbox instanceof InlineElement)
+                    ((InlineElement) subbox).setLineBox(line);
+                float y = line.getY() + line.getTopOffset() + (line.getLead() / 2) + dif;
+                subbox.moveDown(y);
+            }
         }
     }
 }

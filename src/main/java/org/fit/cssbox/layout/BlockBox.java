@@ -631,6 +631,15 @@ public class BlockBox extends ElementBox
     {
         return indent;
     }
+
+    /**
+     * Returns the text alignment setting of this block box.
+     * @return the text-align property value
+     */
+    public CSSProperty.TextAlign getTextAlign()
+    {
+        return align;
+    }
     
     @Override
     public Rectangle getContainingBlock()
@@ -656,81 +665,7 @@ public class BlockBox extends ElementBox
     
    //========================================================================
     
-    /**
-     * Moves down all the floating boxes contained in this box and its children. 
-     */
-    protected void moveFloatsDown(float ofs)
-    {
-        floatY += ofs;
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box box = getSubBox(i);
-            if (box instanceof BlockBox)
-            {
-                BlockBox block = (BlockBox) box;
-                if (block.isInFlow())
-                    block.moveFloatsDown(ofs);
-                else if (block.getFloating() != BlockBox.FLOAT_NONE)
-                    block.moveDown(ofs);
-            }
-        }
-    }
-    
     /** 
-     * Aligns the subboxes in a line according to the selected alignment settings.
-     * @param line The line box to be aligned
-     */
-    void alignLineHorizontally(LineBox line, boolean isLast)
-    {
-        final float dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
-        if (dif > 0)
-        {
-            if (align == ALIGN_JUSTIFY)
-            {
-                if (!isLast)
-                    extendInlineChildWidths(dif, line.getStart(), line.getEnd(), true, true);
-            }
-            else if (align != ALIGN_LEFT)
-            {
-                for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
-                {
-                    Box subbox = getSubBox(i);
-                    if (subbox instanceof Inline)
-                    {
-                        if (align == ALIGN_RIGHT)
-                            subbox.moveRight(dif);
-                        else if (align == ALIGN_CENTER)
-                            subbox.moveRight(dif/2);
-                    }
-                }
-            }
-        }
-    }
-    
-    void alignLineVertically(LineBox line)
-    {
-        for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
-        {
-            Box subbox = getSubBox(i);
-            if (!subbox.isBlock())
-            {
-                float dif = line.alignBox((Inline) subbox);
-                
-                //Now, dif is the difference of the content boxes. Recompute to the whole boxes.
-                if (subbox instanceof InlineBox)
-                    dif = dif - ((ElementBox) subbox).getContentOffsetY(); 
-
-                //Set the  line boxes for positioning the "top" and "bottom" aligned boxes
-                if (subbox instanceof InlineElement)
-                    ((InlineElement) subbox).setLineBox(line);
-                
-                //the Y position is used for the boxes that are not "top" or "bottom" aligned
-                float y = line.getY() + line.getTopOffset() + (line.getLead() / 2) + dif;
-                subbox.moveDown(y);
-            }
-        }
-    }
-
     /**
      * Computes the efficient sizes of in-flow margins for collapsing
      */

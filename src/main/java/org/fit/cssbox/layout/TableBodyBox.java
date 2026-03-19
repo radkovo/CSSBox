@@ -107,6 +107,9 @@ public class TableBodyBox extends BlockBox
         return rows.elementAt(index);
     }
 
+    /** @return the cell spacing in pixels */
+    public float getSpacing() { return spacing; }
+
     /**
      * Sets the cell spacing
      */
@@ -114,6 +117,14 @@ public class TableBodyBox extends BlockBox
     {
     	this.spacing = spacing;
     }
+
+    /**
+     * Returns the cell at the given column and row index.
+     * @param col column index
+     * @param row row index
+     * @return the cell box, or {@code null} if not present
+     */
+    public TableCellBox getCell(int col, int row) { return cells[col][row]; }
     
     /**
      * @return the table where the caption is placed

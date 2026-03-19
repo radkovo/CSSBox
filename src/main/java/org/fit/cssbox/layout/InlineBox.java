@@ -21,8 +21,6 @@
 package org.fit.cssbox.layout;
 
 import org.fit.cssbox.css.HTMLNorm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 
 import cz.vutbr.web.css.*;
@@ -34,9 +32,7 @@ import cz.vutbr.web.css.*;
  */
 public class InlineBox extends ElementBox implements InlineElement
 {
-    private static Logger log = LoggerFactory.getLogger(InlineBox.class);
-    
-    /** vertical box alignment specified by the style */
+/** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;
     
     /** parent LineBox assigned during layout */
@@ -261,7 +257,7 @@ public class InlineBox extends ElementBox implements InlineElement
     }
     
     /**
-     * After performing the layout, this method obtains the minimal relative Y coordinate of the aligned descendants. 
+     * After performing the layout, this method obtains the minimal relative Y coordinate of the aligned descendants.
      * @return The minimal relative Y value.
      */
     public float getMinDescendantY()
@@ -270,12 +266,44 @@ public class InlineBox extends ElementBox implements InlineElement
     }
 
     /**
-     * After performing the layout, this method obtains the maximal relative Y coordinate of the aligned descendants. 
+     * After performing the layout, this method obtains the maximal relative Y coordinate of the aligned descendants.
      * @return The minimal relative Y value.
      */
     public float getMaxDescendantY()
     {
         return minDescendantY;
+    }
+
+    /**
+     * Sets the current line box after layout. Called by {@link InlineLayoutManager}.
+     */
+    public void setCurLine(LineBox curline)
+    {
+        this.curline = curline;
+    }
+
+    /**
+     * Sets the half-lead value after layout. Called by {@link InlineLayoutManager}.
+     */
+    public void setHalfLead(float halflead)
+    {
+        this.halflead = halflead;
+    }
+
+    /**
+     * Sets the minimal descendant Y coordinate after layout. Called by {@link InlineLayoutManager}.
+     */
+    public void setMinDescendantY(float minDescendantY)
+    {
+        this.minDescendantY = minDescendantY;
+    }
+
+    /**
+     * Sets the maximal descendant Y coordinate after layout. Called by {@link InlineLayoutManager}.
+     */
+    public void setMaxDescendantY(float maxDescendantY)
+    {
+        this.maxDescendantY = maxDescendantY;
     }
 
     //========================================================================
@@ -319,123 +347,6 @@ public class InlineBox extends ElementBox implements InlineElement
         return layoutManager.layout(availw, force, linestart);
     }
 
-    /**
-     * Performs the actual inline layout for this box. Called by
-     * {@link InlineLayoutManager#layout(float, boolean, boolean)}.
-     *
-     * @param availw    available width
-     * @param force     force placement
-     * @param linestart whether at the start of a line
-     * @return {@code true} if the box was successfully placed
-     */
-    boolean doLayoutInline(float availw, boolean force, boolean linestart)
-    {
-        //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-        //  System.out.println("jo!");
-        //Skip if not displayed
-        if (!displayed)
-        {
-            content.setSize(0, 0);
-            bounds.setSize(0, 0);
-            return true;
-        }
-
-        setAvailableWidth(availw);
-
-        curline = new LineBox(this, startChild, 0);
-        float wlimit = getAvailableContentWidth();
-        float x = 0; //current x
-        boolean ret = true;
-        rest = null;
-
-        int lastbreak = startChild; //last possible position of a line break
-        collapsedCompletely = true;
-
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box subbox = getSubBox(i);
-            if (subbox.canSplitBefore())
-            	lastbreak = i;
-            //when forcing, force the first child only and the children before
-            //the first possible break
-            boolean f = force && (i == startChild || lastbreak == startChild);
-            boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
-            if (fit) //something has been placed
-            {
-                if (subbox instanceof Inline)
-                {
-                    subbox.setPosition(x,  0); //the y position will be updated later
-                    x += subbox.getWidth();
-                    curline.considerBox((Inline) subbox);
-                    if (((Inline) subbox).finishedByLineBreak())
-                        lineBreakStop = true;
-                    if (!((Inline) subbox).collapsedCompletely())
-                        collapsedCompletely = false;
-                }
-                else
-                	log.debug("Warning: doLayout(): subbox is not inline: " + subbox);
-                if (subbox.getRest() != null) //is there anything remaining?
-                {
-                    InlineBox rbox = copyBox();
-                    rbox.splitted = true;
-                    rbox.splitid = splitid + 1;
-                    rbox.setStartChild(i); //next starts with me...
-                    rbox.nested.setElementAt(subbox.getRest(), i); //..but only with the rest
-                    rbox.adoptChildren();
-                    setEndChild(i+1); //...and this box stops with this element
-                    rest = rbox;
-                    break;
-                }
-                else if (lineBreakStop) //nothing remained but there was a line break
-                {
-                    if (i + 1 < endChild) //some children remaining
-                    {
-                        InlineBox rbox = copyBox();
-                        rbox.splitted = true;
-                        rbox.splitid = splitid + 1;
-                        rbox.setStartChild(i + 1); //next starts with the next one
-                        rbox.adoptChildren();
-                        setEndChild(i+1); //...and this box stops with this element
-                        rest = rbox;
-                    }
-                    break;
-                }
-            }
-            else //nothing from the child has been placed
-            {
-                if (lastbreak == startChild) //no children have been placed, give up
-                {
-                    ret = false;
-                    break;
-                }
-                else //some children have been placed, continue the next time
-                {
-                    InlineBox rbox = copyBox();
-                    rbox.splitted = true;
-                    rbox.splitid = splitid + 1;
-                    rbox.setStartChild(lastbreak); //next time start from the last break
-                    rbox.adoptChildren();
-                    setEndChild(lastbreak); //this box stops here
-                    rest = rbox;
-                    break;
-                }
-            }
-
-            if (subbox.canSplitAfter())
-            	lastbreak = i+1;
-        }
-
-        //compute the vertical positions of the boxes
-        //updateLineMetrics();
-        content.width = x;
-        content.height = ctx.getFontHeight();
-        halflead = (content.height - ctx.getFontHeight()) / 2;
-        alignBoxes();
-        setSize(totalWidth(), totalHeight());
-
-        return ret;
-    }
-    
     @Override
     public void absolutePositions()
     {
@@ -739,48 +650,5 @@ public class InlineBox extends ElementBox implements InlineElement
 	        return true;
     	}
 	}
-    
-    //=====================================================================================================
-
-    /**
-     * Vertically aligns the contained boxes according to their vertical-align properties.
-     */
-    private void alignBoxes()
-    {
-        for (int i = startChild; i < endChild; i++)
-        {
-            Box sub = getSubBox(i);
-            if (!sub.isBlock())
-            {
-                //position relative to the line box
-                float dif = curline.alignBox((Inline) sub);
-                //recompute to the content box
-                dif = dif - getLineboxOffset();
-                //recompute to the bounding box
-                if (sub instanceof InlineBox)
-                    dif = dif - ((ElementBox) sub).getContentOffsetY();
-                //update the Y coordinate
-                if (dif != 0)
-                    sub.moveDown(dif);
-                //update minDescendantY and maxDescendantY
-                float y1 = sub.getContentY();
-                if (sub instanceof InlineBox)
-                {
-                    final float dy = ((InlineBox) sub).getMinDescendantY();
-                    if (dy < 0)
-                        y1 += dy;
-                }
-                minDescendantY = Math.min(minDescendantY, y1);
-                float y2 = sub.getContentY() + sub.getContentHeight() - 1;
-                if (sub instanceof InlineBox)
-                {
-                    final float dy = ((InlineBox) sub).getMaxDescendantY();
-                    if (dy > sub.getContentHeight())
-                        y2 += dy;
-                }
-                maxDescendantY = Math.max(maxDescendantY, y2);
-            }
-        }
-    }
     
 }
