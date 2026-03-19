@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 
 import org.fit.cssbox.awt.BrowserCanvas;
 import org.fit.cssbox.css.BackgroundDecoder;
@@ -371,9 +370,9 @@ public class BoxBrowser
 
     private void displayBoxInfo(Box box)
     {
-        Vector<String> cols = infoTableData("Property", "Value");
-        
-        Vector<Vector <String>> vals = new Vector<Vector <String>>();
+        List<String> cols = infoTableData("Property", "Value");
+
+        List<List<String>> vals = new ArrayList<List<String>>();
         vals.add(infoTableData("ID", box.getOrder() + " (" + box.getSplitId() + ")"));
         vals.add(infoTableData("Parent", (box.getParent() == null) ? "- none -" : box.getParent().toString()));
         vals.add(infoTableData("Cont. block box", (box.getContainingBlockBox() == null) ? "- none -" : box.getContainingBlockBox().toString()));
@@ -442,7 +441,9 @@ public class BoxBrowser
             vals.add(infoTableData("Indent", String.valueOf(eb.getIndent())));
         }
         
-        DefaultTableModel tab = new DefaultTableModel(vals, cols);
+        java.util.Vector<java.util.Vector<String>> vvals = new java.util.Vector<>();
+        for (List<String> row : vals) vvals.add(new java.util.Vector<>(row));
+        DefaultTableModel tab = new DefaultTableModel(vvals, new java.util.Vector<>(cols));
         infoTable.setModel(tab);
         
         if (box instanceof ElementBox)
@@ -486,9 +487,9 @@ public class BoxBrowser
         }
     }
     
-    private Vector<String> infoTableData(String prop, String value)
+    private List<String> infoTableData(String prop, String value)
     {
-        Vector<String> cols = new Vector<String>(2);
+        List<String> cols = new ArrayList<String>(2);
         cols.add(prop);
         cols.add(value);
         return cols;

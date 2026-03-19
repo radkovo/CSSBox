@@ -19,7 +19,8 @@
  */
 package org.fit.cssbox.layout;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.dom.Element;
 
@@ -30,7 +31,7 @@ import org.w3c.dom.Element;
  */
 public class TableColumnGroup extends TableColumn
 {
-    private Vector<TableColumn> columns;
+    private List<TableColumn> columns;
     
     //===============================================================================
     
@@ -59,17 +60,17 @@ public class TableColumnGroup extends TableColumn
     public TableColumn getColumn(int index)
     {
         if (columns == null) organizeColumns();
-        return columns.elementAt(index);
+        return columns.get(index);
     }
 
     //====================================================================================
     
     private void organizeColumns()
     {
-        columns = new Vector<TableColumn>();
+        columns = new ArrayList<TableColumn>();
         for (int bi = 0; bi < nested.size(); bi++)
         {
-            Box box = nested.elementAt(bi);
+            Box box = nested.get(bi);
             if (box instanceof TableColumn)
             {
                 TableColumn col = (TableColumn) box;

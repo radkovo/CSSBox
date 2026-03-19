@@ -21,11 +21,11 @@
 package org.fit.cssbox.layout;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.Vector;
 
 import org.fit.cssbox.css.Counters;
 import org.fit.cssbox.css.DOMAnalyzer;
@@ -406,7 +406,7 @@ public class BoxFactory
                     if (grandpa != null)
                     {
                         //queue the block box and the next twin to be put to the block level
-                        iparent.postadd = new Vector<Box>(2);
+                        iparent.postadd = new ArrayList<Box>(2);
                         iparent.postadd.add(newbox);
                         if (iparent.nextTwin != null)
                             iparent.postadd.add(iparent.nextTwin);
@@ -598,7 +598,7 @@ public class BoxFactory
      */
     private void createAnonymousInline(ElementBox root)
     {
-        Vector<Box> nest = new Vector<Box>();
+        List<Box> nest = new ArrayList<Box>();
         for (int i = 0; i < root.getSubBoxNumber(); i++)
         {
             Box sub = root.getSubBox(i);
@@ -624,7 +624,7 @@ public class BoxFactory
      */
     private void createAnonymousBlocks(BlockBox root)
     {
-        Vector<Box> nest = new Vector<Box>();
+        List<Box> nest = new ArrayList<Box>();
         ElementBox adiv = null;
         for (int i = 0; i < root.getSubBoxNumber(); i++)
         {
@@ -667,7 +667,7 @@ public class BoxFactory
     
     private void createAnonymousWrappers(ElementBox root, String name, String display, Set<CSSProperty.Display> allowed)
     {
-        Vector<Box> nest = new Vector<Box>();
+        List<Box> nest = new ArrayList<Box>();
         ElementBox adiv = null;
         for (int i = 0; i < root.getSubBoxNumber(); i++)
         {
@@ -737,7 +737,7 @@ public class BoxFactory
     {
         if (root.getDisplay() != reqtype1 && root.getDisplay() != reqtype2 && root.getDisplay() != reqtype3)
         {
-            Vector<Box> nest = new Vector<Box>();
+            List<Box> nest = new ArrayList<Box>();
             ElementBox adiv = null;
             for (int i = 0; i < root.getSubBoxNumber(); i++)
             {

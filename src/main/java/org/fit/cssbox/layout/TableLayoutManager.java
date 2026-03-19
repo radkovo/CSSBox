@@ -18,7 +18,7 @@
 
 package org.fit.cssbox.layout;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * A layout manager for table-related boxes ({@link TableBox},
@@ -77,7 +77,7 @@ public class TableLayoutManager extends LayoutManager
 
         calculateColumns(table);
 
-        Vector<TableColumn> columns = table.getColumns();
+        List<TableColumn> columns = table.getColumns();
         if (table.getHeader() != null)
         {
             table.getHeader().doLayout(wlimit, columns);
@@ -115,11 +115,11 @@ public class TableLayoutManager extends LayoutManager
      * Propagates column parameters from a body's cells into the column objects.
      * Moved from {@code TableBox.updateColumns()}.
      */
-    private void updateColumns(TableBodyBox body, Vector<TableColumn> columns)
+    private void updateColumns(TableBodyBox body, List<TableColumn> columns)
     {
         for (int i = 0; i < columns.size(); i++)
             if (i < body.getColumnCount())
-                body.updateColumn(i, columns.elementAt(i));
+                body.updateColumn(i, columns.get(i));
     }
 
     /**
@@ -128,7 +128,7 @@ public class TableLayoutManager extends LayoutManager
      */
     private void calculateColumns(TableBox table)
     {
-        Vector<TableColumn> columns = table.getColumns();
+        List<TableColumn> columns = table.getColumns();
         float wlimit = table.getAvailableContentWidth();
 
         //create columns that haven't been specified explicitly
@@ -293,7 +293,7 @@ public class TableLayoutManager extends LayoutManager
             float remaincols = columns.size();
             for (int i = columns.size() - 1; i >= 0; i--)
             {
-                TableColumn col = columns.elementAt(i);
+                TableColumn col = columns.get(i);
                 float addw = remain / remaincols;
                 col.setColumnWidth(col.getWidth() + addw);
                 remain -= addw;
@@ -314,7 +314,7 @@ public class TableLayoutManager extends LayoutManager
 
                 for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
                 {
-                    TableColumn col = columns.elementAt(i);
+                    TableColumn col = columns.get(i);
                     if (!col.wset)
                     {
                         float dif = col.getWidth() - col.getMinimalWidth();
@@ -337,7 +337,7 @@ public class TableLayoutManager extends LayoutManager
 
                 for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
                 {
-                    TableColumn col = columns.elementAt(i);
+                    TableColumn col = columns.get(i);
                     if (col.wset && !col.wrelative)
                     {
                         float dif = col.getWidth() - col.getMinimalWidth();
@@ -360,7 +360,7 @@ public class TableLayoutManager extends LayoutManager
 
                 for (int i = columns.size() - 1; i >= 0 && totaldif > 0; i--)
                 {
-                    TableColumn col = columns.elementAt(i);
+                    TableColumn col = columns.get(i);
                     if (col.wrelative)
                     {
                         float dif = col.getWidth() - col.getMinimalWidth();
@@ -386,7 +386,7 @@ public class TableLayoutManager extends LayoutManager
      * Lays out the rows inside a table body section.
      * Moved from {@code TableBodyBox.doLayout(float, Vector)}.
      */
-    protected boolean performBodyLayout(TableBodyBox body, float widthlimit, Vector<TableColumn> columns)
+    protected boolean performBodyLayout(TableBodyBox body, float widthlimit, List<TableColumn> columns)
     {
         body.setAvailableWidth(widthlimit);
 
@@ -413,9 +413,9 @@ public class TableLayoutManager extends LayoutManager
                 {
                     int firstrow = cell.getRow();
                     int lastrow = cell.getRow() + cell.getRowspan() - 1;
-                    float cw = columns.elementAt(c).getWidth();
+                    float cw = columns.get(c).getWidth();
                     for (int i = 1; i < cell.getColspan(); i++)
-                        cw += sp + columns.elementAt(c + i).getWidth();
+                        cw += sp + columns.get(c + i).getWidth();
                     cell.setWidth(cw);
                     if (r == firstrow)
                     {

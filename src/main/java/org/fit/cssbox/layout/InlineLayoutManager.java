@@ -18,8 +18,9 @@
 
 package org.fit.cssbox.layout;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,7 +207,7 @@ public class InlineLayoutManager extends LayoutManager
                     rbox.splitted = true;
                     rbox.splitid = box.splitid + 1;
                     rbox.setStartChild(i);
-                    rbox.nested.setElementAt(subbox.getRest(), i);
+                    rbox.nested.set(i, subbox.getRest());
                     rbox.adoptChildren();
                     box.setEndChild(i + 1);
                     box.rest = rbox;
@@ -328,7 +329,7 @@ public class InlineLayoutManager extends LayoutManager
 
         x += block.getIndent();
 
-        Vector<LineBox> lines = new Vector<LineBox>();
+        List<LineBox> lines = new ArrayList<LineBox>();
         LineBox curline = block.firstLine;
         if (curline == null)
             curline = new LineBox(block, 0, 0);

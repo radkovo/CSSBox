@@ -19,8 +19,9 @@
  */
 package org.fit.cssbox.layout;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.fit.cssbox.css.HTMLNorm;
 import org.w3c.dom.Element;
@@ -45,8 +46,8 @@ public class TableBox extends BlockBox
 	
     protected TableBodyBox header;
     protected TableBodyBox footer;
-    protected Vector<TableBodyBox> bodies;
-    protected Vector<TableColumn> columns;
+    protected List<TableBodyBox> bodies;
+    protected List<TableColumn> columns;
     
     /** total number of columns in the table */
     protected int columnCount;
@@ -106,10 +107,10 @@ public class TableBox extends BlockBox
     public TableBodyBox getFooter() { return footer; }
 
     /** @return the list of body sections */
-    public Vector<TableBodyBox> getBodies() { return bodies; }
+    public List<TableBodyBox> getBodies() { return bodies; }
 
     /** @return the list of columns */
-    public Vector<TableColumn> getColumns() { return columns; }
+    public List<TableColumn> getColumns() { return columns; }
 
     /** @return the cell spacing value in pixels */
     public float getSpacing() { return spacing; }
@@ -380,8 +381,8 @@ public class TableBox extends BlockBox
      */
     private void organizeContent()
     {
-        bodies = new Vector<TableBodyBox>();
-        columns = new Vector<TableColumn>();
+        bodies = new ArrayList<TableBodyBox>();
+        columns = new ArrayList<TableColumn>();
         anonbody = null;
         for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
         {

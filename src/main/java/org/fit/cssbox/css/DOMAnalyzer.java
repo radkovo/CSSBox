@@ -58,7 +58,7 @@ public class DOMAnalyzer
     private MediaSpec media;   //media type
     private String encoding; //default character encoding for style sheet parsing
     
-    private Vector<StyleSheet> styles;  //vector of StyleSheet sheets
+    private List<StyleSheet> styles;  //list of StyleSheet sheets
     private Analyzer analyzer; //style sheet analyzer
     private StyleMap stylemap; //style map for DOM nodes
     private StyleMap istylemap; //style map with inheritance
@@ -85,7 +85,7 @@ public class DOMAnalyzer
         this.media = new MediaSpec(DEFAULT_MEDIA);
         baseUrl = null;
         encoding = null;
-        styles = new Vector<StyleSheet>();
+        styles = new ArrayList<StyleSheet>();
         stylemap = null;
         istylemap = null;
     }
@@ -113,7 +113,7 @@ public class DOMAnalyzer
         this.doc = doc;
         this.encoding = null;
         this.media = new MediaSpec(DEFAULT_MEDIA);
-        styles = new Vector<StyleSheet>();
+        styles = new ArrayList<StyleSheet>();
         this.baseUrl = baseUrl;
         if (detectBase)
         {
@@ -332,7 +332,7 @@ public class DOMAnalyzer
     public void localizeStyles()
     {
         //remove the style definitions
-        Vector<Element> elems = new Vector<Element>();
+        List<Element> elems = new ArrayList<Element>();
         recursiveFindStyleElements(getRoot(), elems);
         for (Element e : elems)
             e.getParentNode().removeChild(e);
@@ -689,7 +689,7 @@ public class DOMAnalyzer
     /**
      * Finds all the style definitions in the document.
      */
-    private void recursiveFindStyleElements(Element e, Vector<Element> elems)
+    private void recursiveFindStyleElements(Element e, List<Element> elems)
     {
         if ("style".equalsIgnoreCase(e.getNodeName()) ||
             ("link".equalsIgnoreCase(e.getNodeName()) && "stylesheet".equalsIgnoreCase(e.getAttribute("rel"))))

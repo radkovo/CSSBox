@@ -18,7 +18,7 @@
 
 package org.fit.cssbox.layout;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.fit.cssbox.render.BoxRenderer;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class Viewport extends BlockBox
 		this.factory = factory;
 		this.root = root;
 		style = CSSFactory.createNodeData(); //Viewport starts with an empty style
-        nested = new Vector<Box>();
+        nested = new ArrayList<Box>();
         startChild = 0;
         endChild = 0;
 		this.width = width;

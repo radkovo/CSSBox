@@ -19,8 +19,9 @@
  */
 package org.fit.cssbox.layout;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.w3c.dom.Element;
 
@@ -33,7 +34,7 @@ public class TableBodyBox extends BlockBox
     /** The table the body belongs to */
     protected TableBox ownerTable;
     /** The row boxes contained inside */
-    protected Vector<TableRowBox> rows;
+    protected List<TableRowBox> rows;
     /** Number of columns inside */
     protected int numCols;
     /** array of cells */
@@ -50,7 +51,7 @@ public class TableBodyBox extends BlockBox
     {
         super(n, ctx);
         isblock = true;
-        rows = new Vector<TableRowBox>();
+        rows = new ArrayList<TableRowBox>();
     }
 
     /**
@@ -60,7 +61,7 @@ public class TableBodyBox extends BlockBox
     {
         super(src);
         isblock = true;
-        rows = new Vector<TableRowBox>();
+        rows = new ArrayList<TableRowBox>();
     }
     
     @Override
@@ -104,7 +105,7 @@ public class TableBodyBox extends BlockBox
      */
     public TableRowBox getRow(int index)
     {
-        return rows.elementAt(index);
+        return rows.get(index);
     }
 
     /** @return the cell spacing in pixels */
@@ -282,7 +283,7 @@ public class TableBodyBox extends BlockBox
         return true;
     }
 
-    public boolean doLayout(float widthlimit, Vector<TableColumn> columns)
+    public boolean doLayout(float widthlimit, List<TableColumn> columns)
     {
         return ((TableLayoutManager) layoutManager).performBodyLayout(this, widthlimit, columns);
     }
@@ -351,10 +352,10 @@ public class TableBodyBox extends BlockBox
         int maxCells = 0;
         for (int r = 0; r < rows.size(); r++)
         {
-            int count = rows.elementAt(r).getCellCount();
+            int count = rows.get(r).getCellCount();
             if (count > maxCells) maxCells = count;
             rowidx[r] = 0;
-            rows.elementAt(r).rewind();
+            rows.get(r).rewind();
         }
         
         //determine the cell positions
@@ -366,7 +367,7 @@ public class TableBodyBox extends BlockBox
             int r = 0;
             while (r < rows.size())
             {
-                TableRowBox row = rows.elementAt(r);
+                TableRowBox row = rows.get(r);
                 if (row.hasNext())
                 {
                     cell_found = true;
@@ -399,13 +400,13 @@ public class TableBodyBox extends BlockBox
         }    
         //build the cell array
         for (int i = 0; i < rows.size(); i++)
-            rows.elementAt(i).rewind();
+            rows.get(i).rewind();
         cells = new TableCellBox[numCols][rows.size()];
         for (int c = 0; c < maxCells; c++)
         {
             for (int r = 0; r < rows.size(); r++)
             {
-                TableRowBox row = rows.elementAt(r);
+                TableRowBox row = rows.get(r);
                 if (row.hasNext())
                 {
                     TableCellBox cell = row.next();

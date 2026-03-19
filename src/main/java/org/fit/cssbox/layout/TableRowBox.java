@@ -22,7 +22,6 @@ package org.fit.cssbox.layout;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.w3c.dom.Element;
 
@@ -32,7 +31,7 @@ import org.w3c.dom.Element;
  */
 public class TableRowBox extends BlockBox
 {
-    protected Vector<TableCellBox> cells;
+    protected List<TableCellBox> cells;
     protected Iterator<TableCellBox> cursor;
     protected TableBodyBox ownerBody;
 
@@ -93,7 +92,7 @@ public class TableRowBox extends BlockBox
     public TableCellBox getCell(int index)
     {
         if (cells == null) organizeContent();
-        return cells.elementAt(index);
+        return cells.get(index);
     }
 
     /**
@@ -248,7 +247,7 @@ public class TableRowBox extends BlockBox
      */
     private void organizeContent()
     {
-        cells = new Vector<TableCellBox>();
+        cells = new ArrayList<TableCellBox>();
         TableCellBox anoncell = null;
         
         int size = nested.size();
