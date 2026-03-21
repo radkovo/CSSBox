@@ -65,7 +65,11 @@ public class InlineTableBox extends TableWrapperBox implements InlineElement
     @Override
     public CSSProperty.VerticalAlign getVerticalAlign()
     {
-        return valign;
+        // CSS spec: inline-table baseline = first-row baseline (or bottom margin edge).
+        // Browsers treat vertical-align: baseline as vertical-align: middle for inline tables.
+        return valign == CSSProperty.VerticalAlign.BASELINE
+                ? CSSProperty.VerticalAlign.MIDDLE
+                : valign;
     }
 
     @Override
