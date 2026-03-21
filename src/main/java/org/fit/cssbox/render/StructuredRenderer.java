@@ -110,11 +110,8 @@ public abstract class StructuredRenderer implements BoxRenderer {
         } else if (elem == bgSource) {
             // do not draw the background for the original viewport background source
             return null;
-        } else if (elem instanceof BlockTableBox) {
-            // anonymous table box has never a background
-            return null;
-        } else if (elem instanceof InlineTableBox) {
-            // anonymous inline-table wrapper has no background
+        } else if (elem instanceof TableWrapperBox) {
+            // anonymous table wrapper box has never a background
             return null;
         } else if (elem instanceof TableCellBox) {
             //if no background is specified for the cell, we try to use the row, row group, column, column group

@@ -17,8 +17,6 @@
  */
 package org.fit.cssbox.layout;
 
-import java.util.Iterator;
-
 import cz.vutbr.web.css.CSSProperty;
 import cz.vutbr.web.css.NodeData;
 import cz.vutbr.web.css.TermLengthOrPercent;
@@ -30,13 +28,8 @@ import cz.vutbr.web.css.TermLengthOrPercent;
  *
  * @author burgetr
  */
-public class InlineTableBox extends BlockBox implements InlineElement
+public class InlineTableBox extends TableWrapperBox implements InlineElement
 {
-    // from BlockTableBox
-    private TableBox table;
-    private TableCaptionBox caption;
-    private boolean captionbottom;
-
     // from InlineBlockBox
     private CSSProperty.VerticalAlign valign;
     private LineBox linebox;
@@ -57,12 +50,6 @@ public class InlineTableBox extends BlockBox implements InlineElement
         setFloats(new FloatList(this), new FloatList(this), 0, 0, 0);
         organizeContent();
         loadCaptionStyle();
-    }
-
-    @Override
-    public void initLayoutManager()
-    {
-        layoutManager = new TableLayoutManager(this);
     }
 
     @Override
@@ -184,18 +171,6 @@ public class InlineTableBox extends BlockBox implements InlineElement
     //======================================================================================================
 
     @Override
-    public boolean canIncreaseWidth()
-    {
-        return true;
-    }
-
-    @Override
-    protected boolean mayOverlapFloats()
-    {
-        return false; // tables may not overlap floats
-    }
-
-    @Override
     public boolean hasFixedWidth()
     {
         return wset; // only if explicitly set
@@ -219,61 +194,7 @@ public class InlineTableBox extends BlockBox implements InlineElement
     {
         this.availw = availw;
         setAvailableWidth(availw);
-        float wlimit = getAvailableContentWidth();
-        float tabwidth = 0;
-        float tabheight = 0;
-        float capheight = 0;
-        float capwidth = 0;
-
-        // lay out table
-        BlockLayoutStatus stat = new BlockLayoutStatus();
-        table.setAvailableWidth(wlimit);
-        table.updateSizes();
-        layoutManager.layoutBlockInFlow(table, wlimit, stat);
-        tabwidth = stat.maxw;
-        tabheight = stat.y;
-
-        // the caption width is not known yet, use the tab width for now 
-        setContentWidth(tabwidth);
-        
-        // lay out caption
-        if (caption != null)
-        {
-            stat.y = 0;
-            caption.setAvailableWidth(tabwidth);
-            caption.updateSizes();
-            layoutManager.layoutBlockInFlow(caption, stat.maxw, stat);
-            capwidth = stat.maxw;
-            capheight = stat.y;
-            if (captionbottom)
-            {
-                table.setPosition(0, 0);
-                caption.setPosition(0, tabheight);
-            }
-            else
-            {
-                caption.setPosition(0, 0);
-                table.setPosition(0, capheight);
-            }
-        }
-        else
-            table.setPosition(0, 0);
-
-        setContentWidth(Math.max(tabwidth, capwidth));
-        setContentHeight(tabheight + capheight);
-        widthComputed = true;
-        updateSizes();
-        setSize(totalWidth(), totalHeight());
-
-        // layout positioned boxes
-        for (Box box : nested)
-        {
-            if (box instanceof BlockBox && ((BlockBox) box).isPositioned())
-            {
-                ((BlockBox) box).updateSizes();
-                layoutManager.layoutBlockPositioned((BlockBox) box, stat);
-            }
-        }
+        doTableWrapperLayout(getAvailableContentWidth(), 0);
 
         if (force || fitsSpace())
         {
@@ -365,65 +286,6 @@ public class InlineTableBox extends BlockBox implements InlineElement
     }
 
     @Override
-    public float getMaximalWidth()
-    {
-        if (caption == null)
-            return table.getMaximalWidth();
-        else
-            return Math.max(table.getMaximalWidth(), caption.getMaximalWidth());
-    }
-
-    @Override
-    public float getMinimalWidth()
-    {
-        if (caption == null)
-            return table.getMinimalWidth();
-        else
-            return Math.max(table.getMinimalWidth(), caption.getMinimalWidth());
-    }
-
-    @Override
-    protected float getMaximalContentWidth()
-    {
-        if (caption == null)
-            return table.getMaximalContentWidth();
-        else
-            return Math.max(table.getMaximalContentWidth(), caption.getMaximalContentWidth());
-    }
-
-    @Override
-    protected float getMinimalContentWidth()
-    {
-        if (caption == null)
-            return table.getMinimalContentWidth();
-        else
-            return Math.max(table.getMinimalContentWidth(), caption.getMinimalContentWidth());
-    }
-
-    @Override
-    protected float getMinimalDecorationWidth()
-    {
-        if (caption == null)
-            return table.getMinimalDecorationWidth();
-        else
-            return Math.max(table.getMinimalDecorationWidth(), caption.getMinimalDecorationWidth());
-    }
-
-    @Override
-    protected void loadBorders(CSSDecoder dec, float contw)
-    {
-        // anonymous wrapper box has no border
-        border = new LengthSet();
-    }
-
-    @Override
-    protected void loadPadding(CSSDecoder dec, float contw)
-    {
-        // anonymous wrapper box has no padding
-        padding = new LengthSet();
-    }
-
-    @Override
     public void draw(DrawStage turn)
     {
         if (displayed)
@@ -455,51 +317,6 @@ public class InlineTableBox extends BlockBox implements InlineElement
     {
         valign = style.getProperty("vertical-align");
         if (valign == null) valign = CSSProperty.VerticalAlign.BASELINE;
-    }
-
-    protected void loadCaptionStyle()
-    {
-        if (caption != null)
-        {
-            CSSProperty.CaptionSide side = caption.getStyle().getProperty("caption-side");
-            captionbottom = (side == CSSProperty.CaptionSide.BOTTOM);
-        }
-        else
-            captionbottom = false;
-    }
-
-    /**
-     * Goes through the list of child boxes and organizes them into captions,
-     * table content, etc.
-     */
-    private void organizeContent()
-    {
-        table = new TableBox(el, ctx);
-        table.adoptParent(this);
-        table.setStyle(style);
-
-        for (Iterator<Box> it = nested.iterator(); it.hasNext(); )
-        {
-            Box box = it.next();
-            if (box instanceof TableCaptionBox)
-            {
-                caption = (TableCaptionBox) box;
-            }
-            else if (box instanceof BlockBox && ((BlockBox) box).isPositioned())
-            {
-                // positioned boxes are ignored
-            }
-            else // other elements belong to the table itself
-            {
-                table.addSubBox(box);
-                box.setContainingBlockBox(table);
-                box.setParent(table);
-                it.remove();
-                endChild--;
-            }
-        }
-
-        addSubBox(table);
     }
 
     /**
