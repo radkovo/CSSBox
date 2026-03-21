@@ -134,11 +134,14 @@ public class BlockTableBox extends BlockBox
         tabwidth = stat.maxw;
         tabheight = stat.y;
 
+        // the caption width is not known yet, use the tab width for now 
+        setContentWidth(tabwidth);
+        
         //format the caption
         if (caption != null)
         {
             stat.y = 0;
-            caption.setAvailableWidth(stat.maxw);
+            caption.setAvailableWidth(tabwidth);
             caption.updateSizes();
             layoutManager.layoutBlockInFlow(caption, stat.maxw, stat);
             capwidth = stat.maxw;

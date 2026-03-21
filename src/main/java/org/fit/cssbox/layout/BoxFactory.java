@@ -958,8 +958,8 @@ public class BoxFactory
             root = new ListItemBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
             root = new BlockTableBox((InlineBox) root);
-        /*else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
-            root = new InlineTableBox((InlineBox) root);*/
+        else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_TABLE)
+            root = new InlineTableBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_CAPTION)
             root = new TableCaptionBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE_ROW_GROUP
